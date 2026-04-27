@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head><!DOCTYPE html>
-<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IGNIS CITY</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
+ 
     body {
       background: #0a0a0f;
       color: #fff;
       font-family: 'Helvetica Neue', sans-serif;
       overflow: hidden;
     }
-
+ 
     #renderCanvas {
       width: 100vw;
       height: 100vh;
       touch-action: none;
     }
-
+ 
     #ui {
       position: fixed;
       top: 0; left: 0;
@@ -29,7 +27,7 @@
       pointer-events: none;
       z-index: 10;
     }
-
+ 
     #header {
       display: flex;
       justify-content: space-between;
@@ -37,7 +35,7 @@
       padding: 16px 24px;
       background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
     }
-
+ 
     #logo {
       font-size: 20px;
       font-weight: 900;
@@ -46,16 +44,16 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-
+ 
     #stats {
       display: flex;
       gap: 24px;
       font-size: 13px;
       color: rgba(255,255,255,0.7);
     }
-
+ 
     #stats span { font-weight: 700; color: #ff6a00; }
-
+ 
     /* ユーザー情報エリア */
     #user-area {
       display: flex;
@@ -63,13 +61,13 @@
       gap: 12px;
       pointer-events: all;
     }
-
+ 
     #user-name {
       font-size: 13px;
       color: rgba(255,255,255,0.8);
       font-weight: 600;
     }
-
+ 
     #logout-btn {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2);
@@ -84,7 +82,7 @@
       background: rgba(255,255,255,0.2);
       color: #fff;
     }
-
+ 
     #login-btn-header {
       background: linear-gradient(135deg, #ff6a00, #ee0979);
       border: none;
@@ -98,7 +96,7 @@
       transition: opacity 0.2s;
     }
     #login-btn-header:hover { opacity: 0.85; }
-
+ 
     #build-btn {
       position: fixed;
       bottom: 32px;
@@ -118,12 +116,12 @@
       transition: transform 0.15s, box-shadow 0.15s;
       z-index: 10;
     }
-
+ 
     #build-btn:hover {
       transform: translateX(-50%) scale(1.05);
       box-shadow: 0 8px 40px rgba(255, 106, 0, 0.6);
     }
-
+ 
     #loading {
       position: fixed;
       inset: 0;
@@ -135,7 +133,7 @@
       z-index: 100;
       transition: opacity 0.8s;
     }
-
+ 
     #loading-logo {
       font-size: 36px;
       font-weight: 900;
@@ -145,7 +143,7 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: 24px;
     }
-
+ 
     #loading-bar-wrap {
       width: 200px;
       height: 2px;
@@ -153,7 +151,7 @@
       border-radius: 2px;
       overflow: hidden;
     }
-
+ 
     #loading-bar {
       height: 100%;
       width: 0%;
@@ -161,7 +159,7 @@
       border-radius: 2px;
       transition: width 0.3s;
     }
-
+ 
     #toast {
       position: fixed;
       bottom: 100px;
@@ -178,7 +176,7 @@
       z-index: 20;
       pointer-events: none;
     }
-
+ 
     /* =====================
        認証モーダル
     ===================== */
@@ -195,7 +193,7 @@
     #auth-modal.open {
       display: flex;
     }
-
+ 
     #auth-box {
       background: #13131a;
       border: 1px solid rgba(255,106,0,0.3);
@@ -205,7 +203,7 @@
       max-width: 90vw;
       box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,106,0,0.1);
     }
-
+ 
     #auth-title {
       font-size: 22px;
       font-weight: 900;
@@ -215,13 +213,13 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
     }
-
+ 
     #auth-subtitle {
       font-size: 13px;
       color: rgba(255,255,255,0.4);
       margin-bottom: 28px;
     }
-
+ 
     .auth-tab-wrap {
       display: flex;
       gap: 0;
@@ -230,7 +228,7 @@
       border-radius: 10px;
       padding: 4px;
     }
-
+ 
     .auth-tab {
       flex: 1;
       padding: 8px;
@@ -246,7 +244,7 @@
       background: linear-gradient(135deg, #ff6a00, #ee0979);
       color: #fff;
     }
-
+ 
     .auth-input {
       width: 100%;
       background: rgba(255,255,255,0.06);
@@ -265,7 +263,7 @@
     .auth-input::placeholder {
       color: rgba(255,255,255,0.3);
     }
-
+ 
     #auth-submit {
       width: 100%;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
@@ -282,7 +280,7 @@
     }
     #auth-submit:hover { opacity: 0.85; }
     #auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
+ 
     #auth-error {
       color: #ff4444;
       font-size: 12px;
@@ -290,7 +288,7 @@
       text-align: center;
       min-height: 18px;
     }
-
+ 
     #auth-close {
       position: absolute;
       top: 16px;
@@ -303,9 +301,9 @@
       line-height: 1;
     }
     #auth-close:hover { color: #fff; }
-
+ 
     #auth-box { position: relative; }
-
+ 
     /* signup用の追加フィールド */
     #username-field {
       display: none;
@@ -313,14 +311,14 @@
   </style>
 </head>
 <body>
-
+ 
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
     <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
   </div>
-
+ 
   <canvas id="renderCanvas"></canvas>
-
+ 
   <div id="ui">
     <div id="header">
       <div id="logo">IGNIS CITY</div>
@@ -337,38 +335,38 @@
       </div>
     </div>
   </div>
-
+ 
   <button id="build-btn">＋ ビルを建てる</button>
   <div id="toast"></div>
-
+ 
   <!-- 認証モーダル -->
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" onclick="closeAuthModal()">×</button>
       <div id="auth-title">IGNIS CITY</div>
       <div id="auth-subtitle">街づくりに参加しよう</div>
-
+ 
       <div class="auth-tab-wrap">
         <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">ログイン</div>
         <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">新規登録</div>
       </div>
-
+ 
       <div id="username-field">
         <input class="auth-input" id="input-username" type="text" placeholder="ユーザー名（表示名）" autocomplete="off">
       </div>
       <input class="auth-input" id="input-email" type="email" placeholder="メールアドレス" autocomplete="email">
       <input class="auth-input" id="input-password" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password">
-
+ 
       <button id="auth-submit" onclick="handleAuth()">ログイン</button>
       <div id="auth-error"></div>
     </div>
   </div>
-
+ 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Babylon.js -->
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
-
+ 
   <script>
     // =====================
     // Supabase設定
@@ -376,12 +374,12 @@
     const SUPABASE_URL = 'https://xssjhgosxyhknonlrjrq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+ 
     // =====================
     // 現在のユーザー
     // =====================
     let currentUser = null;
-
+ 
     // =====================
     // ローディング演出
     // =====================
@@ -393,7 +391,7 @@
       if (loadProgress > 90) loadProgress = 90;
       loadingBar.style.width = loadProgress + '%';
     }, 200);
-
+ 
     function finishLoading() {
       clearInterval(loadInterval);
       loadingBar.style.width = '100%';
@@ -402,7 +400,7 @@
         setTimeout(() => loadingEl.style.display = 'none', 800);
       }, 400);
     }
-
+ 
     // =====================
     // Toast通知
     // =====================
@@ -412,21 +410,21 @@
       t.style.opacity = '1';
       setTimeout(() => t.style.opacity = '0', 2000);
     }
-
+ 
     // =====================
     // 認証モーダル制御
     // =====================
     let authMode = 'login'; // 'login' | 'signup'
-
+ 
     function openAuthModal() {
       document.getElementById('auth-modal').classList.add('open');
       document.getElementById('auth-error').textContent = '';
     }
-
+ 
     function closeAuthModal() {
       document.getElementById('auth-modal').classList.remove('open');
     }
-
+ 
     function switchTab(mode) {
       authMode = mode;
       document.getElementById('tab-login').classList.toggle('active', mode === 'login');
@@ -435,7 +433,7 @@
       document.getElementById('auth-submit').textContent = mode === 'login' ? 'ログイン' : '登録する';
       document.getElementById('auth-error').textContent = '';
     }
-
+ 
     // =====================
     // 認証処理
     // =====================
@@ -445,9 +443,9 @@
       const username = document.getElementById('input-username').value.trim();
       const btn = document.getElementById('auth-submit');
       const errEl = document.getElementById('auth-error');
-
+ 
       errEl.textContent = '';
-
+ 
       if (!email || !password) {
         errEl.textContent = 'メールアドレスとパスワードを入力してください';
         return;
@@ -456,10 +454,10 @@
         errEl.textContent = 'ユーザー名を入力してください';
         return;
       }
-
+ 
       btn.disabled = true;
       btn.textContent = '処理中...';
-
+ 
       try {
         if (authMode === 'login') {
           // ログイン
@@ -467,12 +465,12 @@
           if (error) throw error;
           await onLoginSuccess(data.user);
           closeAuthModal();
-
+ 
         } else {
           // 新規登録
           const { data, error } = await db.auth.signUp({ email, password });
           if (error) throw error;
-
+ 
           // usersテーブルにプロフィールを作成
           if (data.user) {
             await db.from('users').upsert({
@@ -500,7 +498,7 @@
         btn.textContent = authMode === 'login' ? 'ログイン' : '登録する';
       }
     }
-
+ 
     function translateError(msg) {
       if (msg.includes('Invalid login credentials')) return 'メールアドレスまたはパスワードが違います';
       if (msg.includes('Email not confirmed')) return 'メールアドレスの確認が完了していません';
@@ -509,13 +507,13 @@
       if (msg.includes('Unable to validate email')) return 'メールアドレスの形式が正しくありません';
       return msg;
     }
-
+ 
     // =====================
     // ログイン成功後の処理
     // =====================
     async function onLoginSuccess(user, usernameOverride = null) {
       currentUser = user;
-
+ 
       // usersテーブルからユーザー情報を取得
       let displayName = usernameOverride;
       if (!displayName) {
@@ -527,31 +525,31 @@
           displayName = user.email;
         }
       }
-
+ 
       // ヘッダー更新
       document.getElementById('login-btn-header').style.display = 'none';
       const loggedInArea = document.getElementById('logged-in-area');
       loggedInArea.style.display = 'flex';
       document.getElementById('user-name').textContent = displayName;
-
+ 
       showToast(`👋 おかえり、${displayName}！`);
     }
-
+ 
     // =====================
     // ログアウト
     // =====================
     async function handleLogout() {
       await db.auth.signOut();
       currentUser = null;
-
+ 
       document.getElementById('login-btn-header').style.display = 'block';
       document.getElementById('logged-in-area').style.display = 'none';
       document.getElementById('user-name').textContent = '';
       document.getElementById('coin-count').textContent = '0';
-
+ 
       showToast('ログアウトしました');
     }
-
+ 
     // =====================
     // セッション復元（ページ再読み込み時）
     // =====================
@@ -561,30 +559,30 @@
         await onLoginSuccess(session.user);
       }
     }
-
+ 
     // =====================
     // Babylon.js 初期化
     // =====================
     const canvas = document.getElementById('renderCanvas');
     const engine = new BABYLON.Engine(canvas, true);
     const scene = new BABYLON.Scene(engine);
-
+ 
     scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1);
-
+ 
     const camera = new BABYLON.ArcRotateCamera('cam', -Math.PI / 4, Math.PI / 3.5, 60, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
     camera.lowerRadiusLimit = 10;
     camera.upperRadiusLimit = 200;
     camera.upperBetaLimit = Math.PI / 2.2;
-
+ 
     const hemiLight = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
     hemiLight.intensity = 0.6;
     hemiLight.groundColor = new BABYLON.Color3(0.1, 0.05, 0.1);
-
+ 
     const dirLight = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-1, -2, -1), scene);
     dirLight.intensity = 0.8;
     dirLight.position = new BABYLON.Vector3(50, 50, 50);
-
+ 
     // =====================
     // 地面（グリッド）
     // =====================
@@ -593,29 +591,29 @@
     groundMat.diffuseColor = new BABYLON.Color3(0.06, 0.06, 0.1);
     groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
     ground.material = groundMat;
-
+ 
     const gridSize = 200;
     const cellSize = 10;
     const lineMat = new BABYLON.StandardMaterial('lineMat', scene);
     lineMat.emissiveColor = new BABYLON.Color3(0.15, 0.1, 0.2);
-
+ 
     for (let i = -gridSize / 2; i <= gridSize / 2; i += cellSize) {
       const hLine = BABYLON.MeshBuilder.CreateBox('hl', { width: gridSize, height: 0.02, depth: 0.05 }, scene);
       hLine.position = new BABYLON.Vector3(0, 0.01, i);
       hLine.material = lineMat;
       hLine.isPickable = false;
-
+ 
       const vLine = BABYLON.MeshBuilder.CreateBox('vl', { width: 0.05, height: 0.02, depth: gridSize }, scene);
       vLine.position = new BABYLON.Vector3(i, 0.01, 0);
       vLine.material = lineMat;
       vLine.isPickable = false;
     }
-
+ 
     // =====================
     // ビル管理
     // =====================
     let buildings = [];
-
+ 
     function addBuilding(x, z, floors, fromDB = false) {
       const height = floors * 0.5;
       const mesh = BABYLON.MeshBuilder.CreateBox('building_' + Date.now(), {
@@ -624,19 +622,19 @@
         depth: 4 + Math.random() * 3
       }, scene);
       mesh.position = new BABYLON.Vector3(x, height / 2, z);
-
+ 
       const mat = new BABYLON.StandardMaterial('bm_' + Date.now(), scene);
       const hue = Math.random();
       mat.diffuseColor = new BABYLON.Color3(0.1 + hue * 0.3, 0.2, 0.4 + hue * 0.3);
       mat.specularColor = new BABYLON.Color3(0.5, 0.5, 0.8);
       mesh.material = mat;
-
+ 
       buildings.push({ x, z, floors, mesh });
       document.getElementById('building-count').textContent = buildings.length;
-
+ 
       if (!fromDB) showToast(`ビル建設！ ${floors}階建て +100コイン`);
     }
-
+ 
     // =====================
     // Supabaseからビルを読み込む
     // =====================
@@ -655,7 +653,7 @@
       }
       finishLoading();
     }
-
+ 
     // =====================
     // ビルを建てるボタン
     // =====================
@@ -666,13 +664,13 @@
         showToast('ビルを建てるにはログインが必要です');
         return;
       }
-
+ 
       const x = (Math.floor(Math.random() * 20) - 10) * 10;
       const z = (Math.floor(Math.random() * 20) - 10) * 10;
       const floors = Math.floor(Math.random() * 50) + 5;
-
+ 
       addBuilding(x, z, floors);
-
+ 
       // Supabaseに保存（owner_id付き）
       try {
         const { error } = await db.from('buildings').insert({
@@ -681,13 +679,13 @@
           owner_id: currentUser.id
         });
         if (error) throw error;
-
+ 
         // コインを加算（usersテーブル）
         const { data: userData } = await db.from('users')
           .select('coin_balance')
           .eq('id', currentUser.id)
           .single();
-
+ 
         if (userData) {
           const newBalance = (userData.coin_balance || 0) + 100;
           await db.from('users')
@@ -699,13 +697,13 @@
         console.warn('保存エラー:', e.message);
       }
     });
-
+ 
     // =====================
     // レンダーループ
     // =====================
     engine.runRenderLoop(() => scene.render());
     window.addEventListener('resize', () => engine.resize());
-
+ 
     // =====================
     // 起動
     // =====================
@@ -716,339 +714,4 @@
   </script>
 </body>
 </html>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IGNIS CITY</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      background: #0a0a0f;
-      color: #fff;
-      font-family: 'Helvetica Neue', sans-serif;
-      overflow: hidden;
-    }
-
-    #renderCanvas {
-      width: 100vw;
-      height: 100vh;
-      touch-action: none;
-    }
-
-    #ui {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    #header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 24px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-    }
-
-    #logo {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    #stats {
-      display: flex;
-      gap: 24px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.7);
-    }
-
-    #stats span { font-weight: 700; color: #ff6a00; }
-
-    #build-btn {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      color: #fff;
-      border: none;
-      padding: 14px 40px;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      border-radius: 40px;
-      cursor: pointer;
-      pointer-events: all;
-      box-shadow: 0 4px 30px rgba(255, 106, 0, 0.4);
-      transition: transform 0.15s, box-shadow 0.15s;
-      z-index: 10;
-    }
-
-    #build-btn:hover {
-      transform: translateX(-50%) scale(1.05);
-      box-shadow: 0 8px 40px rgba(255, 106, 0, 0.6);
-    }
-
-    #loading {
-      position: fixed;
-      inset: 0;
-      background: #0a0a0f;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      transition: opacity 0.8s;
-    }
-
-    #loading-logo {
-      font-size: 36px;
-      font-weight: 900;
-      letter-spacing: 0.3em;
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 24px;
-    }
-
-    #loading-bar-wrap {
-      width: 200px;
-      height: 2px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    #loading-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ff6a00, #ee0979);
-      border-radius: 2px;
-      transition: width 0.3s;
-    }
-
-    #toast {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255,106,0,0.9);
-      color: #fff;
-      padding: 10px 24px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 700;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 20;
-      pointer-events: none;
-    }
-  </style>
-</head>
-<body>
-
-  <div id="loading">
-    <div id="loading-logo">IGNIS CITY</div>
-    <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
-  </div>
-
-  <canvas id="renderCanvas"></canvas>
-
-  <div id="ui">
-    <div id="header">
-      <div id="logo">IGNIS CITY</div>
-      <div id="stats">
-        ビル数 <span id="building-count">0</span>棟 &nbsp;|&nbsp; コイン <span id="coin-count">0</span>
-      </div>
-    </div>
-  </div>
-
-  <button id="build-btn">＋ ビルを建てる</button>
-  <div id="toast"></div>
-
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Babylon.js -->
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
-
-  <script>
-    // =====================
-    // Supabase設定（要変更）
-    // =====================
-    const SUPABASE_URL = 'https://xssjhgosxyhknonlrjrq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // =====================
-    // ローディング演出
-    // =====================
-    const loadingBar = document.getElementById('loading-bar');
-    const loadingEl = document.getElementById('loading');
-    let loadProgress = 0;
-    const loadInterval = setInterval(() => {
-      loadProgress += Math.random() * 15;
-      if (loadProgress > 90) loadProgress = 90;
-      loadingBar.style.width = loadProgress + '%';
-    }, 200);
-
-    function finishLoading() {
-      clearInterval(loadInterval);
-      loadingBar.style.width = '100%';
-      setTimeout(() => {
-        loadingEl.style.opacity = '0';
-        setTimeout(() => loadingEl.style.display = 'none', 800);
-      }, 400);
-    }
-
-    // =====================
-    // Toast通知
-    // =====================
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.style.opacity = '1';
-      setTimeout(() => t.style.opacity = '0', 2000);
-    }
-
-    // =====================
-    // Babylon.js 初期化
-    // =====================
-    const canvas = document.getElementById('renderCanvas');
-    const engine = new BABYLON.Engine(canvas, true);
-    const scene = new BABYLON.Scene(engine);
-
-    // 背景色
-    scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1);
-
-    // カメラ
-    const camera = new BABYLON.ArcRotateCamera('cam', -Math.PI / 4, Math.PI / 3.5, 60, BABYLON.Vector3.Zero(), scene);
-    camera.attachControl(canvas, true);
-    camera.lowerRadiusLimit = 10;
-    camera.upperRadiusLimit = 200;
-    camera.upperBetaLimit = Math.PI / 2.2;
-
-    // ライト
-    const hemiLight = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
-    hemiLight.intensity = 0.6;
-    hemiLight.groundColor = new BABYLON.Color3(0.1, 0.05, 0.1);
-
-    const dirLight = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-1, -2, -1), scene);
-    dirLight.intensity = 0.8;
-    dirLight.position = new BABYLON.Vector3(50, 50, 50);
-
-    // =====================
-    // 地面（グリッド）
-    // =====================
-    const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 200, height: 200, subdivisions: 20 }, scene);
-    const groundMat = new BABYLON.StandardMaterial('groundMat', scene);
-    groundMat.diffuseColor = new BABYLON.Color3(0.06, 0.06, 0.1);
-    groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
-    ground.material = groundMat;
-
-    // グリッドライン
-    const gridSize = 200;
-    const cellSize = 10;
-    const lineMat = new BABYLON.StandardMaterial('lineMat', scene);
-    lineMat.emissiveColor = new BABYLON.Color3(0.15, 0.1, 0.2);
-
-    for (let i = -gridSize / 2; i <= gridSize / 2; i += cellSize) {
-      const hLine = BABYLON.MeshBuilder.CreateBox('hl', { width: gridSize, height: 0.02, depth: 0.05 }, scene);
-      hLine.position = new BABYLON.Vector3(0, 0.01, i);
-      hLine.material = lineMat;
-      hLine.isPickable = false;
-
-      const vLine = BABYLON.MeshBuilder.CreateBox('vl', { width: 0.05, height: 0.02, depth: gridSize }, scene);
-      vLine.position = new BABYLON.Vector3(i, 0.01, 0);
-      vLine.material = lineMat;
-      vLine.isPickable = false;
-    }
-
-    // =====================
-    // ビル管理
-    // =====================
-    const buildingMasterMat = new BABYLON.StandardMaterial('bMat', scene);
-    buildingMasterMat.diffuseColor = new BABYLON.Color3(0.2, 0.3, 0.5);
-    buildingMasterMat.specularColor = new BABYLON.Color3(0.3, 0.4, 0.6);
-
-    let buildings = [];
-
-    // ビルを追加する関数
-    function addBuilding(x, z, floors, fromDB = false) {
-      const height = floors * 0.5;
-      const mesh = BABYLON.MeshBuilder.CreateBox('building_' + Date.now(), {
-        width: 4 + Math.random() * 3,
-        height: height,
-        depth: 4 + Math.random() * 3
-      }, scene);
-      mesh.position = new BABYLON.Vector3(x, height / 2, z);
-
-      // ランダムな色合い
-      const mat = new BABYLON.StandardMaterial('bm_' + Date.now(), scene);
-      const hue = Math.random();
-      mat.diffuseColor = new BABYLON.Color3(0.1 + hue * 0.3, 0.2, 0.4 + hue * 0.3);
-      mat.specularColor = new BABYLON.Color3(0.5, 0.5, 0.8);
-      mesh.material = mat;
-
-      buildings.push({ x, z, floors, mesh });
-      document.getElementById('building-count').textContent = buildings.length;
-
-      if (!fromDB) showToast(`ビル建設！ ${floors}階建て +100コイン`);
-    }
-
-    // =====================
-    // Supabaseからビルを読み込む
-    // =====================
-    async function loadBuildings() {
-      try {
-        const { data, error } = await db.from('buildings').select('*');
-        if (error) throw error;
-        data.forEach(b => addBuilding(b.x, b.z, b.floors, true));
-      } catch (e) {
-        console.warn('Supabase未接続 or エラー:', e.message);
-        // デモ用ビルを数棟表示
-        addBuilding(0, 0, 20, true);
-        addBuilding(10, 5, 35, true);
-        addBuilding(-8, 12, 15, true);
-        addBuilding(15, -10, 50, true);
-        addBuilding(-15, -5, 28, true);
-      }
-      finishLoading();
-    }
-
-    // =====================
-    // ビルを建てるボタン
-    // =====================
-    document.getElementById('build-btn').addEventListener('click', async () => {
-      const x = (Math.floor(Math.random() * 20) - 10) * 10;
-      const z = (Math.floor(Math.random() * 20) - 10) * 10;
-      const floors = Math.floor(Math.random() * 50) + 5;
-
-      addBuilding(x, z, floors);
-
-      // Supabaseに保存（接続済みの場合）
-      try {
-        await db.from('buildings').insert({
-          x, z, floors,
-          style: 'default'
-        });
-      } catch (e) {
-        console.warn('保存スキップ（Supabase未設定）');
-      }
-    });
-
-    // =====================
-    // レンダーループ
-    // =====================
-    engine.runRenderLoop(() => scene.render());
-    window.addEventListener('resize', () => engine.resize());
-
-    // 起動
-    loadBuildings();
-  </script>
-</body>
-</html>
+ 

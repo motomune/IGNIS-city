@@ -34,6 +34,7 @@
       align-items: center;
       padding: 16px 24px;
       background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+      width: 100%;
     }
 
     #logo {
@@ -51,16 +52,28 @@
       font-size: 13px;
       color: rgba(255,255,255,0.7);
     }
-
     #stats span { font-weight: 700; color: #ff6a00; }
 
-    /* ユーザー情報エリア */
     #user-area {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       pointer-events: all;
     }
+
+    #lang-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+    #lang-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
     #user-name {
       font-size: 13px;
@@ -78,10 +91,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    #logout-btn:hover {
-      background: rgba(255,255,255,0.2);
-      color: #fff;
-    }
+    #logout-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
 
     #login-btn-header {
       background: linear-gradient(135deg, #ff6a00, #ee0979);
@@ -112,14 +122,13 @@
       border-radius: 40px;
       cursor: pointer;
       pointer-events: all;
-      box-shadow: 0 4px 30px rgba(255, 106, 0, 0.4);
+      box-shadow: 0 4px 30px rgba(255,106,0,0.4);
       transition: transform 0.15s, box-shadow 0.15s;
       z-index: 10;
     }
-
     #build-btn:hover {
       transform: translateX(-50%) scale(1.05);
-      box-shadow: 0 8px 40px rgba(255, 106, 0, 0.6);
+      box-shadow: 0 8px 40px rgba(255,106,0,0.6);
     }
 
     #loading {
@@ -133,7 +142,6 @@
       z-index: 100;
       transition: opacity 0.8s;
     }
-
     #loading-logo {
       font-size: 36px;
       font-weight: 900;
@@ -143,7 +151,6 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: 24px;
     }
-
     #loading-bar-wrap {
       width: 200px;
       height: 2px;
@@ -151,7 +158,6 @@
       border-radius: 2px;
       overflow: hidden;
     }
-
     #loading-bar {
       height: 100%;
       width: 0%;
@@ -175,60 +181,90 @@
       transition: opacity 0.3s;
       z-index: 20;
       pointer-events: none;
+      white-space: nowrap;
     }
 
-    /* =====================
-       認証モーダル
-    ===================== */
+    /* 火の粉キャンバス */
+    #fire-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 201;
+      display: none;
+    }
+
+    /* 認証モーダル */
     #auth-modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
       z-index: 200;
       align-items: center;
       justify-content: center;
     }
-    #auth-modal.open {
-      display: flex;
-    }
+    #auth-modal.open { display: flex; }
 
     #auth-box {
-      background: #13131a;
-      border: 1px solid rgba(255,106,0,0.3);
-      border-radius: 20px;
-      padding: 40px 36px;
-      width: 360px;
-      max-width: 90vw;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,106,0,0.1);
+      background: #0f0f18;
+      border: 1px solid rgba(255,106,0,0.35);
+      border-radius: 22px;
+      padding: 36px 36px 28px;
+      width: 380px;
+      max-width: 92vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 50px rgba(255,106,0,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    #auth-box::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 80px;
+      background: radial-gradient(ellipse, rgba(255,106,0,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    #auth-header-fire {
+      text-align: center;
+      font-size: 30px;
+      line-height: 1;
+      margin-bottom: 4px;
+      animation: fireFlicker 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes fireFlicker {
+      0%   { filter: brightness(1) drop-shadow(0 0 6px #ff6a00); transform: scaleY(1); }
+      50%  { filter: brightness(1.4) drop-shadow(0 0 14px #ff3300); transform: scaleY(1.06); }
+      100% { filter: brightness(0.9) drop-shadow(0 0 4px #ff9900); transform: scaleY(0.97); }
     }
 
     #auth-title {
       font-size: 22px;
       font-weight: 900;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.15em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
+      text-align: center;
+      margin-bottom: 4px;
     }
-
     #auth-subtitle {
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
-      margin-bottom: 28px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      margin-bottom: 22px;
+      letter-spacing: 0.05em;
     }
 
     .auth-tab-wrap {
       display: flex;
-      gap: 0;
-      margin-bottom: 24px;
+      margin-bottom: 18px;
       background: rgba(255,255,255,0.05);
       border-radius: 10px;
       padding: 4px;
     }
-
     .auth-tab {
       flex: 1;
       padding: 8px;
@@ -237,7 +273,7 @@
       font-weight: 700;
       color: rgba(255,255,255,0.4);
       cursor: pointer;
-      border-radius: 8px;
+      border-radius: 7px;
       transition: all 0.2s;
     }
     .auth-tab.active {
@@ -245,23 +281,78 @@
       color: #fff;
     }
 
+    .auth-input-wrap {
+      position: relative;
+      margin-bottom: 10px;
+    }
     .auth-input {
       width: 100%;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.1);
       border-radius: 10px;
       padding: 12px 16px;
       color: #fff;
       font-size: 14px;
-      margin-bottom: 12px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.25s, box-shadow 0.25s;
     }
+    .auth-input::placeholder { color: rgba(255,255,255,0.25); }
     .auth-input:focus {
-      border-color: rgba(255,106,0,0.6);
+      border-color: rgba(255,106,0,0.7) !important;
+      box-shadow: 0 0 12px rgba(255,106,0,0.2) !important;
+      animation: none !important;
     }
-    .auth-input::placeholder {
-      color: rgba(255,255,255,0.3);
+    .auth-input.blink {
+      animation: inputBlink 1.1s ease-in-out infinite;
+    }
+    @keyframes inputBlink {
+      0%,100% { border-color: rgba(255,80,0,0.45); box-shadow: 0 0 6px rgba(255,80,0,0.15); }
+      50%      { border-color: rgba(255,80,0,0.95); box-shadow: 0 0 14px rgba(255,80,0,0.45); }
+    }
+    .auth-input.done {
+      border-color: #22c55e !important;
+      box-shadow: 0 0 10px rgba(34,197,94,0.3) !important;
+      animation: none !important;
+    }
+
+    #username-field { display: none; }
+
+    /* パスワード要件 */
+    #pw-checks {
+      display: none;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      flex-direction: column;
+      gap: 7px;
+    }
+    #pw-checks.visible { display: flex; }
+
+    .pw-check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.32);
+      transition: color 0.25s;
+    }
+    .pw-check-item.ok { color: #22c55e; }
+    .pw-check-item .check-icon {
+      width: 17px; height: 17px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+      transition: all 0.25s;
+      color: transparent;
+    }
+    .pw-check-item.ok .check-icon {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #fff;
     }
 
     #auth-submit {
@@ -275,39 +366,32 @@
       font-weight: 700;
       letter-spacing: 0.05em;
       cursor: pointer;
-      margin-top: 4px;
+      margin-top: 2px;
       transition: opacity 0.2s;
     }
     #auth-submit:hover { opacity: 0.85; }
     #auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
     #auth-error {
-      color: #ff4444;
       font-size: 12px;
       margin-top: 10px;
       text-align: center;
       min-height: 18px;
+      color: #ff4444;
     }
 
     #auth-close {
       position: absolute;
-      top: 16px;
-      right: 20px;
+      top: 14px; right: 18px;
       background: none;
       border: none;
-      color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.3);
       font-size: 22px;
       cursor: pointer;
       line-height: 1;
+      transition: color 0.2s;
     }
     #auth-close:hover { color: #fff; }
-
-    #auth-box { position: relative; }
-
-    /* signup用の追加フィールド */
-    #username-field {
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -318,70 +402,197 @@
   </div>
 
   <canvas id="renderCanvas"></canvas>
+  <canvas id="fire-canvas"></canvas>
 
   <div id="ui">
     <div id="header">
       <div id="logo">IGNIS CITY</div>
       <div id="stats">
-        ビル数 <span id="building-count">0</span>棟 &nbsp;|&nbsp; コイン <span id="coin-count">0</span>
+        <span data-i18n="buildings">ビル数</span>&nbsp;<span id="building-count">0</span><span data-i18n="buildings-unit">棟</span>
+        &nbsp;|&nbsp;
+        <span data-i18n="coins">コイン</span>&nbsp;<span id="coin-count">0</span>
       </div>
-      <!-- ログイン前：ログインボタン / ログイン後：ユーザー名＋ログアウト -->
       <div id="user-area">
-        <button id="login-btn-header" onclick="openAuthModal()">ログイン / 登録</button>
+        <button id="lang-btn" onclick="toggleLang()">EN</button>
+        <button id="login-btn-header" onclick="openAuthModal()" data-i18n="login-btn">ログイン / 登録</button>
         <div id="logged-in-area" style="display:none; align-items:center; gap:12px;">
           <span id="user-name"></span>
-          <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
+          <button id="logout-btn" onclick="handleLogout()" data-i18n="logout">ログアウト</button>
         </div>
       </div>
     </div>
   </div>
 
-  <button id="build-btn">＋ ビルを建てる</button>
+  <button id="build-btn" data-i18n="build-btn">＋ ビルを建てる</button>
   <div id="toast"></div>
 
   <!-- 認証モーダル -->
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" onclick="closeAuthModal()">×</button>
+      <div id="auth-header-fire">🔥</div>
       <div id="auth-title">IGNIS CITY</div>
-      <div id="auth-subtitle">街づくりに参加しよう</div>
+      <div id="auth-subtitle" data-i18n="auth-subtitle">街づくりに参加しよう</div>
 
       <div class="auth-tab-wrap">
-        <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">ログイン</div>
-        <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">新規登録</div>
+        <div class="auth-tab active" id="tab-login" onclick="switchTab('login')" data-i18n="tab-login">ログイン</div>
+        <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')" data-i18n="tab-signup">新規登録</div>
       </div>
 
       <div id="username-field">
-        <input class="auth-input" id="input-username" type="text" placeholder="ユーザー名（表示名）" autocomplete="off">
+        <div class="auth-input-wrap">
+          <input class="auth-input" id="input-username" type="text"
+            data-placeholder-ja="ユーザー名（表示名）" data-placeholder-en="Username (display name)"
+            placeholder="ユーザー名（表示名）" autocomplete="off">
+        </div>
       </div>
-      <input class="auth-input" id="input-email" type="email" placeholder="メールアドレス" autocomplete="email">
-      <input class="auth-input" id="input-password" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password">
+      <div class="auth-input-wrap">
+        <input class="auth-input" id="input-email" type="email"
+          data-placeholder-ja="メールアドレス" data-placeholder-en="Email address"
+          placeholder="メールアドレス" autocomplete="email">
+      </div>
+      <div class="auth-input-wrap">
+        <input class="auth-input" id="input-password" type="password"
+          data-placeholder-ja="パスワード（8文字以上）" data-placeholder-en="Password (8+ characters)"
+          placeholder="パスワード（8文字以上）" autocomplete="current-password">
+      </div>
 
-      <button id="auth-submit" onclick="handleAuth()">ログイン</button>
+      <div id="pw-checks">
+        <div class="pw-check-item" id="check-length">
+          <div class="check-icon">✓</div><span data-i18n="pw-length">8文字以上</span>
+        </div>
+        <div class="pw-check-item" id="check-upper">
+          <div class="check-icon">✓</div><span data-i18n="pw-upper">大文字（A-Z）を含む</span>
+        </div>
+        <div class="pw-check-item" id="check-lower">
+          <div class="check-icon">✓</div><span data-i18n="pw-lower">小文字（a-z）を含む</span>
+        </div>
+        <div class="pw-check-item" id="check-number">
+          <div class="check-icon">✓</div><span data-i18n="pw-number">数字（0-9）を含む</span>
+        </div>
+      </div>
+
+      <button id="auth-submit" onclick="handleAuth()" data-i18n="submit-login">ログイン</button>
       <div id="auth-error"></div>
     </div>
   </div>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Babylon.js -->
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
 
   <script>
     // =====================
-    // Supabase設定
+    // Supabase
     // =====================
     const SUPABASE_URL = 'https://xssjhgosxyhknonlrjrq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // =====================
-    // 現在のユーザー
-    // =====================
     let currentUser = null;
 
     // =====================
-    // ローディング演出
+    // 多言語
+    // =====================
+    let currentLang = 'ja';
+    const i18n = {
+      ja: {
+        'buildings':'ビル数','buildings-unit':'棟','coins':'コイン',
+        'login-btn':'ログイン / 登録','logout':'ログアウト',
+        'build-btn':'＋ ビルを建てる','auth-subtitle':'街づくりに参加しよう',
+        'tab-login':'ログイン','tab-signup':'新規登録',
+        'submit-login':'ログイン','submit-signup':'登録する','processing':'処理中...',
+        'pw-length':'8文字以上','pw-upper':'大文字（A-Z）を含む',
+        'pw-lower':'小文字（a-z）を含む','pw-number':'数字（0-9）を含む',
+      },
+      en: {
+        'buildings':'Buildings','buildings-unit':'','coins':'Coins',
+        'login-btn':'Login / Register','logout':'Logout',
+        'build-btn':'＋ Build','auth-subtitle':'Join the city building',
+        'tab-login':'Login','tab-signup':'Sign Up',
+        'submit-login':'Login','submit-signup':'Register','processing':'Processing...',
+        'pw-length':'8+ characters','pw-upper':'Uppercase (A-Z)',
+        'pw-lower':'Lowercase (a-z)','pw-number':'Number (0-9)',
+      }
+    };
+
+    function toggleLang() {
+      currentLang = currentLang === 'ja' ? 'en' : 'ja';
+      document.getElementById('lang-btn').textContent = currentLang === 'ja' ? 'EN' : 'JP';
+      applyLang();
+    }
+    function applyLang() {
+      const t = i18n[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (t[k] !== undefined) el.textContent = t[k];
+      });
+      document.querySelectorAll('[data-placeholder-ja]').forEach(el => {
+        el.placeholder = currentLang === 'ja' ? el.getAttribute('data-placeholder-ja') : el.getAttribute('data-placeholder-en');
+      });
+      const submitKey = authMode === 'login' ? 'submit-login' : 'submit-signup';
+      document.getElementById('auth-submit').textContent = t[submitKey];
+    }
+
+    // =====================
+    // 火の粉
+    // =====================
+    const fireCanvas = document.getElementById('fire-canvas');
+    const fCtx = fireCanvas.getContext('2d');
+    let fireParticles = [];
+    let fireAnimId = null;
+
+    function resizeFireCanvas() {
+      fireCanvas.width = window.innerWidth;
+      fireCanvas.height = window.innerHeight;
+    }
+    resizeFireCanvas();
+    window.addEventListener('resize', resizeFireCanvas);
+
+    function spawnParticle() {
+      fireParticles.push({
+        x: Math.random() * window.innerWidth,
+        y: window.innerHeight + 10,
+        vx: (Math.random() - 0.5) * 1.5,
+        vy: -(Math.random() * 2.5 + 1.5),
+        size: Math.random() * 3 + 1,
+        alpha: Math.random() * 0.6 + 0.4,
+        color: ['#ff6a00','#ee0979','#ffcc00','#ff4400'][Math.floor(Math.random()*4)],
+        life: 0,
+        maxLife: Math.random() * 80 + 60,
+      });
+    }
+
+    function drawFire() {
+      fCtx.clearRect(0, 0, fireCanvas.width, fireCanvas.height);
+      for (let i = 0; i < 4; i++) spawnParticle();
+      fireParticles = fireParticles.filter(p => p.life < p.maxLife);
+      fireParticles.forEach(p => {
+        p.life++;
+        p.x += p.vx + Math.sin(p.life * 0.15) * 0.5;
+        p.y += p.vy;
+        const prog = p.life / p.maxLife;
+        fCtx.beginPath();
+        fCtx.arc(p.x, p.y, p.size * (1 - prog * 0.5), 0, Math.PI * 2);
+        fCtx.fillStyle = p.color;
+        fCtx.globalAlpha = p.alpha * (1 - prog);
+        fCtx.fill();
+        fCtx.globalAlpha = 1;
+      });
+      fireAnimId = requestAnimationFrame(drawFire);
+    }
+
+    function startFire() {
+      fireCanvas.style.display = 'block';
+      if (!fireAnimId) drawFire();
+    }
+    function stopFire() {
+      fireCanvas.style.display = 'none';
+      if (fireAnimId) { cancelAnimationFrame(fireAnimId); fireAnimId = null; }
+      fireParticles = [];
+      fCtx.clearRect(0, 0, fireCanvas.width, fireCanvas.height);
+    }
+
+    // =====================
+    // ローディング
     // =====================
     const loadingBar = document.getElementById('loading-bar');
     const loadingEl = document.getElementById('loading');
@@ -391,7 +602,6 @@
       if (loadProgress > 90) loadProgress = 90;
       loadingBar.style.width = loadProgress + '%';
     }, 200);
-
     function finishLoading() {
       clearInterval(loadInterval);
       loadingBar.style.width = '100%';
@@ -402,37 +612,104 @@
     }
 
     // =====================
-    // Toast通知
+    // Toast
     // =====================
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.style.opacity = '1';
-      setTimeout(() => t.style.opacity = '0', 2000);
+      setTimeout(() => t.style.opacity = '0', 2500);
     }
 
     // =====================
-    // 認証モーダル制御
+    // 認証モーダル
     // =====================
-    let authMode = 'login'; // 'login' | 'signup'
+    let authMode = 'login';
 
     function openAuthModal() {
       document.getElementById('auth-modal').classList.add('open');
       document.getElementById('auth-error').textContent = '';
+      startFire();
+      startBlinking();
     }
-
     function closeAuthModal() {
       document.getElementById('auth-modal').classList.remove('open');
+      stopFire();
+      stopBlinking();
     }
-
     function switchTab(mode) {
       authMode = mode;
       document.getElementById('tab-login').classList.toggle('active', mode === 'login');
       document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
       document.getElementById('username-field').style.display = mode === 'signup' ? 'block' : 'none';
-      document.getElementById('auth-submit').textContent = mode === 'login' ? 'ログイン' : '登録する';
+      document.getElementById('pw-checks').classList.toggle('visible', mode === 'signup');
+      document.getElementById('auth-submit').textContent = i18n[currentLang][mode === 'login' ? 'submit-login' : 'submit-signup'];
       document.getElementById('auth-error').textContent = '';
+      ['input-username','input-email','input-password'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('done','blink');
+      });
+      startBlinking();
     }
+
+    // =====================
+    // 入力枠アニメーション
+    // =====================
+    let blinkInterval = null;
+    function startBlinking() {
+      stopBlinking();
+      updateInputStates();
+      blinkInterval = setInterval(updateInputStates, 200);
+    }
+    function stopBlinking() {
+      if (blinkInterval) { clearInterval(blinkInterval); blinkInterval = null; }
+    }
+    function updateInputStates() {
+      const fields = authMode === 'login'
+        ? ['input-email','input-password']
+        : ['input-username','input-email','input-password'];
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const val = el.value.trim();
+        const focused = document.activeElement === el;
+        el.classList.remove('blink','done');
+        if (focused) return;
+        if (!val) { el.classList.add('blink'); return; }
+        if (id === 'input-password' && authMode === 'signup') {
+          el.classList.add(checkPassword(val).every(v=>v) ? 'done' : 'blink');
+        } else if (id === 'input-password') {
+          el.classList.add(val.length >= 6 ? 'done' : 'blink');
+        } else {
+          el.classList.add('done');
+        }
+      });
+    }
+
+    // =====================
+    // パスワード要件
+    // =====================
+    function checkPassword(pw) {
+      return [pw.length >= 8, /[A-Z]/.test(pw), /[a-z]/.test(pw), /[0-9]/.test(pw)];
+    }
+    document.getElementById('input-password').addEventListener('input', function() {
+      const results = checkPassword(this.value);
+      ['check-length','check-upper','check-lower','check-number'].forEach((id,i) => {
+        document.getElementById(id).classList.toggle('ok', results[i]);
+      });
+      updateInputStates();
+    });
+    ['input-email','input-username'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateInputStates);
+    });
+    ['input-username','input-email','input-password'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('focus', updateInputStates);
+        el.addEventListener('blur', updateInputStates);
+      }
+    });
 
     // =====================
     // 認証処理
@@ -443,273 +720,189 @@
       const username = document.getElementById('input-username').value.trim();
       const btn = document.getElementById('auth-submit');
       const errEl = document.getElementById('auth-error');
+      const ja = currentLang === 'ja';
 
       errEl.textContent = '';
+      errEl.style.color = '#ff4444';
 
       if (!email || !password) {
-        errEl.textContent = 'メールアドレスとパスワードを入力してください';
+        errEl.textContent = ja ? 'メールアドレスとパスワードを入力してください' : 'Please enter email and password';
         return;
       }
       if (authMode === 'signup' && !username) {
-        errEl.textContent = 'ユーザー名を入力してください';
+        errEl.textContent = ja ? 'ユーザー名を入力してください' : 'Please enter a username';
+        return;
+      }
+      if (authMode === 'signup' && !checkPassword(password).every(v=>v)) {
+        errEl.textContent = ja ? 'パスワードの条件を全て満たしてください' : 'Password does not meet all requirements';
         return;
       }
 
       btn.disabled = true;
-      btn.textContent = '処理中...';
+      btn.textContent = i18n[currentLang]['processing'];
 
       try {
         if (authMode === 'login') {
-          // ログイン
           const { data, error } = await db.auth.signInWithPassword({ email, password });
           if (error) throw error;
           await onLoginSuccess(data.user);
           closeAuthModal();
-
         } else {
-          // 新規登録
           const { data, error } = await db.auth.signUp({ email, password });
           if (error) throw error;
-
-          // usersテーブルにプロフィールを作成
           if (data.user) {
-            await db.from('users').upsert({
-              id: data.user.id,
-              username: username,
-              rank: 1,
-              coin_balance: 0
-            });
+            await db.from('users').upsert({ id: data.user.id, username, rank: 1, coin_balance: 0 });
             await onLoginSuccess(data.user, username);
             closeAuthModal();
-            showToast('🎉 登録完了！IGNIS CITYへようこそ！');
+            showToast('🎉 ' + (ja ? '登録完了！IGNIS CITYへようこそ！' : 'Welcome to IGNIS CITY!'));
           } else {
-            // メール確認が必要な場合
             errEl.style.color = '#4caf50';
-            errEl.textContent = '確認メールを送信しました。メールを確認してください。';
+            errEl.textContent = ja ? '確認メールを送信しました。メールを確認してください。' : 'Confirmation email sent. Please check your inbox.';
           }
         }
-      } catch (e) {
+      } catch(e) {
         errEl.style.color = '#ff4444';
-        // エラーメッセージを日本語化
-        const msg = translateError(e.message);
-        errEl.textContent = msg;
+        errEl.textContent = translateError(e.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = authMode === 'login' ? 'ログイン' : '登録する';
+        btn.textContent = i18n[currentLang][authMode === 'login' ? 'submit-login' : 'submit-signup'];
       }
     }
 
     function translateError(msg) {
-      if (msg.includes('Invalid login credentials')) return 'メールアドレスまたはパスワードが違います';
-      if (msg.includes('Email not confirmed')) return 'メールアドレスの確認が完了していません';
-      if (msg.includes('already registered')) return 'このメールアドレスはすでに登録されています';
-      if (msg.includes('Password should be at least')) return 'パスワードは6文字以上にしてください';
-      if (msg.includes('Unable to validate email')) return 'メールアドレスの形式が正しくありません';
+      const ja = currentLang === 'ja';
+      if (msg.includes('Invalid login credentials')) return ja ? 'メールアドレスまたはパスワードが違います' : 'Invalid email or password';
+      if (msg.includes('Email not confirmed')) return ja ? 'メールアドレスの確認が完了していません' : 'Email not confirmed';
+      if (msg.includes('already registered')) return ja ? 'このメールアドレスはすでに登録されています' : 'Email already registered';
+      if (msg.includes('Password should be at least')) return ja ? 'パスワードは8文字以上にしてください' : 'Password must be at least 8 characters';
+      if (msg.includes('Unable to validate email')) return ja ? 'メールアドレスの形式が正しくありません' : 'Invalid email format';
       return msg;
     }
 
-    // =====================
-    // ログイン成功後の処理
-    // =====================
     async function onLoginSuccess(user, usernameOverride = null) {
       currentUser = user;
-
-      // usersテーブルからユーザー情報を取得
       let displayName = usernameOverride;
       if (!displayName) {
         const { data } = await db.from('users').select('username, coin_balance').eq('id', user.id).single();
         if (data) {
           displayName = data.username || user.email;
           document.getElementById('coin-count').textContent = data.coin_balance || 0;
-        } else {
-          displayName = user.email;
-        }
+        } else { displayName = user.email; }
       }
-
-      // ヘッダー更新
       document.getElementById('login-btn-header').style.display = 'none';
-      const loggedInArea = document.getElementById('logged-in-area');
-      loggedInArea.style.display = 'flex';
+      document.getElementById('logged-in-area').style.display = 'flex';
       document.getElementById('user-name').textContent = displayName;
-
-      showToast(`👋 おかえり、${displayName}！`);
+      showToast('👋 ' + (currentLang === 'ja' ? `おかえり、${displayName}！` : `Welcome back, ${displayName}!`));
     }
 
-    // =====================
-    // ログアウト
-    // =====================
     async function handleLogout() {
       await db.auth.signOut();
       currentUser = null;
-
       document.getElementById('login-btn-header').style.display = 'block';
       document.getElementById('logged-in-area').style.display = 'none';
       document.getElementById('user-name').textContent = '';
       document.getElementById('coin-count').textContent = '0';
-
-      showToast('ログアウトしました');
+      showToast(currentLang === 'ja' ? 'ログアウトしました' : 'Logged out');
     }
 
-    // =====================
-    // セッション復元（ページ再読み込み時）
-    // =====================
     async function restoreSession() {
       const { data: { session } } = await db.auth.getSession();
-      if (session) {
-        await onLoginSuccess(session.user);
-      }
+      if (session) await onLoginSuccess(session.user);
     }
 
     // =====================
-    // Babylon.js 初期化
+    // Babylon.js
     // =====================
     const canvas = document.getElementById('renderCanvas');
     const engine = new BABYLON.Engine(canvas, true);
     const scene = new BABYLON.Scene(engine);
-
     scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1);
 
-    const camera = new BABYLON.ArcRotateCamera('cam', -Math.PI / 4, Math.PI / 3.5, 60, BABYLON.Vector3.Zero(), scene);
+    const camera = new BABYLON.ArcRotateCamera('cam', -Math.PI/4, Math.PI/3.5, 60, BABYLON.Vector3.Zero(), scene);
     camera.attachControl(canvas, true);
     camera.lowerRadiusLimit = 10;
     camera.upperRadiusLimit = 200;
     camera.upperBetaLimit = Math.PI / 2.2;
 
-    const hemiLight = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
+    const hemiLight = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0,1,0), scene);
     hemiLight.intensity = 0.6;
     hemiLight.groundColor = new BABYLON.Color3(0.1, 0.05, 0.1);
 
-    const dirLight = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-1, -2, -1), scene);
+    const dirLight = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-1,-2,-1), scene);
     dirLight.intensity = 0.8;
     dirLight.position = new BABYLON.Vector3(50, 50, 50);
 
-    // =====================
-    // 地面（グリッド）
-    // =====================
-    const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 200, height: 200, subdivisions: 20 }, scene);
+    const ground = BABYLON.MeshBuilder.CreateGround('ground', { width:200, height:200, subdivisions:20 }, scene);
     const groundMat = new BABYLON.StandardMaterial('groundMat', scene);
     groundMat.diffuseColor = new BABYLON.Color3(0.06, 0.06, 0.1);
     groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
     ground.material = groundMat;
 
-    const gridSize = 200;
-    const cellSize = 10;
+    const gridSize = 200, cellSize = 10;
     const lineMat = new BABYLON.StandardMaterial('lineMat', scene);
     lineMat.emissiveColor = new BABYLON.Color3(0.15, 0.1, 0.2);
-
-    for (let i = -gridSize / 2; i <= gridSize / 2; i += cellSize) {
-      const hLine = BABYLON.MeshBuilder.CreateBox('hl', { width: gridSize, height: 0.02, depth: 0.05 }, scene);
-      hLine.position = new BABYLON.Vector3(0, 0.01, i);
-      hLine.material = lineMat;
-      hLine.isPickable = false;
-
-      const vLine = BABYLON.MeshBuilder.CreateBox('vl', { width: 0.05, height: 0.02, depth: gridSize }, scene);
-      vLine.position = new BABYLON.Vector3(i, 0.01, 0);
-      vLine.material = lineMat;
-      vLine.isPickable = false;
+    for (let i = -gridSize/2; i <= gridSize/2; i += cellSize) {
+      const hL = BABYLON.MeshBuilder.CreateBox('hl', { width:gridSize, height:0.02, depth:0.05 }, scene);
+      hL.position = new BABYLON.Vector3(0, 0.01, i); hL.material = lineMat; hL.isPickable = false;
+      const vL = BABYLON.MeshBuilder.CreateBox('vl', { width:0.05, height:0.02, depth:gridSize }, scene);
+      vL.position = new BABYLON.Vector3(i, 0.01, 0); vL.material = lineMat; vL.isPickable = false;
     }
 
-    // =====================
-    // ビル管理
-    // =====================
     let buildings = [];
-
     function addBuilding(x, z, floors, fromDB = false) {
       const height = floors * 0.5;
-      const mesh = BABYLON.MeshBuilder.CreateBox('building_' + Date.now(), {
-        width: 4 + Math.random() * 3,
-        height: height,
-        depth: 4 + Math.random() * 3
-      }, scene);
-      mesh.position = new BABYLON.Vector3(x, height / 2, z);
-
-      const mat = new BABYLON.StandardMaterial('bm_' + Date.now(), scene);
+      const mesh = BABYLON.MeshBuilder.CreateBox('b_'+Date.now(), { width:4+Math.random()*3, height, depth:4+Math.random()*3 }, scene);
+      mesh.position = new BABYLON.Vector3(x, height/2, z);
+      const mat = new BABYLON.StandardMaterial('bm_'+Date.now(), scene);
       const hue = Math.random();
-      mat.diffuseColor = new BABYLON.Color3(0.1 + hue * 0.3, 0.2, 0.4 + hue * 0.3);
+      mat.diffuseColor = new BABYLON.Color3(0.1+hue*0.3, 0.2, 0.4+hue*0.3);
       mat.specularColor = new BABYLON.Color3(0.5, 0.5, 0.8);
       mesh.material = mat;
-
       buildings.push({ x, z, floors, mesh });
       document.getElementById('building-count').textContent = buildings.length;
-
-      if (!fromDB) showToast(`ビル建設！ ${floors}階建て +100コイン`);
+      if (!fromDB) showToast(`🏢 ${floors}${currentLang==='ja'?'階建て +100コイン':' floors +100 coins'}`);
     }
 
-    // =====================
-    // Supabaseからビルを読み込む
-    // =====================
     async function loadBuildings() {
       try {
         const { data, error } = await db.from('buildings').select('*');
         if (error) throw error;
         data.forEach(b => addBuilding(b.x, b.z, b.floors, true));
-      } catch (e) {
-        console.warn('Supabase未接続 or エラー:', e.message);
-        addBuilding(0, 0, 20, true);
-        addBuilding(10, 5, 35, true);
-        addBuilding(-8, 12, 15, true);
-        addBuilding(15, -10, 50, true);
-        addBuilding(-15, -5, 28, true);
+      } catch(e) {
+        console.warn('Supabase error:', e.message);
+        [[0,0,20],[10,5,35],[-8,12,15],[15,-10,50],[-15,-5,28]].forEach(([x,z,f]) => addBuilding(x,z,f,true));
       }
       finishLoading();
     }
 
-    // =====================
-    // ビルを建てるボタン
-    // =====================
     document.getElementById('build-btn').addEventListener('click', async () => {
-      // 未ログインの場合はモーダルを開く
       if (!currentUser) {
         openAuthModal();
-        showToast('ビルを建てるにはログインが必要です');
+        showToast(currentLang==='ja' ? 'ビルを建てるにはログインが必要です' : 'Login required to build');
         return;
       }
-
-      const x = (Math.floor(Math.random() * 20) - 10) * 10;
-      const z = (Math.floor(Math.random() * 20) - 10) * 10;
-      const floors = Math.floor(Math.random() * 50) + 5;
-
+      const x = (Math.floor(Math.random()*20)-10)*10;
+      const z = (Math.floor(Math.random()*20)-10)*10;
+      const floors = Math.floor(Math.random()*50)+5;
       addBuilding(x, z, floors);
-
-      // Supabaseに保存（owner_id付き）
       try {
-        const { error } = await db.from('buildings').insert({
-          x, z, floors,
-          style: 'default',
-          owner_id: currentUser.id
-        });
+        const { error } = await db.from('buildings').insert({ x, z, floors, style:'default', owner_id:currentUser.id });
         if (error) throw error;
-
-        // コインを加算（usersテーブル）
-        const { data: userData } = await db.from('users')
-          .select('coin_balance')
-          .eq('id', currentUser.id)
-          .single();
-
-        if (userData) {
-          const newBalance = (userData.coin_balance || 0) + 100;
-          await db.from('users')
-            .update({ coin_balance: newBalance })
-            .eq('id', currentUser.id);
-          document.getElementById('coin-count').textContent = newBalance;
+        const { data: ud } = await db.from('users').select('coin_balance').eq('id', currentUser.id).single();
+        if (ud) {
+          const nb = (ud.coin_balance||0) + 100;
+          await db.from('users').update({ coin_balance: nb }).eq('id', currentUser.id);
+          document.getElementById('coin-count').textContent = nb;
         }
-      } catch (e) {
-        console.warn('保存エラー:', e.message);
-      }
+      } catch(e) { console.warn('保存エラー:', e.message); }
     });
 
-    // =====================
-    // レンダーループ
-    // =====================
     engine.runRenderLoop(() => scene.render());
     window.addEventListener('resize', () => engine.resize());
 
-    // =====================
-    // 起動
-    // =====================
     (async () => {
-      await restoreSession(); // セッション復元
-      await loadBuildings();  // ビル読み込み
+      await restoreSession();
+      await loadBuildings();
     })();
   </script>
 </body>

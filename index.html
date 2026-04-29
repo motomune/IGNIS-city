@@ -62,18 +62,18 @@
     }
 
     #lang-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.7);
-      padding: 5px 12px;
+      background: linear-gradient(135deg, #ff6a00, #ee0979);
+      border: none;
+      color: #fff;
+      padding: 5px 14px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: opacity 0.2s;
       letter-spacing: 0.05em;
     }
-    #lang-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    #lang-btn:hover { opacity: 0.85; }
 
     #user-name {
       font-size: 13px;
@@ -430,6 +430,13 @@
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" onclick="closeAuthModal()">×</button>
+      <button id="auth-lang-btn" onclick="toggleLang()" style="
+        position:absolute; top:14px; left:18px;
+        background: linear-gradient(135deg, #ff6a00, #ee0979);
+        border:none; color:#fff; padding:4px 12px; border-radius:20px;
+        font-size:11px; font-weight:700; cursor:pointer; letter-spacing:0.05em;
+        transition:opacity 0.2s;
+      ">EN</button>
       <div id="auth-header-fire">🔥</div>
       <div id="auth-title">IGNIS CITY</div>
       <div id="auth-subtitle" data-i18n="auth-subtitle">街づくりに参加しよう</div>
@@ -516,7 +523,10 @@
 
     function toggleLang() {
       currentLang = currentLang === 'ja' ? 'en' : 'ja';
-      document.getElementById('lang-btn').textContent = currentLang === 'ja' ? 'EN' : 'JP';
+      const label = currentLang === 'ja' ? 'EN' : 'JP';
+      document.getElementById('lang-btn').textContent = label;
+      const authLangBtn = document.getElementById('auth-lang-btn');
+      if (authLangBtn) authLangBtn.textContent = label;
       applyLang();
     }
     function applyLang() {
@@ -551,13 +561,13 @@
       fireParticles.push({
         x: Math.random() * window.innerWidth,
         y: window.innerHeight + 10,
-        vx: (Math.random() - 0.5) * 1.5,
-        vy: -(Math.random() * 2.5 + 1.5),
-        size: Math.random() * 3 + 1,
-        alpha: Math.random() * 0.6 + 0.4,
-        color: ['#ff6a00','#ee0979','#ffcc00','#ff4400'][Math.floor(Math.random()*4)],
+        vx: (Math.random() - 0.5) * 2,
+        vy: -(Math.random() * 4.5 + 2.5),
+        size: Math.random() * 3.5 + 1,
+        alpha: Math.random() * 0.7 + 0.4,
+        color: ['#ff6a00','#ee0979','#ffcc00','#ff4400','#ff9900'][Math.floor(Math.random()*5)],
         life: 0,
-        maxLife: Math.random() * 80 + 60,
+        maxLife: Math.random() * 140 + 100,
       });
     }
 

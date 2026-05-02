@@ -107,7 +107,6 @@
     }
     #login-btn-header:hover { opacity: 0.85; }
 
-    /* ボタン群（下部） */
     #bottom-btns {
       position: fixed;
       bottom: 32px;
@@ -158,7 +157,6 @@
       color: #aaddff;
     }
 
-    /* 飛行モード操作ヒント */
     #fly-hint {
       position: fixed;
       top: 80px;
@@ -233,7 +231,6 @@
       white-space: nowrap;
     }
 
-    /* 火の粉キャンバス */
     #fire-canvas {
       position: fixed;
       inset: 0;
@@ -241,6 +238,99 @@
       z-index: 201;
       display: none;
     }
+
+    /* =====================
+       土地情報パネル
+    ===================== */
+    #land-panel {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10,10,20,0.92);
+      border: 1px solid rgba(255,106,0,0.4);
+      border-radius: 18px;
+      padding: 20px 28px 18px;
+      min-width: 280px;
+      max-width: 92vw;
+      z-index: 15;
+      pointer-events: all;
+      display: none;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(255,106,0,0.1);
+    }
+    #land-panel.open { display: block; }
+
+    #land-panel-close {
+      position: absolute;
+      top: 10px; right: 14px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.3);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    #land-panel-close:hover { color: #fff; }
+
+    #land-panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.12em;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    #land-panel-coord {
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+    #land-panel-owner {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 14px;
+      min-height: 18px;
+    }
+    #land-panel-owner .owner-name {
+      color: #ff6a00;
+      font-weight: 700;
+    }
+
+    #land-buy-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ff6a00, #ee0979);
+      border: none;
+      color: #fff;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.2s;
+    }
+    #land-buy-btn:hover { opacity: 0.85; }
+    #land-buy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #land-build-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: none;
+      color: #fff;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.2s;
+      margin-top: 8px;
+    }
+    #land-build-btn:hover { opacity: 0.85; }
 
     /* 認証モーダル */
     #auth-modal {
@@ -330,10 +420,7 @@
       color: #fff;
     }
 
-    .auth-input-wrap {
-      position: relative;
-      margin-bottom: 10px;
-    }
+    .auth-input-wrap { position: relative; margin-bottom: 10px; }
     .auth-input {
       width: 100%;
       background: rgba(255,255,255,0.05);
@@ -351,9 +438,7 @@
       box-shadow: 0 0 12px rgba(255,106,0,0.2) !important;
       animation: none !important;
     }
-    .auth-input.blink {
-      animation: inputBlink 1.1s ease-in-out infinite;
-    }
+    .auth-input.blink { animation: inputBlink 1.1s ease-in-out infinite; }
     @keyframes inputBlink {
       0%,100% { border-color: rgba(255,80,0,0.45); box-shadow: 0 0 6px rgba(255,80,0,0.15); }
       50%      { border-color: rgba(255,80,0,0.95); box-shadow: 0 0 14px rgba(255,80,0,0.45); }
@@ -366,7 +451,6 @@
 
     #username-field { display: none; }
 
-    /* パスワード要件 */
     #pw-checks {
       display: none;
       background: rgba(255,255,255,0.04);
@@ -478,13 +562,21 @@
     </div>
   </div>
 
-  <!-- 飛行モードヒント -->
   <div id="fly-hint">🕊 WASD / スワイプで飛行 ｜ スクロールで速度調整</div>
 
-  <!-- 下部ボタン群 -->
   <div id="bottom-btns">
     <button id="build-btn" data-i18n="build-btn">＋ ビルを建てる</button>
     <button id="mode-btn" onclick="toggleFlyMode()" data-i18n="fly-mode">🕊 飛行モード</button>
+  </div>
+
+  <!-- 土地情報パネル -->
+  <div id="land-panel">
+    <button id="land-panel-close" onclick="closeLandPanel()">×</button>
+    <div id="land-panel-title">📍 LAND</div>
+    <div id="land-panel-coord">-</div>
+    <div id="land-panel-owner"></div>
+    <button id="land-buy-btn" onclick="handleLandBuy()">🔥 この土地を購入（500コイン）</button>
+    <button id="land-build-btn" onclick="handleLandBuild()" style="display:none;">🏢 ここにビルを建てる（+100コイン）</button>
   </div>
 
   <div id="toast"></div>
@@ -597,10 +689,8 @@
     function toggleLang() {
       currentLang = currentLang === 'ja' ? 'en' : 'ja';
       const label = currentLang === 'ja' ? 'EN' : 'JP';
-      const langLabel = document.getElementById('lang-label');
-      if (langLabel) langLabel.textContent = label;
-      const authLangLabel = document.getElementById('auth-lang-label');
-      if (authLangLabel) authLangLabel.textContent = label;
+      document.getElementById('lang-label').textContent = label;
+      document.getElementById('auth-lang-label').textContent = label;
       applyLang();
     }
     function applyLang() {
@@ -612,9 +702,7 @@
       document.querySelectorAll('[data-placeholder-ja]').forEach(el => {
         el.placeholder = currentLang === 'ja' ? el.getAttribute('data-placeholder-ja') : el.getAttribute('data-placeholder-en');
       });
-      // 飛行ヒント更新
-      const hint = document.getElementById('fly-hint');
-      if (hint) hint.textContent = t['fly-hint'];
+      document.getElementById('fly-hint').textContent = t['fly-hint'];
       const submitKey = authMode === 'login' ? 'submit-login' : 'submit-signup';
       document.getElementById('auth-submit').textContent = t[submitKey];
     }
@@ -647,7 +735,6 @@
         maxLife: Math.random() * 140 + 100,
       });
     }
-
     function drawFire() {
       fCtx.clearRect(0, 0, fireCanvas.width, fireCanvas.height);
       for (let i = 0; i < 4; i++) spawnParticle();
@@ -666,7 +753,6 @@
       });
       fireAnimId = requestAnimationFrame(drawFire);
     }
-
     function startFire() {
       fireCanvas.style.display = 'block';
       if (!fireAnimId) drawFire();
@@ -739,9 +825,6 @@
       startBlinking();
     }
 
-    // =====================
-    // 入力枠アニメーション
-    // =====================
     let blinkInterval = null;
     function startBlinking() {
       stopBlinking();
@@ -773,9 +856,6 @@
       });
     }
 
-    // =====================
-    // パスワード要件
-    // =====================
     function checkPassword(pw) {
       return [pw.length >= 8, /[A-Z]/.test(pw), /[a-z]/.test(pw), /[0-9]/.test(pw)];
     }
@@ -905,14 +985,14 @@
     const scene = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1);
 
-    // --- ArcRotateCamera（街づくりモード）---
+    // ArcRotateCamera（街づくりモード）
     const arcCamera = new BABYLON.ArcRotateCamera('arcCam', -Math.PI/4, Math.PI/3.5, 60, BABYLON.Vector3.Zero(), scene);
     arcCamera.attachControl(canvas, true);
     arcCamera.lowerRadiusLimit = 10;
     arcCamera.upperRadiusLimit = 200;
     arcCamera.upperBetaLimit = Math.PI / 2.2;
 
-    // --- FlyCamera（飛行モード）---
+    // FlyCamera（飛行モード）
     const flyCamera = new BABYLON.FlyCamera('flyCam', new BABYLON.Vector3(0, 30, -60), scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
     flyCamera.speed = 1.4;
@@ -922,58 +1002,44 @@
     flyCamera.bankedTurnLimit = Math.PI / 4;
     flyCamera.bankedTurnMultiplier = 0.5;
     flyCamera.minZ = 0.1;
-    flyCamera.keysUp    = [87, 38]; // W / ↑
-    flyCamera.keysDown  = [83, 40]; // S / ↓
-    flyCamera.keysLeft  = [65, 37]; // A / ←
-    flyCamera.keysRight = [68, 39]; // D / →
+    flyCamera.keysUp    = [87, 38];
+    flyCamera.keysDown  = [83, 40];
+    flyCamera.keysLeft  = [65, 37];
+    flyCamera.keysRight = [68, 39];
 
-    // 最初はArcRotateCameraをアクティブに
     scene.activeCamera = arcCamera;
-
     let isFlying = false;
 
     function toggleFlyMode() {
       isFlying = !isFlying;
       setFlyMode(isFlying);
     }
-
     function setFlyMode(enabled) {
       isFlying = enabled;
       const modeBtn = document.getElementById('mode-btn');
       const flyHint = document.getElementById('fly-hint');
-
       if (enabled) {
-        // FlyCameraの位置をArcRotateCameraの視点に近づける
         const arcPos = arcCamera.position;
         flyCamera.position = new BABYLON.Vector3(arcPos.x, arcPos.y, arcPos.z);
         flyCamera.setTarget(arcCamera.target || BABYLON.Vector3.Zero());
-
         scene.activeCamera = flyCamera;
         flyCamera.attachControl(canvas, true);
         arcCamera.detachControl();
-
         modeBtn.classList.add('fly-active');
         modeBtn.setAttribute('data-i18n', 'build-mode');
         modeBtn.textContent = i18n[currentLang]['build-mode'];
         flyHint.classList.add('visible');
-
-        showToast(currentLang === 'ja'
-          ? '🕊 飛行モード ON：WASDで飛び回ろう！'
-          : '🕊 Fly Mode ON: Use WASD to explore!');
+        closeLandPanel();
+        showToast(currentLang === 'ja' ? '🕊 飛行モード ON：WASDで飛び回ろう！' : '🕊 Fly Mode ON: Use WASD to explore!');
       } else {
-        // ArcRotateCameraに戻す
         scene.activeCamera = arcCamera;
         arcCamera.attachControl(canvas, true);
         flyCamera.detachControl();
-
         modeBtn.classList.remove('fly-active');
         modeBtn.setAttribute('data-i18n', 'fly-mode');
         modeBtn.textContent = i18n[currentLang]['fly-mode'];
         flyHint.classList.remove('visible');
-
-        showToast(currentLang === 'ja'
-          ? '🏙 街づくりモード ON'
-          : '🏙 Build Mode ON');
+        showToast(currentLang === 'ja' ? '🏙 街づくりモード ON' : '🏙 Build Mode ON');
       }
     }
 
@@ -991,20 +1057,210 @@
     // =====================
     // 地面・グリッド
     // =====================
+    const CELL = 10;
+    const GRID_HALF = 100;
+
     const ground = BABYLON.MeshBuilder.CreateGround('ground', { width:200, height:200, subdivisions:20 }, scene);
     const groundMat = new BABYLON.StandardMaterial('groundMat', scene);
     groundMat.diffuseColor = new BABYLON.Color3(0.06, 0.06, 0.1);
     groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
     ground.material = groundMat;
 
-    const gridSize = 200, cellSize = 10;
     const lineMat = new BABYLON.StandardMaterial('lineMat', scene);
     lineMat.emissiveColor = new BABYLON.Color3(0.15, 0.1, 0.2);
-    for (let i = -gridSize/2; i <= gridSize/2; i += cellSize) {
-      const hL = BABYLON.MeshBuilder.CreateBox('hl', { width:gridSize, height:0.02, depth:0.05 }, scene);
+    for (let i = -GRID_HALF; i <= GRID_HALF; i += CELL) {
+      const hL = BABYLON.MeshBuilder.CreateBox('hl', { width:200, height:0.02, depth:0.05 }, scene);
       hL.position = new BABYLON.Vector3(0, 0.01, i); hL.material = lineMat; hL.isPickable = false;
-      const vL = BABYLON.MeshBuilder.CreateBox('vl', { width:0.05, height:0.02, depth:gridSize }, scene);
+      const vL = BABYLON.MeshBuilder.CreateBox('vl', { width:0.05, height:0.02, depth:200 }, scene);
       vL.position = new BABYLON.Vector3(i, 0.01, 0); vL.material = lineMat; vL.isPickable = false;
+    }
+
+    // =====================
+    // 土地システム
+    // =====================
+    const landMap = {}; // "gx_gz" -> { owner_id, owner_name, tile }
+    let selectedLandKey = null;
+    const LAND_COST = 500;
+
+    function worldToGrid(wx, wz) {
+      return {
+        gx: Math.round(wx / CELL) * CELL,
+        gz: Math.round(wz / CELL) * CELL,
+      };
+    }
+    function landKey(gx, gz) { return `${gx}_${gz}`; }
+    function keyToCoord(key) {
+      const [gx, gz] = key.split('_').map(Number);
+      return { gx, gz };
+    }
+
+    // ハイライトタイル
+    let highlightTile = null;
+    function showHighlight(gx, gz, owned) {
+      if (highlightTile) highlightTile.dispose();
+      highlightTile = BABYLON.MeshBuilder.CreateGround('hl_tile', { width: CELL - 0.4, height: CELL - 0.4 }, scene);
+      highlightTile.position = new BABYLON.Vector3(gx, 0.04, gz);
+      const mat = new BABYLON.StandardMaterial('hl_mat_'+Date.now(), scene);
+      mat.emissiveColor = owned
+        ? new BABYLON.Color3(1.0, 0.4, 0.0)
+        : new BABYLON.Color3(0.2, 0.8, 0.4);
+      mat.alpha = 0.4;
+      highlightTile.material = mat;
+      highlightTile.isPickable = false;
+    }
+    function hideHighlight() {
+      if (highlightTile) { highlightTile.dispose(); highlightTile = null; }
+    }
+
+    // 所有済みタイルを地面に描画
+    function drawOwnedTile(gx, gz, key) {
+      const tile = BABYLON.MeshBuilder.CreateGround('lt_'+key, { width: CELL - 0.5, height: CELL - 0.5 }, scene);
+      tile.position = new BABYLON.Vector3(gx, 0.02, gz);
+      const mat = new BABYLON.StandardMaterial('ltm_'+key, scene);
+      mat.emissiveColor = new BABYLON.Color3(0.8, 0.35, 0.0);
+      mat.alpha = 0.18;
+      tile.material = mat;
+      tile.isPickable = false;
+      return tile;
+    }
+
+    async function loadLands() {
+      try {
+        const { data, error } = await db.from('lands')
+          .select('grid_x, grid_z, owner_id, users(username)');
+        if (error) throw error;
+        data.forEach(l => {
+          const k = landKey(l.grid_x, l.grid_z);
+          const ownerName = l.users ? l.users.username : '?';
+          const tile = drawOwnedTile(l.grid_x, l.grid_z, k);
+          landMap[k] = { owner_id: l.owner_id, owner_name: ownerName, tile };
+        });
+      } catch(e) {
+        console.warn('land load error:', e.message);
+      }
+    }
+
+    function openLandPanel(gx, gz) {
+      selectedLandKey = landKey(gx, gz);
+      const land = landMap[selectedLandKey];
+      const ja = currentLang === 'ja';
+
+      document.getElementById('land-panel-coord').textContent = `X:${gx} / Z:${gz}`;
+
+      const ownerEl  = document.getElementById('land-panel-owner');
+      const buyBtn   = document.getElementById('land-buy-btn');
+      const buildBtn = document.getElementById('land-build-btn');
+
+      if (land) {
+        const isMe = currentUser && land.owner_id === currentUser.id;
+        ownerEl.innerHTML = ja
+          ? `オーナー：<span class="owner-name">@${land.owner_name}</span>`
+          : `Owner: <span class="owner-name">@${land.owner_name}</span>`;
+        if (isMe) {
+          buyBtn.style.display = 'none';
+          buildBtn.style.display = 'block';
+        } else {
+          buyBtn.style.display = 'block';
+          buyBtn.textContent = ja ? '🔒 購入済みの土地です' : '🔒 Already owned';
+          buyBtn.disabled = true;
+          buildBtn.style.display = 'none';
+        }
+      } else {
+        ownerEl.textContent = ja ? '空き地（未購入）' : 'Empty lot (not owned)';
+        buyBtn.style.display = 'block';
+        buyBtn.textContent = ja
+          ? `🔥 この土地を購入（${LAND_COST}コイン）`
+          : `🔥 Buy this land (${LAND_COST} coins)`;
+        buyBtn.disabled = false;
+        buildBtn.style.display = 'none';
+      }
+
+      showHighlight(gx, gz, !!land);
+      document.getElementById('land-panel').classList.add('open');
+    }
+
+    function closeLandPanel() {
+      document.getElementById('land-panel').classList.remove('open');
+      hideHighlight();
+      selectedLandKey = null;
+    }
+
+    async function handleLandBuy() {
+      if (!currentUser) {
+        closeLandPanel();
+        openAuthModal();
+        showToast(currentLang === 'ja' ? '土地を購入するにはログインが必要です' : 'Login required to buy land');
+        return;
+      }
+      const { gx, gz } = keyToCoord(selectedLandKey);
+      const ja = currentLang === 'ja';
+      const buyBtn = document.getElementById('land-buy-btn');
+      buyBtn.disabled = true;
+      buyBtn.textContent = ja ? '処理中...' : 'Processing...';
+
+      try {
+        // コイン残高確認
+        const { data: ud } = await db.from('users').select('coin_balance, username').eq('id', currentUser.id).single();
+        if (!ud || (ud.coin_balance || 0) < LAND_COST) {
+          showToast(ja ? `コインが足りません（必要：${LAND_COST}コイン）` : `Not enough coins (need ${LAND_COST})`);
+          buyBtn.disabled = false;
+          buyBtn.textContent = ja ? `🔥 この土地を購入（${LAND_COST}コイン）` : `🔥 Buy this land (${LAND_COST} coins)`;
+          return;
+        }
+
+        // lands テーブルに挿入
+        const { error: landErr } = await db.from('lands').insert({
+          grid_x: gx,
+          grid_z: gz,
+          owner_id: currentUser.id,
+        });
+        if (landErr) throw landErr;
+
+        // コイン減算
+        const newCoins = (ud.coin_balance || 0) - LAND_COST;
+        await db.from('users').update({ coin_balance: newCoins }).eq('id', currentUser.id);
+        document.getElementById('coin-count').textContent = newCoins;
+
+        // ローカルに反映
+        const ownerName = ud.username || '?';
+        const tile = drawOwnedTile(gx, gz, selectedLandKey);
+        landMap[selectedLandKey] = { owner_id: currentUser.id, owner_name: ownerName, tile };
+
+        showToast(ja ? `🏡 土地を購入しました！（-${LAND_COST}コイン）` : `🏡 Land purchased! (-${LAND_COST} coins)`);
+        openLandPanel(gx, gz); // パネルを「自分の土地」状態に更新
+
+      } catch(e) {
+        console.warn('land buy error:', e.message);
+        showToast(ja ? '購入に失敗しました' : 'Purchase failed');
+        buyBtn.disabled = false;
+        buyBtn.textContent = ja ? `🔥 この土地を購入（${LAND_COST}コイン）` : `🔥 Buy this land (${LAND_COST} coins)`;
+      }
+    }
+
+    async function handleLandBuild() {
+      if (!selectedLandKey || !currentUser) return;
+      const { gx, gz } = keyToCoord(selectedLandKey);
+      const floors = Math.floor(Math.random() * 50) + 5;
+      addBuilding(gx, gz, floors);
+      closeLandPanel();
+
+      try {
+        const { error } = await db.from('buildings').insert({
+          x: gx, z: gz, floors,
+          style: 'default',
+          owner_id: currentUser.id,
+        });
+        if (error) throw error;
+
+        const { data: ud } = await db.from('users').select('coin_balance').eq('id', currentUser.id).single();
+        if (ud) {
+          const nb = (ud.coin_balance || 0) + 100;
+          await db.from('users').update({ coin_balance: nb }).eq('id', currentUser.id);
+          document.getElementById('coin-count').textContent = nb;
+        }
+      } catch(e) {
+        console.warn('build error:', e.message);
+      }
     }
 
     // =====================
@@ -1039,37 +1295,32 @@
         data.forEach(b => addBuilding(b.x, b.z, b.floors, true));
       } catch(e) {
         console.warn('Supabase error:', e.message);
-        // オフライン時のサンプルビル
         [[0,0,20],[10,5,35],[-8,12,15],[15,-10,50],[-15,-5,28]].forEach(([x,z,f]) => addBuilding(x,z,f,true));
       }
       finishLoading();
     }
 
     // =====================
-    // ビル建設ボタン
+    // ビル建設ボタン（ランダム配置）
     // =====================
     document.getElementById('build-btn').addEventListener('click', async () => {
-      // ログイン不要でもビルを建てられる（街を育てるため）
-      // 未ログインの場合はDBに保存せず、ローカルのみ
-      const x = (Math.floor(Math.random() * 20) - 10) * 10;
-      const z = (Math.floor(Math.random() * 20) - 10) * 10;
+      const x = (Math.floor(Math.random() * 20) - 10) * CELL;
+      const z = (Math.floor(Math.random() * 20) - 10) * CELL;
       const floors = Math.floor(Math.random() * 50) + 5;
       addBuilding(x, z, floors);
 
       if (!currentUser) {
-        // 未ログイン：ローカルのみ（保存なし）
         showToast(currentLang === 'ja'
           ? `🏢 ${floors}階建て（ログインで保存できます）`
           : `🏢 ${floors} floors (Login to save)`);
         return;
       }
 
-      // ログイン済み：DBに保存＆コイン付与
       try {
         const { error } = await db.from('buildings').insert({
           x, z, floors,
           style: 'default',
-          owner_id: currentUser.id
+          owner_id: currentUser.id,
         });
         if (error) throw error;
 
@@ -1085,6 +1336,26 @@
     });
 
     // =====================
+    // グリッドクリック → 土地パネル
+    // =====================
+    scene.onPointerObservable.add((pointerInfo) => {
+      if (isFlying) return; // 飛行中は無効
+      if (pointerInfo.type !== BABYLON.PointerEventTypes.POINTERTAP) return;
+
+      const pick = scene.pick(scene.pointerX, scene.pointerY);
+      if (!pick.hit || !pick.pickedMesh) return;
+
+      // 地面をタップした場合のみ反応
+      if (pick.pickedMesh.name === 'ground') {
+        const wp = pick.pickedPoint;
+        const { gx, gz } = worldToGrid(wp.x, wp.z);
+        if (Math.abs(gx) <= GRID_HALF && Math.abs(gz) <= GRID_HALF) {
+          openLandPanel(gx, gz);
+        }
+      }
+    });
+
+    // =====================
     // レンダーループ
     // =====================
     engine.runRenderLoop(() => scene.render());
@@ -1095,7 +1366,7 @@
     // =====================
     (async () => {
       await restoreSession();
-      await loadBuildings();
+      await Promise.all([loadBuildings(), loadLands()]);
     })();
   </script>
 </body>

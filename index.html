@@ -107,11 +107,20 @@
     }
     #login-btn-header:hover { opacity: 0.85; }
 
-    #build-btn {
+    /* ボタン群（下部） */
+    #bottom-btns {
       position: fixed;
       bottom: 32px;
       left: 50%;
       transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      pointer-events: all;
+      z-index: 10;
+    }
+
+    #build-btn {
       background: linear-gradient(135deg, #ff6a00, #ee0979);
       color: #fff;
       border: none;
@@ -121,15 +130,55 @@
       letter-spacing: 0.1em;
       border-radius: 40px;
       cursor: pointer;
-      pointer-events: all;
       box-shadow: 0 4px 30px rgba(255,106,0,0.4);
       transition: transform 0.15s, box-shadow 0.15s;
-      z-index: 10;
     }
     #build-btn:hover {
-      transform: translateX(-50%) scale(1.05);
+      transform: scale(1.05);
       box-shadow: 0 8px 40px rgba(255,106,0,0.6);
     }
+
+    #mode-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      padding: 12px 22px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.2s;
+      backdrop-filter: blur(6px);
+      white-space: nowrap;
+    }
+    #mode-btn:hover { background: rgba(255,255,255,0.2); }
+    #mode-btn.fly-active {
+      background: linear-gradient(135deg, rgba(100,180,255,0.3), rgba(50,120,255,0.3));
+      border-color: rgba(100,180,255,0.5);
+      color: #aaddff;
+    }
+
+    /* 飛行モード操作ヒント */
+    #fly-hint {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(100,180,255,0.3);
+      color: rgba(200,230,255,0.8);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      display: none;
+      z-index: 10;
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+      white-space: nowrap;
+    }
+    #fly-hint.visible { display: block; }
 
     #loading {
       position: fixed;
@@ -414,12 +463,12 @@
       </div>
       <div id="user-area">
         <button id="lang-btn" onclick="toggleLang()">
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;">
-    <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-  </svg>
-  <span id="lang-label">EN</span>
-</button>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span id="lang-label">EN</span>
+        </button>
         <button id="login-btn-header" onclick="openAuthModal()" data-i18n="login-btn">ログイン / 登録</button>
         <div id="logged-in-area" style="display:none; align-items:center; gap:12px;">
           <span id="user-name"></span>
@@ -429,7 +478,15 @@
     </div>
   </div>
 
-  <button id="build-btn" data-i18n="build-btn">＋ ビルを建てる</button>
+  <!-- 飛行モードヒント -->
+  <div id="fly-hint">🕊 WASD / スワイプで飛行 ｜ スクロールで速度調整</div>
+
+  <!-- 下部ボタン群 -->
+  <div id="bottom-btns">
+    <button id="build-btn" data-i18n="build-btn">＋ ビルを建てる</button>
+    <button id="mode-btn" onclick="toggleFlyMode()" data-i18n="fly-mode">🕊 飛行モード</button>
+  </div>
+
   <div id="toast"></div>
 
   <!-- 認証モーダル -->
@@ -443,12 +500,12 @@
         font-size:11px; font-weight:700; cursor:pointer; letter-spacing:0.05em;
         transition:opacity 0.2s;
       ">
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;">
-    <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-  </svg>
-  <span id="auth-lang-label">EN</span>
-</button>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <span id="auth-lang-label">EN</span>
+      </button>
       <div id="auth-header-fire">🔥</div>
       <div id="auth-title">IGNIS CITY</div>
       <div id="auth-subtitle" data-i18n="auth-subtitle">街づくりに参加しよう</div>
@@ -521,6 +578,8 @@
         'submit-login':'ログイン','submit-signup':'登録する','processing':'処理中...',
         'pw-length':'8文字以上','pw-upper':'大文字（A-Z）を含む',
         'pw-lower':'小文字（a-z）を含む','pw-number':'数字（0-9）を含む',
+        'fly-mode':'🕊 飛行モード','build-mode':'🏙 街づくりモード',
+        'fly-hint':'🕊 WASD / スワイプで飛行 ｜ スクロールで速度調整',
       },
       en: {
         'buildings':'Buildings','buildings-unit':'','coins':'Coins',
@@ -530,18 +589,20 @@
         'submit-login':'Login','submit-signup':'Register','processing':'Processing...',
         'pw-length':'8+ characters','pw-upper':'Uppercase (A-Z)',
         'pw-lower':'Lowercase (a-z)','pw-number':'Number (0-9)',
+        'fly-mode':'🕊 Fly Mode','build-mode':'🏙 Build Mode',
+        'fly-hint':'🕊 WASD / Swipe to fly | Scroll to adjust speed',
       }
     };
 
     function toggleLang() {
-  currentLang = currentLang === 'ja' ? 'en' : 'ja';
-  const label = currentLang === 'ja' ? 'EN' : 'JP';
-  const langLabel = document.getElementById('lang-label');
-  if (langLabel) langLabel.textContent = label;
-  const authLangLabel = document.getElementById('auth-lang-label');
-  if (authLangLabel) authLangLabel.textContent = label;
-  applyLang();
-}
+      currentLang = currentLang === 'ja' ? 'en' : 'ja';
+      const label = currentLang === 'ja' ? 'EN' : 'JP';
+      const langLabel = document.getElementById('lang-label');
+      if (langLabel) langLabel.textContent = label;
+      const authLangLabel = document.getElementById('auth-lang-label');
+      if (authLangLabel) authLangLabel.textContent = label;
+      applyLang();
+    }
     function applyLang() {
       const t = i18n[currentLang];
       document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -551,6 +612,9 @@
       document.querySelectorAll('[data-placeholder-ja]').forEach(el => {
         el.placeholder = currentLang === 'ja' ? el.getAttribute('data-placeholder-ja') : el.getAttribute('data-placeholder-en');
       });
+      // 飛行ヒント更新
+      const hint = document.getElementById('fly-hint');
+      if (hint) hint.textContent = t['fly-hint'];
       const submitKey = authMode === 'login' ? 'submit-login' : 'submit-signup';
       document.getElementById('auth-submit').textContent = t[submitKey];
     }
@@ -841,12 +905,81 @@
     const scene = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1);
 
-    const camera = new BABYLON.ArcRotateCamera('cam', -Math.PI/4, Math.PI/3.5, 60, BABYLON.Vector3.Zero(), scene);
-    camera.attachControl(canvas, true);
-    camera.lowerRadiusLimit = 10;
-    camera.upperRadiusLimit = 200;
-    camera.upperBetaLimit = Math.PI / 2.2;
+    // --- ArcRotateCamera（街づくりモード）---
+    const arcCamera = new BABYLON.ArcRotateCamera('arcCam', -Math.PI/4, Math.PI/3.5, 60, BABYLON.Vector3.Zero(), scene);
+    arcCamera.attachControl(canvas, true);
+    arcCamera.lowerRadiusLimit = 10;
+    arcCamera.upperRadiusLimit = 200;
+    arcCamera.upperBetaLimit = Math.PI / 2.2;
 
+    // --- FlyCamera（飛行モード）---
+    const flyCamera = new BABYLON.FlyCamera('flyCam', new BABYLON.Vector3(0, 30, -60), scene);
+    flyCamera.setTarget(BABYLON.Vector3.Zero());
+    flyCamera.speed = 1.4;
+    flyCamera.angularSensibility = 800;
+    flyCamera.rollCorrect = 10;
+    flyCamera.bankedTurn = true;
+    flyCamera.bankedTurnLimit = Math.PI / 4;
+    flyCamera.bankedTurnMultiplier = 0.5;
+    flyCamera.minZ = 0.1;
+    flyCamera.keysUp    = [87, 38]; // W / ↑
+    flyCamera.keysDown  = [83, 40]; // S / ↓
+    flyCamera.keysLeft  = [65, 37]; // A / ←
+    flyCamera.keysRight = [68, 39]; // D / →
+
+    // 最初はArcRotateCameraをアクティブに
+    scene.activeCamera = arcCamera;
+
+    let isFlying = false;
+
+    function toggleFlyMode() {
+      isFlying = !isFlying;
+      setFlyMode(isFlying);
+    }
+
+    function setFlyMode(enabled) {
+      isFlying = enabled;
+      const modeBtn = document.getElementById('mode-btn');
+      const flyHint = document.getElementById('fly-hint');
+
+      if (enabled) {
+        // FlyCameraの位置をArcRotateCameraの視点に近づける
+        const arcPos = arcCamera.position;
+        flyCamera.position = new BABYLON.Vector3(arcPos.x, arcPos.y, arcPos.z);
+        flyCamera.setTarget(arcCamera.target || BABYLON.Vector3.Zero());
+
+        scene.activeCamera = flyCamera;
+        flyCamera.attachControl(canvas, true);
+        arcCamera.detachControl();
+
+        modeBtn.classList.add('fly-active');
+        modeBtn.setAttribute('data-i18n', 'build-mode');
+        modeBtn.textContent = i18n[currentLang]['build-mode'];
+        flyHint.classList.add('visible');
+
+        showToast(currentLang === 'ja'
+          ? '🕊 飛行モード ON：WASDで飛び回ろう！'
+          : '🕊 Fly Mode ON: Use WASD to explore!');
+      } else {
+        // ArcRotateCameraに戻す
+        scene.activeCamera = arcCamera;
+        arcCamera.attachControl(canvas, true);
+        flyCamera.detachControl();
+
+        modeBtn.classList.remove('fly-active');
+        modeBtn.setAttribute('data-i18n', 'fly-mode');
+        modeBtn.textContent = i18n[currentLang]['fly-mode'];
+        flyHint.classList.remove('visible');
+
+        showToast(currentLang === 'ja'
+          ? '🏙 街づくりモード ON'
+          : '🏙 Build Mode ON');
+      }
+    }
+
+    // =====================
+    // ライティング
+    // =====================
     const hemiLight = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0,1,0), scene);
     hemiLight.intensity = 0.6;
     hemiLight.groundColor = new BABYLON.Color3(0.1, 0.05, 0.1);
@@ -855,6 +988,9 @@
     dirLight.intensity = 0.8;
     dirLight.position = new BABYLON.Vector3(50, 50, 50);
 
+    // =====================
+    // 地面・グリッド
+    // =====================
     const ground = BABYLON.MeshBuilder.CreateGround('ground', { width:200, height:200, subdivisions:20 }, scene);
     const groundMat = new BABYLON.StandardMaterial('groundMat', scene);
     groundMat.diffuseColor = new BABYLON.Color3(0.06, 0.06, 0.1);
@@ -871,19 +1007,29 @@
       vL.position = new BABYLON.Vector3(i, 0.01, 0); vL.material = lineMat; vL.isPickable = false;
     }
 
+    // =====================
+    // ビル管理
+    // =====================
     let buildings = [];
+
     function addBuilding(x, z, floors, fromDB = false) {
       const height = floors * 0.5;
-      const mesh = BABYLON.MeshBuilder.CreateBox('b_'+Date.now(), { width:4+Math.random()*3, height, depth:4+Math.random()*3 }, scene);
-      mesh.position = new BABYLON.Vector3(x, height/2, z);
+      const mesh = BABYLON.MeshBuilder.CreateBox('b_'+Date.now(), {
+        width: 4 + Math.random() * 3,
+        height,
+        depth: 4 + Math.random() * 3
+      }, scene);
+      mesh.position = new BABYLON.Vector3(x, height / 2, z);
       const mat = new BABYLON.StandardMaterial('bm_'+Date.now(), scene);
       const hue = Math.random();
-      mat.diffuseColor = new BABYLON.Color3(0.1+hue*0.3, 0.2, 0.4+hue*0.3);
+      mat.diffuseColor = new BABYLON.Color3(0.1 + hue * 0.3, 0.2, 0.4 + hue * 0.3);
       mat.specularColor = new BABYLON.Color3(0.5, 0.5, 0.8);
       mesh.material = mat;
       buildings.push({ x, z, floors, mesh });
       document.getElementById('building-count').textContent = buildings.length;
-      if (!fromDB) showToast(`🏢 ${floors}${currentLang==='ja'?'階建て +100コイン':' floors +100 coins'}`);
+      if (!fromDB) {
+        showToast(`🏢 ${floors}${currentLang === 'ja' ? '階建て +100コイン' : ' floors +100 coins'}`);
+      }
     }
 
     async function loadBuildings() {
@@ -893,36 +1039,60 @@
         data.forEach(b => addBuilding(b.x, b.z, b.floors, true));
       } catch(e) {
         console.warn('Supabase error:', e.message);
+        // オフライン時のサンプルビル
         [[0,0,20],[10,5,35],[-8,12,15],[15,-10,50],[-15,-5,28]].forEach(([x,z,f]) => addBuilding(x,z,f,true));
       }
       finishLoading();
     }
 
+    // =====================
+    // ビル建設ボタン
+    // =====================
     document.getElementById('build-btn').addEventListener('click', async () => {
+      // ログイン不要でもビルを建てられる（街を育てるため）
+      // 未ログインの場合はDBに保存せず、ローカルのみ
+      const x = (Math.floor(Math.random() * 20) - 10) * 10;
+      const z = (Math.floor(Math.random() * 20) - 10) * 10;
+      const floors = Math.floor(Math.random() * 50) + 5;
+      addBuilding(x, z, floors);
+
       if (!currentUser) {
-        openAuthModal();
-        showToast(currentLang==='ja' ? 'ビルを建てるにはログインが必要です' : 'Login required to build');
+        // 未ログイン：ローカルのみ（保存なし）
+        showToast(currentLang === 'ja'
+          ? `🏢 ${floors}階建て（ログインで保存できます）`
+          : `🏢 ${floors} floors (Login to save)`);
         return;
       }
-      const x = (Math.floor(Math.random()*20)-10)*10;
-      const z = (Math.floor(Math.random()*20)-10)*10;
-      const floors = Math.floor(Math.random()*50)+5;
-      addBuilding(x, z, floors);
+
+      // ログイン済み：DBに保存＆コイン付与
       try {
-        const { error } = await db.from('buildings').insert({ x, z, floors, style:'default', owner_id:currentUser.id });
+        const { error } = await db.from('buildings').insert({
+          x, z, floors,
+          style: 'default',
+          owner_id: currentUser.id
+        });
         if (error) throw error;
+
         const { data: ud } = await db.from('users').select('coin_balance').eq('id', currentUser.id).single();
         if (ud) {
-          const nb = (ud.coin_balance||0) + 100;
+          const nb = (ud.coin_balance || 0) + 100;
           await db.from('users').update({ coin_balance: nb }).eq('id', currentUser.id);
           document.getElementById('coin-count').textContent = nb;
         }
-      } catch(e) { console.warn('保存エラー:', e.message); }
+      } catch(e) {
+        console.warn('保存エラー:', e.message);
+      }
     });
 
+    // =====================
+    // レンダーループ
+    // =====================
     engine.runRenderLoop(() => scene.render());
     window.addEventListener('resize', () => engine.resize());
 
+    // =====================
+    // 初期化
+    // =====================
     (async () => {
       await restoreSession();
       await loadBuildings();

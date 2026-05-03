@@ -830,15 +830,17 @@
       buyBtn.disabled=true; buyBtn.textContent=ja?'処理中...':'Processing...';
       try{
         const{data:ud}=await db.from('users').select('coin_balance,username').eq('id',currentUser.id).single();
-        if(!ud||(ud.coin_balance||0)<LAND_COST){
-          showToast(ja?`コインが足りません（必要：${LAND_COST}コイン）`:`Not enough coins (need ${LAND_COST})`);
-          buyBtn.disabled=false; buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`; return;
-        }
+        // テスト用：コインチェック一時無効
+// if(!ud||(ud.coin_balance||0)<LAND_COST){
+//   showToast(ja?`コインが足りません（必要：${LAND_COST}コイン）`:`Not enough coins (need ${LAND_COST})`);
+//   buyBtn.disabled=false; buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`; return;
+// }
         const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
         if(landErr) throw landErr;
-        const newCoins=(ud.coin_balance||0)-LAND_COST;
-        await db.from('users').update({coin_balance:newCoins}).eq('id',currentUser.id);
-        document.getElementById('coin-count').textContent=newCoins;
+        // テスト用：コイン減算一時無効
+// const newCoins=(ud.coin_balance||0)-LAND_COST;
+// await db.from('users').update({coin_balance:newCoins}).eq('id',currentUser.id);
+// document.getElementById('coin-count').textContent=newCoins;
         const tile=drawOwnedTile(gx,gz,selectedLandKey);
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_name:ud.username||'?',tile};
         showToast(ja?`🏡 土地を購入しました！（-${LAND_COST}コイン）`:`🏡 Land purchased! (-${LAND_COST} coins)`);

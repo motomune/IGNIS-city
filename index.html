@@ -754,7 +754,7 @@
     // =====================
     const landMap={};
     let selectedLandKey=null;
-    const LAND_COST=500;
+    const LAND_COST=0;
 
     function worldToGrid(wx,wz){ return {gx:Math.round(wx/CELL)*CELL, gz:Math.round(wz/CELL)*CELL}; }
     function landKey(gx,gz){ return `${gx}_${gz}`; }

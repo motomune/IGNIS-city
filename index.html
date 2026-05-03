@@ -6,371 +6,243 @@
   <title>IGNIS CITY</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; color: #fff; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; }
+    #renderCanvas { width: 100vw; height: 100vh; touch-action: none; }
 
-    body {
-      background: #0a0a0f;
-      color: #fff;
-      font-family: 'Helvetica Neue', sans-serif;
-      overflow: hidden;
-    }
-
-    #renderCanvas {
-      width: 100vw;
-      height: 100vh;
-      touch-action: none;
-    }
-
-    #ui {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      pointer-events: none;
-      z-index: 10;
-    }
-
+    #ui { position: fixed; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10; }
     #header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 16px 24px;
       background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-      width: 100%;
     }
-
     #logo {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 0.2em;
+      font-size: 20px; font-weight: 900; letter-spacing: 0.2em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
-    #stats {
-      display: flex;
-      gap: 24px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.7);
-    }
+    #stats { display: flex; gap: 24px; font-size: 13px; color: rgba(255,255,255,0.7); }
     #stats span { font-weight: 700; color: #ff6a00; }
-
-    #user-area {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      pointer-events: all;
-    }
+    #user-area { display: flex; align-items: center; gap: 10px; pointer-events: all; }
 
     #lang-btn {
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      border: none;
-      color: #fff;
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
     }
     #lang-btn:hover { opacity: 0.85; }
-
-    #user-name {
-      font-size: 13px;
-      color: rgba(255,255,255,0.8);
-      font-weight: 600;
-    }
-
+    #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.7);
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7); padding: 5px 14px; border-radius: 20px;
+      font-size: 12px; cursor: pointer; transition: all 0.2s;
     }
     #logout-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
-
     #login-btn-header {
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      border: none;
-      color: #fff;
-      padding: 6px 18px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      pointer-events: all;
-      transition: opacity 0.2s;
+      background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
+      padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      cursor: pointer; pointer-events: all; transition: opacity 0.2s;
     }
     #login-btn-header:hover { opacity: 0.85; }
 
     #bottom-btns {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      pointer-events: all;
-      z-index: 10;
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 12px; align-items: center; pointer-events: all; z-index: 10;
     }
-
     #build-btn {
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      color: #fff;
-      border: none;
-      padding: 14px 40px;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      border-radius: 40px;
-      cursor: pointer;
-      box-shadow: 0 4px 30px rgba(255,106,0,0.4);
+      background: linear-gradient(135deg, #ff6a00, #ee0979); color: #fff; border: none;
+      padding: 14px 40px; font-size: 15px; font-weight: 700; letter-spacing: 0.1em;
+      border-radius: 40px; cursor: pointer; box-shadow: 0 4px 30px rgba(255,106,0,0.4);
       transition: transform 0.15s, box-shadow 0.15s;
     }
-    #build-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 40px rgba(255,106,0,0.6);
-    }
-
+    #build-btn:hover { transform: scale(1.05); box-shadow: 0 8px 40px rgba(255,106,0,0.6); }
     #mode-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: #fff;
-      padding: 12px 22px;
-      font-size: 13px;
-      font-weight: 700;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: background 0.2s;
-      backdrop-filter: blur(6px);
-      white-space: nowrap;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;
+      padding: 12px 22px; font-size: 13px; font-weight: 700; border-radius: 30px;
+      cursor: pointer; transition: background 0.2s; backdrop-filter: blur(6px); white-space: nowrap;
     }
     #mode-btn:hover { background: rgba(255,255,255,0.2); }
     #mode-btn.fly-active {
       background: linear-gradient(135deg, rgba(100,180,255,0.3), rgba(50,120,255,0.3));
-      border-color: rgba(100,180,255,0.5);
-      color: #aaddff;
+      border-color: rgba(100,180,255,0.5); color: #aaddff;
     }
 
     #fly-hint {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      border: 1px solid rgba(100,180,255,0.3);
-      color: rgba(200,230,255,0.8);
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      display: none;
-      z-index: 10;
-      pointer-events: none;
-      backdrop-filter: blur(6px);
-      white-space: nowrap;
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.6); border: 1px solid rgba(100,180,255,0.3);
+      color: rgba(200,230,255,0.8); padding: 8px 20px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; display: none; z-index: 10;
+      pointer-events: none; backdrop-filter: blur(6px); white-space: nowrap;
     }
     #fly-hint.visible { display: block; }
 
     #loading {
-      position: fixed;
-      inset: 0;
-      background: #0a0a0f;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      transition: opacity 0.8s;
+      position: fixed; inset: 0; background: #0a0a0f; display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      z-index: 100; transition: opacity 0.8s;
     }
     #loading-logo {
-      font-size: 36px;
-      font-weight: 900;
-      letter-spacing: 0.3em;
+      font-size: 36px; font-weight: 900; letter-spacing: 0.3em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 24px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 24px;
     }
-    #loading-bar-wrap {
-      width: 200px;
-      height: 2px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    #loading-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ff6a00, #ee0979);
-      border-radius: 2px;
-      transition: width 0.3s;
-    }
+    #loading-bar-wrap { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    #loading-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #ff6a00, #ee0979); border-radius: 2px; transition: width 0.3s; }
 
     #toast {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255,106,0,0.9);
-      color: #fff;
-      padding: 10px 24px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 700;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 20;
-      pointer-events: none;
-      white-space: nowrap;
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: rgba(255,106,0,0.9); color: #fff; padding: 10px 24px;
+      border-radius: 20px; font-size: 14px; font-weight: 700; opacity: 0;
+      transition: opacity 0.3s; z-index: 20; pointer-events: none; white-space: nowrap;
     }
 
-    #fire-canvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 201;
-      display: none;
-    }
+    #fire-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 201; display: none; }
 
     /* =====================
        土地情報パネル
     ===================== */
     #land-panel {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(10,10,20,0.92);
-      border: 1px solid rgba(255,106,0,0.4);
-      border-radius: 18px;
-      padding: 20px 28px 18px;
-      min-width: 280px;
-      max-width: 92vw;
-      z-index: 15;
-      pointer-events: all;
-      display: none;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(255,106,0,0.1);
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: rgba(10,10,20,0.92); border: 1px solid rgba(255,106,0,0.4);
+      border-radius: 18px; padding: 20px 28px 18px; min-width: 280px; max-width: 92vw;
+      z-index: 15; pointer-events: all; display: none;
+      backdrop-filter: blur(12px); box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(255,106,0,0.1);
     }
     #land-panel.open { display: block; }
-
     #land-panel-close {
-      position: absolute;
-      top: 10px; right: 14px;
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.3);
-      font-size: 20px;
-      cursor: pointer;
-      line-height: 1;
-      transition: color 0.2s;
+      position: absolute; top: 10px; right: 14px; background: none; border: none;
+      color: rgba(255,255,255,0.3); font-size: 20px; cursor: pointer; transition: color 0.2s;
     }
     #land-panel-close:hover { color: #fff; }
-
-    #land-panel-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.12em;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-    }
-    #land-panel-coord {
-      font-size: 18px;
-      font-weight: 900;
-      color: #fff;
-      margin-bottom: 8px;
-      letter-spacing: 0.05em;
-    }
-    #land-panel-owner {
-      font-size: 13px;
-      color: rgba(255,255,255,0.55);
-      margin-bottom: 14px;
-      min-height: 18px;
-    }
-    #land-panel-owner .owner-name {
-      color: #ff6a00;
-      font-weight: 700;
-    }
-
+    #land-panel-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.12em; margin-bottom: 5px; }
+    #land-panel-coord { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+    #land-panel-owner { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 14px; min-height: 18px; }
+    #land-panel-owner .owner-name { color: #ff6a00; font-weight: 700; }
     #land-buy-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      border: none;
-      color: #fff;
-      padding: 11px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.04em;
-      transition: opacity 0.2s;
+      width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none;
+      color: #fff; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
     }
     #land-buy-btn:hover { opacity: 0.85; }
     #land-buy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
     #land-build-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border: none;
-      color: #fff;
-      padding: 11px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.04em;
-      transition: opacity 0.2s;
-      margin-top: 8px;
+      width: 100%; background: linear-gradient(135deg, #22c55e, #16a34a); border: none;
+      color: #fff; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s; margin-top: 8px;
     }
     #land-build-btn:hover { opacity: 0.85; }
 
-    /* 認証モーダル */
+    /* =====================
+       ビルカスタマイズモーダル (STEP 3)
+    ===================== */
+    #build-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
+      z-index: 150; align-items: center; justify-content: center;
+    }
+    #build-modal.open { display: flex; }
+
+    #build-box {
+      background: #0f0f18; border: 1px solid rgba(255,106,0,0.35); border-radius: 22px;
+      padding: 28px 28px 24px; width: 380px; max-width: 94vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(255,106,0,0.1);
+      position: relative;
+    }
+    #build-modal-close {
+      position: absolute; top: 14px; right: 18px; background: none; border: none;
+      color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer; transition: color 0.2s;
+    }
+    #build-modal-close:hover { color: #fff; }
+    #build-modal-title {
+      font-size: 18px; font-weight: 900; letter-spacing: 0.1em;
+      background: linear-gradient(135deg, #ff6a00, #ee0979);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    #build-modal-coord {
+      font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 20px; letter-spacing: 0.05em;
+    }
+
+    /* セクションラベル */
+    .custom-label {
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px;
+    }
+
+    /* 高さスライダー */
+    .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    #floors-slider {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 4px; border-radius: 4px; outline: none; cursor: pointer;
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+    }
+    #floors-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; box-shadow: 0 0 8px rgba(255,106,0,0.6); cursor: pointer;
+    }
+    #floors-val {
+      font-size: 15px; font-weight: 900; color: #ff6a00; min-width: 40px; text-align: right;
+    }
+
+    /* 形状選択 */
+    .shape-grid { display: flex; gap: 8px; margin-bottom: 18px; }
+    .shape-btn {
+      flex: 1; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 10px 4px; text-align: center;
+      cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.6);
+    }
+    .shape-btn:hover { background: rgba(255,255,255,0.1); }
+    .shape-btn.selected {
+      border-color: #ff6a00; background: rgba(255,106,0,0.15); color: #fff;
+    }
+    .shape-btn .shape-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    .shape-btn .shape-name { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+
+    /* カラーパレット */
+    .color-palette { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+    .color-swatch {
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      border: 2.5px solid transparent; transition: transform 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.selected { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.4); }
+
+    /* プレビューコスト */
+    #build-cost {
+      font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 14px; text-align: center;
+    }
+    #build-cost span { color: #ff6a00; font-weight: 700; }
+
+    #build-confirm-btn {
+      width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none;
+      color: #fff; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700;
+      letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s;
+    }
+    #build-confirm-btn:hover { opacity: 0.85; }
+    #build-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* =====================
+       認証モーダル
+    ===================== */
     #auth-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px); z-index: 200; align-items: center; justify-content: center;
     }
     #auth-modal.open { display: flex; }
-
     #auth-box {
-      background: #0f0f18;
-      border: 1px solid rgba(255,106,0,0.35);
-      border-radius: 22px;
-      padding: 36px 36px 28px;
-      width: 380px;
-      max-width: 92vw;
+      background: #0f0f18; border: 1px solid rgba(255,106,0,0.35); border-radius: 22px;
+      padding: 36px 36px 28px; width: 380px; max-width: 92vw;
       box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 50px rgba(255,106,0,0.12);
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
     }
     #auth-box::before {
-      content: '';
-      position: absolute;
-      top: -40px; left: 50%;
-      transform: translateX(-50%);
+      content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
       width: 200px; height: 80px;
       background: radial-gradient(ellipse, rgba(255,106,0,0.2) 0%, transparent 70%);
       pointer-events: none;
     }
-
     #auth-header-fire {
-      text-align: center;
-      font-size: 30px;
-      line-height: 1;
-      margin-bottom: 4px;
+      text-align: center; font-size: 30px; line-height: 1; margin-bottom: 4px;
       animation: fireFlicker 1.5s ease-in-out infinite alternate;
     }
     @keyframes fireFlicker {
@@ -378,151 +250,61 @@
       50%  { filter: brightness(1.4) drop-shadow(0 0 14px #ff3300); transform: scaleY(1.06); }
       100% { filter: brightness(0.9) drop-shadow(0 0 4px #ff9900); transform: scaleY(0.97); }
     }
-
     #auth-title {
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: 0.15em;
+      font-size: 22px; font-weight: 900; letter-spacing: 0.15em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-align: center;
-      margin-bottom: 4px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-align: center; margin-bottom: 4px;
     }
-    #auth-subtitle {
-      font-size: 12px;
-      color: rgba(255,255,255,0.35);
-      text-align: center;
-      margin-bottom: 22px;
-      letter-spacing: 0.05em;
-    }
-
+    #auth-subtitle { font-size: 12px; color: rgba(255,255,255,0.35); text-align: center; margin-bottom: 22px; }
     .auth-tab-wrap {
-      display: flex;
-      margin-bottom: 18px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 4px;
+      display: flex; margin-bottom: 18px; background: rgba(255,255,255,0.05);
+      border-radius: 10px; padding: 4px;
     }
     .auth-tab {
-      flex: 1;
-      padding: 8px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.4);
-      cursor: pointer;
-      border-radius: 7px;
-      transition: all 0.2s;
+      flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 700;
+      color: rgba(255,255,255,0.4); cursor: pointer; border-radius: 7px; transition: all 0.2s;
     }
-    .auth-tab.active {
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      color: #fff;
-    }
-
+    .auth-tab.active { background: linear-gradient(135deg, #ff6a00, #ee0979); color: #fff; }
     .auth-input-wrap { position: relative; margin-bottom: 10px; }
     .auth-input {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1.5px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
+      width: 100%; background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 12px 16px; color: #fff; font-size: 14px; outline: none;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
     .auth-input::placeholder { color: rgba(255,255,255,0.25); }
-    .auth-input:focus {
-      border-color: rgba(255,106,0,0.7) !important;
-      box-shadow: 0 0 12px rgba(255,106,0,0.2) !important;
-      animation: none !important;
-    }
+    .auth-input:focus { border-color: rgba(255,106,0,0.7) !important; box-shadow: 0 0 12px rgba(255,106,0,0.2) !important; animation: none !important; }
     .auth-input.blink { animation: inputBlink 1.1s ease-in-out infinite; }
     @keyframes inputBlink {
       0%,100% { border-color: rgba(255,80,0,0.45); box-shadow: 0 0 6px rgba(255,80,0,0.15); }
       50%      { border-color: rgba(255,80,0,0.95); box-shadow: 0 0 14px rgba(255,80,0,0.45); }
     }
-    .auth-input.done {
-      border-color: #22c55e !important;
-      box-shadow: 0 0 10px rgba(34,197,94,0.3) !important;
-      animation: none !important;
-    }
-
+    .auth-input.done { border-color: #22c55e !important; box-shadow: 0 0 10px rgba(34,197,94,0.3) !important; animation: none !important; }
     #username-field { display: none; }
-
     #pw-checks {
-      display: none;
-      background: rgba(255,255,255,0.04);
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 12px;
-      flex-direction: column;
-      gap: 7px;
+      display: none; background: rgba(255,255,255,0.04); border-radius: 10px;
+      padding: 12px 16px; margin-bottom: 12px; flex-direction: column; gap: 7px;
     }
     #pw-checks.visible { display: flex; }
-
-    .pw-check-item {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      font-size: 13px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.32);
-      transition: color 0.25s;
-    }
+    .pw-check-item { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.32); transition: color 0.25s; }
     .pw-check-item.ok { color: #22c55e; }
     .pw-check-item .check-icon {
-      width: 17px; height: 17px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(255,255,255,0.18);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px;
-      flex-shrink: 0;
-      transition: all 0.25s;
-      color: transparent;
+      width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center; font-size: 10px;
+      flex-shrink: 0; transition: all 0.25s; color: transparent;
     }
-    .pw-check-item.ok .check-icon {
-      background: #22c55e;
-      border-color: #22c55e;
-      color: #fff;
-    }
-
+    .pw-check-item.ok .check-icon { background: #22c55e; border-color: #22c55e; color: #fff; }
     #auth-submit {
-      width: 100%;
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      border: none;
-      color: #fff;
-      padding: 13px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      margin-top: 2px;
-      transition: opacity 0.2s;
+      width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none;
+      color: #fff; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 700;
+      cursor: pointer; margin-top: 2px; transition: opacity 0.2s;
     }
     #auth-submit:hover { opacity: 0.85; }
     #auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    #auth-error {
-      font-size: 12px;
-      margin-top: 10px;
-      text-align: center;
-      min-height: 18px;
-      color: #ff4444;
-    }
-
+    #auth-error { font-size: 12px; margin-top: 10px; text-align: center; min-height: 18px; color: #ff4444; }
     #auth-close {
-      position: absolute;
-      top: 14px; right: 18px;
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.3);
-      font-size: 22px;
-      cursor: pointer;
-      line-height: 1;
-      transition: color 0.2s;
+      position: absolute; top: 14px; right: 18px; background: none; border: none;
+      color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer; transition: color 0.2s;
     }
     #auth-close:hover { color: #fff; }
   </style>
@@ -576,7 +358,49 @@
     <div id="land-panel-coord">-</div>
     <div id="land-panel-owner"></div>
     <button id="land-buy-btn" onclick="handleLandBuy()">🔥 この土地を購入（500コイン）</button>
-    <button id="land-build-btn" onclick="handleLandBuild()" style="display:none;">🏢 ここにビルを建てる（+100コイン）</button>
+    <button id="land-build-btn" onclick="openBuildModal()" style="display:none;">🏢 ここにビルを建てる</button>
+  </div>
+
+  <!-- ビルカスタマイズモーダル (STEP 3) -->
+  <div id="build-modal">
+    <div id="build-box">
+      <button id="build-modal-close" onclick="closeBuildModal()">×</button>
+      <div id="build-modal-title">🏗 ビルを設計する</div>
+      <div id="build-modal-coord"></div>
+
+      <!-- 高さ -->
+      <div class="custom-label">🏢 高さ（階数）</div>
+      <div class="slider-row">
+        <input type="range" id="floors-slider" min="3" max="80" value="20" oninput="onFloorsChange(this.value)">
+        <div id="floors-val">20階</div>
+      </div>
+
+      <!-- 形状 -->
+      <div class="custom-label">🔷 形状</div>
+      <div class="shape-grid">
+        <div class="shape-btn selected" data-shape="box" onclick="selectShape(this)">
+          <span class="shape-icon">🟫</span><span class="shape-name">スタンダード</span>
+        </div>
+        <div class="shape-btn" data-shape="slim" onclick="selectShape(this)">
+          <span class="shape-icon">🗼</span><span class="shape-name">スリム</span>
+        </div>
+        <div class="shape-btn" data-shape="wide" onclick="selectShape(this)">
+          <span class="shape-icon">🏬</span><span class="shape-name">ワイド</span>
+        </div>
+        <div class="shape-btn" data-shape="cylinder" onclick="selectShape(this)">
+          <span class="shape-icon">🛢</span><span class="shape-name">円柱</span>
+        </div>
+      </div>
+
+      <!-- カラー -->
+      <div class="custom-label">🎨 カラー</div>
+      <div class="color-palette" id="color-palette"></div>
+
+      <!-- コスト表示 -->
+      <div id="build-cost">建設コスト：<span id="cost-val">0</span>コイン　→　+100コイン獲得</div>
+
+      <button id="build-confirm-btn" onclick="handleBuildConfirm()">🏢 建設する</button>
+    </div>
   </div>
 
   <div id="toast"></div>
@@ -585,12 +409,11 @@
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" onclick="closeAuthModal()">×</button>
-      <button id="auth-lang-btn" onclick="toggleLang()" style="
+      <button onclick="toggleLang()" style="
         position:absolute; top:14px; left:18px;
         background: linear-gradient(135deg, #ff6a00, #ee0979);
         border:none; color:#fff; padding:4px 12px; border-radius:20px;
-        font-size:11px; font-weight:700; cursor:pointer; letter-spacing:0.05em;
-        transition:opacity 0.2s;
+        font-size:11px; font-weight:700; cursor:pointer;
       ">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;">
           <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
@@ -601,12 +424,10 @@
       <div id="auth-header-fire">🔥</div>
       <div id="auth-title">IGNIS CITY</div>
       <div id="auth-subtitle" data-i18n="auth-subtitle">街づくりに参加しよう</div>
-
       <div class="auth-tab-wrap">
         <div class="auth-tab active" id="tab-login" onclick="switchTab('login')" data-i18n="tab-login">ログイン</div>
         <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')" data-i18n="tab-signup">新規登録</div>
       </div>
-
       <div id="username-field">
         <div class="auth-input-wrap">
           <input class="auth-input" id="input-username" type="text"
@@ -624,22 +445,12 @@
           data-placeholder-ja="パスワード（8文字以上）" data-placeholder-en="Password (8+ characters)"
           placeholder="パスワード（8文字以上）" autocomplete="current-password">
       </div>
-
       <div id="pw-checks">
-        <div class="pw-check-item" id="check-length">
-          <div class="check-icon">✓</div><span data-i18n="pw-length">8文字以上</span>
-        </div>
-        <div class="pw-check-item" id="check-upper">
-          <div class="check-icon">✓</div><span data-i18n="pw-upper">大文字（A-Z）を含む</span>
-        </div>
-        <div class="pw-check-item" id="check-lower">
-          <div class="check-icon">✓</div><span data-i18n="pw-lower">小文字（a-z）を含む</span>
-        </div>
-        <div class="pw-check-item" id="check-number">
-          <div class="check-icon">✓</div><span data-i18n="pw-number">数字（0-9）を含む</span>
-        </div>
+        <div class="pw-check-item" id="check-length"><div class="check-icon">✓</div><span data-i18n="pw-length">8文字以上</span></div>
+        <div class="pw-check-item" id="check-upper"><div class="check-icon">✓</div><span data-i18n="pw-upper">大文字（A-Z）を含む</span></div>
+        <div class="pw-check-item" id="check-lower"><div class="check-icon">✓</div><span data-i18n="pw-lower">小文字（a-z）を含む</span></div>
+        <div class="pw-check-item" id="check-number"><div class="check-icon">✓</div><span data-i18n="pw-number">数字（0-9）を含む</span></div>
       </div>
-
       <button id="auth-submit" onclick="handleAuth()" data-i18n="submit-login">ログイン</button>
       <div id="auth-error"></div>
     </div>
@@ -685,7 +496,6 @@
         'fly-hint':'🕊 WASD / Swipe to fly | Scroll to adjust speed',
       }
     };
-
     function toggleLang() {
       currentLang = currentLang === 'ja' ? 'en' : 'ja';
       const label = currentLang === 'ja' ? 'EN' : 'JP';
@@ -712,661 +522,593 @@
     // =====================
     const fireCanvas = document.getElementById('fire-canvas');
     const fCtx = fireCanvas.getContext('2d');
-    let fireParticles = [];
-    let fireAnimId = null;
-
-    function resizeFireCanvas() {
-      fireCanvas.width = window.innerWidth;
-      fireCanvas.height = window.innerHeight;
-    }
+    let fireParticles = [], fireAnimId = null;
+    function resizeFireCanvas() { fireCanvas.width = window.innerWidth; fireCanvas.height = window.innerHeight; }
     resizeFireCanvas();
     window.addEventListener('resize', resizeFireCanvas);
-
     function spawnParticle() {
       fireParticles.push({
-        x: Math.random() * window.innerWidth,
-        y: window.innerHeight + 10,
-        vx: (Math.random() - 0.5) * 2,
-        vy: -(Math.random() * 4.5 + 2.5),
-        size: Math.random() * 3.5 + 1,
-        alpha: Math.random() * 0.7 + 0.4,
-        color: ['#ff6a00','#ee0979','#ffcc00','#ff4400','#ff9900'][Math.floor(Math.random()*5)],
-        life: 0,
-        maxLife: Math.random() * 140 + 100,
+        x: Math.random()*window.innerWidth, y: window.innerHeight+10,
+        vx:(Math.random()-0.5)*2, vy:-(Math.random()*4.5+2.5),
+        size:Math.random()*3.5+1, alpha:Math.random()*0.7+0.4,
+        color:['#ff6a00','#ee0979','#ffcc00','#ff4400','#ff9900'][Math.floor(Math.random()*5)],
+        life:0, maxLife:Math.random()*140+100,
       });
     }
     function drawFire() {
-      fCtx.clearRect(0, 0, fireCanvas.width, fireCanvas.height);
-      for (let i = 0; i < 4; i++) spawnParticle();
-      fireParticles = fireParticles.filter(p => p.life < p.maxLife);
-      fireParticles.forEach(p => {
-        p.life++;
-        p.x += p.vx + Math.sin(p.life * 0.15) * 0.5;
-        p.y += p.vy;
-        const prog = p.life / p.maxLife;
-        fCtx.beginPath();
-        fCtx.arc(p.x, p.y, p.size * (1 - prog * 0.5), 0, Math.PI * 2);
-        fCtx.fillStyle = p.color;
-        fCtx.globalAlpha = p.alpha * (1 - prog);
-        fCtx.fill();
-        fCtx.globalAlpha = 1;
+      fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);
+      for(let i=0;i<4;i++) spawnParticle();
+      fireParticles = fireParticles.filter(p=>p.life<p.maxLife);
+      fireParticles.forEach(p=>{
+        p.life++; p.x+=p.vx+Math.sin(p.life*0.15)*0.5; p.y+=p.vy;
+        const prog=p.life/p.maxLife;
+        fCtx.beginPath(); fCtx.arc(p.x,p.y,p.size*(1-prog*0.5),0,Math.PI*2);
+        fCtx.fillStyle=p.color; fCtx.globalAlpha=p.alpha*(1-prog); fCtx.fill(); fCtx.globalAlpha=1;
       });
-      fireAnimId = requestAnimationFrame(drawFire);
+      fireAnimId=requestAnimationFrame(drawFire);
     }
-    function startFire() {
-      fireCanvas.style.display = 'block';
-      if (!fireAnimId) drawFire();
-    }
+    function startFire() { fireCanvas.style.display='block'; if(!fireAnimId) drawFire(); }
     function stopFire() {
-      fireCanvas.style.display = 'none';
-      if (fireAnimId) { cancelAnimationFrame(fireAnimId); fireAnimId = null; }
-      fireParticles = [];
-      fCtx.clearRect(0, 0, fireCanvas.width, fireCanvas.height);
+      fireCanvas.style.display='none';
+      if(fireAnimId){cancelAnimationFrame(fireAnimId);fireAnimId=null;}
+      fireParticles=[]; fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);
     }
 
     // =====================
     // ローディング
     // =====================
-    const loadingBar = document.getElementById('loading-bar');
-    const loadingEl = document.getElementById('loading');
-    let loadProgress = 0;
-    const loadInterval = setInterval(() => {
-      loadProgress += Math.random() * 15;
-      if (loadProgress > 90) loadProgress = 90;
-      loadingBar.style.width = loadProgress + '%';
-    }, 200);
-    function finishLoading() {
-      clearInterval(loadInterval);
-      loadingBar.style.width = '100%';
-      setTimeout(() => {
-        loadingEl.style.opacity = '0';
-        setTimeout(() => loadingEl.style.display = 'none', 800);
-      }, 400);
+    const loadingBar=document.getElementById('loading-bar'), loadingEl=document.getElementById('loading');
+    let loadProgress=0;
+    const loadInterval=setInterval(()=>{
+      loadProgress+=Math.random()*15; if(loadProgress>90) loadProgress=90;
+      loadingBar.style.width=loadProgress+'%';
+    },200);
+    function finishLoading(){
+      clearInterval(loadInterval); loadingBar.style.width='100%';
+      setTimeout(()=>{ loadingEl.style.opacity='0'; setTimeout(()=>loadingEl.style.display='none',800); },400);
     }
 
     // =====================
     // Toast
     // =====================
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.style.opacity = '1';
-      setTimeout(() => t.style.opacity = '0', 2500);
+    function showToast(msg){
+      const t=document.getElementById('toast');
+      t.textContent=msg; t.style.opacity='1';
+      setTimeout(()=>t.style.opacity='0',2500);
     }
 
     // =====================
-    // 認証モーダル
+    // 認証
     // =====================
-    let authMode = 'login';
-
-    function openAuthModal() {
-      document.getElementById('auth-modal').classList.add('open');
-      document.getElementById('auth-error').textContent = '';
-      startFire();
+    let authMode='login';
+    function openAuthModal(){ document.getElementById('auth-modal').classList.add('open'); document.getElementById('auth-error').textContent=''; startFire(); startBlinking(); }
+    function closeAuthModal(){ document.getElementById('auth-modal').classList.remove('open'); stopFire(); stopBlinking(); }
+    function switchTab(mode){
+      authMode=mode;
+      document.getElementById('tab-login').classList.toggle('active',mode==='login');
+      document.getElementById('tab-signup').classList.toggle('active',mode==='signup');
+      document.getElementById('username-field').style.display=mode==='signup'?'block':'none';
+      document.getElementById('pw-checks').classList.toggle('visible',mode==='signup');
+      document.getElementById('auth-submit').textContent=i18n[currentLang][mode==='login'?'submit-login':'submit-signup'];
+      document.getElementById('auth-error').textContent='';
+      ['input-username','input-email','input-password'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('done','blink');});
       startBlinking();
     }
-    function closeAuthModal() {
-      document.getElementById('auth-modal').classList.remove('open');
-      stopFire();
-      stopBlinking();
-    }
-    function switchTab(mode) {
-      authMode = mode;
-      document.getElementById('tab-login').classList.toggle('active', mode === 'login');
-      document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
-      document.getElementById('username-field').style.display = mode === 'signup' ? 'block' : 'none';
-      document.getElementById('pw-checks').classList.toggle('visible', mode === 'signup');
-      document.getElementById('auth-submit').textContent = i18n[currentLang][mode === 'login' ? 'submit-login' : 'submit-signup'];
-      document.getElementById('auth-error').textContent = '';
-      ['input-username','input-email','input-password'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('done','blink');
-      });
-      startBlinking();
-    }
-
-    let blinkInterval = null;
-    function startBlinking() {
-      stopBlinking();
-      updateInputStates();
-      blinkInterval = setInterval(updateInputStates, 200);
-    }
-    function stopBlinking() {
-      if (blinkInterval) { clearInterval(blinkInterval); blinkInterval = null; }
-    }
-    function updateInputStates() {
-      const fields = authMode === 'login'
-        ? ['input-email','input-password']
-        : ['input-username','input-email','input-password'];
-      fields.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const val = el.value.trim();
-        const focused = document.activeElement === el;
-        el.classList.remove('blink','done');
-        if (focused) return;
-        if (!val) { el.classList.add('blink'); return; }
-        if (id === 'input-password' && authMode === 'signup') {
-          el.classList.add(checkPassword(val).every(v=>v) ? 'done' : 'blink');
-        } else if (id === 'input-password') {
-          el.classList.add(val.length >= 6 ? 'done' : 'blink');
-        } else {
-          el.classList.add('done');
-        }
+    let blinkInterval=null;
+    function startBlinking(){ stopBlinking(); updateInputStates(); blinkInterval=setInterval(updateInputStates,200); }
+    function stopBlinking(){ if(blinkInterval){clearInterval(blinkInterval);blinkInterval=null;} }
+    function updateInputStates(){
+      const fields=authMode==='login'?['input-email','input-password']:['input-username','input-email','input-password'];
+      fields.forEach(id=>{
+        const el=document.getElementById(id); if(!el) return;
+        const val=el.value.trim(), focused=document.activeElement===el;
+        el.classList.remove('blink','done'); if(focused) return;
+        if(!val){el.classList.add('blink');return;}
+        if(id==='input-password'&&authMode==='signup') el.classList.add(checkPassword(val).every(v=>v)?'done':'blink');
+        else if(id==='input-password') el.classList.add(val.length>=6?'done':'blink');
+        else el.classList.add('done');
       });
     }
-
-    function checkPassword(pw) {
-      return [pw.length >= 8, /[A-Z]/.test(pw), /[a-z]/.test(pw), /[0-9]/.test(pw)];
-    }
-    document.getElementById('input-password').addEventListener('input', function() {
-      const results = checkPassword(this.value);
-      ['check-length','check-upper','check-lower','check-number'].forEach((id,i) => {
-        document.getElementById(id).classList.toggle('ok', results[i]);
-      });
+    function checkPassword(pw){ return [pw.length>=8,/[A-Z]/.test(pw),/[a-z]/.test(pw),/[0-9]/.test(pw)]; }
+    document.getElementById('input-password').addEventListener('input',function(){
+      const results=checkPassword(this.value);
+      ['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>document.getElementById(id).classList.toggle('ok',results[i]));
       updateInputStates();
     });
-    ['input-email','input-username'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', updateInputStates);
+    ['input-email','input-username'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateInputStates);});
+    ['input-username','input-email','input-password'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}
     });
-    ['input-username','input-email','input-password'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('focus', updateInputStates);
-        el.addEventListener('blur', updateInputStates);
-      }
-    });
-
-    // =====================
-    // 認証処理
-    // =====================
-    async function handleAuth() {
-      const email = document.getElementById('input-email').value.trim();
-      const password = document.getElementById('input-password').value;
-      const username = document.getElementById('input-username').value.trim();
-      const btn = document.getElementById('auth-submit');
-      const errEl = document.getElementById('auth-error');
-      const ja = currentLang === 'ja';
-
-      errEl.textContent = '';
-      errEl.style.color = '#ff4444';
-
-      if (!email || !password) {
-        errEl.textContent = ja ? 'メールアドレスとパスワードを入力してください' : 'Please enter email and password';
-        return;
-      }
-      if (authMode === 'signup' && !username) {
-        errEl.textContent = ja ? 'ユーザー名を入力してください' : 'Please enter a username';
-        return;
-      }
-      if (authMode === 'signup' && !checkPassword(password).every(v=>v)) {
-        errEl.textContent = ja ? 'パスワードの条件を全て満たしてください' : 'Password does not meet all requirements';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = i18n[currentLang]['processing'];
-
-      try {
-        if (authMode === 'login') {
-          const { data, error } = await db.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          await onLoginSuccess(data.user);
-          closeAuthModal();
+    async function handleAuth(){
+      const email=document.getElementById('input-email').value.trim();
+      const password=document.getElementById('input-password').value;
+      const username=document.getElementById('input-username').value.trim();
+      const btn=document.getElementById('auth-submit'), errEl=document.getElementById('auth-error');
+      const ja=currentLang==='ja';
+      errEl.textContent=''; errEl.style.color='#ff4444';
+      if(!email||!password){errEl.textContent=ja?'メールアドレスとパスワードを入力してください':'Please enter email and password';return;}
+      if(authMode==='signup'&&!username){errEl.textContent=ja?'ユーザー名を入力してください':'Please enter a username';return;}
+      if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent=ja?'パスワードの条件を全て満たしてください':'Password does not meet all requirements';return;}
+      btn.disabled=true; btn.textContent=i18n[currentLang]['processing'];
+      try{
+        if(authMode==='login'){
+          const{data,error}=await db.auth.signInWithPassword({email,password});
+          if(error) throw error;
+          await onLoginSuccess(data.user); closeAuthModal();
         } else {
-          const { data, error } = await db.auth.signUp({ email, password });
-          if (error) throw error;
-          if (data.user) {
-            await db.from('users').upsert({ id: data.user.id, username, rank: 1, coin_balance: 0 });
-            await onLoginSuccess(data.user, username);
-            closeAuthModal();
-            showToast('🎉 ' + (ja ? '登録完了！IGNIS CITYへようこそ！' : 'Welcome to IGNIS CITY!'));
+          const{data,error}=await db.auth.signUp({email,password});
+          if(error) throw error;
+          if(data.user){
+            await db.from('users').upsert({id:data.user.id,username,rank:1,coin_balance:0});
+            await onLoginSuccess(data.user,username); closeAuthModal();
+            showToast('🎉 '+(ja?'登録完了！IGNIS CITYへようこそ！':'Welcome to IGNIS CITY!'));
           } else {
-            errEl.style.color = '#4caf50';
-            errEl.textContent = ja ? '確認メールを送信しました。メールを確認してください。' : 'Confirmation email sent. Please check your inbox.';
+            errEl.style.color='#4caf50';
+            errEl.textContent=ja?'確認メールを送信しました。':'Confirmation email sent.';
           }
         }
-      } catch(e) {
-        errEl.style.color = '#ff4444';
-        errEl.textContent = translateError(e.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = i18n[currentLang][authMode === 'login' ? 'submit-login' : 'submit-signup'];
-      }
+      }catch(e){errEl.style.color='#ff4444';errEl.textContent=translateError(e.message);}
+      finally{btn.disabled=false;btn.textContent=i18n[currentLang][authMode==='login'?'submit-login':'submit-signup'];}
     }
-
-    function translateError(msg) {
-      const ja = currentLang === 'ja';
-      if (msg.includes('Invalid login credentials')) return ja ? 'メールアドレスまたはパスワードが違います' : 'Invalid email or password';
-      if (msg.includes('Email not confirmed')) return ja ? 'メールアドレスの確認が完了していません' : 'Email not confirmed';
-      if (msg.includes('already registered')) return ja ? 'このメールアドレスはすでに登録されています' : 'Email already registered';
-      if (msg.includes('Password should be at least')) return ja ? 'パスワードは8文字以上にしてください' : 'Password must be at least 8 characters';
-      if (msg.includes('Unable to validate email')) return ja ? 'メールアドレスの形式が正しくありません' : 'Invalid email format';
+    function translateError(msg){
+      const ja=currentLang==='ja';
+      if(msg.includes('Invalid login credentials')) return ja?'メールアドレスまたはパスワードが違います':'Invalid email or password';
+      if(msg.includes('Email not confirmed')) return ja?'メールアドレスの確認が完了していません':'Email not confirmed';
+      if(msg.includes('already registered')) return ja?'このメールアドレスはすでに登録されています':'Email already registered';
+      if(msg.includes('Password should be at least')) return ja?'パスワードは8文字以上にしてください':'Password must be at least 8 characters';
+      if(msg.includes('Unable to validate email')) return ja?'メールアドレスの形式が正しくありません':'Invalid email format';
       return msg;
     }
-
-    async function onLoginSuccess(user, usernameOverride = null) {
-      currentUser = user;
-      let displayName = usernameOverride;
-      if (!displayName) {
-        const { data } = await db.from('users').select('username, coin_balance').eq('id', user.id).single();
-        if (data) {
-          displayName = data.username || user.email;
-          document.getElementById('coin-count').textContent = data.coin_balance || 0;
-        } else { displayName = user.email; }
+    async function onLoginSuccess(user,usernameOverride=null){
+      currentUser=user; let displayName=usernameOverride;
+      if(!displayName){
+        const{data}=await db.from('users').select('username,coin_balance').eq('id',user.id).single();
+        if(data){displayName=data.username||user.email;document.getElementById('coin-count').textContent=data.coin_balance||0;}
+        else displayName=user.email;
       }
-      document.getElementById('login-btn-header').style.display = 'none';
-      document.getElementById('logged-in-area').style.display = 'flex';
-      document.getElementById('user-name').textContent = displayName;
-      showToast('👋 ' + (currentLang === 'ja' ? `おかえり、${displayName}！` : `Welcome back, ${displayName}!`));
+      document.getElementById('login-btn-header').style.display='none';
+      document.getElementById('logged-in-area').style.display='flex';
+      document.getElementById('user-name').textContent=displayName;
+      showToast('👋 '+(currentLang==='ja'?`おかえり、${displayName}！`:`Welcome back, ${displayName}!`));
     }
-
-    async function handleLogout() {
-      await db.auth.signOut();
-      currentUser = null;
-      document.getElementById('login-btn-header').style.display = 'block';
-      document.getElementById('logged-in-area').style.display = 'none';
-      document.getElementById('user-name').textContent = '';
-      document.getElementById('coin-count').textContent = '0';
-      showToast(currentLang === 'ja' ? 'ログアウトしました' : 'Logged out');
+    async function handleLogout(){
+      await db.auth.signOut(); currentUser=null;
+      document.getElementById('login-btn-header').style.display='block';
+      document.getElementById('logged-in-area').style.display='none';
+      document.getElementById('user-name').textContent='';
+      document.getElementById('coin-count').textContent='0';
+      showToast(currentLang==='ja'?'ログアウトしました':'Logged out');
     }
-
-    async function restoreSession() {
-      const { data: { session } } = await db.auth.getSession();
-      if (session) await onLoginSuccess(session.user);
+    async function restoreSession(){
+      const{data:{session}}=await db.auth.getSession();
+      if(session) await onLoginSuccess(session.user);
     }
 
     // =====================
     // Babylon.js
     // =====================
-    const canvas = document.getElementById('renderCanvas');
-    const engine = new BABYLON.Engine(canvas, true);
-    const scene = new BABYLON.Scene(engine);
-    scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1);
+    const canvas=document.getElementById('renderCanvas');
+    const engine=new BABYLON.Engine(canvas,true);
+    const scene=new BABYLON.Scene(engine);
+    scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
 
-    // ArcRotateCamera（街づくりモード）
-    const arcCamera = new BABYLON.ArcRotateCamera('arcCam', -Math.PI/4, Math.PI/3.5, 60, BABYLON.Vector3.Zero(), scene);
-    arcCamera.attachControl(canvas, true);
-    arcCamera.lowerRadiusLimit = 10;
-    arcCamera.upperRadiusLimit = 200;
-    arcCamera.upperBetaLimit = Math.PI / 2.2;
+    const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
+    arcCamera.attachControl(canvas,true);
+    arcCamera.lowerRadiusLimit=10; arcCamera.upperRadiusLimit=200; arcCamera.upperBetaLimit=Math.PI/2.2;
 
-    // FlyCamera（飛行モード）
-    const flyCamera = new BABYLON.FlyCamera('flyCam', new BABYLON.Vector3(0, 30, -60), scene);
+    const flyCamera=new BABYLON.FlyCamera('flyCam',new BABYLON.Vector3(0,30,-60),scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
-    flyCamera.speed = 1.4;
-    flyCamera.angularSensibility = 800;
-    flyCamera.rollCorrect = 10;
-    flyCamera.bankedTurn = true;
-    flyCamera.bankedTurnLimit = Math.PI / 4;
-    flyCamera.bankedTurnMultiplier = 0.5;
-    flyCamera.minZ = 0.1;
-    flyCamera.keysUp    = [87, 38];
-    flyCamera.keysDown  = [83, 40];
-    flyCamera.keysLeft  = [65, 37];
-    flyCamera.keysRight = [68, 39];
+    flyCamera.speed=1.4; flyCamera.angularSensibility=800; flyCamera.rollCorrect=10;
+    flyCamera.bankedTurn=true; flyCamera.bankedTurnLimit=Math.PI/4; flyCamera.bankedTurnMultiplier=0.5;
+    flyCamera.minZ=0.1;
+    flyCamera.keysUp=[87,38]; flyCamera.keysDown=[83,40]; flyCamera.keysLeft=[65,37]; flyCamera.keysRight=[68,39];
 
-    scene.activeCamera = arcCamera;
-    let isFlying = false;
+    scene.activeCamera=arcCamera;
+    let isFlying=false;
 
-    function toggleFlyMode() {
-      isFlying = !isFlying;
-      setFlyMode(isFlying);
-    }
-    function setFlyMode(enabled) {
-      isFlying = enabled;
-      const modeBtn = document.getElementById('mode-btn');
-      const flyHint = document.getElementById('fly-hint');
-      if (enabled) {
-        const arcPos = arcCamera.position;
-        flyCamera.position = new BABYLON.Vector3(arcPos.x, arcPos.y, arcPos.z);
-        flyCamera.setTarget(arcCamera.target || BABYLON.Vector3.Zero());
-        scene.activeCamera = flyCamera;
-        flyCamera.attachControl(canvas, true);
-        arcCamera.detachControl();
-        modeBtn.classList.add('fly-active');
-        modeBtn.setAttribute('data-i18n', 'build-mode');
-        modeBtn.textContent = i18n[currentLang]['build-mode'];
-        flyHint.classList.add('visible');
-        closeLandPanel();
-        showToast(currentLang === 'ja' ? '🕊 飛行モード ON：WASDで飛び回ろう！' : '🕊 Fly Mode ON: Use WASD to explore!');
+    function toggleFlyMode(){isFlying=!isFlying;setFlyMode(isFlying);}
+    function setFlyMode(enabled){
+      isFlying=enabled;
+      const modeBtn=document.getElementById('mode-btn'), flyHint=document.getElementById('fly-hint');
+      if(enabled){
+        const arcPos=arcCamera.position;
+        flyCamera.position=new BABYLON.Vector3(arcPos.x,arcPos.y,arcPos.z);
+        flyCamera.setTarget(arcCamera.target||BABYLON.Vector3.Zero());
+        scene.activeCamera=flyCamera; flyCamera.attachControl(canvas,true); arcCamera.detachControl();
+        modeBtn.classList.add('fly-active'); modeBtn.textContent=i18n[currentLang]['build-mode'];
+        flyHint.classList.add('visible'); closeLandPanel();
+        showToast(currentLang==='ja'?'🕊 飛行モード ON：WASDで飛び回ろう！':'🕊 Fly Mode ON: Use WASD to explore!');
       } else {
-        scene.activeCamera = arcCamera;
-        arcCamera.attachControl(canvas, true);
-        flyCamera.detachControl();
-        modeBtn.classList.remove('fly-active');
-        modeBtn.setAttribute('data-i18n', 'fly-mode');
-        modeBtn.textContent = i18n[currentLang]['fly-mode'];
+        scene.activeCamera=arcCamera; arcCamera.attachControl(canvas,true); flyCamera.detachControl();
+        modeBtn.classList.remove('fly-active'); modeBtn.textContent=i18n[currentLang]['fly-mode'];
         flyHint.classList.remove('visible');
-        showToast(currentLang === 'ja' ? '🏙 街づくりモード ON' : '🏙 Build Mode ON');
+        showToast(currentLang==='ja'?'🏙 街づくりモード ON':'🏙 Build Mode ON');
       }
     }
 
-    // =====================
     // ライティング
-    // =====================
-    const hemiLight = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0,1,0), scene);
-    hemiLight.intensity = 0.6;
-    hemiLight.groundColor = new BABYLON.Color3(0.1, 0.05, 0.1);
+    const hemiLight=new BABYLON.HemisphericLight('hemi',new BABYLON.Vector3(0,1,0),scene);
+    hemiLight.intensity=0.6; hemiLight.groundColor=new BABYLON.Color3(0.1,0.05,0.1);
+    const dirLight=new BABYLON.DirectionalLight('dir',new BABYLON.Vector3(-1,-2,-1),scene);
+    dirLight.intensity=0.8; dirLight.position=new BABYLON.Vector3(50,50,50);
 
-    const dirLight = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-1,-2,-1), scene);
-    dirLight.intensity = 0.8;
-    dirLight.position = new BABYLON.Vector3(50, 50, 50);
-
-    // =====================
     // 地面・グリッド
-    // =====================
-    const CELL = 10;
-    const GRID_HALF = 100;
-
-    const ground = BABYLON.MeshBuilder.CreateGround('ground', { width:200, height:200, subdivisions:20 }, scene);
-    const groundMat = new BABYLON.StandardMaterial('groundMat', scene);
-    groundMat.diffuseColor = new BABYLON.Color3(0.06, 0.06, 0.1);
-    groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
-    ground.material = groundMat;
-
-    const lineMat = new BABYLON.StandardMaterial('lineMat', scene);
-    lineMat.emissiveColor = new BABYLON.Color3(0.15, 0.1, 0.2);
-    for (let i = -GRID_HALF; i <= GRID_HALF; i += CELL) {
-      const hL = BABYLON.MeshBuilder.CreateBox('hl', { width:200, height:0.02, depth:0.05 }, scene);
-      hL.position = new BABYLON.Vector3(0, 0.01, i); hL.material = lineMat; hL.isPickable = false;
-      const vL = BABYLON.MeshBuilder.CreateBox('vl', { width:0.05, height:0.02, depth:200 }, scene);
-      vL.position = new BABYLON.Vector3(i, 0.01, 0); vL.material = lineMat; vL.isPickable = false;
+    const CELL=10, GRID_HALF=100;
+    const ground=BABYLON.MeshBuilder.CreateGround('ground',{width:200,height:200,subdivisions:20},scene);
+    const groundMat=new BABYLON.StandardMaterial('groundMat',scene);
+    groundMat.diffuseColor=new BABYLON.Color3(0.06,0.06,0.1);
+    groundMat.specularColor=new BABYLON.Color3(0,0,0);
+    ground.material=groundMat;
+    const lineMat=new BABYLON.StandardMaterial('lineMat',scene);
+    lineMat.emissiveColor=new BABYLON.Color3(0.15,0.1,0.2);
+    for(let i=-GRID_HALF;i<=GRID_HALF;i+=CELL){
+      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);
+      hL.position=new BABYLON.Vector3(0,0.01,i); hL.material=lineMat; hL.isPickable=false;
+      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);
+      vL.position=new BABYLON.Vector3(i,0.01,0); vL.material=lineMat; vL.isPickable=false;
     }
 
     // =====================
     // 土地システム
     // =====================
-    const landMap = {}; // "gx_gz" -> { owner_id, owner_name, tile }
-    let selectedLandKey = null;
-    const LAND_COST = 500;
+    const landMap={};
+    let selectedLandKey=null;
+    const LAND_COST=500;
 
-    function worldToGrid(wx, wz) {
-      return {
-        gx: Math.round(wx / CELL) * CELL,
-        gz: Math.round(wz / CELL) * CELL,
-      };
-    }
-    function landKey(gx, gz) { return `${gx}_${gz}`; }
-    function keyToCoord(key) {
-      const [gx, gz] = key.split('_').map(Number);
-      return { gx, gz };
-    }
+    function worldToGrid(wx,wz){ return {gx:Math.round(wx/CELL)*CELL, gz:Math.round(wz/CELL)*CELL}; }
+    function landKey(gx,gz){ return `${gx}_${gz}`; }
+    function keyToCoord(key){ const[gx,gz]=key.split('_').map(Number); return{gx,gz}; }
 
-    // ハイライトタイル
-    let highlightTile = null;
-    function showHighlight(gx, gz, owned) {
-      if (highlightTile) highlightTile.dispose();
-      highlightTile = BABYLON.MeshBuilder.CreateGround('hl_tile', { width: CELL - 0.4, height: CELL - 0.4 }, scene);
-      highlightTile.position = new BABYLON.Vector3(gx, 0.04, gz);
-      const mat = new BABYLON.StandardMaterial('hl_mat_'+Date.now(), scene);
-      mat.emissiveColor = owned
-        ? new BABYLON.Color3(1.0, 0.4, 0.0)
-        : new BABYLON.Color3(0.2, 0.8, 0.4);
-      mat.alpha = 0.4;
-      highlightTile.material = mat;
-      highlightTile.isPickable = false;
+    let highlightTile=null;
+    function showHighlight(gx,gz,owned){
+      if(highlightTile) highlightTile.dispose();
+      highlightTile=BABYLON.MeshBuilder.CreateGround('hl_tile',{width:CELL-0.4,height:CELL-0.4},scene);
+      highlightTile.position=new BABYLON.Vector3(gx,0.04,gz);
+      const mat=new BABYLON.StandardMaterial('hl_mat_'+Date.now(),scene);
+      mat.emissiveColor=owned?new BABYLON.Color3(1.0,0.4,0.0):new BABYLON.Color3(0.2,0.8,0.4);
+      mat.alpha=0.4; highlightTile.material=mat; highlightTile.isPickable=false;
     }
-    function hideHighlight() {
-      if (highlightTile) { highlightTile.dispose(); highlightTile = null; }
+    function hideHighlight(){ if(highlightTile){highlightTile.dispose();highlightTile=null;} }
+
+    function drawOwnedTile(gx,gz,key){
+      const tile=BABYLON.MeshBuilder.CreateGround('lt_'+key,{width:CELL-0.5,height:CELL-0.5},scene);
+      tile.position=new BABYLON.Vector3(gx,0.02,gz);
+      const mat=new BABYLON.StandardMaterial('ltm_'+key,scene);
+      mat.emissiveColor=new BABYLON.Color3(0.8,0.35,0.0); mat.alpha=0.18;
+      tile.material=mat; tile.isPickable=false; return tile;
     }
 
-    // 所有済みタイルを地面に描画
-    function drawOwnedTile(gx, gz, key) {
-      const tile = BABYLON.MeshBuilder.CreateGround('lt_'+key, { width: CELL - 0.5, height: CELL - 0.5 }, scene);
-      tile.position = new BABYLON.Vector3(gx, 0.02, gz);
-      const mat = new BABYLON.StandardMaterial('ltm_'+key, scene);
-      mat.emissiveColor = new BABYLON.Color3(0.8, 0.35, 0.0);
-      mat.alpha = 0.18;
-      tile.material = mat;
-      tile.isPickable = false;
-      return tile;
-    }
-
-    async function loadLands() {
-      try {
-        const { data, error } = await db.from('lands')
-          .select('grid_x, grid_z, owner_id, users(username)');
-        if (error) throw error;
-        data.forEach(l => {
-          const k = landKey(l.grid_x, l.grid_z);
-          const ownerName = l.users ? l.users.username : '?';
-          const tile = drawOwnedTile(l.grid_x, l.grid_z, k);
-          landMap[k] = { owner_id: l.owner_id, owner_name: ownerName, tile };
+    async function loadLands(){
+      try{
+        const{data,error}=await db.from('lands').select('grid_x,grid_z,owner_id,users(username)');
+        if(error) throw error;
+        data.forEach(l=>{
+          const k=landKey(l.grid_x,l.grid_z);
+          const ownerName=l.users?l.users.username:'?';
+          const tile=drawOwnedTile(l.grid_x,l.grid_z,k);
+          landMap[k]={owner_id:l.owner_id,owner_name:ownerName,tile};
         });
-      } catch(e) {
-        console.warn('land load error:', e.message);
-      }
+      }catch(e){console.warn('land load error:',e.message);}
     }
 
-    function openLandPanel(gx, gz) {
-      selectedLandKey = landKey(gx, gz);
-      const land = landMap[selectedLandKey];
-      const ja = currentLang === 'ja';
-
-      document.getElementById('land-panel-coord').textContent = `X:${gx} / Z:${gz}`;
-
-      const ownerEl  = document.getElementById('land-panel-owner');
-      const buyBtn   = document.getElementById('land-buy-btn');
-      const buildBtn = document.getElementById('land-build-btn');
-
-      if (land) {
-        const isMe = currentUser && land.owner_id === currentUser.id;
-        ownerEl.innerHTML = ja
-          ? `オーナー：<span class="owner-name">@${land.owner_name}</span>`
-          : `Owner: <span class="owner-name">@${land.owner_name}</span>`;
-        if (isMe) {
-          buyBtn.style.display = 'none';
-          buildBtn.style.display = 'block';
+    function openLandPanel(gx,gz){
+      selectedLandKey=landKey(gx,gz);
+      const land=landMap[selectedLandKey], ja=currentLang==='ja';
+      document.getElementById('land-panel-coord').textContent=`X:${gx} / Z:${gz}`;
+      const ownerEl=document.getElementById('land-panel-owner');
+      const buyBtn=document.getElementById('land-buy-btn');
+      const buildBtn=document.getElementById('land-build-btn');
+      if(land){
+        const isMe=currentUser&&land.owner_id===currentUser.id;
+        ownerEl.innerHTML=ja?`オーナー：<span class="owner-name">@${land.owner_name}</span>`:`Owner: <span class="owner-name">@${land.owner_name}</span>`;
+        if(isMe){
+          buyBtn.style.display='none'; buildBtn.style.display='block';
         } else {
-          buyBtn.style.display = 'block';
-          buyBtn.textContent = ja ? '🔒 購入済みの土地です' : '🔒 Already owned';
-          buyBtn.disabled = true;
-          buildBtn.style.display = 'none';
+          buyBtn.style.display='block'; buyBtn.textContent=ja?'🔒 購入済みの土地です':'🔒 Already owned';
+          buyBtn.disabled=true; buildBtn.style.display='none';
         }
       } else {
-        ownerEl.textContent = ja ? '空き地（未購入）' : 'Empty lot (not owned)';
-        buyBtn.style.display = 'block';
-        buyBtn.textContent = ja
-          ? `🔥 この土地を購入（${LAND_COST}コイン）`
-          : `🔥 Buy this land (${LAND_COST} coins)`;
-        buyBtn.disabled = false;
-        buildBtn.style.display = 'none';
+        ownerEl.textContent=ja?'空き地（未購入）':'Empty lot (not owned)';
+        buyBtn.style.display='block';
+        buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`;
+        buyBtn.disabled=false; buildBtn.style.display='none';
       }
-
-      showHighlight(gx, gz, !!land);
+      showHighlight(gx,gz,!!land);
       document.getElementById('land-panel').classList.add('open');
     }
 
-    function closeLandPanel() {
+    function closeLandPanel(){
       document.getElementById('land-panel').classList.remove('open');
-      hideHighlight();
-      selectedLandKey = null;
+      hideHighlight(); selectedLandKey=null;
     }
 
-    async function handleLandBuy() {
-      if (!currentUser) {
-        closeLandPanel();
-        openAuthModal();
-        showToast(currentLang === 'ja' ? '土地を購入するにはログインが必要です' : 'Login required to buy land');
-        return;
-      }
-      const { gx, gz } = keyToCoord(selectedLandKey);
-      const ja = currentLang === 'ja';
-      const buyBtn = document.getElementById('land-buy-btn');
-      buyBtn.disabled = true;
-      buyBtn.textContent = ja ? '処理中...' : 'Processing...';
-
-      try {
-        // コイン残高確認
-        const { data: ud } = await db.from('users').select('coin_balance, username').eq('id', currentUser.id).single();
-        if (!ud || (ud.coin_balance || 0) < LAND_COST) {
-          showToast(ja ? `コインが足りません（必要：${LAND_COST}コイン）` : `Not enough coins (need ${LAND_COST})`);
-          buyBtn.disabled = false;
-          buyBtn.textContent = ja ? `🔥 この土地を購入（${LAND_COST}コイン）` : `🔥 Buy this land (${LAND_COST} coins)`;
-          return;
+    async function handleLandBuy(){
+      if(!currentUser){closeLandPanel();openAuthModal();showToast(currentLang==='ja'?'土地を購入するにはログインが必要です':'Login required to buy land');return;}
+      const{gx,gz}=keyToCoord(selectedLandKey), ja=currentLang==='ja';
+      const buyBtn=document.getElementById('land-buy-btn');
+      buyBtn.disabled=true; buyBtn.textContent=ja?'処理中...':'Processing...';
+      try{
+        const{data:ud}=await db.from('users').select('coin_balance,username').eq('id',currentUser.id).single();
+        if(!ud||(ud.coin_balance||0)<LAND_COST){
+          showToast(ja?`コインが足りません（必要：${LAND_COST}コイン）`:`Not enough coins (need ${LAND_COST})`);
+          buyBtn.disabled=false; buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`; return;
         }
-
-        // lands テーブルに挿入
-        const { error: landErr } = await db.from('lands').insert({
-          grid_x: gx,
-          grid_z: gz,
-          owner_id: currentUser.id,
-        });
-        if (landErr) throw landErr;
-
-        // コイン減算
-        const newCoins = (ud.coin_balance || 0) - LAND_COST;
-        await db.from('users').update({ coin_balance: newCoins }).eq('id', currentUser.id);
-        document.getElementById('coin-count').textContent = newCoins;
-
-        // ローカルに反映
-        const ownerName = ud.username || '?';
-        const tile = drawOwnedTile(gx, gz, selectedLandKey);
-        landMap[selectedLandKey] = { owner_id: currentUser.id, owner_name: ownerName, tile };
-
-        showToast(ja ? `🏡 土地を購入しました！（-${LAND_COST}コイン）` : `🏡 Land purchased! (-${LAND_COST} coins)`);
-        openLandPanel(gx, gz); // パネルを「自分の土地」状態に更新
-
-      } catch(e) {
-        console.warn('land buy error:', e.message);
-        showToast(ja ? '購入に失敗しました' : 'Purchase failed');
-        buyBtn.disabled = false;
-        buyBtn.textContent = ja ? `🔥 この土地を購入（${LAND_COST}コイン）` : `🔥 Buy this land (${LAND_COST} coins)`;
+        const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
+        if(landErr) throw landErr;
+        const newCoins=(ud.coin_balance||0)-LAND_COST;
+        await db.from('users').update({coin_balance:newCoins}).eq('id',currentUser.id);
+        document.getElementById('coin-count').textContent=newCoins;
+        const tile=drawOwnedTile(gx,gz,selectedLandKey);
+        landMap[selectedLandKey]={owner_id:currentUser.id,owner_name:ud.username||'?',tile};
+        showToast(ja?`🏡 土地を購入しました！（-${LAND_COST}コイン）`:`🏡 Land purchased! (-${LAND_COST} coins)`);
+        openLandPanel(gx,gz);
+      }catch(e){
+        console.warn('land buy error:',e.message);
+        showToast(ja?'購入に失敗しました':'Purchase failed');
+        buyBtn.disabled=false; buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`;
       }
     }
 
-    async function handleLandBuild() {
-      if (!selectedLandKey || !currentUser) return;
-      const { gx, gz } = keyToCoord(selectedLandKey);
-      const floors = Math.floor(Math.random() * 50) + 5;
-      addBuilding(gx, gz, floors);
+    // =====================
+    // ビルカスタマイズ (STEP 3)
+    // =====================
+
+    // カラーパレット定義
+    const COLORS = [
+      {hex:'#4466ff', r:0.27, g:0.40, b:1.00, name:'ブルー'},
+      {hex:'#ff6a00', r:1.00, g:0.42, b:0.00, name:'オレンジ'},
+      {hex:'#ee0979', r:0.93, g:0.04, b:0.47, name:'ピンク'},
+      {hex:'#22c55e', r:0.13, g:0.77, b:0.37, name:'グリーン'},
+      {hex:'#a855f7', r:0.66, g:0.33, b:0.97, name:'パープル'},
+      {hex:'#f59e0b', r:0.96, g:0.62, b:0.04, name:'ゴールド'},
+      {hex:'#06b6d4', r:0.02, g:0.71, b:0.83, name:'シアン'},
+      {hex:'#ef4444', r:0.94, g:0.27, b:0.27, name:'レッド'},
+      {hex:'#64748b', r:0.39, g:0.46, b:0.55, name:'グレー'},
+      {hex:'#f8fafc', r:0.97, g:0.98, b:0.99, name:'ホワイト'},
+    ];
+
+    // 形状定義
+    const SHAPES = {
+      box:      {w:5.5, d:5.5},
+      slim:     {w:3.0, d:3.0},
+      wide:     {w:8.0, d:8.0},
+      cylinder: {w:5.0, d:5.0}, // cylinderはBabylonのCylinderで作る
+    };
+
+    // カスタマイズ状態
+    let buildCustom = {
+      floors: 20,
+      shape: 'box',
+      colorIdx: 0,
+      landKey: null,
+    };
+
+    // カラーパレット初期化
+    function initColorPalette(){
+      const palette=document.getElementById('color-palette');
+      palette.innerHTML='';
+      COLORS.forEach((c,i)=>{
+        const sw=document.createElement('div');
+        sw.className='color-swatch'+(i===0?' selected':'');
+        sw.style.background=c.hex;
+        sw.title=c.name;
+        sw.onclick=()=>selectColor(i);
+        palette.appendChild(sw);
+      });
+    }
+    initColorPalette();
+
+    function selectColor(idx){
+      buildCustom.colorIdx=idx;
+      document.querySelectorAll('.color-swatch').forEach((s,i)=>s.classList.toggle('selected',i===idx));
+      updateBuildCost();
+    }
+
+    function selectShape(el){
+      buildCustom.shape=el.getAttribute('data-shape');
+      document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('selected'));
+      el.classList.add('selected');
+      updateBuildCost();
+    }
+
+    function onFloorsChange(val){
+      buildCustom.floors=parseInt(val);
+      const ja=currentLang==='ja';
+      document.getElementById('floors-val').textContent=ja?`${val}階`:`${val}F`;
+      updateBuildCost();
+    }
+
+    // コスト計算（形状・高さで変動）
+    function calcBuildCost(){
+      const shapeCost={box:0,slim:0,wide:50,cylinder:100};
+      const floorBonus=Math.floor(buildCustom.floors/20)*50;
+      return shapeCost[buildCustom.shape]+floorBonus;
+    }
+
+    function updateBuildCost(){
+      const cost=calcBuildCost();
+      document.getElementById('cost-val').textContent=cost;
+      // コインチェック（UI表示のみ）
+      const coinBalance=parseInt(document.getElementById('coin-count').textContent)||0;
+      const btn=document.getElementById('build-confirm-btn');
+      const ja=currentLang==='ja';
+      if(cost>0&&coinBalance<cost){
+        btn.disabled=true;
+        btn.textContent=ja?`コイン不足（必要:${cost}）`:`Not enough coins (${cost})`;
+      } else {
+        btn.disabled=false;
+        btn.textContent=ja?'🏢 建設する':'🏢 Build';
+      }
+    }
+
+    function openBuildModal(){
+      if(!selectedLandKey) return;
+      const{gx,gz}=keyToCoord(selectedLandKey);
+      buildCustom.landKey=selectedLandKey;
+      // リセット
+      buildCustom.floors=20; buildCustom.shape='box'; buildCustom.colorIdx=0;
+      document.getElementById('floors-slider').value=20;
+      document.getElementById('floors-val').textContent=currentLang==='ja'?'20階':'20F';
+      document.querySelectorAll('.shape-btn').forEach((b,i)=>b.classList.toggle('selected',i===0));
+      document.querySelectorAll('.color-swatch').forEach((s,i)=>s.classList.toggle('selected',i===0));
+      document.getElementById('build-modal-coord').textContent=`X:${gx} / Z:${gz}`;
+      updateBuildCost();
       closeLandPanel();
+      document.getElementById('build-modal').classList.add('open');
+    }
 
-      try {
-        const { error } = await db.from('buildings').insert({
-          x: gx, z: gz, floors,
-          style: 'default',
-          owner_id: currentUser.id,
-        });
-        if (error) throw error;
+    function closeBuildModal(){
+      document.getElementById('build-modal').classList.remove('open');
+    }
 
-        const { data: ud } = await db.from('users').select('coin_balance').eq('id', currentUser.id).single();
-        if (ud) {
-          const nb = (ud.coin_balance || 0) + 100;
-          await db.from('users').update({ coin_balance: nb }).eq('id', currentUser.id);
-          document.getElementById('coin-count').textContent = nb;
+    async function handleBuildConfirm(){
+      if(!buildCustom.landKey||!currentUser) return;
+      const{gx,gz}=keyToCoord(buildCustom.landKey);
+      const cost=calcBuildCost();
+      const ja=currentLang==='ja';
+      const btn=document.getElementById('build-confirm-btn');
+      btn.disabled=true; btn.textContent=ja?'建設中...':'Building...';
+
+      try{
+        // コイン残高確認＆減算
+        const{data:ud}=await db.from('users').select('coin_balance').eq('id',currentUser.id).single();
+        const balance=ud?ud.coin_balance||0:0;
+        if(cost>0&&balance<cost){
+          showToast(ja?`コインが足りません（必要：${cost}）`:`Not enough coins (need ${cost})`);
+          btn.disabled=false; btn.textContent=ja?'🏢 建設する':'🏢 Build'; return;
         }
-      } catch(e) {
-        console.warn('build error:', e.message);
+
+        // DB保存
+        const styleKey=`${buildCustom.shape}_${buildCustom.colorIdx}`;
+        const{error}=await db.from('buildings').insert({
+          x:gx, z:gz, floors:buildCustom.floors,
+          style:styleKey, owner_id:currentUser.id,
+        });
+        if(error) throw error;
+
+        // コイン処理（建設コスト引いて +100獲得）
+        const newCoins=balance-cost+100;
+        await db.from('users').update({coin_balance:newCoins}).eq('id',currentUser.id);
+        document.getElementById('coin-count').textContent=newCoins;
+
+        // 3Dビル追加
+        addBuilding(gx,gz,buildCustom.floors,buildCustom.shape,buildCustom.colorIdx,false);
+        closeBuildModal();
+        showToast(ja
+          ?`🏢 ${buildCustom.floors}階建て完成！${cost>0?`（-${cost}コイン）`:''}+100コイン獲得`
+          :`🏢 ${buildCustom.floors}F built! ${cost>0?`(-${cost} coins) `:''}+100 coins`);
+
+      }catch(e){
+        console.warn('build error:',e.message);
+        showToast(ja?'建設に失敗しました':'Build failed');
+        btn.disabled=false; btn.textContent=ja?'🏢 建設する':'🏢 Build';
       }
     }
 
     // =====================
     // ビル管理
     // =====================
-    let buildings = [];
+    let buildings=[];
 
-    function addBuilding(x, z, floors, fromDB = false) {
-      const height = floors * 0.5;
-      const mesh = BABYLON.MeshBuilder.CreateBox('b_'+Date.now(), {
-        width: 4 + Math.random() * 3,
-        height,
-        depth: 4 + Math.random() * 3
-      }, scene);
-      mesh.position = new BABYLON.Vector3(x, height / 2, z);
-      const mat = new BABYLON.StandardMaterial('bm_'+Date.now(), scene);
-      const hue = Math.random();
-      mat.diffuseColor = new BABYLON.Color3(0.1 + hue * 0.3, 0.2, 0.4 + hue * 0.3);
-      mat.specularColor = new BABYLON.Color3(0.5, 0.5, 0.8);
-      mesh.material = mat;
-      buildings.push({ x, z, floors, mesh });
-      document.getElementById('building-count').textContent = buildings.length;
-      if (!fromDB) {
-        showToast(`🏢 ${floors}${currentLang === 'ja' ? '階建て +100コイン' : ' floors +100 coins'}`);
+    function addBuilding(x, z, floors, shape='box', colorIdx=null, fromDB=false){
+      const height=floors*0.5;
+      const w=SHAPES[shape]?.w||5.5;
+      const d=SHAPES[shape]?.d||5.5;
+      let mesh;
+
+      if(shape==='cylinder'){
+        mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:16},scene);
+      } else {
+        mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:d},scene);
       }
+      mesh.position=new BABYLON.Vector3(x,height/2,z);
+
+      const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
+      if(colorIdx!==null&&COLORS[colorIdx]){
+        const c=COLORS[colorIdx];
+        mat.diffuseColor=new BABYLON.Color3(c.r,c.g,c.b);
+        mat.specularColor=new BABYLON.Color3(0.4,0.4,0.6);
+      } else {
+        // 旧ビル（DB由来でcolorIdxなし）はランダムカラー
+        const hue=Math.random();
+        mat.diffuseColor=new BABYLON.Color3(0.1+hue*0.3,0.2,0.4+hue*0.3);
+        mat.specularColor=new BABYLON.Color3(0.5,0.5,0.8);
+      }
+      mesh.material=mat;
+      buildings.push({x,z,floors,shape,colorIdx,mesh});
+      document.getElementById('building-count').textContent=buildings.length;
     }
 
-    async function loadBuildings() {
-      try {
-        const { data, error } = await db.from('buildings').select('*');
-        if (error) throw error;
-        data.forEach(b => addBuilding(b.x, b.z, b.floors, true));
-      } catch(e) {
-        console.warn('Supabase error:', e.message);
-        [[0,0,20],[10,5,35],[-8,12,15],[15,-10,50],[-15,-5,28]].forEach(([x,z,f]) => addBuilding(x,z,f,true));
+    async function loadBuildings(){
+      try{
+        const{data,error}=await db.from('buildings').select('*');
+        if(error) throw error;
+        data.forEach(b=>{
+          // styleカラムから shape と colorIdx を復元
+          let shape='box', colorIdx=null;
+          if(b.style&&b.style!=='default'){
+            const parts=b.style.split('_');
+            if(parts.length>=2){
+              shape=parts[0];
+              colorIdx=parseInt(parts[1]);
+              if(isNaN(colorIdx)) colorIdx=null;
+            }
+          }
+          addBuilding(b.x,b.z,b.floors,shape,colorIdx,true);
+        });
+      }catch(e){
+        console.warn('Supabase error:',e.message);
+        [[0,0,20,'box',0],[10,5,35,'slim',2],[-8,12,15,'wide',4],[15,-10,50,'cylinder',1],[-15,-5,28,'box',6]]
+          .forEach(([x,z,f,s,c])=>addBuilding(x,z,f,s,c,true));
       }
       finishLoading();
     }
 
-    // =====================
-    // ビル建設ボタン（ランダム配置）
-    // =====================
-    document.getElementById('build-btn').addEventListener('click', async () => {
-      const x = (Math.floor(Math.random() * 20) - 10) * CELL;
-      const z = (Math.floor(Math.random() * 20) - 10) * CELL;
-      const floors = Math.floor(Math.random() * 50) + 5;
-      addBuilding(x, z, floors);
+    // ランダムビル建設ボタン
+    document.getElementById('build-btn').addEventListener('click',async()=>{
+      const x=(Math.floor(Math.random()*20)-10)*CELL;
+      const z=(Math.floor(Math.random()*20)-10)*CELL;
+      const floors=Math.floor(Math.random()*50)+5;
+      const colorIdx=Math.floor(Math.random()*COLORS.length);
+      const shapes=Object.keys(SHAPES);
+      const shape=shapes[Math.floor(Math.random()*shapes.length)];
+      addBuilding(x,z,floors,shape,colorIdx,false);
+      showToast(currentLang==='ja'?`🏢 ${floors}階建て建設！`:` 🏢 ${floors} floors built!`);
 
-      if (!currentUser) {
-        showToast(currentLang === 'ja'
-          ? `🏢 ${floors}階建て（ログインで保存できます）`
-          : `🏢 ${floors} floors (Login to save)`);
-        return;
-      }
-
-      try {
-        const { error } = await db.from('buildings').insert({
-          x, z, floors,
-          style: 'default',
-          owner_id: currentUser.id,
-        });
-        if (error) throw error;
-
-        const { data: ud } = await db.from('users').select('coin_balance').eq('id', currentUser.id).single();
-        if (ud) {
-          const nb = (ud.coin_balance || 0) + 100;
-          await db.from('users').update({ coin_balance: nb }).eq('id', currentUser.id);
-          document.getElementById('coin-count').textContent = nb;
+      if(!currentUser) return;
+      try{
+        const styleKey=`${shape}_${colorIdx}`;
+        const{error}=await db.from('buildings').insert({x,z,floors,style:styleKey,owner_id:currentUser.id});
+        if(error) throw error;
+        const{data:ud}=await db.from('users').select('coin_balance').eq('id',currentUser.id).single();
+        if(ud){
+          const nb=(ud.coin_balance||0)+100;
+          await db.from('users').update({coin_balance:nb}).eq('id',currentUser.id);
+          document.getElementById('coin-count').textContent=nb;
         }
-      } catch(e) {
-        console.warn('保存エラー:', e.message);
-      }
+      }catch(e){console.warn('保存エラー:',e.message);}
     });
 
-    // =====================
     // グリッドクリック → 土地パネル
-    // =====================
-    scene.onPointerObservable.add((pointerInfo) => {
-      if (isFlying) return; // 飛行中は無効
-      if (pointerInfo.type !== BABYLON.PointerEventTypes.POINTERTAP) return;
-
-      const pick = scene.pick(scene.pointerX, scene.pointerY);
-      if (!pick.hit || !pick.pickedMesh) return;
-
-      // 地面をタップした場合のみ反応
-      if (pick.pickedMesh.name === 'ground') {
-        const wp = pick.pickedPoint;
-        const { gx, gz } = worldToGrid(wp.x, wp.z);
-        if (Math.abs(gx) <= GRID_HALF && Math.abs(gz) <= GRID_HALF) {
-          openLandPanel(gx, gz);
-        }
+    scene.onPointerObservable.add((pointerInfo)=>{
+      if(isFlying) return;
+      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP) return;
+      const pick=scene.pick(scene.pointerX,scene.pointerY);
+      if(!pick.hit||!pick.pickedMesh) return;
+      if(pick.pickedMesh.name==='ground'){
+        const wp=pick.pickedPoint;
+        const{gx,gz}=worldToGrid(wp.x,wp.z);
+        if(Math.abs(gx)<=GRID_HALF&&Math.abs(gz)<=GRID_HALF) openLandPanel(gx,gz);
       }
     });
 
-    // =====================
-    // レンダーループ
-    // =====================
-    engine.runRenderLoop(() => scene.render());
-    window.addEventListener('resize', () => engine.resize());
+    engine.runRenderLoop(()=>scene.render());
+    window.addEventListener('resize',()=>engine.resize());
 
-    // =====================
-    // 初期化
-    // =====================
-    (async () => {
+    (async()=>{
       await restoreSession();
-      await Promise.all([loadBuildings(), loadLands()]);
+      await Promise.all([loadBuildings(),loadLands()]);
     })();
   </script>
 </body>

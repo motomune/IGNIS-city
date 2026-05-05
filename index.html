@@ -23,26 +23,21 @@
     #stats { display: flex; gap: 24px; font-size: 13px; color: rgba(255,255,255,0.7); }
     #stats span { font-weight: 700; color: #ff6a00; }
     #user-area { display: flex; align-items: center; gap: 10px; pointer-events: all; }
-
     #lang-btn {
       background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
-      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s;
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
     }
     #lang-btn:hover { opacity: 0.85; }
     #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.7); padding: 5px 14px; border-radius: 20px;
-      font-size: 12px; cursor: pointer; transition: all 0.2s;
+      color: rgba(255,255,255,0.7); padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer;
     }
     #logout-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
     #login-btn-header {
       background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
-      padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700;
-      cursor: pointer; pointer-events: all; transition: opacity 0.2s;
+      padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; pointer-events: all;
     }
-    #login-btn-header:hover { opacity: 0.85; }
 
     #bottom-btns {
       position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
@@ -77,8 +72,7 @@
 
     #loading {
       position: fixed; inset: 0; background: #0a0a0f; display: flex;
-      flex-direction: column; align-items: center; justify-content: center;
-      z-index: 100; transition: opacity 0.8s;
+      flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.8s;
     }
     #loading-logo {
       font-size: 36px; font-weight: 900; letter-spacing: 0.3em;
@@ -92,138 +86,173 @@
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(255,106,0,0.9); color: #fff; padding: 10px 24px;
       border-radius: 20px; font-size: 14px; font-weight: 700; opacity: 0;
-      transition: opacity 0.3s; z-index: 20; pointer-events: none; white-space: nowrap;
+      transition: opacity 0.3s; z-index: 25; pointer-events: none; white-space: nowrap;
     }
 
     #fire-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 201; display: none; }
 
-    /* =====================
-       土地情報パネル
-    ===================== */
+    /* 土地パネル */
     #land-panel {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(10,10,20,0.92); border: 1px solid rgba(255,106,0,0.4);
       border-radius: 18px; padding: 20px 28px 18px; min-width: 280px; max-width: 92vw;
       z-index: 15; pointer-events: all; display: none;
-      backdrop-filter: blur(12px); box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(255,106,0,0.1);
+      backdrop-filter: blur(12px); box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     }
     #land-panel.open { display: block; }
     #land-panel-close {
       position: absolute; top: 10px; right: 14px; background: none; border: none;
-      color: rgba(255,255,255,0.3); font-size: 20px; cursor: pointer; transition: color 0.2s;
+      color: rgba(255,255,255,0.3); font-size: 20px; cursor: pointer;
     }
     #land-panel-close:hover { color: #fff; }
     #land-panel-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.12em; margin-bottom: 5px; }
     #land-panel-coord { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 8px; }
-    #land-panel-owner { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 14px; min-height: 18px; }
+    #land-panel-owner { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 14px; }
     #land-panel-owner .owner-name { color: #ff6a00; font-weight: 700; }
-    #land-buy-btn {
-      width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none;
-      color: #fff; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s;
+    #land-panel-building { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 10px; min-height: 16px; }
+    .land-panel-btn {
+      width: 100%; border: none; color: #fff; padding: 11px; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; margin-top: 8px;
     }
-    #land-buy-btn:hover { opacity: 0.85; }
-    #land-buy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    #land-build-btn {
-      width: 100%; background: linear-gradient(135deg, #22c55e, #16a34a); border: none;
-      color: #fff; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s; margin-top: 8px;
-    }
-    #land-build-btn:hover { opacity: 0.85; }
+    .land-panel-btn:first-of-type { margin-top: 0; }
+    .land-panel-btn:hover { opacity: 0.85; }
+    .land-panel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    #land-buy-btn { background: linear-gradient(135deg, #ff6a00, #ee0979); }
+    #land-gacha-btn { background: linear-gradient(135deg, #a855f7, #6366f1); }
+    #land-rebuild-btn { background: linear-gradient(135deg, #f59e0b, #ef4444); }
 
     /* =====================
-       ビルカスタマイズモーダル (STEP 3)
+       ガチャモーダル
     ===================== */
+    #gacha-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+      z-index: 160; align-items: center; justify-content: center;
+    }
+    #gacha-modal.open { display: flex; }
+    #gacha-box {
+      background: #0a0a14; border: 1px solid rgba(168,85,247,0.4); border-radius: 24px;
+      padding: 32px 32px 28px; width: 360px; max-width: 94vw; position: relative;
+      box-shadow: 0 0 60px rgba(168,85,247,0.2), 0 20px 60px rgba(0,0,0,0.8);
+      text-align: center;
+    }
+    #gacha-modal-close {
+      position: absolute; top: 14px; right: 18px; background: none; border: none;
+      color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer;
+    }
+    #gacha-modal-close:hover { color: #fff; }
+    #gacha-title {
+      font-size: 22px; font-weight: 900; letter-spacing: 0.1em;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    #gacha-coord { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 20px; }
+
+    /* 確率表 */
+    .gacha-rates { margin-bottom: 20px; }
+    .rate-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 12px; border-radius: 8px; margin-bottom: 4px;
+      background: rgba(255,255,255,0.04); font-size: 13px;
+    }
+    .rate-row .stars { font-weight: 900; }
+    .rate-row .floors-range { color: rgba(255,255,255,0.5); font-size: 12px; }
+    .rate-row .prob { font-weight: 700; color: #a855f7; }
+    .star1 { color: #94a3b8; }
+    .star2 { color: #22c55e; }
+    .star3 { color: #3b82f6; }
+    .star4 { color: #f59e0b; }
+    .star5 { color: #ee0979; }
+
+    #gacha-cost-info {
+      font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 18px;
+    }
+    #gacha-cost-info span { color: #a855f7; font-weight: 700; }
+
+    #gacha-spin-btn {
+      width: 100%; background: linear-gradient(135deg, #a855f7, #6366f1); border: none;
+      color: #fff; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 900;
+      cursor: pointer; letter-spacing: 0.05em; transition: opacity 0.2s;
+      box-shadow: 0 4px 30px rgba(168,85,247,0.4);
+    }
+    #gacha-spin-btn:hover { opacity: 0.85; }
+    #gacha-spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ガチャ演出オーバーレイ */
+    #gacha-result-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92); z-index: 300;
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    #gacha-result-overlay.show { display: flex; }
+    #gacha-result-star {
+      font-size: 60px; margin-bottom: 12px;
+      animation: starPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes starPop {
+      0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    #gacha-result-rank {
+      font-size: 32px; font-weight: 900; letter-spacing: 0.15em; margin-bottom: 8px;
+    }
+    #gacha-result-floors {
+      font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 24px; font-weight: 700;
+    }
+    #gacha-result-close {
+      background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: #fff;
+      padding: 12px 40px; border-radius: 30px; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    #gacha-result-close:hover { opacity: 0.85; }
+
+    /* ビル設計モーダル（ガチャ後の形状選択） */
     #build-modal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
       z-index: 150; align-items: center; justify-content: center;
     }
     #build-modal.open { display: flex; }
-
     #build-box {
       background: #0f0f18; border: 1px solid rgba(255,106,0,0.35); border-radius: 22px;
-      padding: 28px 28px 24px; width: 380px; max-width: 94vw;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(255,106,0,0.1);
-      position: relative;
+      padding: 28px 28px 24px; width: 360px; max-width: 94vw; position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
     }
     #build-modal-close {
       position: absolute; top: 14px; right: 18px; background: none; border: none;
-      color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer; transition: color 0.2s;
+      color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer;
     }
     #build-modal-close:hover { color: #fff; }
     #build-modal-title {
       font-size: 18px; font-weight: 900; letter-spacing: 0.1em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;
     }
-    #build-modal-coord {
-      font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 20px; letter-spacing: 0.05em;
-    }
-
-    /* セクションラベル */
+    #build-modal-info { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
     .custom-label {
       font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
       letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px;
     }
-
-    /* 高さスライダー */
-    .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-    #floors-slider {
-      flex: 1; -webkit-appearance: none; appearance: none;
-      height: 4px; border-radius: 4px; outline: none; cursor: pointer;
-      background: linear-gradient(to right, #ff6a00, #ee0979);
-    }
-    #floors-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-      background: #fff; box-shadow: 0 0 8px rgba(255,106,0,0.6); cursor: pointer;
-    }
-    #floors-val {
-      font-size: 15px; font-weight: 900; color: #ff6a00; min-width: 40px; text-align: right;
-    }
-
-    /* 形状選択 */
-    .shape-grid { display: flex; gap: 8px; margin-bottom: 18px; }
+    .shape-grid { display: flex; gap: 8px; margin-bottom: 22px; }
     .shape-btn {
       flex: 1; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.12);
       border-radius: 10px; padding: 10px 4px; text-align: center;
       cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.6);
     }
     .shape-btn:hover { background: rgba(255,255,255,0.1); }
-    .shape-btn.selected {
-      border-color: #ff6a00; background: rgba(255,106,0,0.15); color: #fff;
-    }
+    .shape-btn.selected { border-color: #ff6a00; background: rgba(255,106,0,0.15); color: #fff; }
     .shape-btn .shape-icon { font-size: 22px; display: block; margin-bottom: 4px; }
-    .shape-btn .shape-name { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
-
-    /* カラーパレット */
-    .color-palette { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
-    .color-swatch {
-      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-      border: 2.5px solid transparent; transition: transform 0.15s, border-color 0.15s;
-      flex-shrink: 0;
-    }
-    .color-swatch:hover { transform: scale(1.15); }
-    .color-swatch.selected { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.4); }
-
-    /* プレビューコスト */
-    #build-cost {
-      font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 14px; text-align: center;
-    }
-    #build-cost span { color: #ff6a00; font-weight: 700; }
-
+    .shape-btn .shape-name { font-size: 11px; font-weight: 700; }
     #build-confirm-btn {
       width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none;
       color: #fff; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700;
-      letter-spacing: 0.05em; cursor: pointer; transition: opacity 0.2s;
+      cursor: pointer; transition: opacity 0.2s;
     }
     #build-confirm-btn:hover { opacity: 0.85; }
     #build-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* =====================
-       認証モーダル
-    ===================== */
+    /* 認証モーダル */
     #auth-modal {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
       backdrop-filter: blur(10px); z-index: 200; align-items: center; justify-content: center;
@@ -232,19 +261,14 @@
     #auth-box {
       background: #0f0f18; border: 1px solid rgba(255,106,0,0.35); border-radius: 22px;
       padding: 36px 36px 28px; width: 380px; max-width: 92vw;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 50px rgba(255,106,0,0.12);
-      position: relative; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7); position: relative; overflow: hidden;
     }
     #auth-box::before {
       content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
       width: 200px; height: 80px;
-      background: radial-gradient(ellipse, rgba(255,106,0,0.2) 0%, transparent 70%);
-      pointer-events: none;
+      background: radial-gradient(ellipse, rgba(255,106,0,0.2) 0%, transparent 70%); pointer-events: none;
     }
-    #auth-header-fire {
-      text-align: center; font-size: 30px; line-height: 1; margin-bottom: 4px;
-      animation: fireFlicker 1.5s ease-in-out infinite alternate;
-    }
+    #auth-header-fire { text-align: center; font-size: 30px; margin-bottom: 4px; animation: fireFlicker 1.5s ease-in-out infinite alternate; }
     @keyframes fireFlicker {
       0%   { filter: brightness(1) drop-shadow(0 0 6px #ff6a00); transform: scaleY(1); }
       50%  { filter: brightness(1.4) drop-shadow(0 0 14px #ff3300); transform: scaleY(1.06); }
@@ -253,24 +277,16 @@
     #auth-title {
       font-size: 22px; font-weight: 900; letter-spacing: 0.15em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      text-align: center; margin-bottom: 4px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; margin-bottom: 4px;
     }
     #auth-subtitle { font-size: 12px; color: rgba(255,255,255,0.35); text-align: center; margin-bottom: 22px; }
-    .auth-tab-wrap {
-      display: flex; margin-bottom: 18px; background: rgba(255,255,255,0.05);
-      border-radius: 10px; padding: 4px;
-    }
-    .auth-tab {
-      flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 700;
-      color: rgba(255,255,255,0.4); cursor: pointer; border-radius: 7px; transition: all 0.2s;
-    }
+    .auth-tab-wrap { display: flex; margin-bottom: 18px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 4px; }
+    .auth-tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); cursor: pointer; border-radius: 7px; transition: all 0.2s; }
     .auth-tab.active { background: linear-gradient(135deg, #ff6a00, #ee0979); color: #fff; }
     .auth-input-wrap { position: relative; margin-bottom: 10px; }
     .auth-input {
       width: 100%; background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1);
-      border-radius: 10px; padding: 12px 16px; color: #fff; font-size: 14px; outline: none;
-      transition: border-color 0.25s, box-shadow 0.25s;
+      border-radius: 10px; padding: 12px 16px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.25s, box-shadow 0.25s;
     }
     .auth-input::placeholder { color: rgba(255,255,255,0.25); }
     .auth-input:focus { border-color: rgba(255,106,0,0.7) !important; box-shadow: 0 0 12px rgba(255,106,0,0.2) !important; animation: none !important; }
@@ -281,32 +297,31 @@
     }
     .auth-input.done { border-color: #22c55e !important; box-shadow: 0 0 10px rgba(34,197,94,0.3) !important; animation: none !important; }
     #username-field { display: none; }
-    #pw-checks {
-      display: none; background: rgba(255,255,255,0.04); border-radius: 10px;
-      padding: 12px 16px; margin-bottom: 12px; flex-direction: column; gap: 7px;
-    }
+    #pw-checks { display: none; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; flex-direction: column; gap: 7px; }
     #pw-checks.visible { display: flex; }
     .pw-check-item { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.32); transition: color 0.25s; }
     .pw-check-item.ok { color: #22c55e; }
-    .pw-check-item .check-icon {
-      width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.18);
-      display: flex; align-items: center; justify-content: center; font-size: 10px;
-      flex-shrink: 0; transition: all 0.25s; color: transparent;
-    }
+    .pw-check-item .check-icon { width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; transition: all 0.25s; color: transparent; }
     .pw-check-item.ok .check-icon { background: #22c55e; border-color: #22c55e; color: #fff; }
-    #auth-submit {
-      width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none;
-      color: #fff; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 700;
-      cursor: pointer; margin-top: 2px; transition: opacity 0.2s;
-    }
+    #auth-submit { width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 2px; transition: opacity 0.2s; }
     #auth-submit:hover { opacity: 0.85; }
     #auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     #auth-error { font-size: 12px; margin-top: 10px; text-align: center; min-height: 18px; color: #ff4444; }
-    #auth-close {
-      position: absolute; top: 14px; right: 18px; background: none; border: none;
-      color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer; transition: color 0.2s;
-    }
+    #auth-close { position: absolute; top: 14px; right: 18px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer; }
     #auth-close:hover { color: #fff; }
+
+    /* 金・虹アニメーション */
+    @keyframes goldShine {
+      0%,100% { filter: brightness(1) drop-shadow(0 0 8px #f59e0b); }
+      50% { filter: brightness(1.6) drop-shadow(0 0 20px #fbbf24) drop-shadow(0 0 40px #f59e0b); }
+    }
+    @keyframes rainbowHue {
+      0%   { filter: hue-rotate(0deg) brightness(1.3) drop-shadow(0 0 12px #ff0000); }
+      25%  { filter: hue-rotate(90deg) brightness(1.3) drop-shadow(0 0 12px #00ff00); }
+      50%  { filter: hue-rotate(180deg) brightness(1.3) drop-shadow(0 0 12px #0000ff); }
+      75%  { filter: hue-rotate(270deg) brightness(1.3) drop-shadow(0 0 12px #ff00ff); }
+      100% { filter: hue-rotate(360deg) brightness(1.3) drop-shadow(0 0 12px #ff0000); }
+    }
   </style>
 </head>
 <body>
@@ -344,38 +359,57 @@
     </div>
   </div>
 
-  <div id="fly-hint">🕊 WASD / スワイプで飛行 ｜ スクロールで速度調整</div>
+  <div id="fly-hint">🕊 WASD / スワイプで飛行</div>
 
   <div id="bottom-btns">
     <button id="build-btn" data-i18n="build-btn">＋ ビルを建てる</button>
-    <button id="mode-btn" onclick="toggleFlyMode()" data-i18n="fly-mode">🕊 飛行モード</button>
+    <button id="mode-btn" onclick="toggleFlyMode()">🕊 飛行モード</button>
   </div>
 
-  <!-- 土地情報パネル -->
+  <!-- 土地パネル -->
   <div id="land-panel">
     <button id="land-panel-close" onclick="closeLandPanel()">×</button>
     <div id="land-panel-title">📍 LAND</div>
     <div id="land-panel-coord">-</div>
     <div id="land-panel-owner"></div>
-    <button id="land-buy-btn" onclick="handleLandBuy()">🔥 この土地を購入（500コイン）</button>
-    <button id="land-build-btn" onclick="openBuildModal()" style="display:none;">🏢 ここにビルを建てる</button>
+    <div id="land-panel-building"></div>
+    <button id="land-buy-btn" class="land-panel-btn" onclick="handleLandBuy()">🔥 この土地を購入（0コイン）</button>
+    <button id="land-gacha-btn" class="land-panel-btn" onclick="openGachaModal()" style="display:none;">🎰 ガチャでビルを建てる（50コイン）</button>
+    <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">🔄 ガチャで建て替える（50コイン）</button>
   </div>
 
-  <!-- ビルカスタマイズモーダル (STEP 3) -->
+  <!-- ガチャモーダル -->
+  <div id="gacha-modal">
+    <div id="gacha-box">
+      <button id="gacha-modal-close" onclick="closeGachaModal()">×</button>
+      <div id="gacha-title">🎰 ビルガチャ</div>
+      <div id="gacha-coord"></div>
+      <div class="gacha-rates">
+        <div class="rate-row"><span class="stars star5">★★★★★</span><span class="floors-range">48〜50階</span><span class="prob">0.8%</span></div>
+        <div class="rate-row"><span class="stars star4">★★★★</span><span class="floors-range">40〜47階</span><span class="prob">2.2%</span></div>
+        <div class="rate-row"><span class="stars star3">★★★</span><span class="floors-range">30〜39階</span><span class="prob">17%</span></div>
+        <div class="rate-row"><span class="stars star2">★★</span><span class="floors-range">20〜29階</span><span class="prob">30%</span></div>
+        <div class="rate-row"><span class="stars star1">★</span><span class="floors-range">1〜19階</span><span class="prob">50%</span></div>
+      </div>
+      <div id="gacha-cost-info">消費コイン：<span>50</span>コイン</div>
+      <button id="gacha-spin-btn" onclick="handleGachaSpin()">🎰 ガチャを回す</button>
+    </div>
+  </div>
+
+  <!-- ガチャ演出オーバーレイ -->
+  <div id="gacha-result-overlay">
+    <div id="gacha-result-star"></div>
+    <div id="gacha-result-rank"></div>
+    <div id="gacha-result-floors"></div>
+    <button id="gacha-result-close" onclick="onGachaResultClose()">建設する →</button>
+  </div>
+
+  <!-- ビル設計モーダル（ガチャ後） -->
   <div id="build-modal">
     <div id="build-box">
       <button id="build-modal-close" onclick="closeBuildModal()">×</button>
-      <div id="build-modal-title">🏗 ビルを設計する</div>
-      <div id="build-modal-coord"></div>
-
-      <!-- 高さ -->
-      <div class="custom-label">🏢 高さ（階数）</div>
-      <div class="slider-row">
-        <input type="range" id="floors-slider" min="3" max="80" value="20" oninput="onFloorsChange(this.value)">
-        <div id="floors-val">20階</div>
-      </div>
-
-      <!-- 形状 -->
+      <div id="build-modal-title">🏗 形状を選ぶ</div>
+      <div id="build-modal-info"></div>
       <div class="custom-label">🔷 形状</div>
       <div class="shape-grid">
         <div class="shape-btn selected" data-shape="box" onclick="selectShape(this)">
@@ -391,14 +425,6 @@
           <span class="shape-icon">🛢</span><span class="shape-name">円柱</span>
         </div>
       </div>
-
-      <!-- カラー -->
-      <div class="custom-label">🎨 カラー</div>
-      <div class="color-palette" id="color-palette"></div>
-
-      <!-- コスト表示 -->
-      <div id="build-cost">建設コスト：<span id="cost-val">0</span>コイン　→　+100コイン獲得</div>
-
       <button id="build-confirm-btn" onclick="handleBuildConfirm()">🏢 建設する</button>
     </div>
   </div>
@@ -409,16 +435,8 @@
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" onclick="closeAuthModal()">×</button>
-      <button onclick="toggleLang()" style="
-        position:absolute; top:14px; left:18px;
-        background: linear-gradient(135deg, #ff6a00, #ee0979);
-        border:none; color:#fff; padding:4px 12px; border-radius:20px;
-        font-size:11px; font-weight:700; cursor:pointer;
-      ">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;">
-          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
+      <button onclick="toggleLang()" style="position:absolute;top:14px;left:18px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         <span id="auth-lang-label">EN</span>
       </button>
       <div id="auth-header-fire">🔥</div>
@@ -428,23 +446,9 @@
         <div class="auth-tab active" id="tab-login" onclick="switchTab('login')" data-i18n="tab-login">ログイン</div>
         <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')" data-i18n="tab-signup">新規登録</div>
       </div>
-      <div id="username-field">
-        <div class="auth-input-wrap">
-          <input class="auth-input" id="input-username" type="text"
-            data-placeholder-ja="ユーザー名（表示名）" data-placeholder-en="Username (display name)"
-            placeholder="ユーザー名（表示名）" autocomplete="off">
-        </div>
-      </div>
-      <div class="auth-input-wrap">
-        <input class="auth-input" id="input-email" type="email"
-          data-placeholder-ja="メールアドレス" data-placeholder-en="Email address"
-          placeholder="メールアドレス" autocomplete="email">
-      </div>
-      <div class="auth-input-wrap">
-        <input class="auth-input" id="input-password" type="password"
-          data-placeholder-ja="パスワード（8文字以上）" data-placeholder-en="Password (8+ characters)"
-          placeholder="パスワード（8文字以上）" autocomplete="current-password">
-      </div>
+      <div id="username-field"><div class="auth-input-wrap"><input class="auth-input" id="input-username" type="text" data-placeholder-ja="ユーザー名（表示名）" data-placeholder-en="Username (display name)" placeholder="ユーザー名（表示名）" autocomplete="off"></div></div>
+      <div class="auth-input-wrap"><input class="auth-input" id="input-email" type="email" data-placeholder-ja="メールアドレス" data-placeholder-en="Email address" placeholder="メールアドレス" autocomplete="email"></div>
+      <div class="auth-input-wrap"><input class="auth-input" id="input-password" type="password" data-placeholder-ja="パスワード（8文字以上）" data-placeholder-en="Password (8+ characters)" placeholder="パスワード（8文字以上）" autocomplete="current-password"></div>
       <div id="pw-checks">
         <div class="pw-check-item" id="check-length"><div class="check-icon">✓</div><span data-i18n="pw-length">8文字以上</span></div>
         <div class="pw-check-item" id="check-upper"><div class="check-icon">✓</div><span data-i18n="pw-upper">大文字（A-Z）を含む</span></div>
@@ -458,7 +462,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
-
   <script>
     // =====================
     // Supabase
@@ -469,31 +472,72 @@
     let currentUser = null;
 
     // =====================
+    // 定数
+    // =====================
+    const LAND_COST = 0;       // テスト中は0
+    const GACHA_COST = 50;
+    const CELL = 10, GRID_HALF = 100;
+
+    // 従業員数→カラー閾値
+    const EMP_COLORS = [
+      { min: 1000, name: 'rainbow', r: 1.0, g: 0.0, b: 1.0, label: '🌈 虹' },
+      { min: 300,  name: 'gold',    r: 0.98, g: 0.75, b: 0.1, label: '🥇 金' },
+      { min: 100,  name: 'red',     r: 0.94, g: 0.18, b: 0.18, label: '🔴 赤' },
+      { min: 30,   name: 'white',   r: 0.95, g: 0.95, b: 0.97, label: '⚪ 白' },
+      { min: 0,    name: 'default', r: 0.2,  g: 0.25, b: 0.65, label: '🔵 標準' },
+    ];
+
+    function getColorByEmployees(emp) {
+      for (const c of EMP_COLORS) { if (emp >= c.min) return c; }
+      return EMP_COLORS[EMP_COLORS.length - 1];
+    }
+
+    // 従業員数によるボーナス階数（5人ごとに1階、最大200階上限）
+    function calcTotalFloors(baseFloors, employees) {
+      const bonus = Math.floor(employees / 5);
+      return Math.min(baseFloors + bonus, 200);
+    }
+
+    // ガチャ抽選テーブル
+    const GACHA_TABLE = [
+      { star: 5, label: '★★★★★', minF: 48, maxF: 50,  prob: 0.008 },
+      { star: 4, label: '★★★★',  minF: 40, maxF: 47,  prob: 0.022 },
+      { star: 3, label: '★★★',   minF: 30, maxF: 39,  prob: 0.17  },
+      { star: 2, label: '★★',    minF: 20, maxF: 29,  prob: 0.30  },
+      { star: 1, label: '★',     minF: 1,  maxF: 19,  prob: 0.50  },
+    ];
+
+    function rollGacha() {
+      const r = Math.random();
+      let cumulative = 0;
+      for (const g of GACHA_TABLE) {
+        cumulative += g.prob;
+        if (r < cumulative) {
+          const floors = Math.floor(Math.random() * (g.maxF - g.minF + 1)) + g.minF;
+          return { ...g, floors };
+        }
+      }
+      return { ...GACHA_TABLE[GACHA_TABLE.length - 1], floors: 10 };
+    }
+
+    // =====================
     // 多言語
     // =====================
     let currentLang = 'ja';
     const i18n = {
       ja: {
         'buildings':'ビル数','buildings-unit':'棟','coins':'コイン',
-        'login-btn':'ログイン / 登録','logout':'ログアウト',
-        'build-btn':'＋ ビルを建てる','auth-subtitle':'街づくりに参加しよう',
-        'tab-login':'ログイン','tab-signup':'新規登録',
+        'login-btn':'ログイン / 登録','logout':'ログアウト','build-btn':'＋ ビルを建てる',
+        'auth-subtitle':'街づくりに参加しよう','tab-login':'ログイン','tab-signup':'新規登録',
         'submit-login':'ログイン','submit-signup':'登録する','processing':'処理中...',
-        'pw-length':'8文字以上','pw-upper':'大文字（A-Z）を含む',
-        'pw-lower':'小文字（a-z）を含む','pw-number':'数字（0-9）を含む',
-        'fly-mode':'🕊 飛行モード','build-mode':'🏙 街づくりモード',
-        'fly-hint':'🕊 WASD / スワイプで飛行 ｜ スクロールで速度調整',
+        'pw-length':'8文字以上','pw-upper':'大文字（A-Z）を含む','pw-lower':'小文字（a-z）を含む','pw-number':'数字（0-9）を含む',
       },
       en: {
         'buildings':'Buildings','buildings-unit':'','coins':'Coins',
-        'login-btn':'Login / Register','logout':'Logout',
-        'build-btn':'＋ Build','auth-subtitle':'Join the city building',
-        'tab-login':'Login','tab-signup':'Sign Up',
+        'login-btn':'Login / Register','logout':'Logout','build-btn':'＋ Build',
+        'auth-subtitle':'Join the city building','tab-login':'Login','tab-signup':'Sign Up',
         'submit-login':'Login','submit-signup':'Register','processing':'Processing...',
-        'pw-length':'8+ characters','pw-upper':'Uppercase (A-Z)',
-        'pw-lower':'Lowercase (a-z)','pw-number':'Number (0-9)',
-        'fly-mode':'🕊 Fly Mode','build-mode':'🏙 Build Mode',
-        'fly-hint':'🕊 WASD / Swipe to fly | Scroll to adjust speed',
+        'pw-length':'8+ chars','pw-upper':'Uppercase (A-Z)','pw-lower':'Lowercase (a-z)','pw-number':'Number (0-9)',
       }
     };
     function toggleLang() {
@@ -505,14 +549,8 @@
     }
     function applyLang() {
       const t = i18n[currentLang];
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const k = el.getAttribute('data-i18n');
-        if (t[k] !== undefined) el.textContent = t[k];
-      });
-      document.querySelectorAll('[data-placeholder-ja]').forEach(el => {
-        el.placeholder = currentLang === 'ja' ? el.getAttribute('data-placeholder-ja') : el.getAttribute('data-placeholder-en');
-      });
-      document.getElementById('fly-hint').textContent = t['fly-hint'];
+      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (t[k]) el.textContent = t[k]; });
+      document.querySelectorAll('[data-placeholder-ja]').forEach(el => { el.placeholder = currentLang === 'ja' ? el.getAttribute('data-placeholder-ja') : el.getAttribute('data-placeholder-en'); });
       const submitKey = authMode === 'login' ? 'submit-login' : 'submit-signup';
       document.getElementById('auth-submit').textContent = t[submitKey];
     }
@@ -524,66 +562,35 @@
     const fCtx = fireCanvas.getContext('2d');
     let fireParticles = [], fireAnimId = null;
     function resizeFireCanvas() { fireCanvas.width = window.innerWidth; fireCanvas.height = window.innerHeight; }
-    resizeFireCanvas();
-    window.addEventListener('resize', resizeFireCanvas);
-    function spawnParticle() {
-      fireParticles.push({
-        x: Math.random()*window.innerWidth, y: window.innerHeight+10,
-        vx:(Math.random()-0.5)*2, vy:-(Math.random()*4.5+2.5),
-        size:Math.random()*3.5+1, alpha:Math.random()*0.7+0.4,
-        color:['#ff6a00','#ee0979','#ffcc00','#ff4400','#ff9900'][Math.floor(Math.random()*5)],
-        life:0, maxLife:Math.random()*140+100,
-      });
-    }
+    resizeFireCanvas(); window.addEventListener('resize', resizeFireCanvas);
+    function spawnParticle() { fireParticles.push({ x:Math.random()*window.innerWidth, y:window.innerHeight+10, vx:(Math.random()-0.5)*2, vy:-(Math.random()*4.5+2.5), size:Math.random()*3.5+1, alpha:Math.random()*0.7+0.4, color:['#ff6a00','#ee0979','#ffcc00','#ff4400','#ff9900'][Math.floor(Math.random()*5)], life:0, maxLife:Math.random()*140+100 }); }
     function drawFire() {
-      fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);
-      for(let i=0;i<4;i++) spawnParticle();
-      fireParticles = fireParticles.filter(p=>p.life<p.maxLife);
-      fireParticles.forEach(p=>{
-        p.life++; p.x+=p.vx+Math.sin(p.life*0.15)*0.5; p.y+=p.vy;
-        const prog=p.life/p.maxLife;
-        fCtx.beginPath(); fCtx.arc(p.x,p.y,p.size*(1-prog*0.5),0,Math.PI*2);
-        fCtx.fillStyle=p.color; fCtx.globalAlpha=p.alpha*(1-prog); fCtx.fill(); fCtx.globalAlpha=1;
-      });
+      fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height); for(let i=0;i<4;i++) spawnParticle();
+      fireParticles=fireParticles.filter(p=>p.life<p.maxLife);
+      fireParticles.forEach(p=>{ p.life++; p.x+=p.vx+Math.sin(p.life*0.15)*0.5; p.y+=p.vy; const prog=p.life/p.maxLife; fCtx.beginPath(); fCtx.arc(p.x,p.y,p.size*(1-prog*0.5),0,Math.PI*2); fCtx.fillStyle=p.color; fCtx.globalAlpha=p.alpha*(1-prog); fCtx.fill(); fCtx.globalAlpha=1; });
       fireAnimId=requestAnimationFrame(drawFire);
     }
     function startFire() { fireCanvas.style.display='block'; if(!fireAnimId) drawFire(); }
-    function stopFire() {
-      fireCanvas.style.display='none';
-      if(fireAnimId){cancelAnimationFrame(fireAnimId);fireAnimId=null;}
-      fireParticles=[]; fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);
-    }
+    function stopFire() { fireCanvas.style.display='none'; if(fireAnimId){cancelAnimationFrame(fireAnimId);fireAnimId=null;} fireParticles=[]; fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height); }
 
     // =====================
     // ローディング
     // =====================
     const loadingBar=document.getElementById('loading-bar'), loadingEl=document.getElementById('loading');
     let loadProgress=0;
-    const loadInterval=setInterval(()=>{
-      loadProgress+=Math.random()*15; if(loadProgress>90) loadProgress=90;
-      loadingBar.style.width=loadProgress+'%';
-    },200);
-    function finishLoading(){
-      clearInterval(loadInterval); loadingBar.style.width='100%';
-      setTimeout(()=>{ loadingEl.style.opacity='0'; setTimeout(()=>loadingEl.style.display='none',800); },400);
-    }
+    const loadInterval=setInterval(()=>{ loadProgress+=Math.random()*15; if(loadProgress>90)loadProgress=90; loadingBar.style.width=loadProgress+'%'; },200);
+    function finishLoading() { clearInterval(loadInterval); loadingBar.style.width='100%'; setTimeout(()=>{ loadingEl.style.opacity='0'; setTimeout(()=>loadingEl.style.display='none',800); },400); }
 
-    // =====================
     // Toast
-    // =====================
-    function showToast(msg){
-      const t=document.getElementById('toast');
-      t.textContent=msg; t.style.opacity='1';
-      setTimeout(()=>t.style.opacity='0',2500);
-    }
+    function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.opacity='1'; setTimeout(()=>t.style.opacity='0',2800); }
 
     // =====================
     // 認証
     // =====================
-    let authMode='login';
-    function openAuthModal(){ document.getElementById('auth-modal').classList.add('open'); document.getElementById('auth-error').textContent=''; startFire(); startBlinking(); }
-    function closeAuthModal(){ document.getElementById('auth-modal').classList.remove('open'); stopFire(); stopBlinking(); }
-    function switchTab(mode){
+    let authMode = 'login';
+    function openAuthModal() { document.getElementById('auth-modal').classList.add('open'); document.getElementById('auth-error').textContent=''; startFire(); startBlinking(); }
+    function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); stopFire(); stopBlinking(); }
+    function switchTab(mode) {
       authMode=mode;
       document.getElementById('tab-login').classList.toggle('active',mode==='login');
       document.getElementById('tab-signup').classList.toggle('active',mode==='signup');
@@ -595,95 +602,43 @@
       startBlinking();
     }
     let blinkInterval=null;
-    function startBlinking(){ stopBlinking(); updateInputStates(); blinkInterval=setInterval(updateInputStates,200); }
-    function stopBlinking(){ if(blinkInterval){clearInterval(blinkInterval);blinkInterval=null;} }
+    function startBlinking(){stopBlinking();updateInputStates();blinkInterval=setInterval(updateInputStates,200);}
+    function stopBlinking(){if(blinkInterval){clearInterval(blinkInterval);blinkInterval=null;}}
     function updateInputStates(){
       const fields=authMode==='login'?['input-email','input-password']:['input-username','input-email','input-password'];
-      fields.forEach(id=>{
-        const el=document.getElementById(id); if(!el) return;
-        const val=el.value.trim(), focused=document.activeElement===el;
-        el.classList.remove('blink','done'); if(focused) return;
-        if(!val){el.classList.add('blink');return;}
-        if(id==='input-password'&&authMode==='signup') el.classList.add(checkPassword(val).every(v=>v)?'done':'blink');
-        else if(id==='input-password') el.classList.add(val.length>=6?'done':'blink');
-        else el.classList.add('done');
-      });
+      fields.forEach(id=>{const el=document.getElementById(id);if(!el)return;const val=el.value.trim(),focused=document.activeElement===el;el.classList.remove('blink','done');if(focused)return;if(!val){el.classList.add('blink');return;}if(id==='input-password'&&authMode==='signup')el.classList.add(checkPassword(val).every(v=>v)?'done':'blink');else if(id==='input-password')el.classList.add(val.length>=6?'done':'blink');else el.classList.add('done');});
     }
-    function checkPassword(pw){ return [pw.length>=8,/[A-Z]/.test(pw),/[a-z]/.test(pw),/[0-9]/.test(pw)]; }
-    document.getElementById('input-password').addEventListener('input',function(){
-      const results=checkPassword(this.value);
-      ['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>document.getElementById(id).classList.toggle('ok',results[i]));
-      updateInputStates();
-    });
+    function checkPassword(pw){return[pw.length>=8,/[A-Z]/.test(pw),/[a-z]/.test(pw),/[0-9]/.test(pw)];}
+    document.getElementById('input-password').addEventListener('input',function(){const results=checkPassword(this.value);['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>document.getElementById(id).classList.toggle('ok',results[i]));updateInputStates();});
     ['input-email','input-username'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateInputStates);});
-    ['input-username','input-email','input-password'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}
-    });
+    ['input-username','input-email','input-password'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}});
+
     async function handleAuth(){
-      const email=document.getElementById('input-email').value.trim();
-      const password=document.getElementById('input-password').value;
-      const username=document.getElementById('input-username').value.trim();
-      const btn=document.getElementById('auth-submit'), errEl=document.getElementById('auth-error');
-      const ja=currentLang==='ja';
-      errEl.textContent=''; errEl.style.color='#ff4444';
+      const email=document.getElementById('input-email').value.trim(),password=document.getElementById('input-password').value,username=document.getElementById('input-username').value.trim();
+      const btn=document.getElementById('auth-submit'),errEl=document.getElementById('auth-error'),ja=currentLang==='ja';
+      errEl.textContent='';errEl.style.color='#ff4444';
       if(!email||!password){errEl.textContent=ja?'メールアドレスとパスワードを入力してください':'Please enter email and password';return;}
       if(authMode==='signup'&&!username){errEl.textContent=ja?'ユーザー名を入力してください':'Please enter a username';return;}
-      if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent=ja?'パスワードの条件を全て満たしてください':'Password does not meet all requirements';return;}
-      btn.disabled=true; btn.textContent=i18n[currentLang]['processing'];
+      if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent=ja?'パスワードの条件を全て満たしてください':'Password does not meet requirements';return;}
+      btn.disabled=true;btn.textContent=i18n[currentLang]['processing'];
       try{
-        if(authMode==='login'){
-          const{data,error}=await db.auth.signInWithPassword({email,password});
-          if(error) throw error;
-          await onLoginSuccess(data.user); closeAuthModal();
-        } else {
-          const{data,error}=await db.auth.signUp({email,password});
-          if(error) throw error;
-          if(data.user){
-            await db.from('users').upsert({id:data.user.id,username,rank:1,coin_column:0});
-            await onLoginSuccess(data.user,username); closeAuthModal();
-            showToast('🎉 '+(ja?'登録完了！IGNIS CITYへようこそ！':'Welcome to IGNIS CITY!'));
-          } else {
-            errEl.style.color='#4caf50';
-            errEl.textContent=ja?'確認メールを送信しました。':'Confirmation email sent.';
-          }
-        }
+        if(authMode==='login'){const{data,error}=await db.auth.signInWithPassword({email,password});if(error)throw error;await onLoginSuccess(data.user);closeAuthModal();}
+        else{const{data,error}=await db.auth.signUp({email,password});if(error)throw error;if(data.user){await db.from('users').upsert({id:data.user.id,username,rank:1,coin_column:0});await onLoginSuccess(data.user,username);closeAuthModal();showToast('🎉 '+(ja?'登録完了！':'Welcome!'));}else{errEl.style.color='#4caf50';errEl.textContent=ja?'確認メールを送信しました。':'Confirmation email sent.';}}
       }catch(e){errEl.style.color='#ff4444';errEl.textContent=translateError(e.message);}
       finally{btn.disabled=false;btn.textContent=i18n[currentLang][authMode==='login'?'submit-login':'submit-signup'];}
     }
-    function translateError(msg){
-      const ja=currentLang==='ja';
-      if(msg.includes('Invalid login credentials')) return ja?'メールアドレスまたはパスワードが違います':'Invalid email or password';
-      if(msg.includes('Email not confirmed')) return ja?'メールアドレスの確認が完了していません':'Email not confirmed';
-      if(msg.includes('already registered')) return ja?'このメールアドレスはすでに登録されています':'Email already registered';
-      if(msg.includes('Password should be at least')) return ja?'パスワードは8文字以上にしてください':'Password must be at least 8 characters';
-      if(msg.includes('Unable to validate email')) return ja?'メールアドレスの形式が正しくありません':'Invalid email format';
-      return msg;
-    }
-    async function onLoginSuccess(user,usernameOverride=null){
-      currentUser=user; let displayName=usernameOverride;
-      if(!displayName){
-        const{data}=await db.from('users').select('username,coin_column').eq('id',user.id).single();
-        if(data){displayName=data.username||user.email;document.getElementById('coin-count').textContent=data.coin_column||0;}
-        else displayName=user.email;
-      }
+    function translateError(msg){const ja=currentLang==='ja';if(msg.includes('Invalid login credentials'))return ja?'メールアドレスまたはパスワードが違います':'Invalid email or password';if(msg.includes('Email not confirmed'))return ja?'メールアドレスの確認が完了していません':'Email not confirmed';if(msg.includes('already registered'))return ja?'このメールアドレスはすでに登録されています':'Email already registered';return msg;}
+
+    async function onLoginSuccess(user, usernameOverride=null){
+      currentUser=user;let displayName=usernameOverride;
+      if(!displayName){const{data}=await db.from('users').select('username,coin_column').eq('id',user.id).single();if(data){displayName=data.username||user.email;document.getElementById('coin-count').textContent=data.coin_column||0;}else displayName=user.email;}
       document.getElementById('login-btn-header').style.display='none';
       document.getElementById('logged-in-area').style.display='flex';
       document.getElementById('user-name').textContent=displayName;
       showToast('👋 '+(currentLang==='ja'?`おかえり、${displayName}！`:`Welcome back, ${displayName}!`));
     }
-    async function handleLogout(){
-      await db.auth.signOut(); currentUser=null;
-      document.getElementById('login-btn-header').style.display='block';
-      document.getElementById('logged-in-area').style.display='none';
-      document.getElementById('user-name').textContent='';
-      document.getElementById('coin-count').textContent='0';
-      showToast(currentLang==='ja'?'ログアウトしました':'Logged out');
-    }
-    async function restoreSession(){
-      const{data:{session}}=await db.auth.getSession();
-      if(session) await onLoginSuccess(session.user);
-    }
+    async function handleLogout(){await db.auth.signOut();currentUser=null;document.getElementById('login-btn-header').style.display='block';document.getElementById('logged-in-area').style.display='none';document.getElementById('user-name').textContent='';document.getElementById('coin-count').textContent='0';showToast(currentLang==='ja'?'ログアウトしました':'Logged out');}
+    async function restoreSession(){const{data:{session}}=await db.auth.getSession();if(session)await onLoginSuccess(session.user);}
 
     // =====================
     // Babylon.js
@@ -695,58 +650,40 @@
 
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
-    arcCamera.lowerRadiusLimit=10; arcCamera.upperRadiusLimit=200; arcCamera.upperBetaLimit=Math.PI/2.2;
+    arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=200;arcCamera.upperBetaLimit=Math.PI/2.2;
 
     const flyCamera=new BABYLON.FlyCamera('flyCam',new BABYLON.Vector3(0,30,-60),scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
-    flyCamera.speed=1.4; flyCamera.angularSensibility=800; flyCamera.rollCorrect=10;
-    flyCamera.bankedTurn=true; flyCamera.bankedTurnLimit=Math.PI/4; flyCamera.bankedTurnMultiplier=0.5;
-    flyCamera.minZ=0.1;
-    flyCamera.keysUp=[87,38]; flyCamera.keysDown=[83,40]; flyCamera.keysLeft=[65,37]; flyCamera.keysRight=[68,39];
-
+    flyCamera.speed=1.4;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
+    flyCamera.bankedTurn=true;flyCamera.bankedTurnLimit=Math.PI/4;flyCamera.bankedTurnMultiplier=0.5;flyCamera.minZ=0.1;
+    flyCamera.keysUp=[87,38];flyCamera.keysDown=[83,40];flyCamera.keysLeft=[65,37];flyCamera.keysRight=[68,39];
     scene.activeCamera=arcCamera;
     let isFlying=false;
 
     function toggleFlyMode(){isFlying=!isFlying;setFlyMode(isFlying);}
     function setFlyMode(enabled){
       isFlying=enabled;
-      const modeBtn=document.getElementById('mode-btn'), flyHint=document.getElementById('fly-hint');
-      if(enabled){
-        const arcPos=arcCamera.position;
-        flyCamera.position=new BABYLON.Vector3(arcPos.x,arcPos.y,arcPos.z);
-        flyCamera.setTarget(arcCamera.target||BABYLON.Vector3.Zero());
-        scene.activeCamera=flyCamera; flyCamera.attachControl(canvas,true); arcCamera.detachControl();
-        modeBtn.classList.add('fly-active'); modeBtn.textContent=i18n[currentLang]['build-mode'];
-        flyHint.classList.add('visible'); closeLandPanel();
-        showToast(currentLang==='ja'?'🕊 飛行モード ON：WASDで飛び回ろう！':'🕊 Fly Mode ON: Use WASD to explore!');
-      } else {
-        scene.activeCamera=arcCamera; arcCamera.attachControl(canvas,true); flyCamera.detachControl();
-        modeBtn.classList.remove('fly-active'); modeBtn.textContent=i18n[currentLang]['fly-mode'];
-        flyHint.classList.remove('visible');
-        showToast(currentLang==='ja'?'🏙 街づくりモード ON':'🏙 Build Mode ON');
-      }
+      const modeBtn=document.getElementById('mode-btn'),flyHint=document.getElementById('fly-hint');
+      if(enabled){const p=arcCamera.position;flyCamera.position=new BABYLON.Vector3(p.x,p.y,p.z);flyCamera.setTarget(arcCamera.target||BABYLON.Vector3.Zero());scene.activeCamera=flyCamera;flyCamera.attachControl(canvas,true);arcCamera.detachControl();modeBtn.classList.add('fly-active');modeBtn.textContent='🏙 街づくりモード';flyHint.classList.add('visible');closeLandPanel();showToast('🕊 飛行モード ON');}
+      else{scene.activeCamera=arcCamera;arcCamera.attachControl(canvas,true);flyCamera.detachControl();modeBtn.classList.remove('fly-active');modeBtn.textContent='🕊 飛行モード';flyHint.classList.remove('visible');showToast('🏙 街づくりモード ON');}
     }
 
     // ライティング
     const hemiLight=new BABYLON.HemisphericLight('hemi',new BABYLON.Vector3(0,1,0),scene);
-    hemiLight.intensity=0.6; hemiLight.groundColor=new BABYLON.Color3(0.1,0.05,0.1);
+    hemiLight.intensity=0.6;hemiLight.groundColor=new BABYLON.Color3(0.1,0.05,0.1);
     const dirLight=new BABYLON.DirectionalLight('dir',new BABYLON.Vector3(-1,-2,-1),scene);
-    dirLight.intensity=0.8; dirLight.position=new BABYLON.Vector3(50,50,50);
+    dirLight.intensity=0.8;dirLight.position=new BABYLON.Vector3(50,50,50);
 
     // 地面・グリッド
-    const CELL=10, GRID_HALF=100;
     const ground=BABYLON.MeshBuilder.CreateGround('ground',{width:200,height:200,subdivisions:20},scene);
     const groundMat=new BABYLON.StandardMaterial('groundMat',scene);
-    groundMat.diffuseColor=new BABYLON.Color3(0.06,0.06,0.1);
-    groundMat.specularColor=new BABYLON.Color3(0,0,0);
+    groundMat.diffuseColor=new BABYLON.Color3(0.06,0.06,0.1);groundMat.specularColor=new BABYLON.Color3(0,0,0);
     ground.material=groundMat;
     const lineMat=new BABYLON.StandardMaterial('lineMat',scene);
     lineMat.emissiveColor=new BABYLON.Color3(0.15,0.1,0.2);
     for(let i=-GRID_HALF;i<=GRID_HALF;i+=CELL){
-      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);
-      hL.position=new BABYLON.Vector3(0,0.01,i); hL.material=lineMat; hL.isPickable=false;
-      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);
-      vL.position=new BABYLON.Vector3(i,0.01,0); vL.material=lineMat; vL.isPickable=false;
+      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);hL.position=new BABYLON.Vector3(0,0.01,i);hL.material=lineMat;hL.isPickable=false;
+      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;
     }
 
     // =====================
@@ -754,271 +691,232 @@
     // =====================
     const landMap={};
     let selectedLandKey=null;
-    const LAND_COST=0;
 
-    function worldToGrid(wx,wz){ return {gx:Math.round(wx/CELL)*CELL, gz:Math.round(wz/CELL)*CELL}; }
-    function landKey(gx,gz){ return `${gx}_${gz}`; }
-    function keyToCoord(key){ const[gx,gz]=key.split('_').map(Number); return{gx,gz}; }
+    function worldToGrid(wx,wz){return{gx:Math.round(wx/CELL)*CELL,gz:Math.round(wz/CELL)*CELL};}
+    function landKey(gx,gz){return`${gx}_${gz}`;}
+    function keyToCoord(key){const[gx,gz]=key.split('_').map(Number);return{gx,gz};}
 
     let highlightTile=null;
     function showHighlight(gx,gz,owned){
-      if(highlightTile) highlightTile.dispose();
+      if(highlightTile)highlightTile.dispose();
       highlightTile=BABYLON.MeshBuilder.CreateGround('hl_tile',{width:CELL-0.4,height:CELL-0.4},scene);
       highlightTile.position=new BABYLON.Vector3(gx,0.04,gz);
       const mat=new BABYLON.StandardMaterial('hl_mat_'+Date.now(),scene);
       mat.emissiveColor=owned?new BABYLON.Color3(1.0,0.4,0.0):new BABYLON.Color3(0.2,0.8,0.4);
-      mat.alpha=0.4; highlightTile.material=mat; highlightTile.isPickable=false;
+      mat.alpha=0.4;highlightTile.material=mat;highlightTile.isPickable=false;
     }
-    function hideHighlight(){ if(highlightTile){highlightTile.dispose();highlightTile=null;} }
+    function hideHighlight(){if(highlightTile){highlightTile.dispose();highlightTile=null;}}
 
     function drawOwnedTile(gx,gz,key){
       const tile=BABYLON.MeshBuilder.CreateGround('lt_'+key,{width:CELL-0.5,height:CELL-0.5},scene);
       tile.position=new BABYLON.Vector3(gx,0.02,gz);
       const mat=new BABYLON.StandardMaterial('ltm_'+key,scene);
-      mat.emissiveColor=new BABYLON.Color3(0.8,0.35,0.0); mat.alpha=0.18;
-      tile.material=mat; tile.isPickable=false; return tile;
+      mat.emissiveColor=new BABYLON.Color3(0.8,0.35,0.0);mat.alpha=0.18;
+      tile.material=mat;tile.isPickable=false;return tile;
     }
 
     async function loadLands(){
       try{
         const{data,error}=await db.from('lands').select('grid_x,grid_z,owner_id,users(username)');
-        if(error) throw error;
-        data.forEach(l=>{
-          const k=landKey(l.grid_x,l.grid_z);
-          const ownerName=l.users?l.users.username:'?';
-          const tile=drawOwnedTile(l.grid_x,l.grid_z,k);
-          landMap[k]={owner_id:l.owner_id,owner_name:ownerName,tile};
-        });
+        if(error)throw error;
+        data.forEach(l=>{const k=landKey(l.grid_x,l.grid_z);const ownerName=l.users?l.users.username:'?';const tile=drawOwnedTile(l.grid_x,l.grid_z,k);landMap[k]={owner_id:l.owner_id,owner_name:ownerName,tile};});
       }catch(e){console.warn('land load error:',e.message);}
     }
 
     function openLandPanel(gx,gz){
       selectedLandKey=landKey(gx,gz);
-      const land=landMap[selectedLandKey], ja=currentLang==='ja';
+      const land=landMap[selectedLandKey],ja=currentLang==='ja';
       document.getElementById('land-panel-coord').textContent=`X:${gx} / Z:${gz}`;
       const ownerEl=document.getElementById('land-panel-owner');
+      const buildingEl=document.getElementById('land-panel-building');
       const buyBtn=document.getElementById('land-buy-btn');
-      const buildBtn=document.getElementById('land-build-btn');
+      const gachaBtn=document.getElementById('land-gacha-btn');
+      const rebuildBtn=document.getElementById('land-rebuild-btn');
+
+      // ビルがあるかチェック
+      const building=buildingMap[selectedLandKey];
+
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
         ownerEl.innerHTML=ja?`オーナー：<span class="owner-name">@${land.owner_name}</span>`:`Owner: <span class="owner-name">@${land.owner_name}</span>`;
+        if(building){
+          const colorInfo=getColorByEmployees(building.employees||0);
+          buildingEl.textContent=`${building.totalFloors}階 | 従業員 ${building.employees||0}人 ${colorInfo.label}`;
+        } else { buildingEl.textContent=''; }
         if(isMe){
-          buyBtn.style.display='none'; buildBtn.style.display='block';
+          buyBtn.style.display='none';
+          if(building){ gachaBtn.style.display='none'; rebuildBtn.style.display='block'; }
+          else { gachaBtn.style.display='block'; rebuildBtn.style.display='none'; }
         } else {
-          buyBtn.style.display='block'; buyBtn.textContent=ja?'🔒 購入済みの土地です':'🔒 Already owned';
-          buyBtn.disabled=true; buildBtn.style.display='none';
+          buyBtn.style.display='block';buyBtn.textContent=ja?'🔒 購入済みの土地です':'🔒 Already owned';buyBtn.disabled=true;
+          gachaBtn.style.display='none';rebuildBtn.style.display='none';
         }
       } else {
-        ownerEl.textContent=ja?'空き地（未購入）':'Empty lot (not owned)';
-        buyBtn.style.display='block';
-        buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`;
-        buyBtn.disabled=false; buildBtn.style.display='none';
+        ownerEl.textContent=ja?'空き地（未購入）':'Empty lot';
+        buildingEl.textContent='';
+        buyBtn.style.display='block';buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST===0?'無料':LAND_COST+'コイン'}）`:`🔥 Buy this land (${LAND_COST===0?'Free':LAND_COST+' coins'})`;
+        buyBtn.disabled=false;gachaBtn.style.display='none';rebuildBtn.style.display='none';
       }
       showHighlight(gx,gz,!!land);
       document.getElementById('land-panel').classList.add('open');
     }
 
-    function closeLandPanel(){
-      document.getElementById('land-panel').classList.remove('open');
-      hideHighlight(); selectedLandKey=null;
-    }
+    function closeLandPanel(){document.getElementById('land-panel').classList.remove('open');hideHighlight();selectedLandKey=null;}
 
     async function handleLandBuy(){
-      if(!currentUser){closeLandPanel();openAuthModal();showToast(currentLang==='ja'?'土地を購入するにはログインが必要です':'Login required to buy land');return;}
-      const{gx,gz}=keyToCoord(selectedLandKey), ja=currentLang==='ja';
+      if(!currentUser){closeLandPanel();openAuthModal();showToast(currentLang==='ja'?'ログインが必要です':'Login required');return;}
+      const{gx,gz}=keyToCoord(selectedLandKey),ja=currentLang==='ja';
       const buyBtn=document.getElementById('land-buy-btn');
-      buyBtn.disabled=true; buyBtn.textContent=ja?'処理中...':'Processing...';
+      buyBtn.disabled=true;buyBtn.textContent=ja?'処理中...':'Processing...';
       try{
         const{data:ud}=await db.from('users').select('coin_column,username').eq('id',currentUser.id).single();
-        // テスト用：コインチェック一時無効
-// if(!ud||(ud.coin_column||0)<LAND_COST){
-//   showToast(ja?`コインが足りません（必要：${LAND_COST}コイン）`:`Not enough coins (need ${LAND_COST})`);
-//   buyBtn.disabled=false; buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`; return;
-// }
+        if(LAND_COST>0&&(!ud||(ud.coin_column||0)<LAND_COST)){showToast(ja?`コインが足りません`:` Not enough coins`);buyBtn.disabled=false;buyBtn.textContent=ja?'🔥 この土地を購入':'🔥 Buy land';return;}
         const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
-        if(landErr) throw landErr;
-        // テスト用：コイン減算一時無効
-// const newCoins=(ud.coin_column||0)-LAND_COST;
-// await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
-// document.getElementById('coin-count').textContent=newCoins;
+        if(landErr)throw landErr;
+        if(LAND_COST>0){const newCoins=(ud.coin_column||0)-LAND_COST;await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);document.getElementById('coin-count').textContent=newCoins;}
         const tile=drawOwnedTile(gx,gz,selectedLandKey);
-        landMap[selectedLandKey]={owner_id:currentUser.id,owner_name:ud.username||'?',tile};
-        showToast(ja?`🏡 土地を購入しました！（-${LAND_COST}コイン）`:`🏡 Land purchased! (-${LAND_COST} coins)`);
+        landMap[selectedLandKey]={owner_id:currentUser.id,owner_name:(ud&&ud.username)||'?',tile};
+        showToast(ja?'🏡 土地を取得しました！':'🏡 Land acquired!');
         openLandPanel(gx,gz);
-      }catch(e){
-        console.warn('land buy error:',e.message);
-        showToast(ja?'購入に失敗しました':'Purchase failed');
-        buyBtn.disabled=false; buyBtn.textContent=ja?`🔥 この土地を購入（${LAND_COST}コイン）`:`🔥 Buy this land (${LAND_COST} coins)`;
-      }
+      }catch(e){console.warn('land buy error:',e.message);showToast(ja?'購入に失敗しました':'Failed');buyBtn.disabled=false;buyBtn.textContent=ja?'🔥 この土地を購入':'🔥 Buy land';}
     }
 
     // =====================
-    // ビルカスタマイズ (STEP 3)
+    // ガチャシステム
     // =====================
+    let gachaState = { result: null, isRebuild: false, landKey: null };
 
-    // カラーパレット定義
-    const COLORS = [
-      {hex:'#4466ff', r:0.27, g:0.40, b:1.00, name:'ブルー'},
-      {hex:'#ff6a00', r:1.00, g:0.42, b:0.00, name:'オレンジ'},
-      {hex:'#ee0979', r:0.93, g:0.04, b:0.47, name:'ピンク'},
-      {hex:'#22c55e', r:0.13, g:0.77, b:0.37, name:'グリーン'},
-      {hex:'#a855f7', r:0.66, g:0.33, b:0.97, name:'パープル'},
-      {hex:'#f59e0b', r:0.96, g:0.62, b:0.04, name:'ゴールド'},
-      {hex:'#06b6d4', r:0.02, g:0.71, b:0.83, name:'シアン'},
-      {hex:'#ef4444', r:0.94, g:0.27, b:0.27, name:'レッド'},
-      {hex:'#64748b', r:0.39, g:0.46, b:0.55, name:'グレー'},
-      {hex:'#f8fafc', r:0.97, g:0.98, b:0.99, name:'ホワイト'},
-    ];
-
-    // 形状定義
-    const SHAPES = {
-      box:      {w:5.5, d:5.5},
-      slim:     {w:3.0, d:3.0},
-      wide:     {w:8.0, d:8.0},
-      cylinder: {w:5.0, d:5.0}, // cylinderはBabylonのCylinderで作る
-    };
-
-    // カスタマイズ状態
-    let buildCustom = {
-      floors: 20,
-      shape: 'box',
-      colorIdx: 0,
-      landKey: null,
-    };
-
-    // カラーパレット初期化
-    function initColorPalette(){
-      const palette=document.getElementById('color-palette');
-      palette.innerHTML='';
-      COLORS.forEach((c,i)=>{
-        const sw=document.createElement('div');
-        sw.className='color-swatch'+(i===0?' selected':'');
-        sw.style.background=c.hex;
-        sw.title=c.name;
-        sw.onclick=()=>selectColor(i);
-        palette.appendChild(sw);
-      });
+    function openGachaModal(isRebuild=false){
+      if(!selectedLandKey)return;
+      gachaState.isRebuild=isRebuild;
+      gachaState.landKey=selectedLandKey;
+      const{gx,gz}=keyToCoord(selectedLandKey);
+      document.getElementById('gacha-coord').textContent=`X:${gx} / Z:${gz}`;
+      closeLandPanel();
+      document.getElementById('gacha-modal').classList.add('open');
     }
-    initColorPalette();
+    function closeGachaModal(){document.getElementById('gacha-modal').classList.remove('open');}
 
-    function selectColor(idx){
-      buildCustom.colorIdx=idx;
-      document.querySelectorAll('.color-swatch').forEach((s,i)=>s.classList.toggle('selected',i===idx));
-      updateBuildCost();
+    async function handleGachaSpin(){
+      if(!currentUser)return;
+      const ja=currentLang==='ja';
+      const btn=document.getElementById('gacha-spin-btn');
+
+      // コインチェック
+      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
+      const balance=ud?ud.coin_column||0:0;
+      if(balance<GACHA_COST){showToast(ja?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);return;}
+
+      btn.disabled=true;btn.textContent=ja?'抽選中...':'Rolling...';
+
+      // コイン消費
+      const newCoins=balance-GACHA_COST;
+      await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
+      document.getElementById('coin-count').textContent=newCoins;
+
+      // 抽選
+      const result=rollGacha();
+      gachaState.result=result;
+
+      // 演出
+      closeGachaModal();
+      showGachaResult(result);
+
+      btn.disabled=false;btn.textContent='🎰 ガチャを回す';
     }
+
+    function showGachaResult(result){
+      const starEmojis={5:'🌟',4:'💫',3:'⭐',2:'✨',1:'☆'};
+      const starColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
+      const overlay=document.getElementById('gacha-result-overlay');
+      document.getElementById('gacha-result-star').textContent=starEmojis[result.star]||'⭐';
+      const rankEl=document.getElementById('gacha-result-rank');
+      rankEl.textContent=result.label;
+      rankEl.style.color=starColors[result.star]||'#fff';
+      document.getElementById('gacha-result-floors').textContent=`${result.floors}階建てのビルをGET！`;
+      overlay.classList.add('show');
+    }
+
+    function onGachaResultClose(){
+      document.getElementById('gacha-result-overlay').classList.remove('show');
+      // 形状選択モーダルへ
+      openBuildModal();
+    }
+
+    // =====================
+    // 建設モーダル（形状選択）
+    // =====================
+    let selectedShape='box';
 
     function selectShape(el){
-      buildCustom.shape=el.getAttribute('data-shape');
+      selectedShape=el.getAttribute('data-shape');
       document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('selected'));
       el.classList.add('selected');
-      updateBuildCost();
-    }
-
-    function onFloorsChange(val){
-      buildCustom.floors=parseInt(val);
-      const ja=currentLang==='ja';
-      document.getElementById('floors-val').textContent=ja?`${val}階`:`${val}F`;
-      updateBuildCost();
-    }
-
-    // コスト計算（形状・高さで変動）
-    function calcBuildCost(){
-      const shapeCost={box:0,slim:0,wide:50,cylinder:100};
-      const floorBonus=Math.floor(buildCustom.floors/20)*50;
-      return shapeCost[buildCustom.shape]+floorBonus;
-    }
-
-    function updateBuildCost(){
-      const cost=calcBuildCost();
-      document.getElementById('cost-val').textContent=cost;
-      // コインチェック（UI表示のみ）
-      const coinBalance=parseInt(document.getElementById('coin-count').textContent)||0;
-      const btn=document.getElementById('build-confirm-btn');
-      const ja=currentLang==='ja';
-      if(cost>0&&coinBalance<cost){
-        btn.disabled=true;
-        btn.textContent=ja?`コイン不足（必要:${cost}）`:`Not enough coins (${cost})`;
-      } else {
-        btn.disabled=false;
-        btn.textContent=ja?'🏢 建設する':'🏢 Build';
-      }
     }
 
     function openBuildModal(){
-      if(!selectedLandKey) return;
-      const{gx,gz}=keyToCoord(selectedLandKey);
-      buildCustom.landKey=selectedLandKey;
-      // リセット
-      buildCustom.floors=20; buildCustom.shape='box'; buildCustom.colorIdx=0;
-      document.getElementById('floors-slider').value=20;
-      document.getElementById('floors-val').textContent=currentLang==='ja'?'20階':'20F';
+      if(!gachaState.result)return;
+      selectedShape='box';
       document.querySelectorAll('.shape-btn').forEach((b,i)=>b.classList.toggle('selected',i===0));
-      document.querySelectorAll('.color-swatch').forEach((s,i)=>s.classList.toggle('selected',i===0));
-      document.getElementById('build-modal-coord').textContent=`X:${gx} / Z:${gz}`;
-      updateBuildCost();
-      closeLandPanel();
+      const{floors,label}=gachaState.result;
+      document.getElementById('build-modal-info').textContent=`${label}　${floors}階建て`;
       document.getElementById('build-modal').classList.add('open');
     }
+    function closeBuildModal(){document.getElementById('build-modal').classList.remove('open');}
 
-    function closeBuildModal(){
-      document.getElementById('build-modal').classList.remove('open');
-    }
+    const SHAPES={box:{w:5.5,d:5.5},slim:{w:3.0,d:3.0},wide:{w:8.0,d:8.0},cylinder:{w:5.0,d:5.0}};
 
     async function handleBuildConfirm(){
-      if(!buildCustom.landKey||!currentUser) return;
-      const{gx,gz}=keyToCoord(buildCustom.landKey);
-      const cost=calcBuildCost();
+      if(!gachaState.result||!gachaState.landKey||!currentUser)return;
+      const{gx,gz}=keyToCoord(gachaState.landKey);
+      const{floors}=gachaState.result;
       const ja=currentLang==='ja';
       const btn=document.getElementById('build-confirm-btn');
-      btn.disabled=true; btn.textContent=ja?'建設中...':'Building...';
+      btn.disabled=true;btn.textContent=ja?'建設中...':'Building...';
 
       try{
-        // コイン残高確認＆減算
-        const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
-        const balance=ud?ud.coin_column||0:0;
-        if(cost>0&&balance<cost){
-          showToast(ja?`コインが足りません（必要：${cost}）`:`Not enough coins (need ${cost})`);
-          btn.disabled=false; btn.textContent=ja?'🏢 建設する':'🏢 Build'; return;
+        // 既存ビルの取得（建て替えの場合は従業員数を引き継ぎ）
+        let employees=0;
+        const existingBuilding=buildingMap[gachaState.landKey];
+        if(gachaState.isRebuild&&existingBuilding){
+          employees=existingBuilding.employees||0;
+          // 既存ビルをDBから削除
+          await db.from('buildings').delete().eq('x',gx).eq('z',gz).eq('owner_id',currentUser.id);
+          // 3Dメッシュ削除
+          if(existingBuilding.mesh){existingBuilding.mesh.dispose();}
+          delete buildingMap[gachaState.landKey];
+          buildings=buildings.filter(b=>b.landKey!==gachaState.landKey);
+          document.getElementById('building-count').textContent=buildings.length;
         }
 
-        // DB保存
-        const styleKey=`${buildCustom.shape}_${buildCustom.colorIdx}`;
-        const{error}=await db.from('buildings').insert({
-          x:gx, z:gz, floors:buildCustom.floors,
-          style:styleKey, owner_id:currentUser.id,
-        });
-        if(error) throw error;
-
-        // コイン処理（建設コスト引いて +100獲得）
-        const newCoins=balance-cost+100;
-        await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
-        document.getElementById('coin-count').textContent=newCoins;
+        const styleKey=`${selectedShape}_gacha`;
+        const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:styleKey,owner_id:currentUser.id,employees});
+        if(error)throw error;
 
         // 3Dビル追加
-        addBuilding(gx,gz,buildCustom.floors,buildCustom.shape,buildCustom.colorIdx,false);
+        addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey);
         closeBuildModal();
-        showToast(ja
-          ?`🏢 ${buildCustom.floors}階建て完成！${cost>0?`（-${cost}コイン）`:''}+100コイン獲得`
-          :`🏢 ${buildCustom.floors}F built! ${cost>0?`(-${cost} coins) `:''}+100 coins`);
 
-      }catch(e){
-        console.warn('build error:',e.message);
-        showToast(ja?'建設に失敗しました':'Build failed');
-        btn.disabled=false; btn.textContent=ja?'🏢 建設する':'🏢 Build';
-      }
+        const colorInfo=getColorByEmployees(employees);
+        showToast(ja?`🏢 ${floors}階建て完成！${colorInfo.label}`:`🏢 ${floors}F built! ${colorInfo.label}`);
+        gachaState={result:null,isRebuild:false,landKey:null};
+
+      }catch(e){console.warn('build error:',e.message);showToast(ja?'建設に失敗しました':'Build failed');}
+      finally{btn.disabled=false;btn.textContent=ja?'🏢 建設する':'🏢 Build';}
     }
 
     // =====================
     // ビル管理
     // =====================
     let buildings=[];
+    const buildingMap={}; // landKey -> building data
 
-    function addBuilding(x, z, floors, shape='box', colorIdx=null, fromDB=false){
-      const height=floors*0.5;
+    function addBuilding(x,z,baseFloors,shape='box',employees=0,fromDB=false,lKey=null){
+      const totalFloors=calcTotalFloors(baseFloors,employees);
+      const height=totalFloors*0.5;
       const w=SHAPES[shape]?.w||5.5;
       const d=SHAPES[shape]?.d||5.5;
       let mesh;
-
       if(shape==='cylinder'){
         mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:16},scene);
       } else {
@@ -1027,91 +925,76 @@
       mesh.position=new BABYLON.Vector3(x,height/2,z);
 
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
-      if(colorIdx!==null&&COLORS[colorIdx]){
-        const c=COLORS[colorIdx];
-        mat.diffuseColor=new BABYLON.Color3(c.r,c.g,c.b);
-        mat.specularColor=new BABYLON.Color3(0.4,0.4,0.6);
-      } else {
-        // 旧ビル（DB由来でcolorIdxなし）はランダムカラー
-        const hue=Math.random();
-        mat.diffuseColor=new BABYLON.Color3(0.1+hue*0.3,0.2,0.4+hue*0.3);
-        mat.specularColor=new BABYLON.Color3(0.5,0.5,0.8);
+      const colorInfo=getColorByEmployees(employees);
+      mat.diffuseColor=new BABYLON.Color3(colorInfo.r,colorInfo.g,colorInfo.b);
+      mat.specularColor=new BABYLON.Color3(0.5,0.5,0.7);
+
+      // 金・虹はemissiveで光らせる
+      if(colorInfo.name==='gold'){
+        mat.emissiveColor=new BABYLON.Color3(0.3,0.2,0.0);
+      } else if(colorInfo.name==='rainbow'){
+        mat.emissiveColor=new BABYLON.Color3(0.2,0.0,0.2);
       }
       mesh.material=mat;
-      buildings.push({x,z,floors,shape,colorIdx,mesh});
+
+      const key=lKey||landKey(x,z);
+      const buildingData={x,z,baseFloors,totalFloors,shape,employees,mesh,landKey:key};
+      buildings.push(buildingData);
+      buildingMap[key]=buildingData;
       document.getElementById('building-count').textContent=buildings.length;
     }
 
     async function loadBuildings(){
       try{
         const{data,error}=await db.from('buildings').select('*');
-        if(error) throw error;
+        if(error)throw error;
         data.forEach(b=>{
-          // styleカラムから shape と colorIdx を復元
-          let shape='box', colorIdx=null;
-          if(b.style&&b.style!=='default'){
-            const parts=b.style.split('_');
-            if(parts.length>=2){
-              shape=parts[0];
-              colorIdx=parseInt(parts[1]);
-              if(isNaN(colorIdx)) colorIdx=null;
-            }
-          }
-          addBuilding(b.x,b.z,b.floors,shape,colorIdx,true);
+          let shape='box';
+          if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}
+          addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true);
         });
       }catch(e){
         console.warn('Supabase error:',e.message);
-        [[0,0,20,'box',0],[10,5,35,'slim',2],[-8,12,15,'wide',4],[15,-10,50,'cylinder',1],[-15,-5,28,'box',6]]
-          .forEach(([x,z,f,s,c])=>addBuilding(x,z,f,s,c,true));
+        [[0,0,20,'box',0],[10,5,35,'slim',30],[-8,12,15,'wide',100],[15,-10,50,'cylinder',300],[-15,-5,28,'box',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
       }
       finishLoading();
     }
 
-    // ランダムビル建設ボタン
+    // ランダム建設ボタン（デモ用）
     document.getElementById('build-btn').addEventListener('click',async()=>{
-      const x=(Math.floor(Math.random()*20)-10)*CELL;
-      const z=(Math.floor(Math.random()*20)-10)*CELL;
+      const x=(Math.floor(Math.random()*20)-10)*CELL,z=(Math.floor(Math.random()*20)-10)*CELL;
       const floors=Math.floor(Math.random()*50)+5;
-      const colorIdx=Math.floor(Math.random()*COLORS.length);
       const shapes=Object.keys(SHAPES);
       const shape=shapes[Math.floor(Math.random()*shapes.length)];
-      addBuilding(x,z,floors,shape,colorIdx,false);
-      showToast(currentLang==='ja'?`🏢 ${floors}階建て建設！`:` 🏢 ${floors} floors built!`);
-
-      if(!currentUser) return;
+      const employees=Math.floor(Math.random()*200);
+      addBuilding(x,z,floors,shape,employees,false);
+      showToast(currentLang==='ja'?`🏢 ${floors}階建て建設！`:`🏢 ${floors}F built!`);
+      if(!currentUser)return;
       try{
-        const styleKey=`${shape}_${colorIdx}`;
-        const{error}=await db.from('buildings').insert({x,z,floors,style:styleKey,owner_id:currentUser.id});
-        if(error) throw error;
+        const{error}=await db.from('buildings').insert({x,z,floors,style:`${shape}_random`,owner_id:currentUser.id,employees});
+        if(error)throw error;
         const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
-        if(ud){
-          const nb=(ud.coin_column||0)+100;
-          await db.from('users').update({coin_column:nb}).eq('id',currentUser.id);
-          document.getElementById('coin-count').textContent=nb;
-        }
+        if(ud){const nb=(ud.coin_column||0)+100;await db.from('users').update({coin_column:nb}).eq('id',currentUser.id);document.getElementById('coin-count').textContent=nb;}
       }catch(e){console.warn('保存エラー:',e.message);}
     });
 
-    // グリッドクリック → 土地パネル
+    // グリッドクリック
     scene.onPointerObservable.add((pointerInfo)=>{
-      if(isFlying) return;
-      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP) return;
+      if(isFlying)return;
+      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
       const pick=scene.pick(scene.pointerX,scene.pointerY);
-      if(!pick.hit||!pick.pickedMesh) return;
+      if(!pick.hit||!pick.pickedMesh)return;
       if(pick.pickedMesh.name==='ground'){
         const wp=pick.pickedPoint;
         const{gx,gz}=worldToGrid(wp.x,wp.z);
-        if(Math.abs(gx)<=GRID_HALF&&Math.abs(gz)<=GRID_HALF) openLandPanel(gx,gz);
+        if(Math.abs(gx)<=GRID_HALF&&Math.abs(gz)<=GRID_HALF)openLandPanel(gx,gz);
       }
     });
 
     engine.runRenderLoop(()=>scene.render());
     window.addEventListener('resize',()=>engine.resize());
 
-    (async()=>{
-      await restoreSession();
-      await Promise.all([loadBuildings(),loadLands()]);
-    })();
+    (async()=>{await restoreSession();await Promise.all([loadBuildings(),loadLands()]);})();
   </script>
 </body>
 </html>

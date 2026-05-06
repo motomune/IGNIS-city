@@ -570,7 +570,15 @@
 
     const LAND_COST=0;
     const GACHA_COST=50;
-    const CELL=10, GRID_HALF=100;
+
+// タスク定義
+const DAILY_TASKS = [
+  { type: "login",     label: "ログインボーナス",   reward: 3  },
+  { type: "build",     label: "ビルを1棟建てる",     reward: 5  },
+  { type: "get_land",  label: "土地を1区画取得する", reward: 5  },
+];
+
+const CELL=10, GRID_HALF=100;
 
     const EMP_COLORS=[
       {min:1000,name:'rainbow',r:1.0,g:0.0,b:1.0,label:'🌈 虹'},

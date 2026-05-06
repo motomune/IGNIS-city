@@ -604,6 +604,51 @@ const CELL=10, GRID_HALF=100;
       return{...GACHA_TABLE[GACHA_TABLE.length-1],floors:10};
     }
 
+    // ========== デイリータスク ==========
+async function initDailyTasks() {
+  if (!currentUser) return;
+  const today = new Date().toISOString().slice(0, 10);
+  for (const task of DAILY_TASKS) {
+    await db.from('daily_tasks').upsert(
+      { user_id: currentUser.id, task_date: today, task_type: task.type, completed: false },
+      { onConflict: 'user_id,task_date,task_type', ignoreDuplicates: true }
+    );
+  }
+}
+
+async function completeTask(taskType) {
+  if (!currentUser) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await db.from('daily_tasks')
+    .select('*').eq('user_id', currentUser.id)
+    .eq('task_date', today).eq('task_type', taskType).single();
+  if (!data || data.completed) return;
+  await db.from('daily_tasks').update({ completed: true, completed_at: new Date().toISOString(), reward_given: true })
+    .eq('id', data.id);
+  const task = DAILY_TASKS.find(t => t.type === taskType);
+  if (!task) return;
+  const { data: ud } = await db.from('users').select('coin_column').eq('id', currentUser.id).single();
+  const newEmp = (ud?.coin_column || 0);
+  await db.from('users').update({ coin_column: newEmp }).eq('id', currentUser.id);
+  showToast(`✅ タスク完了！「${task.label}」→ 従業員+${task.reward}人`);
+  refreshTaskUI();
+}
+
+async function refreshTaskUI() {
+  if (!currentUser) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await db.from('daily_tasks')
+    .select('*').eq('user_id', currentUser.id).eq('task_date', today);
+  if (!data) return;
+  DAILY_TASKS.forEach(task => {
+    const row = document.getElementById('task-row-' + task.type);
+    if (!row) return;
+    const done = data.find(d => d.task_type === task.type)?.completed;
+    row.classList.toggle('task-done', !!done);
+    row.querySelector('.task-status').textContent = done ? '✅' : '⬜';
+  });
+}
+
     // 多言語
     let currentLang='ja';
     function toggleLang(){

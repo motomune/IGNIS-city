@@ -39,7 +39,6 @@
       padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; pointer-events: all;
     }
 
-    /* ② ガチャボタン（画面上に常時表示） */
     #gacha-float-btn {
       position: fixed; bottom: 32px; right: 24px;
       background: linear-gradient(135deg, #a855f7, #6366f1);
@@ -102,7 +101,6 @@
     }
     #fire-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 201; display: none; }
 
-    /* ① 土地パネル（より鮮明に） */
     #land-panel {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(6,6,16,0.97);
@@ -141,9 +139,6 @@
     #land-gacha-btn { background: linear-gradient(135deg, #a855f7, #6366f1); }
     #land-rebuild-btn { background: linear-gradient(135deg, #f59e0b, #ef4444); }
 
-    /* =====================
-       ⑤ ガチャ演出オーバーレイ（3D風）
-    ===================== */
     #gacha-overlay {
       display: none; position: fixed; inset: 0; z-index: 300;
       background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a0f 100%);
@@ -151,7 +146,6 @@
     }
     #gacha-overlay.show { display: flex; }
 
-    /* ガチャガチャマシン */
     #gacha-machine {
       width: 220px; height: 280px; position: relative; margin-bottom: 20px;
       animation: machineEntry 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
@@ -161,10 +155,8 @@
       100% { transform: translateY(0) scale(1); opacity: 1; }
     }
 
-    /* マシン本体（SVGで描画） */
     #gacha-machine svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 30px rgba(168,85,247,0.5)); }
 
-    /* カプセル */
     #gacha-capsule {
       width: 100px; height: 100px; position: absolute;
       left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0);
@@ -183,7 +175,6 @@
       100% { transform: translate(-50%, 120%) scale(1); opacity: 1; }
     }
 
-    /* カプセル割れ演出エリア */
     #gacha-break-area {
       position: relative; width: 200px; height: 200px;
       display: flex; align-items: center; justify-content: center;
@@ -191,7 +182,6 @@
     }
     #gacha-break-area.show { display: flex; }
 
-    /* 割れるカプセル */
     #capsule-top, #capsule-bottom {
       position: absolute; width: 90px; height: 45px;
       border-radius: 45px 45px 0 0;
@@ -213,7 +203,6 @@
     @keyframes capBreakTop { to { transform: translateY(-40px) rotate(-15deg); opacity: 0; } }
     @keyframes capBreakBottom { to { transform: translateY(40px) rotate(10deg); opacity: 0; } }
 
-    /* ビル出現 */
     #capsule-building {
       position: absolute; font-size: 52px;
       transform: scale(0); transition: none;
@@ -226,7 +215,6 @@
       100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
 
-    /* ★4以上の光演出 */
     #gacha-flash {
       position: fixed; inset: 0; background: #fff;
       opacity: 0; pointer-events: none; z-index: 301;
@@ -238,7 +226,6 @@
       100% { opacity: 0; }
     }
 
-    /* パーティクル */
     #gacha-particles {
       position: absolute; inset: 0; pointer-events: none;
       overflow: visible;
@@ -252,7 +239,6 @@
       100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
     }
 
-    /* 結果テキスト */
     #gacha-result-text {
       text-align: center; display: none; animation: resultFadeIn 0.5s ease forwards;
     }
@@ -266,7 +252,6 @@
     }
     #gacha-result-close:hover { opacity: 0.85; }
 
-    /* ガチャ設定モーダル（土地選択または即回し） */
     #gacha-modal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
@@ -306,7 +291,6 @@
     #gacha-spin-btn:hover { opacity: 0.85; }
     #gacha-spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* 形状選択モーダル */
     #build-modal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
@@ -337,7 +321,6 @@
     #build-confirm-btn:hover { opacity: 0.85; }
     #build-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* 認証モーダル */
     #auth-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 200; align-items: center; justify-content: center; }
     #auth-modal.open { display: flex; }
     #auth-box { background: #0f0f18; border: 1px solid rgba(255,106,0,0.35); border-radius: 22px; padding: 36px 36px 28px; width: 400px; max-width: 92vw; box-shadow: 0 20px 60px rgba(0,0,0,0.7); position: relative; overflow: hidden; }
@@ -357,7 +340,6 @@
     @keyframes inputBlink { 0%,100%{border-color:rgba(255,80,0,0.45);box-shadow:0 0 6px rgba(255,80,0,0.15);}50%{border-color:rgba(255,80,0,0.95);box-shadow:0 0 14px rgba(255,80,0,0.45);} }
     .auth-input.done { border-color: #22c55e !important; box-shadow: 0 0 10px rgba(34,197,94,0.3) !important; animation: none !important; }
     #username-field { display: none; }
-    /* ③ Xユーザー名フィールド */
     #x-username-field { display: none; }
     .auth-input-prefix { display: flex; align-items: center; background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-bottom: 10px; transition: border-color 0.25s, box-shadow 0.25s; }
     .auth-input-prefix:focus-within { border-color: rgba(255,106,0,0.7); box-shadow: 0 0 12px rgba(255,106,0,0.2); }
@@ -376,6 +358,30 @@
     #auth-error { font-size: 12px; margin-top: 10px; text-align: center; min-height: 18px; color: #ff4444; }
     #auth-close { position: absolute; top: 14px; right: 18px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer; }
     #auth-close:hover { color: #fff; }
+
+    /* デイリータスクパネル */
+    #task-panel {
+      position: fixed; top: 80px; right: 24px;
+      background: rgba(6,6,16,0.95); border: 1px solid rgba(255,106,0,0.4);
+      border-radius: 16px; padding: 16px 20px; min-width: 240px;
+      z-index: 15; pointer-events: all; display: none;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+    }
+    #task-panel.open { display: block; }
+    #task-panel-title { font-size: 11px; font-weight: 800; color: #ff6a00; letter-spacing: 0.15em; margin-bottom: 12px; text-transform: uppercase; }
+    .task-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+    .task-row:last-child { border-bottom: none; }
+    .task-status { font-size: 16px; width: 20px; }
+    .task-label { flex: 1; color: rgba(255,255,255,0.75); }
+    .task-reward { font-size: 12px; color: #ff6a00; font-weight: 700; }
+    .task-row.task-done .task-label { color: rgba(255,255,255,0.3); text-decoration: line-through; }
+    #task-toggle-btn {
+      position: fixed; top: 80px; right: 24px;
+      background: rgba(255,106,0,0.15); border: 1px solid rgba(255,106,0,0.4);
+      color: #ff6a00; padding: 8px 16px; border-radius: 20px; font-size: 12px;
+      font-weight: 700; cursor: pointer; z-index: 16; pointer-events: all;
+    }
   </style>
 </head>
 <body>
@@ -417,10 +423,16 @@
     <button id="mode-btn" onclick="toggleFlyMode()">🕊 飛行モード</button>
   </div>
 
-  <!-- ② ガチャフローティングボタン -->
   <button id="gacha-float-btn" onclick="openGachaModal(false)">🎰 ガチャ</button>
 
-  <!-- ① 土地パネル -->
+  <!-- タスクパネル -->
+  <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク</button>
+  <div id="task-panel">
+    <div id="task-panel-title">📋 デイリータスク</div>
+    <div id="task-list"></div>
+  </div>
+
+  <!-- 土地パネル -->
   <div id="land-panel">
     <button id="land-panel-close" onclick="closeLandPanel()">×</button>
     <div id="land-panel-title">📍 LAND</div>
@@ -450,27 +462,19 @@
     </div>
   </div>
 
-  <!-- ⑤ ガチャ演出オーバーレイ -->
+  <!-- ガチャ演出オーバーレイ -->
   <div id="gacha-overlay">
     <div id="gacha-flash"></div>
-
-    <!-- フェーズ1: マシン -->
     <div id="gacha-phase1">
       <div id="gacha-machine">
         <svg viewBox="0 0 220 280" xmlns="http://www.w3.org/2000/svg">
-          <!-- 台座 -->
           <rect x="20" y="220" width="180" height="50" rx="10" fill="#1a0a2e" stroke="#a855f7" stroke-width="2"/>
-          <!-- 本体 -->
           <rect x="30" y="80" width="160" height="150" rx="16" fill="#0f0820" stroke="#a855f7" stroke-width="2.5"/>
-          <!-- ガラス球 -->
           <circle cx="110" cy="145" r="60" fill="rgba(168,85,247,0.08)" stroke="#a855f7" stroke-width="2"/>
           <circle cx="110" cy="145" r="60" fill="url(#sphereGrad)"/>
-          <!-- 光沢 -->
           <ellipse cx="90" cy="118" rx="22" ry="14" fill="rgba(255,255,255,0.12)"/>
-          <!-- ハンドル -->
           <circle cx="185" cy="160" r="12" fill="#6366f1" stroke="#a855f7" stroke-width="2"/>
           <rect x="183" y="160" width="24" height="8" rx="4" fill="#6366f1"/>
-          <!-- 出口 -->
           <rect x="75" y="225" width="70" height="20" rx="8" fill="#1a0a2e" stroke="#a855f7" stroke-width="1.5"/>
           <text x="110" y="238" text-anchor="middle" font-size="10" fill="#a855f7" font-weight="bold">GACHA</text>
           <defs>
@@ -480,12 +484,9 @@
             </radialGradient>
           </defs>
         </svg>
-        <!-- カプセル（フェーズ1で落ちる） -->
         <div id="gacha-capsule">🔮</div>
       </div>
     </div>
-
-    <!-- フェーズ2: カプセル割れ -->
     <div id="gacha-phase2" style="display:none; flex-direction:column; align-items:center;">
       <div id="gacha-break-area">
         <div id="gacha-particles"></div>
@@ -535,7 +536,6 @@
         <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">ログイン</div>
         <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">新規登録</div>
       </div>
-      <!-- ③ Xユーザー名フィールド（新規登録時のみ表示） -->
       <div id="x-username-field">
         <div class="auth-input-prefix">
           <span class="auth-prefix-at">@</span>
@@ -571,14 +571,14 @@
     const LAND_COST=0;
     const GACHA_COST=50;
 
-// タスク定義
-const DAILY_TASKS = [
-  { type: "login",     label: "ログインボーナス",   reward: 3  },
-  { type: "build",     label: "ビルを1棟建てる",     reward: 5  },
-  { type: "get_land",  label: "土地を1区画取得する", reward: 5  },
-];
+    // タスク定義
+    const DAILY_TASKS = [
+      { type: "login",     label: "ログインボーナス",   reward: 3  },
+      { type: "build",     label: "ビルを1棟建てる",     reward: 5  },
+      { type: "get_land",  label: "土地を1区画取得する", reward: 5  },
+    ];
 
-const CELL=10, GRID_HALF=100;
+    const CELL=10, GRID_HALF=100;
 
     const EMP_COLORS=[
       {min:1000,name:'rainbow',r:1.0,g:0.0,b:1.0,label:'🌈 虹'},
@@ -604,57 +604,78 @@ const CELL=10, GRID_HALF=100;
       return{...GACHA_TABLE[GACHA_TABLE.length-1],floors:10};
     }
 
-    // ========== デイリータスク ==========
-async function initDailyTasks() {
-  if (!currentUser) return;
-  const today = new Date().toISOString().slice(0, 10);
-  for (const task of DAILY_TASKS) {
-    await db.from('daily_tasks').upsert(
-      { user_id: currentUser.id, task_date: today, task_type: task.type, completed: false },
-      { onConflict: 'user_id,task_date,task_type', ignoreDuplicates: true }
-    );
-  }
-}
-
-async function completeTask(taskType) {
-  if (!currentUser) return;
-  const today = new Date().toISOString().slice(0, 10);
-  const { data } = await db.from('daily_tasks')
-    .select('*').eq('user_id', currentUser.id)
-    .eq('task_date', today).eq('task_type', taskType).single();
-  if (!data || data.completed) return;
-  await db.from('daily_tasks').update({ completed: true, completed_at: new Date().toISOString(), reward_given: true })
-    .eq('id', data.id);
-  const task = DAILY_TASKS.find(t => t.type === taskType);
-  if (!task) return;
-  const { data: ud } = await db.from('users').select('coin_column').eq('id', currentUser.id).single();
-  const newEmp = (ud?.coin_column || 0);
-  await db.from('users').update({ coin_column: newEmp }).eq('id', currentUser.id);
-  showToast(`✅ タスク完了！「${task.label}」→ 従業員+${task.reward}人`);
-  refreshTaskUI();
-}
-
-async function refreshTaskUI() {
-  if (!currentUser) return;
-  const today = new Date().toISOString().slice(0, 10);
-  const { data } = await db.from('daily_tasks')
-    .select('*').eq('user_id', currentUser.id).eq('task_date', today);
-  if (!data) return;
-  DAILY_TASKS.forEach(task => {
-    const row = document.getElementById('task-row-' + task.type);
-    if (!row) return;
-    const done = data.find(d => d.task_type === task.type)?.completed;
-    row.classList.toggle('task-done', !!done);
-    row.querySelector('.task-status').textContent = done ? '✅' : '⬜';
-  });
-}
-
     // 多言語
     let currentLang='ja';
     function toggleLang(){
       currentLang=currentLang==='ja'?'en':'ja';
       document.getElementById('lang-label').textContent=currentLang==='ja'?'EN':'JP';
       document.getElementById('auth-lang-label').textContent=currentLang==='ja'?'EN':'JP';
+    }
+
+    // ========== デイリータスク ==========
+    async function initDailyTasks() {
+      if (!currentUser) return;
+      const today = new Date().toISOString().slice(0, 10);
+      for (const task of DAILY_TASKS) {
+        await db.from('daily_tasks').upsert(
+          { user_id: currentUser.id, task_date: today, task_type: task.type, completed: false },
+          { onConflict: 'user_id,task_date,task_type', ignoreDuplicates: true }
+        );
+      }
+      renderTaskUI();
+      await refreshTaskUI();
+      document.getElementById('task-toggle-btn').style.display = 'block';
+    }
+
+    async function completeTask(taskType) {
+      if (!currentUser) return;
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await db.from('daily_tasks')
+        .select('*').eq('user_id', currentUser.id)
+        .eq('task_date', today).eq('task_type', taskType).single();
+      if (!data || data.completed) return;
+      await db.from('daily_tasks').update({ completed: true, completed_at: new Date().toISOString(), reward_given: true })
+        .eq('id', data.id);
+      const task = DAILY_TASKS.find(t => t.type === taskType);
+      if (!task) return;
+      // 従業員をreward分加算（buildingsの最新ビルに加算）
+      showToast(`✅ タスク完了！「${task.label}」→ 従業員+${task.reward}人`);
+      await refreshTaskUI();
+    }
+
+    function renderTaskUI() {
+      const list = document.getElementById('task-list');
+      list.innerHTML = '';
+      DAILY_TASKS.forEach(task => {
+        const row = document.createElement('div');
+        row.className = 'task-row';
+        row.id = 'task-row-' + task.type;
+        row.innerHTML = `
+          <span class="task-status">⬜</span>
+          <span class="task-label">${task.label}</span>
+          <span class="task-reward">+${task.reward}人</span>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    async function refreshTaskUI() {
+      if (!currentUser) return;
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await db.from('daily_tasks')
+        .select('*').eq('user_id', currentUser.id).eq('task_date', today);
+      if (!data) return;
+      DAILY_TASKS.forEach(task => {
+        const row = document.getElementById('task-row-' + task.type);
+        if (!row) return;
+        const done = data.find(d => d.task_type === task.type)?.completed;
+        row.classList.toggle('task-done', !!done);
+        row.querySelector('.task-status').textContent = done ? '✅' : '⬜';
+      });
+    }
+
+    function toggleTaskPanel() {
+      document.getElementById('task-panel').classList.toggle('open');
     }
 
     // 火の粉
@@ -709,7 +730,6 @@ async function refreshTaskUI() {
       const username=document.getElementById('input-username').value.trim();
       const xUsername=document.getElementById('input-x-username').value.trim().replace(/^@/,'');
       const btn=document.getElementById('auth-submit'),errEl=document.getElementById('auth-error');
-      const ja=currentLang==='ja';
       errEl.textContent='';errEl.style.color='#ff4444';
       if(!email||!password){errEl.textContent='メールアドレスとパスワードを入力してください';return;}
       if(authMode==='signup'&&!username){errEl.textContent='表示名を入力してください';return;}
@@ -725,7 +745,6 @@ async function refreshTaskUI() {
           const{data,error}=await db.auth.signUp({email,password});
           if(error)throw error;
           if(data.user){
-            // ③ x_usernameも保存
             await db.from('users').upsert({id:data.user.id,username,x_username:xUsername,rank:1,coin_column:0});
             await onLoginSuccess(data.user,username,xUsername);closeAuthModal();
             showToast('🎉 登録完了！IGNIS CITYへようこそ！');
@@ -750,9 +769,11 @@ async function refreshTaskUI() {
       document.getElementById('login-btn-header').style.display='none';
       document.getElementById('logged-in-area').style.display='flex';
       document.getElementById('user-name').textContent=xName?`@${xName}`:displayName;
+      await initDailyTasks();
+      await completeTask('login');
       showToast(`👋 おかえり、${xName?'@'+xName:displayName}！`);
     }
-    async function handleLogout(){await db.auth.signOut();currentUser=null;document.getElementById('login-btn-header').style.display='block';document.getElementById('logged-in-area').style.display='none';document.getElementById('user-name').textContent='';document.getElementById('coin-count').textContent='0';showToast('ログアウトしました');}
+    async function handleLogout(){await db.auth.signOut();currentUser=null;document.getElementById('login-btn-header').style.display='block';document.getElementById('logged-in-area').style.display='none';document.getElementById('user-name').textContent='';document.getElementById('coin-count').textContent='0';document.getElementById('task-toggle-btn').style.display='none';document.getElementById('task-panel').classList.remove('open');showToast('ログアウトしました');}
     async function restoreSession(){const{data:{session}}=await db.auth.getSession();if(session)await onLoginSuccess(session.user);}
 
     // Babylon.js
@@ -850,7 +871,6 @@ async function refreshTaskUI() {
 
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
-        // ③ Xユーザー名で表示
         ownerEl.innerHTML=`Xユーザー：<span class="owner-name">${land.owner_display}</span>`;
         if(building){
           const colorInfo=getColorByEmployees(building.employees||0);
@@ -888,6 +908,7 @@ async function refreshTaskUI() {
         const xName=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:'?';
         const tile=drawOwnedTile(gx,gz,selectedLandKey);
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile};
+        await completeTask('get_land');
         showToast('🏡 土地を取得しました！');
         openLandPanel(gx,gz);
       }catch(e){
@@ -901,7 +922,6 @@ async function refreshTaskUI() {
     let gachaState={result:null,isRebuild:false,landKey:null};
 
     function openGachaModal(isRebuild=false){
-      // 土地なしで直接ガチャボタンを押した場合（土地選択が必要）
       if(!selectedLandKey&&!isRebuild){
         showToast('まず土地をタップして選択してください');return;
       }
@@ -917,7 +937,6 @@ async function refreshTaskUI() {
     async function handleGachaSpin(){
       if(!currentUser){closeGachaModal();openAuthModal();return;}
       if(!gachaState.landKey){showToast('土地を選択してください');closeGachaModal();return;}
-      const ja=currentLang==='ja';
       const btn=document.getElementById('gacha-spin-btn');
       const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
       const balance=ud?ud.coin_column||0:0;
@@ -933,7 +952,6 @@ async function refreshTaskUI() {
       btn.disabled=false;btn.textContent='🎰 ガチャを回す';
     }
 
-    // ⑤ ガチャアニメーション
     function playGachaAnimation(result){
       const overlay=document.getElementById('gacha-overlay');
       const phase1=document.getElementById('gacha-phase1');
@@ -941,51 +959,40 @@ async function refreshTaskUI() {
       const capsule=document.getElementById('gacha-capsule');
       const flash=document.getElementById('gacha-flash');
 
-      // カプセルの色を★に応じて変える
       const capsuleColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
       capsule.style.background=`radial-gradient(circle at 35% 35%, ${capsuleColors[result.star]}, ${capsuleColors[result.star]}88)`;
       capsule.style.boxShadow=`0 0 30px ${capsuleColors[result.star]}88`;
       capsule.textContent=result.emoji;
 
-      // リセット
       phase1.style.display='block';
       phase2.style.display='none';
       document.getElementById('gacha-result-text').classList.remove('show');
       capsule.className='';
       overlay.classList.add('show');
 
-      // フェーズ1: カプセルが落ちる
-      setTimeout(()=>{
-        capsule.className='drop';
-      },600);
+      setTimeout(()=>{capsule.className='drop';},600);
 
-      // フェーズ2: カプセル割れ
       setTimeout(()=>{
         phase1.style.display='none';
         phase2.style.display='flex';
 
-        // ★4以上は光演出
         if(result.star>=4){
           flash.classList.remove('flash');
-          void flash.offsetWidth; // reflow
+          void flash.offsetWidth;
           flash.classList.add('flash');
         }
 
-        // カプセルの色設定
         const top=document.getElementById('capsule-top');
         const bottom=document.getElementById('capsule-bottom');
         top.style.background=`linear-gradient(180deg, ${capsuleColors[result.star]}aa, ${capsuleColors[result.star]}44)`;
         bottom.style.background=`linear-gradient(0deg, ${capsuleColors[result.star]}88, ${capsuleColors[result.star]}22)`;
 
-        // パーティクル生成
         spawnGachaParticles(result.star);
 
-        // 割れアニメ
         top.className='';bottom.className='';
         void top.offsetWidth;
         top.classList.add('break');bottom.classList.add('break');
 
-        // ビルアイコン表示
         const buildingIcons={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
         const bEl=document.getElementById('capsule-building');
         bEl.textContent=buildingIcons[result.star];
@@ -993,7 +1000,6 @@ async function refreshTaskUI() {
         bEl.className='';
         setTimeout(()=>bEl.classList.add('appear'),200);
 
-        // 結果テキスト
         setTimeout(()=>{
           const rankEl=document.getElementById('gacha-result-rank');
           rankEl.textContent=result.label;
@@ -1032,7 +1038,6 @@ async function refreshTaskUI() {
       openBuildModal();
     }
 
-    // 形状選択
     let selectedShape='box';
     function selectShape(el){selectedShape=el.getAttribute('data-shape');document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');}
 
@@ -1057,28 +1062,23 @@ async function refreshTaskUI() {
         let employees=0;
         const existingBuilding=buildingMap[gachaState.landKey];
 
-        // ④ 建て替え：既存ビルを完全に削除してから新しいビルを建てる
         if(gachaState.isRebuild&&existingBuilding){
           employees=existingBuilding.employees||0;
-          // 3Dメッシュ削除
           if(existingBuilding.mesh){
             existingBuilding.mesh.dispose();
             existingBuilding.mesh=null;
           }
-          // buildings配列から削除
           buildings=buildings.filter(b=>b.landKey!==gachaState.landKey);
           delete buildingMap[gachaState.landKey];
           document.getElementById('building-count').textContent=buildings.length;
-          // DBから削除
           await db.from('buildings').delete().eq('x',gx).eq('z',gz);
         }
 
-        // DB保存
         const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${selectedShape}_gacha`,owner_id:currentUser.id,employees});
         if(error)throw error;
 
-        // 3Dビル追加
         addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey);
+        await completeTask('build');
         closeBuildModal();
         const colorInfo=getColorByEmployees(employees);
         showToast(`🏢 ${floors}階建て完成！${colorInfo.label}`);
@@ -1089,7 +1089,6 @@ async function refreshTaskUI() {
       }
     }
 
-    // ビル管理
     let buildings=[];
     const buildingMap={};
 
@@ -1127,7 +1126,6 @@ async function refreshTaskUI() {
       finishLoading();
     }
 
-    // ランダム建設ボタン
     document.getElementById('build-btn').addEventListener('click',async()=>{
       const x=(Math.floor(Math.random()*20)-10)*CELL,z=(Math.floor(Math.random()*20)-10)*CELL;
       const floors=Math.floor(Math.random()*50)+5;
@@ -1144,7 +1142,6 @@ async function refreshTaskUI() {
       }catch(e){console.warn('保存エラー:',e.message);}
     });
 
-    // グリッドクリック
     scene.onPointerObservable.add((pointerInfo)=>{
       if(isFlying)return;
       if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;

@@ -612,10 +612,47 @@
   document.getElementById('lang-label').textContent=isJa?'EN':'JP';
   document.getElementById('auth-lang-label').textContent=isJa?'EN':'JP';
 
-  // プレースホルダー切り替え
+  // ヘッダー統計
+  document.querySelector('[data-i18n="buildings"]').textContent=isJa?'ビル数':'Buildings';
+  document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
+  document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
+
+  // ボタン類
+  document.getElementById('build-btn').textContent=isJa?'＋ ビルを建てる':'＋ Build';
+  document.getElementById('mode-btn').textContent=isJa?'🕊 飛行モード':'🕊 Fly Mode';
+  document.getElementById('gacha-float-btn').textContent=isJa?'🎰 ガチャ':'🎰 Gacha';
+  document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
+  document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
+
+  // タスクパネル
+  document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
+  const taskLabels=[
+    {type:'login', ja:'ログインボーナス', en:'Login Bonus'},
+    {type:'build', ja:'ビルを1棟建てる', en:'Build a building'},
+    {type:'get_land', ja:'土地を1区画取得する', en:'Get a land'},
+  ];
+  taskLabels.forEach(t=>{
+    const row=document.getElementById('task-row-'+t.type);
+    if(row) row.querySelector('.task-label').textContent=isJa?t.ja:t.en;
+  });
+
+  // 土地パネル
+  document.getElementById('land-buy-btn').textContent=isJa?'🔥 この土地を取得（無料）':'🔥 Get this land (Free)';
+  document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
+  document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 ガチャで建て替える（50コイン）':'🔄 Rebuild with Gacha (50 coins)';
+
+  // プレースホルダー
   document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{
     el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;
   });
+
+  // 認証モーダル
+  document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
+  document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
+  document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
+  document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
+  document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
+}
 
   // ボタン・ラベル切り替え
   document.getElementById('build-btn').textContent=isJa?'＋ ビルを建てる':'＋ Build';

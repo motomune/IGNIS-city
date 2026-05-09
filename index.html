@@ -38,7 +38,6 @@
       background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
       padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; pointer-events: all;
     }
-
     #gacha-float-btn {
       position: fixed; bottom: 32px; right: 24px;
       background: linear-gradient(135deg, #a855f7, #6366f1);
@@ -49,7 +48,6 @@
       pointer-events: all; z-index: 10; letter-spacing: 0.05em;
     }
     #gacha-float-btn:hover { transform: scale(1.06); box-shadow: 0 8px 40px rgba(168,85,247,0.7); }
-
     #bottom-btns {
       position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
       display: flex; gap: 12px; align-items: center; pointer-events: all; z-index: 10;
@@ -71,7 +69,6 @@
       background: linear-gradient(135deg, rgba(100,180,255,0.3), rgba(50,120,255,0.3));
       border-color: rgba(100,180,255,0.5); color: #aaddff;
     }
-
     #fly-hint {
       position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
       background: rgba(0,0,0,0.6); border: 1px solid rgba(100,180,255,0.3);
@@ -80,7 +77,6 @@
       pointer-events: none; backdrop-filter: blur(6px); white-space: nowrap;
     }
     #fly-hint.visible { display: block; }
-
     #loading {
       position: fixed; inset: 0; background: #0a0a0f; display: flex;
       flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.8s;
@@ -92,7 +88,6 @@
     }
     #loading-bar-wrap { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
     #loading-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #ff6a00, #ee0979); border-radius: 2px; transition: width 0.3s; }
-
     #toast {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(255,106,0,0.9); color: #fff; padding: 10px 24px;
@@ -100,14 +95,11 @@
       transition: opacity 0.3s; z-index: 25; pointer-events: none; white-space: nowrap;
     }
     #fire-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 201; display: none; }
-
     #land-panel {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-      background: rgba(6,6,16,0.97);
-      border: 2px solid rgba(255,106,0,0.8);
+      background: rgba(6,6,16,0.97); border: 2px solid rgba(255,106,0,0.8);
       border-radius: 20px; padding: 22px 28px 20px; min-width: 300px; max-width: 92vw;
-      z-index: 15; pointer-events: all; display: none;
-      backdrop-filter: blur(20px);
+      z-index: 15; pointer-events: all; display: none; backdrop-filter: blur(20px);
       box-shadow: 0 0 0 1px rgba(255,106,0,0.2), 0 8px 40px rgba(0,0,0,0.8), 0 0 40px rgba(255,106,0,0.15);
     }
     #land-panel.open { display: block; }
@@ -117,10 +109,7 @@
       border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
     }
     #land-panel-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
-    #land-panel-title {
-      font-size: 10px; font-weight: 800; color: #ff6a00;
-      letter-spacing: 0.2em; margin-bottom: 6px; text-transform: uppercase;
-    }
+    #land-panel-title { font-size: 10px; font-weight: 800; color: #ff6a00; letter-spacing: 0.2em; margin-bottom: 6px; text-transform: uppercase; }
     #land-panel-coord { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 6px; letter-spacing: 0.05em; }
     #land-panel-owner { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
     #land-panel-owner .owner-name { color: #1d9bf0; font-weight: 800; }
@@ -138,14 +127,12 @@
     #land-buy-btn { background: linear-gradient(135deg, #ff6a00, #ee0979); }
     #land-gacha-btn { background: linear-gradient(135deg, #a855f7, #6366f1); }
     #land-rebuild-btn { background: linear-gradient(135deg, #f59e0b, #ef4444); }
-
     #gacha-overlay {
       display: none; position: fixed; inset: 0; z-index: 300;
       background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a0f 100%);
       align-items: center; justify-content: center; flex-direction: column;
     }
     #gacha-overlay.show { display: flex; }
-
     #gacha-machine {
       width: 220px; height: 280px; position: relative; margin-bottom: 20px;
       animation: machineEntry 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
@@ -154,18 +141,14 @@
       0% { transform: translateY(-80px) scale(0.7); opacity: 0; }
       100% { transform: translateY(0) scale(1); opacity: 1; }
     }
-
     #gacha-machine svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 30px rgba(168,85,247,0.5)); }
-
     #gacha-capsule {
       width: 100px; height: 100px; position: absolute;
       left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0);
       border-radius: 50%; display: flex; align-items: center; justify-content: center;
       font-size: 36px; transition: none;
     }
-    #gacha-capsule.drop {
-      animation: capsuleDrop 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    }
+    #gacha-capsule.drop { animation: capsuleDrop 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
     @keyframes capsuleDrop {
       0%   { transform: translate(-50%, -200%) scale(0.4); opacity: 0; }
       40%  { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
@@ -174,74 +157,38 @@
       75%  { transform: translate(-50%, -50%) scale(1); }
       100% { transform: translate(-50%, 120%) scale(1); opacity: 1; }
     }
-
     #gacha-break-area {
       position: relative; width: 200px; height: 200px;
-      display: flex; align-items: center; justify-content: center;
-      display: none;
+      display: flex; align-items: center; justify-content: center; display: none;
     }
     #gacha-break-area.show { display: flex; }
-
     #capsule-top, #capsule-bottom {
-      position: absolute; width: 90px; height: 45px;
-      border-radius: 45px 45px 0 0;
+      position: absolute; width: 90px; height: 45px; border-radius: 45px 45px 0 0;
       display: flex; align-items: center; justify-content: center;
     }
-    #capsule-top {
-      top: 50px; background: rgba(255,255,255,0.15);
-      border: 2px solid rgba(255,255,255,0.3);
-      animation: none;
-    }
-    #capsule-bottom {
-      top: 95px; background: rgba(255,255,255,0.1);
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 0 0 45px 45px;
-      animation: none;
-    }
+    #capsule-top { top: 50px; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3); animation: none; }
+    #capsule-bottom { top: 95px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 0 0 45px 45px; animation: none; }
     #capsule-top.break { animation: capBreakTop 0.5s ease-out forwards; }
     #capsule-bottom.break { animation: capBreakBottom 0.5s ease-out forwards; }
     @keyframes capBreakTop { to { transform: translateY(-40px) rotate(-15deg); opacity: 0; } }
     @keyframes capBreakBottom { to { transform: translateY(40px) rotate(10deg); opacity: 0; } }
-
-    #capsule-building {
-      position: absolute; font-size: 52px;
-      transform: scale(0); transition: none;
-      filter: drop-shadow(0 0 20px rgba(255,255,255,0.8));
-    }
+    #capsule-building { position: absolute; font-size: 52px; transform: scale(0); transition: none; filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); }
     #capsule-building.appear { animation: buildingAppear 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
     @keyframes buildingAppear {
       0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
       60%  { transform: scale(1.2) rotate(3deg); opacity: 1; }
       100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
-
-    #gacha-flash {
-      position: fixed; inset: 0; background: #fff;
-      opacity: 0; pointer-events: none; z-index: 301;
-      transition: opacity 0.1s;
-    }
+    #gacha-flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 301; transition: opacity 0.1s; }
     #gacha-flash.flash { animation: flashAnim 0.6s ease-out forwards; }
-    @keyframes flashAnim {
-      0%   { opacity: 0.9; }
-      100% { opacity: 0; }
-    }
-
-    #gacha-particles {
-      position: absolute; inset: 0; pointer-events: none;
-      overflow: visible;
-    }
-    .particle {
-      position: absolute; width: 8px; height: 8px; border-radius: 50%;
-      animation: particleFly 1s ease-out forwards;
-    }
+    @keyframes flashAnim { 0% { opacity: 0.9; } 100% { opacity: 0; } }
+    #gacha-particles { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+    .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; animation: particleFly 1s ease-out forwards; }
     @keyframes particleFly {
       0% { transform: translate(0,0) scale(1); opacity: 1; }
       100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
     }
-
-    #gacha-result-text {
-      text-align: center; display: none; animation: resultFadeIn 0.5s ease forwards;
-    }
+    #gacha-result-text { text-align: center; display: none; animation: resultFadeIn 0.5s ease forwards; }
     #gacha-result-text.show { display: block; }
     @keyframes resultFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     #gacha-result-rank { font-size: 28px; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 6px; }
@@ -251,7 +198,6 @@
       padding: 12px 40px; border-radius: 30px; font-size: 15px; font-weight: 700; cursor: pointer;
     }
     #gacha-result-close:hover { opacity: 0.85; }
-
     #gacha-modal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
@@ -290,7 +236,6 @@
     }
     #gacha-spin-btn:hover { opacity: 0.85; }
     #gacha-spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
     #build-modal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
@@ -320,7 +265,6 @@
     #build-confirm-btn { width: 100%; background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
     #build-confirm-btn:hover { opacity: 0.85; }
     #build-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
     #auth-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 200; align-items: center; justify-content: center; }
     #auth-modal.open { display: flex; }
     #auth-box { background: #0f0f18; border: 1px solid rgba(255,106,0,0.35); border-radius: 22px; padding: 36px 36px 28px; width: 400px; max-width: 92vw; box-shadow: 0 20px 60px rgba(0,0,0,0.7); position: relative; overflow: hidden; }
@@ -358,15 +302,13 @@
     #auth-error { font-size: 12px; margin-top: 10px; text-align: center; min-height: 18px; color: #ff4444; }
     #auth-close { position: absolute; top: 14px; right: 18px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer; }
     #auth-close:hover { color: #fff; }
-
     /* デイリータスクパネル */
     #task-panel {
       position: fixed; top: 80px; right: 24px;
       background: rgba(6,6,16,0.95); border: 1px solid rgba(255,106,0,0.4);
       border-radius: 16px; padding: 16px 20px; min-width: 240px;
       z-index: 15; pointer-events: all; display: none;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+      backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0,0,0,0.6);
     }
     #task-panel.open { display: block; }
     #task-panel-title { font-size: 11px; font-weight: 800; color: #ff6a00; letter-spacing: 0.15em; margin-bottom: 12px; text-transform: uppercase; }
@@ -385,7 +327,6 @@
   </style>
 </head>
 <body>
-
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
     <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
@@ -425,14 +366,12 @@
 
   <button id="gacha-float-btn" onclick="openGachaModal(false)">🎰 ガチャ</button>
 
-  <!-- タスクパネル -->
   <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク</button>
   <div id="task-panel">
     <div id="task-panel-title">📋 デイリータスク</div>
     <div id="task-list"></div>
   </div>
 
-  <!-- 土地パネル -->
   <div id="land-panel">
     <button id="land-panel-close" onclick="closeLandPanel()">×</button>
     <div id="land-panel-title">📍 LAND</div>
@@ -444,7 +383,6 @@
     <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">🔄 ガチャで建て替える（50コイン）</button>
   </div>
 
-  <!-- ガチャ設定モーダル -->
   <div id="gacha-modal">
     <div id="gacha-box">
       <button id="gacha-modal-close" onclick="closeGachaModal()">×</button>
@@ -462,7 +400,6 @@
     </div>
   </div>
 
-  <!-- ガチャ演出オーバーレイ -->
   <div id="gacha-overlay">
     <div id="gacha-flash"></div>
     <div id="gacha-phase1">
@@ -502,7 +439,6 @@
     </div>
   </div>
 
-  <!-- 形状選択モーダル -->
   <div id="build-modal">
     <div id="build-box">
       <button id="build-modal-close" onclick="closeBuildModal()">×</button>
@@ -521,7 +457,6 @@
 
   <div id="toast"></div>
 
-  <!-- 認証モーダル -->
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" onclick="closeAuthModal()">×</button>
@@ -571,11 +506,10 @@
     const LAND_COST=0;
     const GACHA_COST=50;
 
-    // タスク定義
-    const DAILY_TASKS = [
-      { type: "login",     label: "ログインボーナス",   reward: 3  },
-      { type: "build",     label: "ビルを1棟建てる",     reward: 5  },
-      { type: "get_land",  label: "土地を1区画取得する", reward: 5  },
+    const DAILY_TASKS=[
+      {type:'login',    label:'ログインボーナス',   reward:3},
+      {type:'build',    label:'ビルを1棟建てる',    reward:5},
+      {type:'get_land', label:'土地を1区画取得する',reward:5},
     ];
 
     const CELL=10, GRID_HALF=100;
@@ -607,127 +541,98 @@
     // 多言語
     let currentLang='ja';
     function toggleLang(){
-  currentLang=currentLang==='ja'?'en':'ja';
-  const isJa=currentLang==='ja';
-  document.getElementById('lang-label').textContent=isJa?'EN':'JP';
-  document.getElementById('auth-lang-label').textContent=isJa?'EN':'JP';
-
-  // ヘッダー統計
-  document.querySelector('[data-i18n="buildings"]').textContent=isJa?'ビル数':'Buildings';
-  document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
-  document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
-
-  // ボタン類
-  document.getElementById('build-btn').textContent=isJa?'＋ ビルを建てる':'＋ Build';
-  document.getElementById('mode-btn').textContent=isJa?'🕊 飛行モード':'🕊 Fly Mode';
-  document.getElementById('gacha-float-btn').textContent=isJa?'🎰 ガチャ':'🎰 Gacha';
-  document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
-  document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
-
-  // タスクパネル
-  document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
-  const taskLabels=[
-    {type:'login', ja:'ログインボーナス', en:'Login Bonus'},
-    {type:'build', ja:'ビルを1棟建てる', en:'Build a building'},
-    {type:'get_land', ja:'土地を1区画取得する', en:'Get a land'},
-  ];
-  taskLabels.forEach(t=>{
-    const row=document.getElementById('task-row-'+t.type);
-    if(row) row.querySelector('.task-label').textContent=isJa?t.ja:t.en;
-  });
-
-  // 土地パネル
-  document.getElementById('land-buy-btn').textContent=isJa?'🔥 この土地を取得（無料）':'🔥 Get this land (Free)';
-  document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
-  document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 ガチャで建て替える（50コイン）':'🔄 Rebuild with Gacha (50 coins)';
-
-  // プレースホルダー
-  document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{
-    el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;
-  });
-
-  // 認証モーダル
-  document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
-  document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
-  document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
-  document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
-  document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
-}
-
-  // ボタン・ラベル切り替え
-  document.getElementById('build-btn').textContent=isJa?'＋ ビルを建てる':'＋ Build';
-  document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
-  document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
-  document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
-  document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
-  document.getElementById('land-buy-btn').textContent=isJa?'🔥 この土地を取得（無料）':'🔥 Get this land (Free)';
-}
+      currentLang=currentLang==='ja'?'en':'ja';
+      const isJa=currentLang==='ja';
+      document.getElementById('lang-label').textContent=isJa?'EN':'JP';
+      document.getElementById('auth-lang-label').textContent=isJa?'EN':'JP';
+      document.querySelector('[data-i18n="buildings"]').textContent=isJa?'ビル数':'Buildings';
+      document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
+      document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
+      document.getElementById('build-btn').textContent=isJa?'＋ ビルを建てる':'＋ Build';
+      document.getElementById('mode-btn').textContent=isJa?'🕊 飛行モード':'🕊 Fly Mode';
+      document.getElementById('gacha-float-btn').textContent=isJa?'🎰 ガチャ':'🎰 Gacha';
+      document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
+      document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
+      document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
+      document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
+      const taskLabels=[
+        {type:'login',ja:'ログインボーナス',en:'Login Bonus'},
+        {type:'build',ja:'ビルを1棟建てる',en:'Build a building'},
+        {type:'get_land',ja:'土地を1区画取得する',en:'Get a land'},
+      ];
+      taskLabels.forEach(t=>{
+        const row=document.getElementById('task-row-'+t.type);
+        if(row)row.querySelector('.task-label').textContent=isJa?t.ja:t.en;
+      });
+      document.getElementById('land-buy-btn').textContent=isJa?'🔥 この土地を取得（無料）':'🔥 Get this land (Free)';
+      document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
+      document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 ガチャで建て替える（50コイン）':'🔄 Rebuild with Gacha (50 coins)';
+      document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{
+        el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;
+      });
+      document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
+      document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
+      document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
+      document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
+    }
 
     // ========== デイリータスク ==========
-    async function initDailyTasks() {
-      if (!currentUser) return;
-      const today = new Date().toISOString().slice(0, 10);
-      for (const task of DAILY_TASKS) {
+    async function initDailyTasks(){
+      if(!currentUser)return;
+      const today=new Date().toISOString().slice(0,10);
+      for(const task of DAILY_TASKS){
         await db.from('daily_tasks').upsert(
-          { user_id: currentUser.id, task_date: today, task_type: task.type, completed: false },
-          { onConflict: 'user_id,task_date,task_type', ignoreDuplicates: true }
+          {user_id:currentUser.id,task_date:today,task_type:task.type,completed:false},
+          {onConflict:'user_id,task_date,task_type',ignoreDuplicates:true}
         );
       }
       renderTaskUI();
       await refreshTaskUI();
-      document.getElementById('task-toggle-btn').style.display = 'block';
+      document.getElementById('task-toggle-btn').style.display='block';
     }
 
-    async function completeTask(taskType) {
-      if (!currentUser) return;
-      const today = new Date().toISOString().slice(0, 10);
-      const { data } = await db.from('daily_tasks')
-        .select('*').eq('user_id', currentUser.id)
-        .eq('task_date', today).eq('task_type', taskType).single();
-      if (!data || data.completed) return;
-      await db.from('daily_tasks').update({ completed: true, completed_at: new Date().toISOString(), reward_given: true })
-        .eq('id', data.id);
-      const task = DAILY_TASKS.find(t => t.type === taskType);
-      if (!task) return;
-      // 従業員をreward分加算（buildingsの最新ビルに加算）
+    async function completeTask(taskType){
+      if(!currentUser)return;
+      const today=new Date().toISOString().slice(0,10);
+      const{data}=await db.from('daily_tasks')
+        .select('*').eq('user_id',currentUser.id)
+        .eq('task_date',today).eq('task_type',taskType).single();
+      if(!data||data.completed)return;
+      await db.from('daily_tasks').update({completed:true,completed_at:new Date().toISOString(),reward_given:true})
+        .eq('id',data.id);
+      const task=DAILY_TASKS.find(t=>t.type===taskType);
+      if(!task)return;
       showToast(`✅ タスク完了！「${task.label}」→ 従業員+${task.reward}人`);
       await refreshTaskUI();
     }
 
-    function renderTaskUI() {
-      const list = document.getElementById('task-list');
-      list.innerHTML = '';
-      DAILY_TASKS.forEach(task => {
-        const row = document.createElement('div');
-        row.className = 'task-row';
-        row.id = 'task-row-' + task.type;
-        row.innerHTML = `
-          <span class="task-status">⬜</span>
-          <span class="task-label">${task.label}</span>
-          <span class="task-reward">+${task.reward}人</span>
-        `;
+    function renderTaskUI(){
+      const list=document.getElementById('task-list');
+      list.innerHTML='';
+      DAILY_TASKS.forEach(task=>{
+        const row=document.createElement('div');
+        row.className='task-row';
+        row.id='task-row-'+task.type;
+        row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${task.label}</span><span class="task-reward">+${task.reward}人</span>`;
         list.appendChild(row);
       });
     }
 
-    async function refreshTaskUI() {
-      if (!currentUser) return;
-      const today = new Date().toISOString().slice(0, 10);
-      const { data } = await db.from('daily_tasks')
-        .select('*').eq('user_id', currentUser.id).eq('task_date', today);
-      if (!data) return;
-      DAILY_TASKS.forEach(task => {
-        const row = document.getElementById('task-row-' + task.type);
-        if (!row) return;
-        const done = data.find(d => d.task_type === task.type)?.completed;
-        row.classList.toggle('task-done', !!done);
-        row.querySelector('.task-status').textContent = done ? '✅' : '⬜';
+    async function refreshTaskUI(){
+      if(!currentUser)return;
+      const today=new Date().toISOString().slice(0,10);
+      const{data}=await db.from('daily_tasks').select('*').eq('user_id',currentUser.id).eq('task_date',today);
+      if(!data)return;
+      DAILY_TASKS.forEach(task=>{
+        const row=document.getElementById('task-row-'+task.type);
+        if(!row)return;
+        const done=data.find(d=>d.task_type===task.type)?.completed;
+        row.classList.toggle('task-done',!!done);
+        row.querySelector('.task-status').textContent=done?'✅':'⬜';
       });
     }
 
-    function toggleTaskPanel() {
-      document.getElementById('task-panel').classList.toggle('open');
-    }
+    function toggleTaskPanel(){document.getElementById('task-panel').classList.toggle('open');}
 
     // 火の粉
     const fireCanvas=document.getElementById('fire-canvas');
@@ -792,14 +697,14 @@
           const{data,error}=await db.auth.signInWithPassword({email,password});
           if(error)throw error;
           await onLoginSuccess(data.user);closeAuthModal();
-        } else {
+        }else{
           const{data,error}=await db.auth.signUp({email,password});
           if(error)throw error;
           if(data.user){
             await db.from('users').upsert({id:data.user.id,username,x_username:xUsername,rank:1,coin_column:0});
             await onLoginSuccess(data.user,username,xUsername);closeAuthModal();
             showToast('🎉 登録完了！IGNIS CITYへようこそ！');
-          } else {
+          }else{
             errEl.style.color='#4caf50';errEl.textContent='確認メールを送信しました。';
           }
         }
@@ -824,7 +729,16 @@
       await completeTask('login');
       showToast(`👋 おかえり、${xName?'@'+xName:displayName}！`);
     }
-    async function handleLogout(){await db.auth.signOut();currentUser=null;document.getElementById('login-btn-header').style.display='block';document.getElementById('logged-in-area').style.display='none';document.getElementById('user-name').textContent='';document.getElementById('coin-count').textContent='0';document.getElementById('task-toggle-btn').style.display='none';document.getElementById('task-panel').classList.remove('open');showToast('ログアウトしました');}
+    async function handleLogout(){
+      await db.auth.signOut();currentUser=null;
+      document.getElementById('login-btn-header').style.display='block';
+      document.getElementById('logged-in-area').style.display='none';
+      document.getElementById('user-name').textContent='';
+      document.getElementById('coin-count').textContent='0';
+      document.getElementById('task-toggle-btn').style.display='none';
+      document.getElementById('task-panel').classList.remove('open');
+      showToast('ログアウトしました');
+    }
     async function restoreSession(){const{data:{session}}=await db.auth.getSession();if(session)await onLoginSuccess(session.user);}
 
     // Babylon.js
@@ -869,7 +783,6 @@
       const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;
     }
 
-    // 土地システム
     const landMap={};
     let selectedLandKey=null;
     function worldToGrid(wx,wz){return{gx:Math.round(wx/CELL)*CELL,gz:Math.round(wz/CELL)*CELL};}
@@ -919,23 +832,22 @@
       const gachaBtn=document.getElementById('land-gacha-btn');
       const rebuildBtn=document.getElementById('land-rebuild-btn');
       const building=buildingMap[selectedLandKey];
-
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
         ownerEl.innerHTML=`Xユーザー：<span class="owner-name">${land.owner_display}</span>`;
         if(building){
           const colorInfo=getColorByEmployees(building.employees||0);
           buildingEl.textContent=`${building.totalFloors}階 ｜ 従業員 ${building.employees||0}人 ${colorInfo.label}`;
-        } else {buildingEl.textContent='ビルなし';}
+        }else{buildingEl.textContent='ビルなし';}
         if(isMe){
           buyBtn.style.display='none';
           if(building){gachaBtn.style.display='none';rebuildBtn.style.display='block';}
           else{gachaBtn.style.display='block';rebuildBtn.style.display='none';}
-        } else {
+        }else{
           buyBtn.style.display='block';buyBtn.textContent='🔒 購入済みの土地です';buyBtn.disabled=true;
           gachaBtn.style.display='none';rebuildBtn.style.display='none';
         }
-      } else {
+      }else{
         ownerEl.textContent='空き地（未取得）';
         buildingEl.textContent='';
         buyBtn.style.display='block';buyBtn.textContent='🔥 この土地を取得（無料）';buyBtn.disabled=false;
@@ -969,13 +881,10 @@
       }
     }
 
-    // ガチャシステム
     let gachaState={result:null,isRebuild:false,landKey:null};
 
     function openGachaModal(isRebuild=false){
-      if(!selectedLandKey&&!isRebuild){
-        showToast('まず土地をタップして選択してください');return;
-      }
+      if(!selectedLandKey&&!isRebuild){showToast('まず土地をタップして選択してください');return;}
       gachaState.isRebuild=isRebuild;
       gachaState.landKey=selectedLandKey;
       const info=selectedLandKey?`${keyToCoord(selectedLandKey).gx} / ${keyToCoord(selectedLandKey).gz}`:'土地未選択';
@@ -1009,48 +918,34 @@
       const phase2=document.getElementById('gacha-phase2');
       const capsule=document.getElementById('gacha-capsule');
       const flash=document.getElementById('gacha-flash');
-
       const capsuleColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
       capsule.style.background=`radial-gradient(circle at 35% 35%, ${capsuleColors[result.star]}, ${capsuleColors[result.star]}88)`;
       capsule.style.boxShadow=`0 0 30px ${capsuleColors[result.star]}88`;
       capsule.textContent=result.emoji;
-
       phase1.style.display='block';
       phase2.style.display='none';
       document.getElementById('gacha-result-text').classList.remove('show');
       capsule.className='';
       overlay.classList.add('show');
-
       setTimeout(()=>{capsule.className='drop';},600);
-
       setTimeout(()=>{
         phase1.style.display='none';
         phase2.style.display='flex';
-
-        if(result.star>=4){
-          flash.classList.remove('flash');
-          void flash.offsetWidth;
-          flash.classList.add('flash');
-        }
-
+        if(result.star>=4){flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash');}
         const top=document.getElementById('capsule-top');
         const bottom=document.getElementById('capsule-bottom');
         top.style.background=`linear-gradient(180deg, ${capsuleColors[result.star]}aa, ${capsuleColors[result.star]}44)`;
         bottom.style.background=`linear-gradient(0deg, ${capsuleColors[result.star]}88, ${capsuleColors[result.star]}22)`;
-
         spawnGachaParticles(result.star);
-
         top.className='';bottom.className='';
         void top.offsetWidth;
         top.classList.add('break');bottom.classList.add('break');
-
         const buildingIcons={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
         const bEl=document.getElementById('capsule-building');
         bEl.textContent=buildingIcons[result.star];
         bEl.style.filter=`drop-shadow(0 0 20px ${capsuleColors[result.star]})`;
         bEl.className='';
         setTimeout(()=>bEl.classList.add('appear'),200);
-
         setTimeout(()=>{
           const rankEl=document.getElementById('gacha-result-rank');
           rankEl.textContent=result.label;
@@ -1071,23 +966,12 @@
         p.className='particle';
         const angle=Math.random()*Math.PI*2;
         const dist=60+Math.random()*80;
-        p.style.cssText=`
-          left:50%;top:50%;
-          background:${colors[Math.floor(Math.random()*colors.length)]};
-          --tx:${Math.cos(angle)*dist}px;
-          --ty:${Math.sin(angle)*dist}px;
-          animation-delay:${Math.random()*0.3}s;
-          animation-duration:${0.6+Math.random()*0.6}s;
-          width:${4+star*2}px;height:${4+star*2}px;
-        `;
+        p.style.cssText=`left:50%;top:50%;background:${colors[Math.floor(Math.random()*colors.length)]};--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;animation-delay:${Math.random()*0.3}s;animation-duration:${0.6+Math.random()*0.6}s;width:${4+star*2}px;height:${4+star*2}px;`;
         container.appendChild(p);
       }
     }
 
-    function onGachaResultClose(){
-      document.getElementById('gacha-overlay').classList.remove('show');
-      openBuildModal();
-    }
+    function onGachaResultClose(){document.getElementById('gacha-overlay').classList.remove('show');openBuildModal();}
 
     let selectedShape='box';
     function selectShape(el){selectedShape=el.getAttribute('data-shape');document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');}
@@ -1112,22 +996,16 @@
       try{
         let employees=0;
         const existingBuilding=buildingMap[gachaState.landKey];
-
         if(gachaState.isRebuild&&existingBuilding){
           employees=existingBuilding.employees||0;
-          if(existingBuilding.mesh){
-            existingBuilding.mesh.dispose();
-            existingBuilding.mesh=null;
-          }
+          if(existingBuilding.mesh){existingBuilding.mesh.dispose();existingBuilding.mesh=null;}
           buildings=buildings.filter(b=>b.landKey!==gachaState.landKey);
           delete buildingMap[gachaState.landKey];
           document.getElementById('building-count').textContent=buildings.length;
           await db.from('buildings').delete().eq('x',gx).eq('z',gz);
         }
-
         const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${selectedShape}_gacha`,owner_id:currentUser.id,employees});
         if(error)throw error;
-
         addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey);
         await completeTask('build');
         closeBuildModal();

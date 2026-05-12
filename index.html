@@ -1528,9 +1528,6 @@
       minimapAnimId=requestAnimationFrame(drawMinimap);
     }
 
-    drawMinimap();
-
-
     let buildings=[];
     const buildingMap={};
 
@@ -1569,7 +1566,8 @@
 
     async function loadBuildingsAndLands(){
       await loadBuildings();
-      await loadLands(); // ビル情報がある状態でタイル描画
+      await loadLands();
+      drawMinimap(); // データ読み込み後に起動
       finishLoading();
     }
 

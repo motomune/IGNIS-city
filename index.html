@@ -95,6 +95,19 @@
       transition: opacity 0.3s; z-index: 25; pointer-events: none; white-space: nowrap;
     }
     #fire-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 201; display: none; }
+
+    /* グリッド凡例 */
+    #grid-legend {
+      position: fixed; bottom: 90px; left: 16px;
+      background: rgba(6,6,16,0.85); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 8px 12px;
+      font-size: 11px; color: rgba(255,255,255,0.6);
+      pointer-events: none; z-index: 10; backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .legend-row { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
     #land-panel {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(6,6,16,0.97); border: 2px solid rgba(255,106,0,0.8);
@@ -217,6 +230,13 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;
     }
     #gacha-land-info { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 18px; }
+    /* 土地未選択の警告 */
+    #gacha-no-land-warning {
+      display: none; background: rgba(255,106,0,0.12); border: 1px solid rgba(255,106,0,0.4);
+      border-radius: 10px; padding: 10px 14px; font-size: 12px; color: rgba(255,180,80,0.9);
+      margin-bottom: 14px; text-align: left; line-height: 1.5;
+    }
+    #gacha-no-land-warning.show { display: block; }
     .gacha-rates { margin-bottom: 18px; }
     .rate-row {
       display: flex; justify-content: space-between; align-items: center;
@@ -255,6 +275,13 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;
     }
     #build-modal-info { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+    /* 建設先選択UI */
+    #build-land-select {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+      font-size: 12px; color: rgba(255,255,255,0.5);
+    }
+    #build-land-select.has-land { border-color: rgba(255,106,0,0.4); color: rgba(255,180,80,0.9); }
     .custom-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
     .shape-grid { display: flex; gap: 8px; margin-bottom: 22px; }
     .shape-btn { flex: 1; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 10px 4px; text-align: center; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.6); }
@@ -357,7 +384,7 @@
     </div>
   </div>
 
-  <div id="fly-hint">🕊 WASD / スワイプで飛行</div>
+  <div id="fly-hint">🕊 WASD / スワイプで空中移動</div>
 
   <div id="bottom-btns">
     <button id="build-btn">＋ ビルを建てる</button>
@@ -372,13 +399,21 @@
     <div id="task-list"></div>
   </div>
 
+  <!-- グリッド凡例 -->
+  <div id="grid-legend">
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(100,220,100,0.7);"></div><span id="legend-empty">空き地（未取得）</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(255,140,0,0.8);"></div><span id="legend-mine">自分の土地</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(80,140,255,0.7);"></div><span id="legend-others">他ユーザーの土地</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(255,80,80,0.7);"></div><span id="legend-building">ビルあり</span></div>
+  </div>
+
   <div id="land-panel">
     <button id="land-panel-close" onclick="closeLandPanel()">×</button>
     <div id="land-panel-title">📍 LAND</div>
     <div id="land-panel-coord">-</div>
     <div id="land-panel-owner"></div>
     <div id="land-panel-building"></div>
-    <button id="land-buy-btn" class="land-panel-btn" onclick="handleLandBuy()">🔥 この土地を取得（無料）</button>
+    <button id="land-buy-btn" class="land-panel-btn" onclick="handleLandBuy()">🔥 この土地を取得（100コイン）</button>
     <button id="land-gacha-btn" class="land-panel-btn" onclick="openGachaModal(false)" style="display:none;">🎰 ガチャでビルを建てる（50コイン）</button>
     <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">🔄 ガチャで建て替える（50コイン）</button>
   </div>
@@ -388,6 +423,7 @@
       <button id="gacha-modal-close" onclick="closeGachaModal()">×</button>
       <div id="gacha-title">🎰 ビルガチャ</div>
       <div id="gacha-land-info"></div>
+      <div id="gacha-no-land-warning">⚠️ 土地が選択されていません。<br>ガチャ後に建設先の土地をタップしてください。</div>
       <div class="gacha-rates">
         <div class="rate-row"><span class="stars star5">★★★★★</span><span class="floors-range">48〜50階</span><span class="prob">0.8%</span></div>
         <div class="rate-row"><span class="stars star4">★★★★</span><span class="floors-range">40〜47階</span><span class="prob">2.2%</span></div>
@@ -444,6 +480,7 @@
       <button id="build-modal-close" onclick="closeBuildModal()">×</button>
       <div id="build-modal-title">🏗 形状を選ぶ</div>
       <div id="build-modal-info"></div>
+      <div id="build-land-select">📍 土地未選択 — 建設後に土地をタップして配置先を選んでください</div>
       <div class="custom-label">🔷 形状</div>
       <div class="shape-grid">
         <div class="shape-btn selected" data-shape="box" onclick="selectShape(this)"><span class="shape-icon">🟫</span><span class="shape-name">スタンダード</span></div>
@@ -503,7 +540,10 @@
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
     let currentUser=null;
 
-    const LAND_COST=0;
+    // ========================================
+    // 定数
+    // ========================================
+    const LAND_COST=100;   // 🔴 土地取得コスト（コイン）
     const GACHA_COST=50;
 
     const DAILY_TASKS=[
@@ -538,7 +578,9 @@
       return{...GACHA_TABLE[GACHA_TABLE.length-1],floors:10};
     }
 
+    // ========================================
     // 多言語
+    // ========================================
     let currentLang='ja';
     function toggleLang(){
       currentLang=currentLang==='ja'?'en':'ja';
@@ -549,12 +591,18 @@
       document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
       document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
       document.getElementById('build-btn').textContent=isJa?'＋ ビルを建てる':'＋ Build';
-      document.getElementById('mode-btn').textContent=isJa?'🕊 飛行モード':'🕊 Fly Mode';
+      document.getElementById('mode-btn').textContent=isFlying?(isJa?'🏙 街づくりモード':'🏙 City Mode'):(isJa?'🕊 飛行モード':'🕊 Fly Mode');
       document.getElementById('gacha-float-btn').textContent=isJa?'🎰 ガチャ':'🎰 Gacha';
       document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
       document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
+      document.getElementById('fly-hint').textContent=isJa?'🕊 WASD / スワイプで空中移動':'🕊 WASD / Swipe to fly';
+      // 凡例
+      document.getElementById('legend-empty').textContent=isJa?'空き地（未取得）':'Empty land';
+      document.getElementById('legend-mine').textContent=isJa?'自分の土地':'My land';
+      document.getElementById('legend-others').textContent=isJa?'他ユーザーの土地':'Others\' land';
+      document.getElementById('legend-building').textContent=isJa?'ビルあり':'Has building';
       const taskLabels=[
         {type:'login',ja:'ログインボーナス',en:'Login Bonus'},
         {type:'build',ja:'ビルを1棟建てる',en:'Build a building'},
@@ -564,7 +612,7 @@
         const row=document.getElementById('task-row-'+t.type);
         if(row)row.querySelector('.task-label').textContent=isJa?t.ja:t.en;
       });
-      document.getElementById('land-buy-btn').textContent=isJa?'🔥 この土地を取得（無料）':'🔥 Get this land (Free)';
+      document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
       document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 ガチャで建て替える（50コイン）':'🔄 Rebuild with Gacha (50 coins)';
       document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{
@@ -576,7 +624,9 @@
       document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
     }
 
-    // ========== デイリータスク ==========
+    // ========================================
+    // デイリータスク
+    // ========================================
     async function initDailyTasks(){
       if(!currentUser)return;
       const today=new Date().toISOString().slice(0,10);
@@ -634,7 +684,9 @@
 
     function toggleTaskPanel(){document.getElementById('task-panel').classList.toggle('open');}
 
+    // ========================================
     // 火の粉
+    // ========================================
     const fireCanvas=document.getElementById('fire-canvas');
     const fCtx=fireCanvas.getContext('2d');
     let fireParticles=[],fireAnimId=null;
@@ -645,7 +697,9 @@
     function startFire(){fireCanvas.style.display='block';if(!fireAnimId)drawFire();}
     function stopFire(){fireCanvas.style.display='none';if(fireAnimId){cancelAnimationFrame(fireAnimId);fireAnimId=null;}fireParticles=[];fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);}
 
+    // ========================================
     // ローディング
+    // ========================================
     const loadingBar=document.getElementById('loading-bar'),loadingEl=document.getElementById('loading');
     let loadProgress=0;
     const loadInterval=setInterval(()=>{loadProgress+=Math.random()*15;if(loadProgress>90)loadProgress=90;loadingBar.style.width=loadProgress+'%';},200);
@@ -653,7 +707,9 @@
 
     function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2800);}
 
+    // ========================================
     // 認証
+    // ========================================
     let authMode='login';
     function openAuthModal(){document.getElementById('auth-modal').classList.add('open');document.getElementById('auth-error').textContent='';startFire();startBlinking();}
     function closeAuthModal(){document.getElementById('auth-modal').classList.remove('open');stopFire();stopBlinking();}
@@ -725,6 +781,8 @@
       document.getElementById('login-btn-header').style.display='none';
       document.getElementById('logged-in-area').style.display='flex';
       document.getElementById('user-name').textContent=xName?`@${xName}`:displayName;
+      // ログイン後にタイル色を再描画（自分の土地が橙色になる）
+      redrawAllTiles();
       await initDailyTasks();
       await completeTask('login');
       showToast(`👋 おかえり、${xName?'@'+xName:displayName}！`);
@@ -737,25 +795,39 @@
       document.getElementById('coin-count').textContent='0';
       document.getElementById('task-toggle-btn').style.display='none';
       document.getElementById('task-panel').classList.remove('open');
+      redrawAllTiles();
       showToast('ログアウトしました');
     }
     async function restoreSession(){const{data:{session}}=await db.auth.getSession();if(session)await onLoginSuccess(session.user);}
 
-    // Babylon.js
+    // ========================================
+    // Babylon.js セットアップ
+    // ========================================
     const canvas=document.getElementById('renderCanvas');
     const engine=new BABYLON.Engine(canvas,true);
     const scene=new BABYLON.Scene(engine);
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
 
+    // アークカメラ（街づくりモード）
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
     arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=200;arcCamera.upperBetaLimit=Math.PI/2.2;
 
+    // 飛行カメラ（飛行モード）
     const flyCamera=new BABYLON.FlyCamera('flyCam',new BABYLON.Vector3(0,30,-60),scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
-    flyCamera.speed=1.4;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
-    flyCamera.bankedTurn=true;flyCamera.bankedTurnLimit=Math.PI/4;flyCamera.bankedTurnMultiplier=0.5;flyCamera.minZ=0.1;
-    flyCamera.keysUp=[87,38];flyCamera.keysDown=[83,40];flyCamera.keysLeft=[65,37];flyCamera.keysRight=[68,39];
+    flyCamera.speed=1.4;
+    flyCamera.angularSensibility=800;
+    flyCamera.rollCorrect=10;
+    flyCamera.bankedTurn=true;
+    flyCamera.bankedTurnLimit=Math.PI/4;
+    flyCamera.bankedTurnMultiplier=0.5;
+    flyCamera.minZ=0.1;
+    flyCamera.keysUp=[87,38];    // W / ↑
+    flyCamera.keysDown=[83,40];  // S / ↓
+    flyCamera.keysLeft=[65,37];  // A / ←
+    flyCamera.keysRight=[68,39]; // D / →
+
     scene.activeCamera=arcCamera;
     let isFlying=false;
 
@@ -763,8 +835,28 @@
     function setFlyMode(enabled){
       isFlying=enabled;
       const modeBtn=document.getElementById('mode-btn'),flyHint=document.getElementById('fly-hint');
-      if(enabled){const p=arcCamera.position;flyCamera.position=new BABYLON.Vector3(p.x,p.y,p.z);flyCamera.setTarget(arcCamera.target||BABYLON.Vector3.Zero());scene.activeCamera=flyCamera;flyCamera.attachControl(canvas,true);arcCamera.detachControl();modeBtn.classList.add('fly-active');modeBtn.textContent='🏙 街づくりモード';flyHint.classList.add('visible');closeLandPanel();showToast('🕊 飛行モード ON');}
-      else{scene.activeCamera=arcCamera;arcCamera.attachControl(canvas,true);flyCamera.detachControl();modeBtn.classList.remove('fly-active');modeBtn.textContent='🕊 飛行モード';flyHint.classList.remove('visible');showToast('🏙 街づくりモード ON');}
+      const isJa=currentLang==='ja';
+      if(enabled){
+        const p=arcCamera.position;
+        flyCamera.position=new BABYLON.Vector3(p.x,p.y,p.z);
+        flyCamera.setTarget(arcCamera.target||BABYLON.Vector3.Zero());
+        scene.activeCamera=flyCamera;
+        flyCamera.attachControl(canvas,true);
+        arcCamera.detachControl();
+        modeBtn.classList.add('fly-active');
+        modeBtn.textContent=isJa?'🏙 街づくりモード':'🏙 City Mode';
+        flyHint.classList.add('visible');
+        closeLandPanel();
+        showToast('🕊 飛行モード ON — WASD で移動');
+      } else {
+        scene.activeCamera=arcCamera;
+        arcCamera.attachControl(canvas,true);
+        flyCamera.detachControl();
+        modeBtn.classList.remove('fly-active');
+        modeBtn.textContent=isJa?'🕊 飛行モード':'🕊 Fly Mode';
+        flyHint.classList.remove('visible');
+        showToast('🏙 街づくりモード ON');
+      }
     }
 
     const hemiLight=new BABYLON.HemisphericLight('hemi',new BABYLON.Vector3(0,1,0),scene);
@@ -783,6 +875,9 @@
       const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;
     }
 
+    // ========================================
+    // 土地管理
+    // ========================================
     const landMap={};
     let selectedLandKey=null;
     function worldToGrid(wx,wz){return{gx:Math.round(wx/CELL)*CELL,gz:Math.round(wz/CELL)*CELL};}
@@ -790,22 +885,77 @@
     function keyToCoord(key){const[gx,gz]=key.split('_').map(Number);return{gx,gz};}
 
     let highlightTile=null;
-    function showHighlight(gx,gz,owned){
+    function showHighlight(gx,gz){
       if(highlightTile)highlightTile.dispose();
       highlightTile=BABYLON.MeshBuilder.CreateGround('hl_tile',{width:CELL-0.3,height:CELL-0.3},scene);
-      highlightTile.position=new BABYLON.Vector3(gx,0.05,gz);
+      highlightTile.position=new BABYLON.Vector3(gx,0.07,gz);
       const mat=new BABYLON.StandardMaterial('hl_mat_'+Date.now(),scene);
-      mat.emissiveColor=owned?new BABYLON.Color3(1.0,0.4,0.0):new BABYLON.Color3(0.1,1.0,0.3);
-      mat.alpha=0.55;highlightTile.material=mat;highlightTile.isPickable=false;
+      mat.emissiveColor=new BABYLON.Color3(1.0,1.0,0.0); // 選択中は黄色
+      mat.alpha=0.5;highlightTile.material=mat;highlightTile.isPickable=false;
     }
     function hideHighlight(){if(highlightTile){highlightTile.dispose();highlightTile=null;}}
 
-    function drawOwnedTile(gx,gz,key){
+    /**
+     * 🔴 グリッド色分けロジック
+     * - 空き地（未取得）: 緑
+     * - 自分の土地（ビルなし）: 橙
+     * - 自分の土地（ビルあり）: 赤
+     * - 他ユーザーの土地（ビルなし）: 青
+     * - 他ユーザーの土地（ビルあり）: 濃い青
+     */
+    function getTileColor(ownerId){
+      const hasBuilding=!!buildingMap[Object.keys(buildingMap).find(k=>{
+        // このブロックは drawOwnedTile 呼び出し時に key を渡すので、ここでは使わない
+        return false;
+      })];
+      return null;
+    }
+
+    function drawOwnedTile(gx,gz,key,ownerId){
+      // 既存タイルがあれば破棄
+      if(landMap[key]&&landMap[key].tile){landMap[key].tile.dispose();}
+
       const tile=BABYLON.MeshBuilder.CreateGround('lt_'+key,{width:CELL-0.4,height:CELL-0.4},scene);
       tile.position=new BABYLON.Vector3(gx,0.02,gz);
-      const mat=new BABYLON.StandardMaterial('ltm_'+key,scene);
-      mat.emissiveColor=new BABYLON.Color3(1.0,0.45,0.0);mat.alpha=0.28;
-      tile.material=mat;tile.isPickable=false;return tile;
+      const mat=new BABYLON.StandardMaterial('ltm_'+key+'_'+Date.now(),scene);
+
+      const isMe=currentUser&&ownerId===currentUser.id;
+      const hasBuilding=!!buildingMap[key];
+
+      if(isMe&&hasBuilding){
+        // 自分の土地＋ビルあり → 赤
+        mat.emissiveColor=new BABYLON.Color3(1.0,0.2,0.2);mat.alpha=0.45;
+      }else if(isMe){
+        // 自分の土地（空）→ 橙
+        mat.emissiveColor=new BABYLON.Color3(1.0,0.55,0.0);mat.alpha=0.35;
+      }else if(hasBuilding){
+        // 他人の土地＋ビルあり → 濃い青
+        mat.emissiveColor=new BABYLON.Color3(0.2,0.35,1.0);mat.alpha=0.45;
+      }else{
+        // 他人の土地（空）→ 青
+        mat.emissiveColor=new BABYLON.Color3(0.3,0.55,1.0);mat.alpha=0.3;
+      }
+
+      tile.material=mat;tile.isPickable=false;
+      return tile;
+    }
+
+    // 全タイルを再描画（ログイン/ログアウト時）
+    function redrawAllTiles(){
+      Object.entries(landMap).forEach(([key,land])=>{
+        const{gx,gz}=keyToCoord(key);
+        const tile=drawOwnedTile(gx,gz,key,land.owner_id);
+        land.tile=tile;
+      });
+    }
+
+    // ビル追加後に該当タイルだけ更新
+    function refreshTile(key){
+      const land=landMap[key];
+      if(!land)return;
+      const{gx,gz}=keyToCoord(key);
+      const tile=drawOwnedTile(gx,gz,key,land.owner_id);
+      land.tile=tile;
     }
 
     async function loadLands(){
@@ -816,9 +966,10 @@
           const k=landKey(l.grid_x,l.grid_z);
           const u=l.users;
           const ownerDisplay=u&&u.x_username?`@${u.x_username}`:u&&u.username?u.username:'?';
-          const tile=drawOwnedTile(l.grid_x,l.grid_z,k);
-          landMap[k]={owner_id:l.owner_id,owner_display:ownerDisplay,tile};
+          landMap[k]={owner_id:l.owner_id,owner_display:ownerDisplay,tile:null};
         });
+        // buildingMap が先に読み込まれた後に描画
+        redrawAllTiles();
       }catch(e){console.warn('land load error:',e.message);}
     }
 
@@ -850,45 +1001,80 @@
       }else{
         ownerEl.textContent='空き地（未取得）';
         buildingEl.textContent='';
-        buyBtn.style.display='block';buyBtn.textContent='🔥 この土地を取得（無料）';buyBtn.disabled=false;
+        const isJa=currentLang==='ja';
+        buyBtn.style.display='block';
+        buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+        buyBtn.disabled=false;
         gachaBtn.style.display='none';rebuildBtn.style.display='none';
       }
-      showHighlight(gx,gz,!!land);
+      showHighlight(gx,gz);
       document.getElementById('land-panel').classList.add('open');
     }
 
     function closeLandPanel(){document.getElementById('land-panel').classList.remove('open');hideHighlight();selectedLandKey=null;}
 
+    // 🔴 土地購入（コイン消費あり）
     async function handleLandBuy(){
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
       const buyBtn=document.getElementById('land-buy-btn');
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
+        // コイン残高確認
         const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
+        const balance=ud?ud.coin_column||0:0;
+        if(LAND_COST>0&&balance<LAND_COST){
+          showToast(`コインが足りません（必要：${LAND_COST}コイン、残高：${balance}コイン）`);
+          buyBtn.disabled=false;
+          const isJa=currentLang==='ja';
+          buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+          return;
+        }
+        // 土地をDBに登録
         const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
         if(landErr)throw landErr;
+        // コイン消費
+        if(LAND_COST>0){
+          const newCoins=balance-LAND_COST;
+          await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
+          document.getElementById('coin-count').textContent=newCoins;
+        }
         const xName=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:'?';
-        const tile=drawOwnedTile(gx,gz,selectedLandKey);
-        landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile};
+        // landMap に登録してタイル描画
+        landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile:null};
+        const tile=drawOwnedTile(gx,gz,selectedLandKey,currentUser.id);
+        landMap[selectedLandKey].tile=tile;
         await completeTask('get_land');
-        showToast('🏡 土地を取得しました！');
+        showToast(`🏡 土地を取得！（-${LAND_COST}コイン）`);
         openLandPanel(gx,gz);
       }catch(e){
         console.warn('land buy error:',e.message);
-        showToast('取得に失敗しました');
-        buyBtn.disabled=false;buyBtn.textContent='🔥 この土地を取得（無料）';
+        showToast('取得に失敗しました: '+e.message);
+        buyBtn.disabled=false;
+        const isJa=currentLang==='ja';
+        buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       }
     }
 
+    // ========================================
+    // ガチャ
+    // ========================================
     let gachaState={result:null,isRebuild:false,landKey:null};
 
+    // 🔴 ガチャモーダル：土地未選択でも開けるよう修正
     function openGachaModal(isRebuild=false){
-      if(!selectedLandKey&&!isRebuild){showToast('まず土地をタップして選択してください');return;}
       gachaState.isRebuild=isRebuild;
-      gachaState.landKey=selectedLandKey;
-      const info=selectedLandKey?`${keyToCoord(selectedLandKey).gx} / ${keyToCoord(selectedLandKey).gz}`:'土地未選択';
-      document.getElementById('gacha-land-info').textContent=selectedLandKey?`対象：X:${info}`:'';
+      gachaState.landKey=selectedLandKey; // null でも OK
+      const noLandWarning=document.getElementById('gacha-no-land-warning');
+      const infoEl=document.getElementById('gacha-land-info');
+      if(selectedLandKey){
+        const{gx,gz}=keyToCoord(selectedLandKey);
+        infoEl.textContent=`対象：X:${gx} / Z:${gz}`;
+        noLandWarning.classList.remove('show');
+      }else{
+        infoEl.textContent='';
+        noLandWarning.classList.add('show');
+      }
       closeLandPanel();
       document.getElementById('gacha-modal').classList.add('open');
     }
@@ -896,7 +1082,6 @@
 
     async function handleGachaSpin(){
       if(!currentUser){closeGachaModal();openAuthModal();return;}
-      if(!gachaState.landKey){showToast('土地を選択してください');closeGachaModal();return;}
       const btn=document.getElementById('gacha-spin-btn');
       const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
       const balance=ud?ud.coin_column||0:0;
@@ -973,6 +1158,9 @@
 
     function onGachaResultClose(){document.getElementById('gacha-overlay').classList.remove('show');openBuildModal();}
 
+    // ========================================
+    // 建設モーダル
+    // ========================================
     let selectedShape='box';
     function selectShape(el){selectedShape=el.getAttribute('data-shape');document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');}
 
@@ -983,12 +1171,31 @@
       selectedShape='box';
       document.querySelectorAll('.shape-btn').forEach((b,i)=>b.classList.toggle('selected',i===0));
       document.getElementById('build-modal-info').textContent=`${gachaState.result.label}　${gachaState.result.floors}階建て`;
+      // 建設先土地の表示
+      const landSelectEl=document.getElementById('build-land-select');
+      if(gachaState.landKey){
+        const{gx,gz}=keyToCoord(gachaState.landKey);
+        landSelectEl.textContent=`📍 建設先：X:${gx} / Z:${gz}`;
+        landSelectEl.classList.add('has-land');
+      }else{
+        landSelectEl.textContent='📍 土地未選択 — 建設後に土地をタップして配置先を選んでください';
+        landSelectEl.classList.remove('has-land');
+      }
       document.getElementById('build-modal').classList.add('open');
     }
     function closeBuildModal(){document.getElementById('build-modal').classList.remove('open');}
 
     async function handleBuildConfirm(){
-      if(!gachaState.result||!gachaState.landKey||!currentUser)return;
+      if(!gachaState.result||!currentUser)return;
+      // 土地未選択の場合：まず土地選択を促す
+      if(!gachaState.landKey){
+        closeBuildModal();
+        showToast('🏗 形状確定！次に建設先の土地をタップしてください');
+        // 建設待機状態に入る
+        pendingBuildShape=selectedShape;
+        pendingBuildMode=true;
+        return;
+      }
       const{gx,gz}=keyToCoord(gachaState.landKey);
       const{floors}=gachaState.result;
       const btn=document.getElementById('build-confirm-btn');
@@ -1007,17 +1214,28 @@
         const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${selectedShape}_gacha`,owner_id:currentUser.id,employees});
         if(error)throw error;
         addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey);
+        // タイル色を更新（ビルありに）
+        refreshTile(gachaState.landKey);
         await completeTask('build');
         closeBuildModal();
         const colorInfo=getColorByEmployees(employees);
         showToast(`🏢 ${floors}階建て完成！${colorInfo.label}`);
         gachaState={result:null,isRebuild:false,landKey:null};
+        pendingBuildMode=false;
+        pendingBuildShape=null;
       }catch(e){
         console.warn('build error:',e.message);showToast('建設に失敗しました');
         btn.disabled=false;btn.textContent='🏢 建設する';
       }
     }
 
+    // 土地未選択ガチャ後の建設待機状態
+    let pendingBuildMode=false;
+    let pendingBuildShape=null;
+
+    // ========================================
+    // ビル管理
+    // ========================================
     let buildings=[];
     const buildingMap={};
 
@@ -1052,8 +1270,47 @@
         console.warn('Supabase error:',e.message);
         [[0,0,20,'box',0],[10,5,35,'slim',30],[-8,12,15,'wide',100],[15,-10,50,'cylinder',300],[-15,-5,28,'box',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
       }
+    }
+
+    async function loadBuildingsAndLands(){
+      await loadBuildings();
+      await loadLands(); // ビル情報がある状態でタイル描画
       finishLoading();
     }
+
+    // ========================================
+    // イベント：グリッドタップ
+    // ========================================
+    scene.onPointerObservable.add((pointerInfo)=>{
+      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
+
+      // 飛行モード中は土地選択しない（ただし建設待機中は除く）
+      if(isFlying&&!pendingBuildMode)return;
+
+      const pick=scene.pick(scene.pointerX,scene.pointerY);
+      if(!pick.hit||!pick.pickedMesh)return;
+      if(pick.pickedMesh.name==='ground'){
+        const wp=pick.pickedPoint;
+        const{gx,gz}=worldToGrid(wp.x,wp.z);
+        if(Math.abs(gx)>GRID_HALF||Math.abs(gz)>GRID_HALF)return;
+
+        // 建設待機モード：土地タップで建設先確定
+        if(pendingBuildMode&&gachaState.result){
+          const key=landKey(gx,gz);
+          const land=landMap[key];
+          if(!land||land.owner_id!==currentUser?.id){
+            showToast('自分の土地を選択してください');
+            return;
+          }
+          gachaState.landKey=key;
+          selectedShape=pendingBuildShape||'box';
+          openBuildModal();
+          return;
+        }
+
+        openLandPanel(gx,gz);
+      }
+    });
 
     document.getElementById('build-btn').addEventListener('click',async()=>{
       const x=(Math.floor(Math.random()*20)-10)*CELL,z=(Math.floor(Math.random()*20)-10)*CELL;
@@ -1071,21 +1328,9 @@
       }catch(e){console.warn('保存エラー:',e.message);}
     });
 
-    scene.onPointerObservable.add((pointerInfo)=>{
-      if(isFlying)return;
-      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
-      const pick=scene.pick(scene.pointerX,scene.pointerY);
-      if(!pick.hit||!pick.pickedMesh)return;
-      if(pick.pickedMesh.name==='ground'){
-        const wp=pick.pickedPoint;
-        const{gx,gz}=worldToGrid(wp.x,wp.z);
-        if(Math.abs(gx)<=GRID_HALF&&Math.abs(gz)<=GRID_HALF)openLandPanel(gx,gz);
-      }
-    });
-
     engine.runRenderLoop(()=>scene.render());
     window.addEventListener('resize',()=>engine.resize());
-    (async()=>{await restoreSession();await Promise.all([loadBuildings(),loadLands()]);})();
+    (async()=>{await restoreSession();await loadBuildingsAndLands();})();
   </script>
 </body>
 </html>

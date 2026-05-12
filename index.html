@@ -440,6 +440,131 @@
       transition: all 0.2s;
     }
     #minimap-toggle:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* ===== 図鑑オーバーレイ ===== */
+    #zukan-overlay {
+      display: none; position: fixed; inset: 0; z-index: 250;
+      background: rgba(4,4,12,0.97); backdrop-filter: blur(20px);
+      flex-direction: column; overflow: hidden;
+    }
+    #zukan-overlay.open { display: flex; }
+
+    #zukan-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 24px; flex-shrink: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    #zukan-title {
+      font-size: 18px; font-weight: 900; letter-spacing: 0.1em;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      flex-shrink: 0;
+    }
+    #zukan-tabs { display: flex; gap: 8px; flex: 1; }
+    .zukan-tab {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.5); padding: 7px 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .zukan-tab:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .zukan-tab.active {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      border-color: transparent; color: #fff;
+    }
+    #zukan-close {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.6); padding: 7px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    #zukan-close:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+    #zukan-body {
+      flex: 1; overflow-y: auto; padding: 24px;
+    }
+    #zukan-body::-webkit-scrollbar { width: 4px; }
+    #zukan-body::-webkit-scrollbar-track { background: transparent; }
+    #zukan-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+    /* 所有ビル統計バー */
+    #zukan-owned-stats {
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .zukan-stat-chip {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 8px 16px; font-size: 13px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .zukan-stat-chip .chip-label { color: rgba(255,255,255,0.4); }
+    .zukan-stat-chip .chip-val { font-weight: 900; color: #fff; }
+
+    /* 所有ビルグリッド */
+    #zukan-owned-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .zukan-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px; padding: 16px 14px; cursor: pointer;
+      transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    .zukan-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+    .zukan-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+    .zukan-card.star5::before { background: linear-gradient(90deg,#ee0979,#ff6a00); }
+    .zukan-card.star4::before { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .zukan-card.star3::before { background: linear-gradient(90deg,#3b82f6,#60a5fa); }
+    .zukan-card.star2::before { background: linear-gradient(90deg,#22c55e,#4ade80); }
+    .zukan-card.star1::before { background: rgba(255,255,255,0.15); }
+    .zcard-icon { font-size: 36px; text-align: center; margin-bottom: 8px; }
+    .zcard-rank { font-size: 13px; font-weight: 900; text-align: center; margin-bottom: 6px; }
+    .zcard-floors { font-size: 20px; font-weight: 900; color: #fff; text-align: center; margin-bottom: 2px; }
+    .zcard-floors-label { font-size: 10px; color: rgba(255,255,255,0.35); text-align: center; margin-bottom: 8px; }
+    .zcard-meta { font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; }
+    .zcard-emp { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; background: rgba(255,255,255,0.07); }
+
+    /* 空の状態 */
+    #zukan-empty { text-align: center; padding: 60px 20px; }
+
+    /* レアリティ別タブ */
+    #zukan-rarity-grid { display: flex; flex-direction: column; gap: 16px; }
+    .zukan-rarity-section {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; overflow: hidden;
+    }
+    .zukan-rarity-header {
+      display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .zukan-rarity-stars { font-size: 16px; font-weight: 900; }
+    .zukan-rarity-label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.7); flex: 1; }
+    .zukan-rarity-count {
+      font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
+    }
+    .zukan-rarity-count.has-count { background: rgba(255,106,0,0.2); color: #ff6a00; }
+    .zukan-rarity-buildings {
+      display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 18px;
+      min-height: 48px;
+    }
+    .zukan-mini-card {
+      background: rgba(255,255,255,0.06); border-radius: 8px; padding: 6px 12px;
+      font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .zukan-empty-rarity { font-size: 12px; color: rgba(255,255,255,0.2); padding: 4px 0; }
+
+    #zukan-loading {
+      display: none; position: absolute; inset: 0; z-index: 5;
+      align-items: center; justify-content: center;
+      background: rgba(4,4,12,0.8); font-size: 14px; color: rgba(255,255,255,0.4);
+      font-weight: 700; letter-spacing: 0.1em;
+    }
+    #zukan-loading.show { display: flex; }
   </style>
 </head>
 <body>
@@ -467,6 +592,7 @@
         <button id="login-btn-header" onclick="openAuthModal()">ログイン / 登録</button>
         <div id="logged-in-area" style="display:none; align-items:center; gap:12px;">
           <span id="user-name"></span>
+          <button id="zukan-btn" onclick="openZukan()" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">📖 図鑑</button>
           <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
         </div>
       </div>
@@ -614,6 +740,35 @@
     </div>
   </div>
 
+  <!-- ========== 図鑑オーバーレイ ========== -->
+  <div id="zukan-overlay">
+    <div id="zukan-header">
+      <div id="zukan-title">📖 ビル図鑑</div>
+      <div id="zukan-tabs">
+        <button class="zukan-tab active" id="ztab-owned" onclick="switchZukanTab('owned')">🏢 所有ビル</button>
+        <button class="zukan-tab" id="ztab-rarity" onclick="switchZukanTab('rarity')">⭐ レアリティ</button>
+      </div>
+      <button id="zukan-close" onclick="closeZukan()">✕ 閉じる</button>
+    </div>
+    <div id="zukan-body">
+      <!-- 所有ビル一覧タブ -->
+      <div id="zukan-owned">
+        <div id="zukan-owned-stats"></div>
+        <div id="zukan-owned-grid"></div>
+        <div id="zukan-empty" style="display:none;">
+          <div style="font-size:48px;margin-bottom:12px;">🏗</div>
+          <div style="font-size:16px;font-weight:700;color:rgba(255,255,255,0.5);">まだビルがありません</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px;">土地を取得してガチャでビルを建てよう！</div>
+        </div>
+      </div>
+      <!-- レアリティ別タブ -->
+      <div id="zukan-rarity" style="display:none;">
+        <div id="zukan-rarity-grid"></div>
+      </div>
+    </div>
+    <div id="zukan-loading">読み込み中...</div>
+  </div>
+
   <div id="toast"></div>
 
   <div id="auth-modal">
@@ -717,6 +872,16 @@
       document.getElementById('gacha-float-btn').textContent=isJa?'🎰 ガチャ':'🎰 Gacha';
       document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
       document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
+      // 図鑑ボタン
+      document.getElementById('zukan-btn').textContent=isJa?'📖 図鑑':'📖 Zukan';
+      document.getElementById('zukan-title').textContent=isJa?'📖 ビル図鑑':'📖 Building Collection';
+      document.getElementById('ztab-owned').textContent=isJa?'🏢 所有ビル':'🏢 My Buildings';
+      document.getElementById('ztab-rarity').textContent=isJa?'⭐ レアリティ':'⭐ Rarity';
+      document.getElementById('zukan-close').textContent=isJa?'✕ 閉じる':'✕ Close';
+      // 図鑑を開いていれば再描画
+      if(document.getElementById('zukan-overlay').classList.contains('open')){
+        renderZukanOwned();renderZukanRarity();
+      }
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
       document.getElementById('fly-hint').textContent=isJa?'🕊 WASD / スワイプで空中移動':'🕊 WASD / Swipe to fly';
@@ -1631,6 +1796,169 @@
         if(ud){const nb=(ud.coin_column||0)+100;await db.from('users').update({coin_column:nb}).eq('id',currentUser.id);document.getElementById('coin-count').textContent=nb;}
       }catch(e){console.warn('保存エラー:',e.message);}
     });
+
+    // ========================================
+    // 図鑑
+    // ========================================
+    const STAR_COLORS_ZUKAN={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
+    const STAR_LABELS_ZUKAN={5:'★★★★★',4:'★★★★',3:'★★★',2:'★★',1:'★'};
+    const RARITY_NAMES_JA={5:'伝説',4:'エピック',3:'レア',2:'アンコモン',1:'コモン'};
+    const RARITY_NAMES_EN={5:'Legendary',4:'Epic',3:'Rare',2:'Uncommon',1:'Common'};
+    let zukanTab='owned';
+    let zukanBuildings=[];
+
+    async function openZukan(){
+      if(!currentUser){showToast('ログインが必要です');return;}
+      document.getElementById('zukan-overlay').classList.add('open');
+      await loadZukanBuildings();
+    }
+    function closeZukan(){document.getElementById('zukan-overlay').classList.remove('open');}
+
+    function switchZukanTab(tab){
+      zukanTab=tab;
+      document.getElementById('ztab-owned').classList.toggle('active',tab==='owned');
+      document.getElementById('ztab-rarity').classList.toggle('active',tab==='rarity');
+      document.getElementById('zukan-owned').style.display=tab==='owned'?'block':'none';
+      document.getElementById('zukan-rarity').style.display=tab==='rarity'?'block':'none';
+    }
+
+    async function loadZukanBuildings(){
+      const loadingEl=document.getElementById('zukan-loading');
+      loadingEl.classList.add('show');
+      try{
+        const{data,error}=await db.from('buildings')
+          .select('*')
+          .eq('owner_id',currentUser.id)
+          .order('floors',{ascending:false});
+        if(error)throw error;
+        zukanBuildings=data||[];
+        renderZukanOwned();
+        renderZukanRarity();
+      }catch(e){
+        console.warn('zukan load error:',e.message);
+        showToast('図鑑の読み込みに失敗しました');
+      }finally{
+        loadingEl.classList.remove('show');
+      }
+    }
+
+    function getStarByBaseFloors(floors){
+      if(floors>=48)return 5;
+      if(floors>=40)return 4;
+      if(floors>=30)return 3;
+      if(floors>=20)return 2;
+      return 1;
+    }
+
+    function renderZukanOwned(){
+      const isJa=currentLang==='ja';
+      const grid=document.getElementById('zukan-owned-grid');
+      const statsEl=document.getElementById('zukan-owned-stats');
+      const emptyEl=document.getElementById('zukan-empty');
+      grid.innerHTML='';
+      statsEl.innerHTML='';
+
+      if(zukanBuildings.length===0){
+        emptyEl.style.display='block';
+        grid.style.display='none';
+        return;
+      }
+      emptyEl.style.display='none';
+      grid.style.display='grid';
+
+      // 統計チップ
+      const totalFloors=zukanBuildings.reduce((s,b)=>s+b.floors,0);
+      const totalEmp=zukanBuildings.reduce((s,b)=>s+(b.employees||0),0);
+      const best=zukanBuildings[0]; // floors降順なので最初が最大
+      const star5count=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===5).length;
+      const chips=[
+        {label:isJa?'所有ビル':'Buildings',val:zukanBuildings.length+'棟'},
+        {label:isJa?'総階数':'Total Floors',val:totalFloors+'F'},
+        {label:isJa?'総従業員':'Employees',val:totalEmp.toLocaleString()+'人'},
+        {label:isJa?'最高層':'Tallest',val:best.floors+'F'},
+        {label:'★×5',val:star5count+'棟',highlight:star5count>0},
+      ];
+      chips.forEach(c=>{
+        const el=document.createElement('div');
+        el.className='zukan-stat-chip';
+        el.innerHTML=`<span class="chip-label">${c.label}</span><span class="chip-val" style="${c.highlight?'color:#ee0979':''}">${c.val}</span>`;
+        statsEl.appendChild(el);
+      });
+
+      // カードグリッド
+      zukanBuildings.forEach(b=>{
+        const star=getStarByBaseFloors(b.floors);
+        const colorInfo=getColorByEmployees(b.employees||0);
+        const shape=b.style?b.style.split('_')[0]:'box';
+        const shapeLabel=isJa?(SHAPE_LABELS[shape]||shape):shape;
+        const card=document.createElement('div');
+        card.className=`zukan-card star${star}`;
+        card.innerHTML=`
+          <div class="zcard-icon">${BUILDING_ICONS[star]||'🏢'}</div>
+          <div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div>
+          <div class="zcard-floors">${b.floors}F</div>
+          <div class="zcard-floors-label">${isJa?'階建て':'floors'}</div>
+          <div class="zcard-meta">
+            <span class="zcard-emp" style="color:${colorInfo.name==='gold'?'#f59e0b':colorInfo.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">
+              👥 ${(b.employees||0).toLocaleString()}人
+            </span><br>
+            <span style="margin-top:4px;display:inline-block;">📐 ${shapeLabel}</span><br>
+            <span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span>
+          </div>`;
+        // カードクリックで3D画面のそのビルにフォーカス
+        card.addEventListener('click',()=>{
+          closeZukan();
+          arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);
+          arcCamera.radius=30;
+          showToast(`📍 X:${b.x} / Z:${b.z} にフォーカス`);
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    function renderZukanRarity(){
+      const isJa=currentLang==='ja';
+      const container=document.getElementById('zukan-rarity-grid');
+      container.innerHTML='';
+      const rarityNames=isJa?RARITY_NAMES_JA:RARITY_NAMES_EN;
+
+      // ★5→★1の順でセクション生成
+      [5,4,3,2,1].forEach(star=>{
+        const myBuildings=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===star);
+        const section=document.createElement('div');
+        section.className='zukan-rarity-section';
+
+        const countClass=myBuildings.length>0?'zukan-rarity-count has-count':'zukan-rarity-count';
+        section.innerHTML=`
+          <div class="zukan-rarity-header">
+            <span class="zukan-rarity-stars" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</span>
+            <span class="zukan-rarity-label">${rarityNames[star]}</span>
+            <span class="${countClass}">${myBuildings.length}棟</span>
+          </div>
+          <div class="zukan-rarity-buildings" id="zukan-rarity-${star}"></div>`;
+        container.appendChild(section);
+
+        const buildingsEl=section.querySelector(`#zukan-rarity-${star}`);
+        if(myBuildings.length===0){
+          buildingsEl.innerHTML=`<span class="zukan-empty-rarity">${isJa?'未所有':'Not owned'}</span>`;
+        }else{
+          myBuildings.forEach(b=>{
+            const shape=b.style?b.style.split('_')[0]:'box';
+            const mini=document.createElement('div');
+            mini.className='zukan-mini-card';
+            mini.innerHTML=`${BUILDING_ICONS[star]} ${b.floors}F`;
+            mini.style.cursor='pointer';
+            mini.title=`X:${b.x} Z:${b.z}`;
+            mini.addEventListener('click',()=>{
+              closeZukan();
+              arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);
+              arcCamera.radius=30;
+            });
+            buildingsEl.appendChild(mini);
+          });
+        }
+      });
+    }
 
     engine.runRenderLoop(()=>scene.render());
     window.addEventListener('resize',()=>engine.resize());

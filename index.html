@@ -97,16 +97,7 @@
     #fire-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 201; display: none; }
 
     /* グリッド凡例 */
-    #grid-legend {
-      position: fixed; bottom: 90px; left: 16px;
-      background: rgba(6,6,16,0.85); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px; padding: 8px 12px;
-      font-size: 11px; color: rgba(255,255,255,0.6);
-      pointer-events: none; z-index: 10; backdrop-filter: blur(8px);
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .legend-row { display: flex; align-items: center; gap: 6px; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    #grid-legend { display: none; }
 
     #land-panel {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
@@ -351,6 +342,104 @@
       color: #ff6a00; padding: 8px 16px; border-radius: 20px; font-size: 12px;
       font-weight: 700; cursor: pointer; z-index: 16; pointer-events: all;
     }
+
+    /* ===== デイリータスク プログレスバー ===== */
+    #task-progress-wrap {
+      margin-bottom: 12px; padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    #task-progress-header {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 6px;
+    }
+    #task-progress-label { font-weight: 700; }
+    #task-progress-pct { color: #ff6a00; font-weight: 800; }
+    #task-progress-bar-bg {
+      width: 100%; height: 5px; background: rgba(255,255,255,0.08);
+      border-radius: 4px; overflow: hidden;
+    }
+    #task-progress-bar {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #ff6a00, #ee0979);
+      border-radius: 4px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    #task-progress-bar.complete {
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      box-shadow: 0 0 8px rgba(34,197,94,0.5);
+    }
+
+    /* ===== ビル詳細モーダル ===== */
+    #building-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
+      z-index: 150; align-items: center; justify-content: center;
+    }
+    #building-modal.open { display: flex; }
+    #building-box {
+      background: #0a0a14; border: 1px solid rgba(255,106,0,0.4);
+      border-radius: 22px; padding: 28px 28px 24px; width: 340px; max-width: 94vw;
+      position: relative; box-shadow: 0 0 60px rgba(255,106,0,0.1), 0 20px 60px rgba(0,0,0,0.8);
+      animation: modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.88) translateY(10px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    #building-modal-close {
+      position: absolute; top: 14px; right: 18px; background: none;
+      border: none; color: rgba(255,255,255,0.3); font-size: 22px; cursor: pointer;
+    }
+    #building-modal-close:hover { color: #fff; }
+    #building-modal-icon { font-size: 48px; text-align: center; margin-bottom: 10px; }
+    #building-modal-rank {
+      font-size: 22px; font-weight: 900; text-align: center; letter-spacing: 0.08em; margin-bottom: 4px;
+    }
+    #building-modal-floors {
+      font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; margin-bottom: 20px;
+    }
+    .bm-stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;
+    }
+    .bm-stat {
+      background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px 14px;
+    }
+    .bm-stat-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+    .bm-stat-value { font-size: 16px; font-weight: 900; color: #fff; }
+    .bm-stat-value.emp-rainbow { background: linear-gradient(135deg,#ff6a00,#a855f7,#3b82f6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .bm-stat-value.emp-gold { color: #f59e0b; }
+    .bm-stat-value.emp-red { color: #ef4444; }
+    #building-modal-owner {
+      font-size: 13px; color: rgba(255,255,255,0.5); text-align: center;
+      padding: 8px; background: rgba(255,255,255,0.04); border-radius: 8px;
+    }
+    #building-modal-owner .owner-name { color: #1d9bf0; font-weight: 800; }
+
+    /* ===== ミニマップ ===== */
+    #minimap-wrap {
+      position: fixed; bottom: 90px; left: 16px;
+      z-index: 10; pointer-events: all;
+    }
+    #minimap-canvas {
+      width: 140px; height: 140px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(6,6,16,0.9);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      cursor: pointer; display: block;
+    }
+    #minimap-label {
+      font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.3);
+      text-align: center; letter-spacing: 0.12em; margin-top: 4px;
+      text-transform: uppercase;
+    }
+    #minimap-toggle {
+      position: absolute; top: -8px; right: -8px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(40,40,60,0.95); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.4); font-size: 10px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    #minimap-toggle:hover { background: rgba(255,255,255,0.15); color: #fff; }
   </style>
 </head>
 <body>
@@ -396,7 +485,40 @@
   <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク</button>
   <div id="task-panel">
     <div id="task-panel-title">📋 デイリータスク</div>
+    <div id="task-progress-wrap">
+      <div id="task-progress-header">
+        <span id="task-progress-label">今日の進捗</span>
+        <span id="task-progress-pct">0%</span>
+      </div>
+      <div id="task-progress-bar-bg">
+        <div id="task-progress-bar"></div>
+      </div>
+    </div>
     <div id="task-list"></div>
+  </div>
+
+  <!-- ミニマップ -->
+  <div id="minimap-wrap">
+    <button id="minimap-toggle" onclick="toggleMinimap()" title="非表示">−</button>
+    <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
+    <div id="minimap-label">MINIMAP</div>
+  </div>
+
+  <!-- ビル詳細モーダル -->
+  <div id="building-modal">
+    <div id="building-box">
+      <button id="building-modal-close" onclick="closeBuildingModal()">×</button>
+      <div id="building-modal-icon">🏢</div>
+      <div id="building-modal-rank"></div>
+      <div id="building-modal-floors"></div>
+      <div class="bm-stat-grid">
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-floors">総階数</div><div class="bm-stat-value" id="bm-floors-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-emp">従業員</div><div class="bm-stat-value" id="bm-emp-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-shape">形状</div><div class="bm-stat-value" id="bm-shape-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
+      </div>
+      <div id="building-modal-owner"></div>
+    </div>
   </div>
 
   <!-- グリッド凡例 -->
@@ -622,6 +744,10 @@
       document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
       document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
       document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
+      // タスクプログレス
+      document.getElementById('task-progress-label').textContent=isJa?'今日の進捗':'Today\'s Progress';
+      // ミニマップ
+      document.getElementById('minimap-label').textContent=isJa?'MINIMAP':'MINIMAP';
     }
 
     // ========================================
@@ -673,13 +799,22 @@
       const today=new Date().toISOString().slice(0,10);
       const{data}=await db.from('daily_tasks').select('*').eq('user_id',currentUser.id).eq('task_date',today);
       if(!data)return;
+      let doneCount=0;
       DAILY_TASKS.forEach(task=>{
         const row=document.getElementById('task-row-'+task.type);
         if(!row)return;
         const done=data.find(d=>d.task_type===task.type)?.completed;
         row.classList.toggle('task-done',!!done);
         row.querySelector('.task-status').textContent=done?'✅':'⬜';
+        if(done)doneCount++;
       });
+      // プログレスバー更新
+      const pct=Math.round(doneCount/DAILY_TASKS.length*100);
+      const bar=document.getElementById('task-progress-bar');
+      const pctEl=document.getElementById('task-progress-pct');
+      bar.style.width=pct+'%';
+      pctEl.textContent=pct+'%';
+      bar.classList.toggle('complete',pct===100);
     }
 
     function toggleTaskPanel(){document.getElementById('task-panel').classList.toggle('open');}
@@ -1234,8 +1369,168 @@
     let pendingBuildShape=null;
 
     // ========================================
-    // ビル管理
+    // ビル詳細モーダル
     // ========================================
+    const SHAPE_LABELS={box:'スタンダード',slim:'スリム',wide:'ワイド',cylinder:'円柱'};
+    const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
+
+    function getStarByFloors(totalFloors){
+      if(totalFloors>=48)return 5;
+      if(totalFloors>=40)return 4;
+      if(totalFloors>=30)return 3;
+      if(totalFloors>=20)return 2;
+      return 1;
+    }
+
+    function openBuildingModal(buildingData){
+      const star=getStarByFloors(buildingData.totalFloors);
+      const capsuleColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
+      const starLabels={5:'★★★★★',4:'★★★★',3:'★★★',2:'★★',1:'★'};
+      const isJa=currentLang==='ja';
+
+      document.getElementById('building-modal-icon').textContent=BUILDING_ICONS[star]||'🏢';
+      const rankEl=document.getElementById('building-modal-rank');
+      rankEl.textContent=starLabels[star];
+      rankEl.style.color=capsuleColors[star];
+      document.getElementById('building-modal-floors').textContent=
+        isJa?`${buildingData.totalFloors}階建て`:`${buildingData.totalFloors} floors`;
+
+      document.getElementById('bm-floors-val').textContent=buildingData.totalFloors+'F';
+      const empVal=document.getElementById('bm-emp-val');
+      const colorInfo=getColorByEmployees(buildingData.employees||0);
+      empVal.textContent=(buildingData.employees||0)+'人';
+      empVal.className='bm-stat-value';
+      if(colorInfo.name==='rainbow')empEl.classList.add('emp-rainbow');
+      else if(colorInfo.name==='gold')empVal.classList.add('emp-gold');
+      else if(colorInfo.name==='red')empVal.classList.add('emp-red');
+
+      document.getElementById('bm-shape-val').textContent=
+        isJa?(SHAPE_LABELS[buildingData.shape]||buildingData.shape):(buildingData.shape||'-');
+      document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
+
+      // オーナー情報
+      const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
+      const land=landMap[key];
+      const ownerEl=document.getElementById('building-modal-owner');
+      if(land){
+        const isMe=currentUser&&land.owner_id===currentUser.id;
+        ownerEl.innerHTML=isMe
+          ?`👤 <span class="owner-name">あなたのビル</span>`
+          :`👤 <span class="owner-name">${land.owner_display}</span>`;
+      }else{
+        ownerEl.textContent='オーナー不明';
+      }
+
+      // stat ラベルの多言語
+      document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
+      document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
+      document.getElementById('bml-shape').textContent=isJa?'形状':'Shape';
+      document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
+
+      document.getElementById('building-modal').classList.add('open');
+    }
+
+    function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');}
+
+    // ========================================
+    // ミニマップ
+    // ========================================
+    const minimapCanvas=document.getElementById('minimap-canvas');
+    const mmCtx=minimapCanvas.getContext('2d');
+    const MM_SIZE=280;   // canvas解像度
+    const MM_RANGE=200;  // 地図の対象範囲（-100〜+100）
+    let minimapVisible=true;
+    let minimapAnimId=null;
+
+    function toggleMinimap(){
+      minimapVisible=!minimapVisible;
+      minimapCanvas.style.display=minimapVisible?'block':'none';
+      document.getElementById('minimap-label').style.display=minimapVisible?'block':'none';
+      document.getElementById('minimap-toggle').textContent=minimapVisible?'−':'+';
+      if(minimapVisible)drawMinimap();
+    }
+
+    function worldToMM(wx,wz){
+      const px=(wx+MM_RANGE/2)/MM_RANGE*MM_SIZE;
+      const py=(wz+MM_RANGE/2)/MM_RANGE*MM_SIZE;
+      return{px,py};
+    }
+
+    function minimapClick(e){
+      if(isFlying)return;
+      const rect=minimapCanvas.getBoundingClientRect();
+      const scaleX=MM_SIZE/rect.width, scaleY=MM_SIZE/rect.height;
+      const px=(e.clientX-rect.left)*scaleX;
+      const py=(e.clientY-rect.top)*scaleY;
+      // ミニマップ座標→ワールド座標
+      const wx=px/MM_SIZE*MM_RANGE-MM_RANGE/2;
+      const wz=py/MM_SIZE*MM_RANGE-MM_RANGE/2;
+      // arcCamera をその位置に向ける
+      arcCamera.target=new BABYLON.Vector3(wx,0,wz);
+    }
+
+    function drawMinimap(){
+      if(!minimapVisible)return;
+      mmCtx.clearRect(0,0,MM_SIZE,MM_SIZE);
+
+      // 背景
+      mmCtx.fillStyle='rgba(6,6,16,0.95)';
+      mmCtx.fillRect(0,0,MM_SIZE,MM_SIZE);
+
+      // グリッド線（薄く）
+      mmCtx.strokeStyle='rgba(255,255,255,0.04)';
+      mmCtx.lineWidth=0.5;
+      const step=CELL/MM_RANGE*MM_SIZE;
+      for(let i=0;i<MM_SIZE;i+=step){
+        mmCtx.beginPath();mmCtx.moveTo(i,0);mmCtx.lineTo(i,MM_SIZE);mmCtx.stroke();
+        mmCtx.beginPath();mmCtx.moveTo(0,i);mmCtx.lineTo(MM_SIZE,i);mmCtx.stroke();
+      }
+
+      // 土地タイル
+      Object.entries(landMap).forEach(([key,land])=>{
+        const{gx,gz}=keyToCoord(key);
+        const{px,py}=worldToMM(gx,gz);
+        const sz=step*0.85;
+        const isMe=currentUser&&land.owner_id===currentUser.id;
+        const hasB=!!buildingMap[key];
+        if(isMe&&hasB) mmCtx.fillStyle='rgba(255,80,80,0.75)';
+        else if(isMe)   mmCtx.fillStyle='rgba(255,140,0,0.7)';
+        else if(hasB)   mmCtx.fillStyle='rgba(60,100,255,0.75)';
+        else            mmCtx.fillStyle='rgba(60,160,255,0.5)';
+        mmCtx.fillRect(px-sz/2,py-sz/2,sz,sz);
+      });
+
+      // ビルの点（土地なしビルも）
+      buildings.forEach(b=>{
+        const key=b.landKey||landKey(b.x,b.z);
+        if(landMap[key])return; // 土地ありは上で描画済み
+        const{px,py}=worldToMM(b.x,b.z);
+        const colorInfo=getColorByEmployees(b.employees||0);
+        mmCtx.fillStyle=`rgba(${Math.round(colorInfo.r*255)},${Math.round(colorInfo.g*255)},${Math.round(colorInfo.b*255)},0.8)`;
+        mmCtx.beginPath();mmCtx.arc(px,py,2.5,0,Math.PI*2);mmCtx.fill();
+      });
+
+      // カメラ視点マーカー
+      const cam=scene.activeCamera;
+      if(cam){
+        const tx=cam.target?cam.target.x:(cam.position?cam.position.x:0);
+        const tz=cam.target?cam.target.z:(cam.position?cam.position.z:0);
+        const{px,py}=worldToMM(tx,tz);
+        // 外枠
+        mmCtx.strokeStyle='rgba(255,255,255,0.9)';
+        mmCtx.lineWidth=1.5;
+        mmCtx.beginPath();mmCtx.arc(px,py,5,0,Math.PI*2);mmCtx.stroke();
+        // 中心点
+        mmCtx.fillStyle='#fff';
+        mmCtx.beginPath();mmCtx.arc(px,py,2,0,Math.PI*2);mmCtx.fill();
+      }
+
+      minimapAnimId=requestAnimationFrame(drawMinimap);
+    }
+
+    drawMinimap();
+
+
     let buildings=[];
     const buildingMap={};
 
@@ -1289,6 +1584,16 @@
 
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
+
+      // ビルをタップ → 詳細モーダル
+      if(pick.pickedMesh.name.startsWith('b_')){
+        const hitPos=pick.pickedMesh.position;
+        const{gx,gz}=worldToGrid(hitPos.x,hitPos.z);
+        const key=landKey(gx,gz);
+        const bData=buildingMap[key];
+        if(bData){openBuildingModal(bData);return;}
+      }
+
       if(pick.pickedMesh.name==='ground'){
         const wp=pick.pickedPoint;
         const{gx,gz}=worldToGrid(wp.x,wp.z);

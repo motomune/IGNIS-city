@@ -1437,10 +1437,14 @@
     // ========================================
     const minimapCanvas=document.getElementById('minimap-canvas');
     const mmCtx=minimapCanvas.getContext('2d');
-    const MM_SIZE=280;   // canvas解像度
-    const MM_RANGE=200;  // 地図の対象範囲（-100〜+100）
+    const MM_SIZE=280;
+    const MM_RANGE=200;
     let minimapVisible=true;
     let minimapAnimId=null;
+
+    // buildings/buildingMap をミニマップより前に宣言
+    let buildings=[];
+    const buildingMap={};
 
     function toggleMinimap(){
       minimapVisible=!minimapVisible;
@@ -1527,9 +1531,6 @@
 
       minimapAnimId=requestAnimationFrame(drawMinimap);
     }
-
-    let buildings=[];
-    const buildingMap={};
 
     function addBuilding(x,z,baseFloors,shape='box',employees=0,fromDB=false,lKey=null){
       const totalFloors=calcTotalFloors(baseFloors,employees);

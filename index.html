@@ -221,7 +221,6 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;
     }
     #gacha-land-info { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 18px; }
-    /* 土地未選択の警告 */
     #gacha-no-land-warning {
       display: none; background: rgba(255,106,0,0.12); border: 1px solid rgba(255,106,0,0.4);
       border-radius: 10px; padding: 10px 14px; font-size: 12px; color: rgba(255,180,80,0.9);
@@ -266,7 +265,6 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;
     }
     #build-modal-info { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
-    /* 建設先選択UI */
     #build-land-select {
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
       border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
@@ -342,8 +340,7 @@
       color: #ff6a00; padding: 8px 16px; border-radius: 20px; font-size: 12px;
       font-weight: 700; cursor: pointer; z-index: 16; pointer-events: all;
     }
-
-    /* ===== デイリータスク プログレスバー ===== */
+    /* デイリータスク プログレスバー */
     #task-progress-wrap {
       margin-bottom: 12px; padding-bottom: 12px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -367,8 +364,7 @@
       background: linear-gradient(90deg, #22c55e, #16a34a);
       box-shadow: 0 0 8px rgba(34,197,94,0.5);
     }
-
-    /* ===== ビル詳細モーダル ===== */
+    /* ビル詳細モーダル */
     #building-modal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
@@ -413,8 +409,7 @@
       padding: 8px; background: rgba(255,255,255,0.04); border-radius: 8px;
     }
     #building-modal-owner .owner-name { color: #1d9bf0; font-weight: 800; }
-
-    /* ===== ミニマップ ===== */
+    /* ミニマップ */
     #minimap-wrap {
       position: fixed; bottom: 90px; left: 16px;
       z-index: 10; pointer-events: all;
@@ -440,15 +435,13 @@
       transition: all 0.2s;
     }
     #minimap-toggle:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
-    /* ===== 図鑑オーバーレイ ===== */
+    /* 図鑑オーバーレイ */
     #zukan-overlay {
       display: none; position: fixed; inset: 0; z-index: 250;
       background: rgba(4,4,12,0.97); backdrop-filter: blur(20px);
       flex-direction: column; overflow: hidden;
     }
     #zukan-overlay.open { display: flex; }
-
     #zukan-header {
       display: flex; align-items: center; gap: 16px;
       padding: 16px 24px; flex-shrink: 0;
@@ -479,15 +472,12 @@
       transition: all 0.2s;
     }
     #zukan-close:hover { background: rgba(255,255,255,0.18); color: #fff; }
-
     #zukan-body {
       flex: 1; overflow-y: auto; padding: 24px;
     }
     #zukan-body::-webkit-scrollbar { width: 4px; }
     #zukan-body::-webkit-scrollbar-track { background: transparent; }
     #zukan-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-
-    /* 所有ビル統計バー */
     #zukan-owned-stats {
       display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
     }
@@ -498,8 +488,6 @@
     }
     .zukan-stat-chip .chip-label { color: rgba(255,255,255,0.4); }
     .zukan-stat-chip .chip-val { font-weight: 900; color: #fff; }
-
-    /* 所有ビルグリッド */
     #zukan-owned-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -526,11 +514,7 @@
     .zcard-floors-label { font-size: 10px; color: rgba(255,255,255,0.35); text-align: center; margin-bottom: 8px; }
     .zcard-meta { font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; }
     .zcard-emp { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; background: rgba(255,255,255,0.07); }
-
-    /* 空の状態 */
     #zukan-empty { text-align: center; padding: 60px 20px; }
-
-    /* レアリティ別タブ */
     #zukan-rarity-grid { display: flex; flex-direction: column; gap: 16px; }
     .zukan-rarity-section {
       background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
@@ -557,7 +541,6 @@
       display: flex; align-items: center; gap: 6px;
     }
     .zukan-empty-rarity { font-size: 12px; color: rgba(255,255,255,0.2); padding: 4px 0; }
-
     #zukan-loading {
       display: none; position: absolute; inset: 0; z-index: 5;
       align-items: center; justify-content: center;
@@ -565,6 +548,89 @@
       font-weight: 700; letter-spacing: 0.1em;
     }
     #zukan-loading.show { display: flex; }
+
+    /* ===== ランキングオーバーレイ ===== */
+    #ranking-overlay {
+      display: none; position: fixed; inset: 0; z-index: 250;
+      background: rgba(4,4,12,0.97); backdrop-filter: blur(20px);
+      flex-direction: column; overflow: hidden;
+    }
+    #ranking-overlay.open { display: flex; }
+    #ranking-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 24px; flex-shrink: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    #ranking-title {
+      font-size: 18px; font-weight: 900; letter-spacing: 0.1em;
+      background: linear-gradient(135deg, #f59e0b, #ee0979);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      flex-shrink: 0;
+    }
+    #ranking-tabs { display: flex; gap: 8px; flex: 1; }
+    .ranking-tab {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.5); padding: 7px 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .ranking-tab:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .ranking-tab.active {
+      background: linear-gradient(135deg, #f59e0b, #ee0979);
+      border-color: transparent; color: #fff;
+    }
+    #ranking-close {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.6); padding: 7px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+    }
+    #ranking-close:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    #ranking-body {
+      flex: 1; overflow-y: auto; padding: 24px; max-width: 700px; margin: 0 auto; width: 100%;
+    }
+    #ranking-body::-webkit-scrollbar { width: 4px; }
+    #ranking-body::-webkit-scrollbar-track { background: transparent; }
+    #ranking-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+    .ranking-row {
+      display: flex; align-items: center; gap: 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 14px 18px; margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    .ranking-row:hover { background: rgba(255,255,255,0.07); }
+    .ranking-row.top1 { border-color: rgba(245,158,11,0.5); background: rgba(245,158,11,0.07); }
+    .ranking-row.top2 { border-color: rgba(148,163,184,0.4); background: rgba(148,163,184,0.05); }
+    .ranking-row.top3 { border-color: rgba(180,120,60,0.4); background: rgba(180,120,60,0.05); }
+    .ranking-row.me { border-color: rgba(255,106,0,0.5); background: rgba(255,106,0,0.07); }
+    .rank-badge {
+      font-size: 20px; font-weight: 900; width: 36px; text-align: center; flex-shrink: 0;
+    }
+    .rank-medal { font-size: 22px; width: 36px; text-align: center; flex-shrink: 0; }
+    .ranking-user { flex: 1; min-width: 0; }
+    .ranking-username {
+      font-size: 15px; font-weight: 800; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ranking-username .x-handle { color: #1d9bf0; }
+    .ranking-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+    .ranking-value {
+      font-size: 22px; font-weight: 900; text-align: right; flex-shrink: 0;
+    }
+    .ranking-unit { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); display: block; margin-top: 1px; }
+    .ranking-empty {
+      text-align: center; padding: 60px 20px;
+      font-size: 15px; color: rgba(255,255,255,0.3); font-weight: 700;
+    }
+    #ranking-loading-msg {
+      text-align: center; padding: 60px 20px;
+      font-size: 14px; color: rgba(255,255,255,0.4); font-weight: 700; letter-spacing: 0.1em;
+      display: none;
+    }
+    #ranking-loading-msg.show { display: block; }
+    .ranking-updated {
+      font-size: 11px; color: rgba(255,255,255,0.25); text-align: right;
+      margin-top: 16px; padding-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -592,6 +658,7 @@
         <button id="login-btn-header" onclick="openAuthModal()">ログイン / 登録</button>
         <div id="logged-in-area" style="display:none; align-items:center; gap:12px;">
           <span id="user-name"></span>
+          <button id="ranking-btn" onclick="openRanking()" style="background:linear-gradient(135deg,#f59e0b,#ee0979);border:none;color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">🏆 ランキング</button>
           <button id="zukan-btn" onclick="openZukan()" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">📖 図鑑</button>
           <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
         </div>
@@ -740,6 +807,23 @@
     </div>
   </div>
 
+  <!-- ========== ランキングオーバーレイ ========== -->
+  <div id="ranking-overlay">
+    <div id="ranking-header">
+      <div id="ranking-title">🏆 ランキング</div>
+      <div id="ranking-tabs">
+        <button class="ranking-tab active" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員数</button>
+        <button class="ranking-tab" id="rtab-buildings" onclick="switchRankingTab('buildings')">🏢 ビル棟数</button>
+      </div>
+      <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
+    </div>
+    <div id="ranking-body">
+      <div id="ranking-loading-msg">読み込み中...</div>
+      <div id="ranking-emp-list"></div>
+      <div id="ranking-buildings-list" style="display:none;"></div>
+    </div>
+  </div>
+
   <!-- ========== 図鑑オーバーレイ ========== -->
   <div id="zukan-overlay">
     <div id="zukan-header">
@@ -751,7 +835,6 @@
       <button id="zukan-close" onclick="closeZukan()">✕ 閉じる</button>
     </div>
     <div id="zukan-body">
-      <!-- 所有ビル一覧タブ -->
       <div id="zukan-owned">
         <div id="zukan-owned-stats"></div>
         <div id="zukan-owned-grid"></div>
@@ -761,7 +844,6 @@
           <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px;">土地を取得してガチャでビルを建てよう！</div>
         </div>
       </div>
-      <!-- レアリティ別タブ -->
       <div id="zukan-rarity" style="display:none;">
         <div id="zukan-rarity-grid"></div>
       </div>
@@ -820,23 +902,23 @@
     // ========================================
     // 定数
     // ========================================
-    const LAND_COST=100;   // 🔴 土地取得コスト（コイン）
+    const LAND_COST=100;
     const GACHA_COST=50;
 
     const DAILY_TASKS=[
-      {type:'login',    label:'ログインボーナス',   reward:3},
-      {type:'build',    label:'ビルを1棟建てる',    reward:5},
-      {type:'get_land', label:'土地を1区画取得する',reward:5},
+      {type:'login',    label:'ログインボーナス',   labelEn:'Login Bonus',   reward:3},
+      {type:'build',    label:'ビルを1棟建てる',    labelEn:'Build a building', reward:5},
+      {type:'get_land', label:'土地を1区画取得する',labelEn:'Get a land',     reward:5},
     ];
 
     const CELL=10, GRID_HALF=100;
 
     const EMP_COLORS=[
-      {min:1000,name:'rainbow',r:1.0,g:0.0,b:1.0,label:'🌈 虹'},
-      {min:300,name:'gold',r:0.98,g:0.75,b:0.1,label:'🥇 金'},
-      {min:100,name:'red',r:0.94,g:0.18,b:0.18,label:'🔴 赤'},
-      {min:30,name:'white',r:0.95,g:0.95,b:0.97,label:'⚪ 白'},
-      {min:0,name:'default',r:0.2,g:0.25,b:0.65,label:'🔵 標準'},
+      {min:1000,name:'rainbow',r:1.0,g:0.0,b:1.0,label:'🌈 虹',labelEn:'🌈 Rainbow'},
+      {min:300,name:'gold',r:0.98,g:0.75,b:0.1,label:'🥇 金',labelEn:'🥇 Gold'},
+      {min:100,name:'red',r:0.94,g:0.18,b:0.18,label:'🔴 赤',labelEn:'🔴 Red'},
+      {min:30,name:'white',r:0.95,g:0.95,b:0.97,label:'⚪ 白',labelEn:'⚪ White'},
+      {min:0,name:'default',r:0.2,g:0.25,b:0.65,label:'🔵 標準',labelEn:'🔵 Default'},
     ];
     function getColorByEmployees(emp){for(const c of EMP_COLORS){if(emp>=c.min)return c;}return EMP_COLORS[EMP_COLORS.length-1];}
     function calcTotalFloors(baseFloors,employees){return Math.min(baseFloors+Math.floor(employees/5),200);}
@@ -872,32 +954,36 @@
       document.getElementById('gacha-float-btn').textContent=isJa?'🎰 ガチャ':'🎰 Gacha';
       document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
       document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
-      // 図鑑ボタン
+      // 図鑑
       document.getElementById('zukan-btn').textContent=isJa?'📖 図鑑':'📖 Zukan';
       document.getElementById('zukan-title').textContent=isJa?'📖 ビル図鑑':'📖 Building Collection';
       document.getElementById('ztab-owned').textContent=isJa?'🏢 所有ビル':'🏢 My Buildings';
       document.getElementById('ztab-rarity').textContent=isJa?'⭐ レアリティ':'⭐ Rarity';
       document.getElementById('zukan-close').textContent=isJa?'✕ 閉じる':'✕ Close';
-      // 図鑑を開いていれば再描画
       if(document.getElementById('zukan-overlay').classList.contains('open')){
         renderZukanOwned();renderZukanRarity();
       }
+      // ランキング
+      document.getElementById('ranking-btn').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
+      document.getElementById('ranking-title').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
+      document.getElementById('rtab-emp').textContent=isJa?'👥 従業員数':'👥 Employees';
+      document.getElementById('rtab-buildings').textContent=isJa?'🏢 ビル棟数':'🏢 Buildings';
+      document.getElementById('ranking-close').textContent=isJa?'✕ 閉じる':'✕ Close';
+      if(document.getElementById('ranking-overlay').classList.contains('open')&&rankingCache.emp){
+        renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
+        renderRankingList('ranking-buildings-list',rankingCache.buildings,'buildings');
+      }
+      // その他
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
       document.getElementById('fly-hint').textContent=isJa?'🕊 WASD / スワイプで空中移動':'🕊 WASD / Swipe to fly';
-      // 凡例
       document.getElementById('legend-empty').textContent=isJa?'空き地（未取得）':'Empty land';
       document.getElementById('legend-mine').textContent=isJa?'自分の土地':'My land';
       document.getElementById('legend-others').textContent=isJa?'他ユーザーの土地':'Others\' land';
       document.getElementById('legend-building').textContent=isJa?'ビルあり':'Has building';
-      const taskLabels=[
-        {type:'login',ja:'ログインボーナス',en:'Login Bonus'},
-        {type:'build',ja:'ビルを1棟建てる',en:'Build a building'},
-        {type:'get_land',ja:'土地を1区画取得する',en:'Get a land'},
-      ];
-      taskLabels.forEach(t=>{
+      DAILY_TASKS.forEach(t=>{
         const row=document.getElementById('task-row-'+t.type);
-        if(row)row.querySelector('.task-label').textContent=isJa?t.ja:t.en;
+        if(row)row.querySelector('.task-label').textContent=isJa?t.label:t.labelEn;
       });
       document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
@@ -909,10 +995,8 @@
       document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
       document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
       document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
-      // タスクプログレス
       document.getElementById('task-progress-label').textContent=isJa?'今日の進捗':'Today\'s Progress';
-      // ミニマップ
-      document.getElementById('minimap-label').textContent=isJa?'MINIMAP':'MINIMAP';
+      document.getElementById('minimap-label').textContent='MINIMAP';
     }
 
     // ========================================
@@ -943,18 +1027,20 @@
         .eq('id',data.id);
       const task=DAILY_TASKS.find(t=>t.type===taskType);
       if(!task)return;
-      showToast(`✅ タスク完了！「${task.label}」→ 従業員+${task.reward}人`);
+      const isJa=currentLang==='ja';
+      showToast(`✅ ${isJa?'タスク完了':'Task done'}！「${isJa?task.label:task.labelEn}」→ +${task.reward}`);
       await refreshTaskUI();
     }
 
     function renderTaskUI(){
       const list=document.getElementById('task-list');
+      const isJa=currentLang==='ja';
       list.innerHTML='';
       DAILY_TASKS.forEach(task=>{
         const row=document.createElement('div');
         row.className='task-row';
         row.id='task-row-'+task.type;
-        row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${task.label}</span><span class="task-reward">+${task.reward}人</span>`;
+        row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
         list.appendChild(row);
       });
     }
@@ -973,7 +1059,6 @@
         row.querySelector('.task-status').textContent=done?'✅':'⬜';
         if(done)doneCount++;
       });
-      // プログレスバー更新
       const pct=Math.round(doneCount/DAILY_TASKS.length*100);
       const bar=document.getElementById('task-progress-bar');
       const pctEl=document.getElementById('task-progress-pct');
@@ -1081,7 +1166,6 @@
       document.getElementById('login-btn-header').style.display='none';
       document.getElementById('logged-in-area').style.display='flex';
       document.getElementById('user-name').textContent=xName?`@${xName}`:displayName;
-      // ログイン後にタイル色を再描画（自分の土地が橙色になる）
       redrawAllTiles();
       await initDailyTasks();
       await completeTask('login');
@@ -1108,12 +1192,10 @@
     const scene=new BABYLON.Scene(engine);
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
 
-    // アークカメラ（街づくりモード）
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
     arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=200;arcCamera.upperBetaLimit=Math.PI/2.2;
 
-    // 飛行カメラ（飛行モード）
     const flyCamera=new BABYLON.FlyCamera('flyCam',new BABYLON.Vector3(0,30,-60),scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
     flyCamera.speed=1.4;
@@ -1123,10 +1205,10 @@
     flyCamera.bankedTurnLimit=Math.PI/4;
     flyCamera.bankedTurnMultiplier=0.5;
     flyCamera.minZ=0.1;
-    flyCamera.keysUp=[87,38];    // W / ↑
-    flyCamera.keysDown=[83,40];  // S / ↓
-    flyCamera.keysLeft=[65,37];  // A / ←
-    flyCamera.keysRight=[68,39]; // D / →
+    flyCamera.keysUp=[87,38];
+    flyCamera.keysDown=[83,40];
+    flyCamera.keysLeft=[65,37];
+    flyCamera.keysRight=[68,39];
 
     scene.activeCamera=arcCamera;
     let isFlying=false;
@@ -1190,57 +1272,26 @@
       highlightTile=BABYLON.MeshBuilder.CreateGround('hl_tile',{width:CELL-0.3,height:CELL-0.3},scene);
       highlightTile.position=new BABYLON.Vector3(gx,0.07,gz);
       const mat=new BABYLON.StandardMaterial('hl_mat_'+Date.now(),scene);
-      mat.emissiveColor=new BABYLON.Color3(1.0,1.0,0.0); // 選択中は黄色
+      mat.emissiveColor=new BABYLON.Color3(1.0,1.0,0.0);
       mat.alpha=0.5;highlightTile.material=mat;highlightTile.isPickable=false;
     }
     function hideHighlight(){if(highlightTile){highlightTile.dispose();highlightTile=null;}}
 
-    /**
-     * 🔴 グリッド色分けロジック
-     * - 空き地（未取得）: 緑
-     * - 自分の土地（ビルなし）: 橙
-     * - 自分の土地（ビルあり）: 赤
-     * - 他ユーザーの土地（ビルなし）: 青
-     * - 他ユーザーの土地（ビルあり）: 濃い青
-     */
-    function getTileColor(ownerId){
-      const hasBuilding=!!buildingMap[Object.keys(buildingMap).find(k=>{
-        // このブロックは drawOwnedTile 呼び出し時に key を渡すので、ここでは使わない
-        return false;
-      })];
-      return null;
-    }
-
     function drawOwnedTile(gx,gz,key,ownerId){
-      // 既存タイルがあれば破棄
       if(landMap[key]&&landMap[key].tile){landMap[key].tile.dispose();}
-
       const tile=BABYLON.MeshBuilder.CreateGround('lt_'+key,{width:CELL-0.4,height:CELL-0.4},scene);
       tile.position=new BABYLON.Vector3(gx,0.02,gz);
       const mat=new BABYLON.StandardMaterial('ltm_'+key+'_'+Date.now(),scene);
-
       const isMe=currentUser&&ownerId===currentUser.id;
       const hasBuilding=!!buildingMap[key];
-
-      if(isMe&&hasBuilding){
-        // 自分の土地＋ビルあり → 赤
-        mat.emissiveColor=new BABYLON.Color3(1.0,0.2,0.2);mat.alpha=0.45;
-      }else if(isMe){
-        // 自分の土地（空）→ 橙
-        mat.emissiveColor=new BABYLON.Color3(1.0,0.55,0.0);mat.alpha=0.35;
-      }else if(hasBuilding){
-        // 他人の土地＋ビルあり → 濃い青
-        mat.emissiveColor=new BABYLON.Color3(0.2,0.35,1.0);mat.alpha=0.45;
-      }else{
-        // 他人の土地（空）→ 青
-        mat.emissiveColor=new BABYLON.Color3(0.3,0.55,1.0);mat.alpha=0.3;
-      }
-
+      if(isMe&&hasBuilding){mat.emissiveColor=new BABYLON.Color3(1.0,0.2,0.2);mat.alpha=0.45;}
+      else if(isMe){mat.emissiveColor=new BABYLON.Color3(1.0,0.55,0.0);mat.alpha=0.35;}
+      else if(hasBuilding){mat.emissiveColor=new BABYLON.Color3(0.2,0.35,1.0);mat.alpha=0.45;}
+      else{mat.emissiveColor=new BABYLON.Color3(0.3,0.55,1.0);mat.alpha=0.3;}
       tile.material=mat;tile.isPickable=false;
       return tile;
     }
 
-    // 全タイルを再描画（ログイン/ログアウト時）
     function redrawAllTiles(){
       Object.entries(landMap).forEach(([key,land])=>{
         const{gx,gz}=keyToCoord(key);
@@ -1249,7 +1300,6 @@
       });
     }
 
-    // ビル追加後に該当タイルだけ更新
     function refreshTile(key){
       const land=landMap[key];
       if(!land)return;
@@ -1268,7 +1318,6 @@
           const ownerDisplay=u&&u.x_username?`@${u.x_username}`:u&&u.username?u.username:'?';
           landMap[k]={owner_id:l.owner_id,owner_display:ownerDisplay,tile:null};
         });
-        // buildingMap が先に読み込まれた後に描画
         redrawAllTiles();
       }catch(e){console.warn('land load error:',e.message);}
     }
@@ -1283,25 +1332,26 @@
       const gachaBtn=document.getElementById('land-gacha-btn');
       const rebuildBtn=document.getElementById('land-rebuild-btn');
       const building=buildingMap[selectedLandKey];
+      const isJa=currentLang==='ja';
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
-        ownerEl.innerHTML=`Xユーザー：<span class="owner-name">${land.owner_display}</span>`;
+        ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">${land.owner_display}</span>`;
         if(building){
           const colorInfo=getColorByEmployees(building.employees||0);
-          buildingEl.textContent=`${building.totalFloors}階 ｜ 従業員 ${building.employees||0}人 ${colorInfo.label}`;
-        }else{buildingEl.textContent='ビルなし';}
+          const empLabel=isJa?colorInfo.label:colorInfo.labelEn;
+          buildingEl.textContent=`${building.totalFloors}${isJa?'階':'F'} ｜ ${isJa?'従業員':'Employees'} ${building.employees||0}${isJa?'人':''} ${empLabel}`;
+        }else{buildingEl.textContent=isJa?'ビルなし':'No building';}
         if(isMe){
           buyBtn.style.display='none';
           if(building){gachaBtn.style.display='none';rebuildBtn.style.display='block';}
           else{gachaBtn.style.display='block';rebuildBtn.style.display='none';}
         }else{
-          buyBtn.style.display='block';buyBtn.textContent='🔒 購入済みの土地です';buyBtn.disabled=true;
+          buyBtn.style.display='block';buyBtn.textContent=isJa?'🔒 購入済みの土地です':'🔒 Already owned';buyBtn.disabled=true;
           gachaBtn.style.display='none';rebuildBtn.style.display='none';
         }
       }else{
-        ownerEl.textContent='空き地（未取得）';
+        ownerEl.textContent=isJa?'空き地（未取得）':'Empty land';
         buildingEl.textContent='';
-        const isJa=currentLang==='ja';
         buyBtn.style.display='block';
         buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
         buyBtn.disabled=false;
@@ -1313,14 +1363,12 @@
 
     function closeLandPanel(){document.getElementById('land-panel').classList.remove('open');hideHighlight();selectedLandKey=null;}
 
-    // 🔴 土地購入（コイン消費あり）
     async function handleLandBuy(){
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
       const buyBtn=document.getElementById('land-buy-btn');
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
-        // コイン残高確認
         const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
         const balance=ud?ud.coin_column||0:0;
         if(LAND_COST>0&&balance<LAND_COST){
@@ -1330,17 +1378,14 @@
           buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
           return;
         }
-        // 土地をDBに登録
         const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
         if(landErr)throw landErr;
-        // コイン消費
         if(LAND_COST>0){
           const newCoins=balance-LAND_COST;
           await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
           document.getElementById('coin-count').textContent=newCoins;
         }
         const xName=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:'?';
-        // landMap に登録してタイル描画
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile:null};
         const tile=drawOwnedTile(gx,gz,selectedLandKey,currentUser.id);
         landMap[selectedLandKey].tile=tile;
@@ -1361,10 +1406,9 @@
     // ========================================
     let gachaState={result:null,isRebuild:false,landKey:null};
 
-    // 🔴 ガチャモーダル：土地未選択でも開けるよう修正
     function openGachaModal(isRebuild=false){
       gachaState.isRebuild=isRebuild;
-      gachaState.landKey=selectedLandKey; // null でも OK
+      gachaState.landKey=selectedLandKey;
       const noLandWarning=document.getElementById('gacha-no-land-warning');
       const infoEl=document.getElementById('gacha-land-info');
       if(selectedLandKey){
@@ -1471,7 +1515,6 @@
       selectedShape='box';
       document.querySelectorAll('.shape-btn').forEach((b,i)=>b.classList.toggle('selected',i===0));
       document.getElementById('build-modal-info').textContent=`${gachaState.result.label}　${gachaState.result.floors}階建て`;
-      // 建設先土地の表示
       const landSelectEl=document.getElementById('build-land-select');
       if(gachaState.landKey){
         const{gx,gz}=keyToCoord(gachaState.landKey);
@@ -1487,11 +1530,9 @@
 
     async function handleBuildConfirm(){
       if(!gachaState.result||!currentUser)return;
-      // 土地未選択の場合：まず土地選択を促す
       if(!gachaState.landKey){
         closeBuildModal();
         showToast('🏗 形状確定！次に建設先の土地をタップしてください');
-        // 建設待機状態に入る
         pendingBuildShape=selectedShape;
         pendingBuildMode=true;
         return;
@@ -1514,12 +1555,12 @@
         const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${selectedShape}_gacha`,owner_id:currentUser.id,employees});
         if(error)throw error;
         addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey);
-        // タイル色を更新（ビルありに）
         refreshTile(gachaState.landKey);
         await completeTask('build');
         closeBuildModal();
+        const isJa=currentLang==='ja';
         const colorInfo=getColorByEmployees(employees);
-        showToast(`🏢 ${floors}階建て完成！${colorInfo.label}`);
+        showToast(`🏢 ${floors}${isJa?'階建て完成':'F building done'}！${isJa?colorInfo.label:colorInfo.labelEn}`);
         gachaState={result:null,isRebuild:false,landKey:null};
         pendingBuildMode=false;
         pendingBuildShape=null;
@@ -1529,7 +1570,6 @@
       }
     }
 
-    // 土地未選択ガチャ後の建設待機状態
     let pendingBuildMode=false;
     let pendingBuildShape=null;
 
@@ -1537,6 +1577,7 @@
     // ビル詳細モーダル
     // ========================================
     const SHAPE_LABELS={box:'スタンダード',slim:'スリム',wide:'ワイド',cylinder:'円柱'};
+    const SHAPE_LABELS_EN={box:'Standard',slim:'Slim',wide:'Wide',cylinder:'Cylinder'};
     const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
 
     function getStarByFloors(totalFloors){
@@ -1563,30 +1604,28 @@
       document.getElementById('bm-floors-val').textContent=buildingData.totalFloors+'F';
       const empVal=document.getElementById('bm-emp-val');
       const colorInfo=getColorByEmployees(buildingData.employees||0);
-      empVal.textContent=(buildingData.employees||0)+'人';
+      empVal.textContent=isJa?`${buildingData.employees||0}人`:`${buildingData.employees||0}`;
       empVal.className='bm-stat-value';
-      if(colorInfo.name==='rainbow')empEl.classList.add('emp-rainbow');
+      if(colorInfo.name==='rainbow')empVal.classList.add('emp-rainbow');
       else if(colorInfo.name==='gold')empVal.classList.add('emp-gold');
       else if(colorInfo.name==='red')empVal.classList.add('emp-red');
 
       document.getElementById('bm-shape-val').textContent=
-        isJa?(SHAPE_LABELS[buildingData.shape]||buildingData.shape):(buildingData.shape||'-');
+        isJa?(SHAPE_LABELS[buildingData.shape]||buildingData.shape):(SHAPE_LABELS_EN[buildingData.shape]||buildingData.shape||'-');
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
 
-      // オーナー情報
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const land=landMap[key];
       const ownerEl=document.getElementById('building-modal-owner');
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
         ownerEl.innerHTML=isMe
-          ?`👤 <span class="owner-name">あなたのビル</span>`
+          ?`👤 <span class="owner-name">${isJa?'あなたのビル':'Your building'}</span>`
           :`👤 <span class="owner-name">${land.owner_display}</span>`;
       }else{
-        ownerEl.textContent='オーナー不明';
+        ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';
       }
 
-      // stat ラベルの多言語
       document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
       document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
       document.getElementById('bml-shape').textContent=isJa?'形状':'Shape';
@@ -1631,22 +1670,16 @@
       const scaleX=MM_SIZE/rect.width, scaleY=MM_SIZE/rect.height;
       const px=(e.clientX-rect.left)*scaleX;
       const py=(e.clientY-rect.top)*scaleY;
-      // ミニマップ座標→ワールド座標
       const wx=px/MM_SIZE*MM_RANGE-MM_RANGE/2;
       const wz=py/MM_SIZE*MM_RANGE-MM_RANGE/2;
-      // arcCamera をその位置に向ける
       arcCamera.target=new BABYLON.Vector3(wx,0,wz);
     }
 
     function drawMinimap(){
       if(!minimapVisible)return;
       mmCtx.clearRect(0,0,MM_SIZE,MM_SIZE);
-
-      // 背景
       mmCtx.fillStyle='rgba(6,6,16,0.95)';
       mmCtx.fillRect(0,0,MM_SIZE,MM_SIZE);
-
-      // グリッド線（薄く）
       mmCtx.strokeStyle='rgba(255,255,255,0.04)';
       mmCtx.lineWidth=0.5;
       const step=CELL/MM_RANGE*MM_SIZE;
@@ -1654,8 +1687,6 @@
         mmCtx.beginPath();mmCtx.moveTo(i,0);mmCtx.lineTo(i,MM_SIZE);mmCtx.stroke();
         mmCtx.beginPath();mmCtx.moveTo(0,i);mmCtx.lineTo(MM_SIZE,i);mmCtx.stroke();
       }
-
-      // 土地タイル
       Object.entries(landMap).forEach(([key,land])=>{
         const{gx,gz}=keyToCoord(key);
         const{px,py}=worldToMM(gx,gz);
@@ -1668,32 +1699,25 @@
         else            mmCtx.fillStyle='rgba(60,160,255,0.5)';
         mmCtx.fillRect(px-sz/2,py-sz/2,sz,sz);
       });
-
-      // ビルの点（土地なしビルも）
       buildings.forEach(b=>{
         const key=b.landKey||landKey(b.x,b.z);
-        if(landMap[key])return; // 土地ありは上で描画済み
+        if(landMap[key])return;
         const{px,py}=worldToMM(b.x,b.z);
         const colorInfo=getColorByEmployees(b.employees||0);
         mmCtx.fillStyle=`rgba(${Math.round(colorInfo.r*255)},${Math.round(colorInfo.g*255)},${Math.round(colorInfo.b*255)},0.8)`;
         mmCtx.beginPath();mmCtx.arc(px,py,2.5,0,Math.PI*2);mmCtx.fill();
       });
-
-      // カメラ視点マーカー
       const cam=scene.activeCamera;
       if(cam){
         const tx=cam.target?cam.target.x:(cam.position?cam.position.x:0);
         const tz=cam.target?cam.target.z:(cam.position?cam.position.z:0);
         const{px,py}=worldToMM(tx,tz);
-        // 外枠
         mmCtx.strokeStyle='rgba(255,255,255,0.9)';
         mmCtx.lineWidth=1.5;
         mmCtx.beginPath();mmCtx.arc(px,py,5,0,Math.PI*2);mmCtx.stroke();
-        // 中心点
         mmCtx.fillStyle='#fff';
         mmCtx.beginPath();mmCtx.arc(px,py,2,0,Math.PI*2);mmCtx.fill();
       }
-
       minimapAnimId=requestAnimationFrame(drawMinimap);
     }
 
@@ -1733,7 +1757,7 @@
     async function loadBuildingsAndLands(){
       await loadBuildings();
       await loadLands();
-      drawMinimap(); // データ読み込み後に起動
+      drawMinimap();
       finishLoading();
     }
 
@@ -1742,14 +1766,9 @@
     // ========================================
     scene.onPointerObservable.add((pointerInfo)=>{
       if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
-
-      // 飛行モード中は土地選択しない（ただし建設待機中は除く）
       if(isFlying&&!pendingBuildMode)return;
-
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
-
-      // ビルをタップ → 詳細モーダル
       if(pick.pickedMesh.name.startsWith('b_')){
         const hitPos=pick.pickedMesh.position;
         const{gx,gz}=worldToGrid(hitPos.x,hitPos.z);
@@ -1757,13 +1776,10 @@
         const bData=buildingMap[key];
         if(bData){openBuildingModal(bData);return;}
       }
-
       if(pick.pickedMesh.name==='ground'){
         const wp=pick.pickedPoint;
         const{gx,gz}=worldToGrid(wp.x,wp.z);
         if(Math.abs(gx)>GRID_HALF||Math.abs(gz)>GRID_HALF)return;
-
-        // 建設待機モード：土地タップで建設先確定
         if(pendingBuildMode&&gachaState.result){
           const key=landKey(gx,gz);
           const land=landMap[key];
@@ -1776,7 +1792,6 @@
           openBuildModal();
           return;
         }
-
         openLandPanel(gx,gz);
       }
     });
@@ -1857,7 +1872,6 @@
       const emptyEl=document.getElementById('zukan-empty');
       grid.innerHTML='';
       statsEl.innerHTML='';
-
       if(zukanBuildings.length===0){
         emptyEl.style.display='block';
         grid.style.display='none';
@@ -1865,18 +1879,16 @@
       }
       emptyEl.style.display='none';
       grid.style.display='grid';
-
-      // 統計チップ
       const totalFloors=zukanBuildings.reduce((s,b)=>s+b.floors,0);
       const totalEmp=zukanBuildings.reduce((s,b)=>s+(b.employees||0),0);
-      const best=zukanBuildings[0]; // floors降順なので最初が最大
+      const best=zukanBuildings[0];
       const star5count=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===5).length;
       const chips=[
-        {label:isJa?'所有ビル':'Buildings',val:zukanBuildings.length+'棟'},
+        {label:isJa?'所有ビル':'Buildings',val:isJa?zukanBuildings.length+'棟':zukanBuildings.length+''},
         {label:isJa?'総階数':'Total Floors',val:totalFloors+'F'},
-        {label:isJa?'総従業員':'Employees',val:totalEmp.toLocaleString()+'人'},
+        {label:isJa?'総従業員':'Employees',val:isJa?totalEmp.toLocaleString()+'人':totalEmp.toLocaleString()},
         {label:isJa?'最高層':'Tallest',val:best.floors+'F'},
-        {label:'★×5',val:star5count+'棟',highlight:star5count>0},
+        {label:'★×5',val:isJa?star5count+'棟':star5count+'',highlight:star5count>0},
       ];
       chips.forEach(c=>{
         const el=document.createElement('div');
@@ -1884,13 +1896,12 @@
         el.innerHTML=`<span class="chip-label">${c.label}</span><span class="chip-val" style="${c.highlight?'color:#ee0979':''}">${c.val}</span>`;
         statsEl.appendChild(el);
       });
-
-      // カードグリッド
       zukanBuildings.forEach(b=>{
         const star=getStarByBaseFloors(b.floors);
         const colorInfo=getColorByEmployees(b.employees||0);
         const shape=b.style?b.style.split('_')[0]:'box';
-        const shapeLabel=isJa?(SHAPE_LABELS[shape]||shape):shape;
+        const shapeLabel=isJa?(SHAPE_LABELS[shape]||shape):(SHAPE_LABELS_EN[shape]||shape);
+        const empDisplay=isJa?`${(b.employees||0).toLocaleString()}人`:`${(b.employees||0).toLocaleString()}`;
         const card=document.createElement('div');
         card.className=`zukan-card star${star}`;
         card.innerHTML=`
@@ -1900,12 +1911,11 @@
           <div class="zcard-floors-label">${isJa?'階建て':'floors'}</div>
           <div class="zcard-meta">
             <span class="zcard-emp" style="color:${colorInfo.name==='gold'?'#f59e0b':colorInfo.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">
-              👥 ${(b.employees||0).toLocaleString()}人
+              👥 ${empDisplay}
             </span><br>
             <span style="margin-top:4px;display:inline-block;">📐 ${shapeLabel}</span><br>
             <span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span>
           </div>`;
-        // カードクリックで3D画面のそのビルにフォーカス
         card.addEventListener('click',()=>{
           closeZukan();
           arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);
@@ -1921,29 +1931,25 @@
       const container=document.getElementById('zukan-rarity-grid');
       container.innerHTML='';
       const rarityNames=isJa?RARITY_NAMES_JA:RARITY_NAMES_EN;
-
-      // ★5→★1の順でセクション生成
       [5,4,3,2,1].forEach(star=>{
         const myBuildings=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===star);
         const section=document.createElement('div');
         section.className='zukan-rarity-section';
-
+        const countLabel=isJa?myBuildings.length+'棟':myBuildings.length+'';
         const countClass=myBuildings.length>0?'zukan-rarity-count has-count':'zukan-rarity-count';
         section.innerHTML=`
           <div class="zukan-rarity-header">
             <span class="zukan-rarity-stars" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</span>
             <span class="zukan-rarity-label">${rarityNames[star]}</span>
-            <span class="${countClass}">${myBuildings.length}棟</span>
+            <span class="${countClass}">${countLabel}</span>
           </div>
           <div class="zukan-rarity-buildings" id="zukan-rarity-${star}"></div>`;
         container.appendChild(section);
-
         const buildingsEl=section.querySelector(`#zukan-rarity-${star}`);
         if(myBuildings.length===0){
           buildingsEl.innerHTML=`<span class="zukan-empty-rarity">${isJa?'未所有':'Not owned'}</span>`;
         }else{
           myBuildings.forEach(b=>{
-            const shape=b.style?b.style.split('_')[0]:'box';
             const mini=document.createElement('div');
             mini.className='zukan-mini-card';
             mini.innerHTML=`${BUILDING_ICONS[star]} ${b.floors}F`;
@@ -1958,6 +1964,145 @@
           });
         }
       });
+    }
+
+    // ========================================
+    // ランキング
+    // ========================================
+    let rankingTab='emp';
+    let rankingCache={emp:null,buildings:null};
+
+    async function openRanking(){
+      document.getElementById('ranking-overlay').classList.add('open');
+      await loadRanking();
+    }
+    function closeRanking(){
+      document.getElementById('ranking-overlay').classList.remove('open');
+    }
+
+    function switchRankingTab(tab){
+      rankingTab=tab;
+      document.getElementById('rtab-emp').classList.toggle('active',tab==='emp');
+      document.getElementById('rtab-buildings').classList.toggle('active',tab==='buildings');
+      document.getElementById('ranking-emp-list').style.display=tab==='emp'?'block':'none';
+      document.getElementById('ranking-buildings-list').style.display=tab==='buildings'?'block':'none';
+    }
+
+    async function loadRanking(){
+      const loadingEl=document.getElementById('ranking-loading-msg');
+      loadingEl.classList.add('show');
+      document.getElementById('ranking-emp-list').innerHTML='';
+      document.getElementById('ranking-buildings-list').innerHTML='';
+      try{
+        const{data,error}=await db
+          .from('buildings')
+          .select('owner_id, floors, employees, users(username, x_username)');
+        if(error)throw error;
+
+        // ユーザーごとに集計
+        const userMap={};
+        data.forEach(b=>{
+          const uid=b.owner_id;
+          if(!uid)return;
+          if(!userMap[uid]){
+            const u=b.users;
+            userMap[uid]={
+              uid,
+              username:u?.username||'?',
+              x_username:u?.x_username||'',
+              totalEmp:0,
+              buildingCount:0,
+            };
+          }
+          userMap[uid].totalEmp+=(b.employees||0);
+          userMap[uid].buildingCount+=1;
+        });
+
+        const users=Object.values(userMap);
+        const empRanking=[...users].sort((a,b)=>b.totalEmp-a.totalEmp).slice(0,50);
+        const buildingsRanking=[...users].sort((a,b)=>b.buildingCount-a.buildingCount).slice(0,50);
+
+        rankingCache.emp=empRanking;
+        rankingCache.buildings=buildingsRanking;
+
+        renderRankingList('ranking-emp-list',empRanking,'emp');
+        renderRankingList('ranking-buildings-list',buildingsRanking,'buildings');
+      }catch(e){
+        console.warn('ranking load error:',e.message);
+        document.getElementById('ranking-emp-list').innerHTML=
+          '<div class="ranking-empty">読み込みに失敗しました</div>';
+      }finally{
+        loadingEl.classList.remove('show');
+      }
+    }
+
+    function renderRankingList(containerId,rankData,type){
+      const container=document.getElementById(containerId);
+      if(!rankData||rankData.length===0){
+        container.innerHTML='<div class="ranking-empty">🏗 まだデータがありません</div>';
+        return;
+      }
+      const medals=['🥇','🥈','🥉'];
+      const isJa=currentLang==='ja';
+      const now=new Date().toLocaleTimeString(isJa?'ja-JP':'en-US',{hour:'2-digit',minute:'2-digit'});
+
+      let html='';
+      rankData.forEach((u,i)=>{
+        const rank=i+1;
+        const isMe=currentUser&&u.uid===currentUser.id;
+        const topClass=rank<=3?`top${rank}`:'';
+        const meClass=isMe?' me':'';
+        const badgeHtml=rank<=3
+          ?`<div class="rank-medal">${medals[rank-1]}</div>`
+          :`<div class="rank-badge" style="color:rgba(255,255,255,0.35);">${rank}</div>`;
+
+        const displayName=u.x_username
+          ?`<span class="x-handle">@${u.x_username}</span>`
+          :u.username;
+
+        // 値と単位 — 英語では「人」を使わない
+        let value,unit,subText;
+        if(type==='emp'){
+          value=u.totalEmp.toLocaleString();
+          unit=isJa?'人':'emp';
+          subText=isJa?`🏢 ${u.buildingCount}棟`:`🏢 ${u.buildingCount} bldgs`;
+        }else{
+          value=u.buildingCount;
+          unit=isJa?'棟':'bldgs';
+          subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人`:`👥 ${u.totalEmp.toLocaleString()} emp`;
+        }
+
+        // 従業員カラー
+        let valueColor='#fff';
+        if(type==='emp'){
+          const ci=getColorByEmployees(u.totalEmp);
+          if(ci.name==='rainbow')valueColor='#ee0979';
+          else if(ci.name==='gold')valueColor='#f59e0b';
+          else if(ci.name==='red')valueColor='#ef4444';
+        }else{
+          if(rank===1)valueColor='#f59e0b';
+          else if(rank===2)valueColor='#94a3b8';
+          else if(rank===3)valueColor='#b4783c';
+        }
+
+        const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
+
+        html+=`
+          <div class="ranking-row ${topClass}${meClass}">
+            ${badgeHtml}
+            <div class="ranking-user">
+              <div class="ranking-username">${displayName}${meLabel}</div>
+              <div class="ranking-sub">${subText}</div>
+            </div>
+            <div class="ranking-value" style="color:${valueColor};">
+              ${value}
+              <span class="ranking-unit">${unit}</span>
+            </div>
+          </div>`;
+      });
+
+      html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}</div>`;
+      container.innerHTML=html;
     }
 
     engine.runRenderLoop(()=>scene.render());

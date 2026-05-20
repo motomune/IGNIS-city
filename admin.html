@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGNIS CITY - 承認管理</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Noto Sans JP',sans-serif;background:#05050a;color:#fff;min-height:100vh;padding:20px;}
+    .bg-gradient{position:fixed;inset:0;background:radial-gradient(circle at 20% 10%,rgba(255,106,0,0.08),transparent 50%),radial-gradient(circle at 80% 90%,rgba(238,9,121,0.08),transparent 50%);pointer-events:none;z-index:0;}
+    .container{max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .title{font-size:22px;font-weight:900;background:linear-gradient(135deg,#ff6a00,#ee0979);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:0.06em;}
+    .subtitle{font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;letter-spacing:0.1em;text-transform:uppercase;}
+    .user-info{font-size:12px;color:rgba(255,255,255,0.5);text-align:right;}
+    .user-info .uname{color:#ff6a00;font-weight:700;}
+    .logout-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;margin-top:6px;}
+    .logout-btn:hover{background:rgba(255,255,255,0.1);}
+    /* ログイン画面 */
+    #login-screen{max-width:380px;margin:80px auto;background:#0a0a14;border:1px solid rgba(255,106,0,0.3);border-radius:18px;padding:32px;position:relative;z-index:1;}
+    #login-screen h1{font-size:20px;font-weight:900;background:linear-gradient(135deg,#ff6a00,#ee0979);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:6px;}
+    #login-screen .sub{font-size:11px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:24px;letter-spacing:0.1em;text-transform:uppercase;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:6px;letter-spacing:0.06em;}
+    .form-group input{width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;outline:none;transition:border-color 0.2s;}
+    .form-group input:focus{border-color:rgba(255,106,0,0.6);}
+    .primary-btn{width:100%;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s;}
+    .primary-btn:hover{opacity:0.9;}
+    .primary-btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .error-msg{color:#ef4444;font-size:12px;margin-top:8px;text-align:center;min-height:16px;}
+    /* タブ */
+    .tabs{display:flex;gap:6px;margin-bottom:20px;}
+    .tab{padding:10px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .tab.active{background:linear-gradient(135deg,rgba(255,106,0,0.2),rgba(238,9,121,0.15));border-color:rgba(255,106,0,0.4);color:#fff;}
+    .tab .badge{display:inline-block;background:rgba(255,106,0,0.3);border-radius:8px;padding:1px 8px;font-size:11px;margin-left:6px;}
+    /* リスト */
+    .list{display:flex;flex-direction:column;gap:12px;}
+    .card{background:#0a0a14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;}
+    .card.pending{border-color:rgba(255,165,0,0.3);}
+    .card.approved{border-color:rgba(34,197,94,0.25);}
+    .card.rejected{opacity:0.55;border-color:rgba(239,68,68,0.25);}
+    .rank-icon{font-size:32px;text-align:center;}
+    .card-body{min-width:0;}
+    .card-row{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;}
+    .owner{font-size:12px;color:#1d9bf0;font-weight:700;}
+    .owner a{color:#1d9bf0;text-decoration:none;}
+    .owner a:hover{text-decoration:underline;}
+    .coord{font-size:11px;color:rgba(255,255,255,0.4);font-family:monospace;}
+    .floors{font-size:11px;color:rgba(255,255,255,0.5);}
+    .status-badge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;letter-spacing:0.08em;text-transform:uppercase;}
+    .status-badge.pending{background:rgba(255,165,0,0.18);color:#ffab40;border:1px solid rgba(255,165,0,0.4);}
+    .status-badge.approved{background:rgba(34,197,94,0.18);color:#4ade80;border:1px solid rgba(34,197,94,0.4);}
+    .status-badge.rejected{background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.4);}
+    .motto-text{margin-top:8px;padding:8px 12px;border-radius:8px;font-size:15px;font-weight:800;display:inline-block;letter-spacing:0.06em;}
+    .motto-text.rank-legendary{color:#fff;background:linear-gradient(90deg,#ff0080,#ff8c00,#ffd700,#00e676,#00bfff,#8a2be2,#ff0080);background-size:300% 100%;animation:mottoRainbow 4s linear infinite;}
+    .motto-text.rank-epic{color:#000;background:linear-gradient(135deg,#FFE769,#FFD700,#C99700);}
+    .motto-text.rank-gray{color:#fff;background:#475569;}
+    @keyframes mottoRainbow{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+    .notes-text{margin-top:8px;font-size:12px;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:8px;line-height:1.6;white-space:pre-wrap;}
+    .meta{margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.06em;}
+    .actions{display:flex;flex-direction:column;gap:6px;}
+    .action-btn{padding:8px 16px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:opacity 0.2s;min-width:96px;}
+    .action-btn:hover{opacity:0.85;}
+    .action-btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .btn-approve{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;}
+    .btn-reject{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;}
+    .btn-revert{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.12);}
+    .empty{text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);font-size:14px;}
+    .loading{text-align:center;padding:40px;color:rgba(255,255,255,0.4);font-size:13px;}
+    #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a14;border:1px solid rgba(255,106,0,0.5);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200;}
+    #toast.show{opacity:1;}
+    .access-denied{max-width:420px;margin:80px auto;text-align:center;background:#0a0a14;border:1px solid rgba(239,68,68,0.4);border-radius:18px;padding:40px;}
+    .access-denied h2{color:#ef4444;font-size:20px;margin-bottom:12px;}
+    .access-denied p{color:rgba(255,255,255,0.5);font-size:13px;line-height:1.7;}
+    @media(max-width:680px){.card{grid-template-columns:1fr;gap:12px;}.actions{flex-direction:row;}}
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- ログイン画面 -->
+  <div id="login-screen">
+    <h1>IGNIS CITY</h1>
+    <div class="sub">Admin Approval Console</div>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>メールアドレス</label>
+        <input type="email" id="login-email" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>パスワード</label>
+        <input type="password" id="login-password" required autocomplete="current-password">
+      </div>
+      <button class="primary-btn" id="login-btn" type="submit">ログイン</button>
+      <div class="error-msg" id="login-error"></div>
+    </form>
+  </div>
+
+  <!-- アクセス拒否画面 -->
+  <div id="denied-screen" class="container" style="display:none;">
+    <div class="access-denied">
+      <h2>⛔ アクセス拒否</h2>
+      <p>このページは管理者のみアクセス可能です。<br>承認権限のないアカウントでログインしました。</p>
+      <button class="primary-btn" style="margin-top:18px;" onclick="handleLogout()">ログアウト</button>
+    </div>
+  </div>
+
+  <!-- 管理画面 -->
+  <div id="admin-screen" class="container" style="display:none;">
+    <div class="header">
+      <div>
+        <div class="title">🛡 IGNIS CITY 管理</div>
+        <div class="subtitle">Motto Approval Console</div>
+      </div>
+      <div class="user-info">
+        <div>logged in as <span class="uname" id="admin-uname">-</span></div>
+        <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="pending" onclick="switchTab('pending')">📨 申請中 <span class="badge" id="badge-pending">0</span></button>
+      <button class="tab" data-tab="approved" onclick="switchTab('approved')">✅ 承認済み <span class="badge" id="badge-approved">0</span></button>
+      <button class="tab" data-tab="rejected" onclick="switchTab('rejected')">❌ 却下 <span class="badge" id="badge-rejected">0</span></button>
+    </div>
+    <div id="list-container">
+      <div class="loading">読み込み中...</div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL='https://xssjhgosxyhknonlrjrq.supabase.co';
+    const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
+    const ADMIN_USER_ID='afc818cd-d2fa-4c1c-8460-9dbce9e60e37';
+    const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+    let currentTab='pending';
+    let profiles=[];
+    let currentUser=null;
+
+    function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+    function showScreen(screen){
+      document.getElementById('login-screen').style.display=screen==='login'?'block':'none';
+      document.getElementById('denied-screen').style.display=screen==='denied'?'block':'none';
+      document.getElementById('admin-screen').style.display=screen==='admin'?'block':'none';
+    }
+
+    async function handleLogin(ev){
+      ev.preventDefault();
+      const email=document.getElementById('login-email').value.trim();
+      const password=document.getElementById('login-password').value;
+      const btn=document.getElementById('login-btn');
+      const errEl=document.getElementById('login-error');
+      errEl.textContent='';btn.disabled=true;btn.textContent='ログイン中...';
+      try{
+        const{data,error}=await db.auth.signInWithPassword({email,password});
+        if(error)throw error;
+        await checkAndShowAdmin(data.user);
+      }catch(e){errEl.textContent=e.message||'ログインに失敗しました';}
+      finally{btn.disabled=false;btn.textContent='ログイン';}
+    }
+
+    async function checkAndShowAdmin(user){
+      currentUser=user;
+      if(!user||user.id!==ADMIN_USER_ID){showScreen('denied');return;}
+      const{data:ud}=await db.from('users').select('username,x_username').eq('id',user.id).single();
+      const display=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:user.email;
+      document.getElementById('admin-uname').textContent=display;
+      showScreen('admin');
+      await loadProfiles();
+    }
+
+    async function handleLogout(){
+      await db.auth.signOut();
+      currentUser=null;profiles=[];
+      showScreen('login');
+    }
+
+    async function loadProfiles(){
+      document.getElementById('list-container').innerHTML='<div class="loading">読み込み中...</div>';
+      try{
+        const{data,error}=await db
+          .from('building_profiles')
+          .select('id,user_id,building_x,building_z,motto_text,notes_text,status,created_at,reviewed_at,users(username,x_username)')
+          .order('created_at',{ascending:false});
+        if(error)throw error;
+        const bx=[...new Set((data||[]).map(p=>p.building_x))];
+        const bz=[...new Set((data||[]).map(p=>p.building_z))];
+        let buildings=[];
+        if(bx.length){
+          const{data:bd}=await db.from('buildings').select('x,z,floors').in('x',bx).in('z',bz);
+          buildings=bd||[];
+        }
+        const bMap={};
+        buildings.forEach(b=>{bMap[`${b.x}_${b.z}`]=b.floors;});
+        profiles=(data||[]).map(p=>({...p,_floors:bMap[`${p.building_x}_${p.building_z}`]||0}));
+        renderList();
+      }catch(e){
+        console.warn(e);
+        document.getElementById('list-container').innerHTML=`<div class="empty">読み込みに失敗しました: ${e.message}</div>`;
+      }
+    }
+
+    function getStarByFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
+    const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
+    const STAR_LABELS={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
+    function rankClass(star){if(star===5)return 'rank-legendary';if(star===4)return 'rank-epic';return 'rank-gray';}
+
+    function switchTab(tab){
+      currentTab=tab;
+      document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
+      renderList();
+    }
+
+    function fmtTime(iso){if(!iso)return '';const d=new Date(iso);return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+
+    function renderList(){
+      const counts={pending:0,approved:0,rejected:0};
+      profiles.forEach(p=>{if(counts[p.status]!==undefined)counts[p.status]++;});
+      document.getElementById('badge-pending').textContent=counts.pending;
+      document.getElementById('badge-approved').textContent=counts.approved;
+      document.getElementById('badge-rejected').textContent=counts.rejected;
+      const filtered=profiles.filter(p=>p.status===currentTab);
+      const container=document.getElementById('list-container');
+      if(!filtered.length){container.innerHTML=`<div class="empty">該当する申請はありません</div>`;return;}
+      container.innerHTML='<div class="list">'+filtered.map(p=>renderCard(p)).join('')+'</div>';
+    }
+
+    function renderCard(p){
+      const star=getStarByFloors(p._floors);
+      const icon=BUILDING_ICONS[star]||'🏢';
+      const u=p.users||{};
+      const xName=u.x_username||'';
+      const ownerHtml=xName?`<a href="https://x.com/${encodeURIComponent(xName)}" target="_blank" rel="noopener">@${xName}</a>`:(u.username||'(unknown)');
+      const mottoHtml=p.motto_text?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.motto_text)}</div>`:'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+      const notesHtml=p.notes_text?`<div class="notes-text">📝 ${escapeHtml(p.notes_text)}</div>`:'';
+      let actions='';
+      if(p.status==='pending'){
+        actions=`
+          <button class="action-btn btn-approve" onclick="updateStatus(${p.id},'approved')">✅ 承認</button>
+          <button class="action-btn btn-reject" onclick="updateStatus(${p.id},'rejected')">❌ 却下</button>`;
+      } else {
+        actions=`<button class="action-btn btn-revert" onclick="updateStatus(${p.id},'pending')">↩ 申請中に戻す</button>`;
+      }
+      const reviewedLine=p.reviewed_at?` ／ 審査: ${fmtTime(p.reviewed_at)}`:'';
+      return `
+        <div class="card ${p.status}">
+          <div class="rank-icon" title="${STAR_LABELS[star]}">${icon}</div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="owner">👤 ${ownerHtml}</span>
+              <span class="coord">座標 ${p.building_x},${p.building_z}</span>
+              <span class="floors">${p._floors||'?'}F / ${STAR_LABELS[star]}</span>
+              <span class="status-badge ${p.status}">${p.status}</span>
+            </div>
+            ${mottoHtml}
+            ${notesHtml}
+            <div class="meta">申請: ${fmtTime(p.created_at)}${reviewedLine}</div>
+          </div>
+          <div class="actions">${actions}</div>
+        </div>`;
+    }
+
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+    async function updateStatus(id,newStatus){
+      const ok=newStatus==='rejected'?confirm('この申請を却下しますか？'):true;
+      if(!ok)return;
+      try{
+        const payload={status:newStatus,reviewed_at:newStatus==='pending'?null:new Date().toISOString()};
+        const{error}=await db.from('building_profiles').update(payload).eq('id',id);
+        if(error)throw error;
+        const label=newStatus==='approved'?'承認':newStatus==='rejected'?'却下':'差し戻し';
+        showToast(`✓ ${label}しました`);
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
+    }
+
+    (async()=>{
+      const{data}=await db.auth.getSession();
+      if(data.session&&data.session.user){await checkAndShowAdmin(data.session.user);}
+      else{showScreen('login');}
+    })();
+  </script>
+</body>
+</html>

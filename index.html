@@ -444,12 +444,12 @@
     .owner-x-link { color:#1d9bf0;font-weight:800;text-decoration:none; }
     .owner-x-link:hover { text-decoration:underline; }
     /* 承認済み格言・備考 */
-    #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em; }
-    #building-modal-motto.rank-legendary { color:#fff;background:linear-gradient(90deg,#ff0080,#ff8c00,#ffd700,#00e676,#00bfff,#8a2be2,#ff0080);background-size:300% 100%;animation:mottoRainbow 4s linear infinite;box-shadow:0 0 18px rgba(255,255,255,0.25); }
-    #building-modal-motto.rank-epic { color:#000;background:linear-gradient(135deg,#FFE769,#FFD700,#C99700);box-shadow:0 0 14px rgba(255,215,0,0.5);animation:mottoGoldPulse 2.4s ease-in-out infinite; }
-    #building-modal-motto.rank-gray { color:#fff;background:#475569;border:1px solid rgba(148,163,184,0.5); }
-    @keyframes mottoRainbow { 0%{background-position:0% 50%;} 100%{background-position:300% 50%;} }
-    @keyframes mottoGoldPulse { 0%,100%{box-shadow:0 0 8px rgba(255,215,0,0.35);} 50%{box-shadow:0 0 22px rgba(255,215,0,0.85);} }
+    #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em;background:rgba(255,255,255,0.04); }
+    #building-modal-motto.rank-5 { color:#ee0979;border-left:4px solid #ee0979;background:rgba(238,9,121,0.1); }
+    #building-modal-motto.rank-4 { color:#f59e0b;border-left:4px solid #f59e0b;background:rgba(245,158,11,0.1); }
+    #building-modal-motto.rank-3 { color:#3b82f6;border-left:4px solid #3b82f6;background:rgba(59,130,246,0.1); }
+    #building-modal-motto.rank-2 { color:#22c55e;border-left:4px solid #22c55e;background:rgba(34,197,94,0.1); }
+    #building-modal-motto.rank-1 { color:#94a3b8;border-left:4px solid #94a3b8;background:rgba(148,163,184,0.1); }
     #building-modal-notes { font-size:12px;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;display:none; }
     #building-modal-notes-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
     /* 3D格言ラベル */
@@ -664,13 +664,13 @@
     <div id="profile-box">
       <button id="profile-modal-close" onclick="closeProfileModal()">×</button>
       <div id="profile-title">🏢 ビルプロフィール申請</div>
-      <div id="profile-subtitle">建設おめでとうございます！格言と備考を申請できます（任意）</div>
+      <div id="profile-subtitle">建設おめでとうございます！格言と備考を申請できます（IGNIS Rank 2 以上）</div>
       <div class="custom-label">💬 格言</div>
-      <div id="profile-motto-limit">最大 <span id="profile-motto-max">3</span> 文字（階数に応じて変わります）</div>
-      <textarea class="profile-textarea" id="profile-motto-input" rows="2" placeholder="あなたの格言を入力..."></textarea>
+      <div id="profile-motto-limit">最大 <span id="profile-motto-max">3</span> 文字（階数に応じて最大数が増えます）</div>
+      <textarea class="profile-textarea" id="profile-motto-input" rows="2" placeholder="皆さんに伝えたい一言..."></textarea>
       <div class="profile-counter"><span id="profile-motto-counter">0</span>/<span id="profile-motto-max2">3</span></div>
       <div class="custom-label">📝 備考（苦労話・どう乗り越えたか）</div>
-      <textarea class="profile-textarea" id="profile-notes-input" rows="6" maxlength="500" placeholder="過去の苦労やどう乗り越えたかを書いてください..."></textarea>
+      <textarea class="profile-textarea" id="profile-notes-input" rows="6" maxlength="500" placeholder="過去の苦労やその時どう乗り越えたのか..."></textarea>
       <div class="profile-counter"><span id="profile-notes-counter">0</span>/500</div>
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
@@ -1153,9 +1153,12 @@
       currentUser=user;
       let displayName=usernameOverride,xName=xUsernameOverride;
       if(!displayName){
-        const{data}=await db.from('users').select('username,x_username,coin_column').eq('id',user.id).single();
-        if(data){displayName=data.username||user.email;xName=data.x_username||'';document.getElementById('coin-count').textContent=data.coin_column||0;}
+        const{data}=await db.from('users').select('username,x_username,coin_column,rank').eq('id',user.id).single();
+        if(data){displayName=data.username||user.email;xName=data.x_username||'';document.getElementById('coin-count').textContent=data.coin_column||0;currentUser.rank=data.rank||1;}
         else displayName=user.email;
+      } else {
+        const{data:rd}=await db.from('users').select('rank').eq('id',user.id).single();
+        currentUser.rank=(rd&&rd.rank)||1;
       }
       currentUser.xUsername=xName;
       document.getElementById('login-btn-header').style.display='none';
@@ -1483,6 +1486,20 @@
       mottoInput.value='';notesInput.value='';
       document.getElementById('profile-motto-counter').textContent='0';
       document.getElementById('profile-notes-counter').textContent='0';
+      const rank=(currentUser&&currentUser.rank)||1;
+      const submitBtn=document.getElementById('profile-submit-btn');
+      const noteEl=document.getElementById('profile-approval-note');
+      if(rank<2){
+        mottoInput.disabled=true;notesInput.disabled=true;
+        submitBtn.disabled=true;submitBtn.style.opacity='0.35';
+        submitBtn.textContent='🔒 Rank 2 以上で申請可能';
+        noteEl.innerHTML=`現在のRank: <b style="color:#ff6a00">${rank}</b> ／ Rank 2に上げると申請できます`;
+      } else {
+        mottoInput.disabled=false;notesInput.disabled=false;
+        submitBtn.disabled=false;submitBtn.style.opacity='1';
+        submitBtn.textContent='申請する';
+        noteEl.textContent='※ 管理者の承認後にビルに公開されます';
+      }
       document.getElementById('profile-modal').classList.add('open');
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
@@ -1560,33 +1577,17 @@
       ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);
       ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
     }
+    const MOTTO_CARD_COLORS={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
     function drawMottoTexture(entry,t){
       const{tex,text,star,fontSize,texW,texH}=entry;
+      const color=MOTTO_CARD_COLORS[star]||'#94a3b8';
       const ctx=tex.getContext();
       ctx.clearRect(0,0,texW,texH);
       drawRoundedRectPath(ctx,texW,texH,18);
-      if(star===5){
-        const grad=ctx.createLinearGradient(0,0,texW,0);
-        const offset=(t/25)%360;const stops=7;
-        for(let i=0;i<=stops;i++){const hue=(offset+(i*360/stops))%360;grad.addColorStop(i/stops,`hsl(${hue},90%,55%)`);}
-        ctx.fillStyle=grad;ctx.fill();
-        ctx.strokeStyle='#FFFFFF';ctx.lineWidth=2.5;ctx.stroke();
-        ctx.shadowColor=`hsl(${offset},100%,60%)`;ctx.shadowBlur=14;
-        ctx.fillStyle='#FFFFFF';
-      } else if(star===4){
-        const pulse=0.5+0.5*Math.sin(t/350);
-        const grad=ctx.createLinearGradient(0,0,0,texH);
-        grad.addColorStop(0,'#FFE769');grad.addColorStop(0.5,'#FFD700');grad.addColorStop(1,'#C99700');
-        ctx.fillStyle=grad;ctx.fill();
-        ctx.strokeStyle=`rgba(255,240,160,${0.5+pulse*0.5})`;ctx.lineWidth=3;ctx.stroke();
-        ctx.shadowColor=`rgba(255,215,0,${0.6+pulse*0.4})`;ctx.shadowBlur=6+pulse*12;
-        ctx.fillStyle='#000000';
-      } else {
-        ctx.fillStyle='#475569';ctx.fill();
-        ctx.strokeStyle='rgba(148,163,184,0.7)';ctx.lineWidth=3;ctx.stroke();
-        ctx.shadowColor='transparent';ctx.shadowBlur=0;
-        ctx.fillStyle='#FFFFFF';
-      }
+      ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fill();
+      ctx.strokeStyle=hexToRgba(color,0.8);ctx.lineWidth=3;ctx.stroke();
+      ctx.shadowColor=hexToRgba(color,0.85);ctx.shadowBlur=12;
+      ctx.fillStyle=color;
       ctx.font=`bold ${fontSize}px "Noto Sans JP",sans-serif`;
       ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText(text,texW/2,texH/2);
@@ -1608,7 +1609,6 @@
       const fontSize=Math.min(56,Math.floor(texW/(text.length+0.5)));
       const entry={mesh:plane,tex,text,star,fontSize,texW,texH,lastDraw:0};
       drawMottoTexture(entry,performance.now());
-      if(star>=4){animatedMottos.set(meshId,entry);ensureMottoAnimation();}
       const mat=new BABYLON.StandardMaterial('mottomat_'+x+'_'+z,scene);
       mat.diffuseTexture=tex;mat.emissiveColor=new BABYLON.Color3(1,1,1);
       mat.backFaceCulling=false;mat.disableLighting=true;
@@ -1653,10 +1653,8 @@
       const notesTextEl=document.getElementById('building-modal-notes-text');
       if(profile&&profile.motto_text){
         mottoEl.textContent='💬 '+profile.motto_text;
-        mottoEl.classList.remove('rank-legendary','rank-epic','rank-gray');
-        if(star===5)mottoEl.classList.add('rank-legendary');
-        else if(star===4)mottoEl.classList.add('rank-epic');
-        else mottoEl.classList.add('rank-gray');
+        mottoEl.classList.remove('rank-1','rank-2','rank-3','rank-4','rank-5');
+        mottoEl.classList.add('rank-'+star);
         mottoEl.style.display='block';
       } else{mottoEl.style.display='none';}
       if(profile&&profile.notes_text){notesTextEl.textContent=profile.notes_text;notesEl.style.display='block';}
@@ -1721,6 +1719,50 @@
       }
       minimapAnimId=requestAnimationFrame(drawMinimap);
     }
+    function hslToRgb(h,s,l){let r,g,b;if(s===0){r=g=b=l;}else{const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<0.5?l*(1+s):l+s-l*s;const p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return{r,g,b};}
+    const animatedBuildingMats=new Map();
+    let buildingAnimObserver=null;
+    function ensureBuildingAnimation(){
+      if(buildingAnimObserver||!scene)return;
+      buildingAnimObserver=scene.onBeforeRenderObservable.add(()=>{
+        const t=performance.now();
+        animatedBuildingMats.forEach((entry)=>{
+          const{mat,type}=entry;
+          if(type==='rainbow'){
+            const hue=((t/30)%360)/360;
+            const c=hslToRgb(hue,0.9,0.55);
+            mat.diffuseColor.r=c.r;mat.diffuseColor.g=c.g;mat.diffuseColor.b=c.b;
+            const eh=((t/30+90)%360)/360;
+            const e=hslToRgb(eh,0.95,0.3);
+            mat.emissiveColor.r=e.r;mat.emissiveColor.g=e.g;mat.emissiveColor.b=e.b;
+          } else if(type==='gold'){
+            const pulse=0.5+0.5*Math.sin(t/450);
+            mat.diffuseColor.r=1.0;mat.diffuseColor.g=0.84;mat.diffuseColor.b=0.0;
+            mat.emissiveColor.r=0.28+pulse*0.25;mat.emissiveColor.g=0.18+pulse*0.18;mat.emissiveColor.b=0;
+          }
+        });
+      });
+    }
+    function applyBuildingRankColor(mat,totalFloors,mesh){
+      mat.specularColor=new BABYLON.Color3(0.5,0.5,0.7);
+      const key=mat.uniqueId;
+      animatedBuildingMats.delete(key);
+      if(totalFloors>=48){
+        mat.diffuseColor=new BABYLON.Color3(1,0.2,0.5);
+        mat.emissiveColor=new BABYLON.Color3(0.3,0.0,0.3);
+        animatedBuildingMats.set(key,{mat,type:'rainbow'});
+        ensureBuildingAnimation();
+      } else if(totalFloors>=40){
+        mat.diffuseColor=new BABYLON.Color3(1.0,0.84,0.0);
+        mat.emissiveColor=new BABYLON.Color3(0.4,0.28,0.0);
+        animatedBuildingMats.set(key,{mat,type:'gold'});
+        ensureBuildingAnimation();
+      } else {
+        mat.diffuseColor=new BABYLON.Color3(0.6,0.65,0.72);
+        mat.emissiveColor=new BABYLON.Color3(0.05,0.05,0.07);
+      }
+      if(mesh){mesh.onDisposeObservable.add(()=>{animatedBuildingMats.delete(key);});}
+    }
     function addBuilding(x,z,baseFloors,shape='box',employees=0,fromDB=false,lKey=null){
       const totalFloors=calcTotalFloors(baseFloors,employees);
       const height=totalFloors*0.5;
@@ -1730,10 +1772,7 @@
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:d},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
-      const ci=getColorByEmployees(employees);
-      mat.diffuseColor=new BABYLON.Color3(ci.r,ci.g,ci.b);mat.specularColor=new BABYLON.Color3(0.5,0.5,0.7);
-      if(ci.name==='gold')mat.emissiveColor=new BABYLON.Color3(0.3,0.2,0.0);
-      else if(ci.name==='rainbow')mat.emissiveColor=new BABYLON.Color3(0.2,0.0,0.2);
+      applyBuildingRankColor(mat,totalFloors,mesh);
       mesh.material=mat;
       const key=lKey||landKey(x,z);
       const buildingData={x,z,baseFloors,totalFloors,shape,employees,mesh,landKey:key};

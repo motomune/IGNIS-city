@@ -444,6 +444,8 @@
     .owner-x-link { color:#1d9bf0;font-weight:800;text-decoration:none; }
     .owner-x-link:hover { text-decoration:underline; }
     /* 承認済み格言・備考 */
+    #building-sell-btn { width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:14px;transition:opacity 0.2s; }
+    #building-sell-btn:hover { opacity:0.85; }
     #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em;background:rgba(255,255,255,0.04); }
     #building-modal-motto.rank-5 { color:#ee0979;border-left:4px solid #ee0979;background:rgba(238,9,121,0.1); }
     #building-modal-motto.rank-4 { color:#f59e0b;border-left:4px solid #f59e0b;background:rgba(245,158,11,0.1); }
@@ -467,9 +469,16 @@
     <div id="header">
       <div id="logo">IGNIS CITY</div>
       <div id="stats">
-        <span data-i18n="buildings">ビル数</span>&nbsp;<span id="building-count">0</span><span data-i18n="buildings-unit">棟</span>
-        &nbsp;|&nbsp;
-        <span data-i18n="coins">コイン</span>&nbsp;<span id="coin-count" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
+        <div>
+          <span data-i18n="buildings">ビル数</span>&nbsp;<span id="building-count">0</span><span data-i18n="buildings-unit">棟</span>
+          &nbsp;|&nbsp;
+          <span data-i18n="coins">コイン</span>&nbsp;<span id="coin-count" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
+        </div>
+        <div id="emp-stats" style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;display:none;">
+          <span data-i18n="emp-total">合計従業員</span>&nbsp;<span id="emp-total-count">0</span><span data-i18n="emp-unit">人</span>
+          &nbsp;|&nbsp;
+          <span data-i18n="emp-bench">休職中</span>&nbsp;<span id="emp-bench-count">0</span><span data-i18n="emp-unit2">人</span>
+        </div>
       </div>
       <div id="user-area">
         <button id="lang-btn" onclick="toggleLang()">
@@ -522,12 +531,13 @@
       <div class="bm-stat-grid">
         <div class="bm-stat"><div class="bm-stat-label" id="bml-floors">総階数</div><div class="bm-stat-value" id="bm-floors-val">-</div></div>
         <div class="bm-stat"><div class="bm-stat-label" id="bml-emp">従業員</div><div class="bm-stat-value" id="bm-emp-val">-</div></div>
-        <div class="bm-stat"><div class="bm-stat-label" id="bml-shape">形状</div><div class="bm-stat-value" id="bm-shape-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-views">閲覧回数</div><div class="bm-stat-value" id="bm-views-val">-</div></div>
         <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
       <div id="building-modal-motto"></div>
       <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
+      <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
   </div>
   <div id="grid-legend">
@@ -561,6 +571,13 @@
       </div>
       <div id="gacha-cost-info">消費コイン：<span>50</span>コイン</div>
       <button id="gacha-spin-btn" onclick="handleGachaSpin()">🎰 ガチャを回す</button>
+      <div style="display:flex;align-items:center;gap:8px;margin:16px 0 10px;color:rgba(255,255,255,0.3);font-size:11px;font-weight:700;letter-spacing:0.12em;">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
+        <span id="gacha-or-label">OR</span>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;" id="hire-info">従業員を採用：<span>30</span>コイン → 休職中プールに +1人</div>
+      <button id="gacha-hire-btn" onclick="handleHireEmployee()" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👷 従業員を採用（30コイン）</button>
     </div>
   </div>
   <div id="gacha-overlay">
@@ -748,10 +765,10 @@
     const GACHA_COST=50;
     const OWNER_X_HANDLE='soultamash81989'; // @soultamash81989
     const DAILY_TASKS=[
-      {type:'login',    label:'ログインボーナス',      labelEn:'Login Bonus',       reward:3},
-      {type:'build',    label:'ビルを1棟建てる',       labelEn:'Build a building',  reward:5},
-      {type:'get_land', label:'土地を1区画取得する',   labelEn:'Get a land',        reward:5},
-      {type:'share',    label:'IGNISをXでシェアする',  labelEn:'Share IGNIS on X',  reward:10},
+      {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:3},
+      {type:'hire',  label:'従業員を1人採用する',         labelEn:'Hire 1 employee',             reward:5},
+      {type:'view',  label:'他のユーザーのビルを閲覧する', labelEn:'View another user\u2019s building', reward:5},
+      {type:'share', label:'IGNISをXでシェアする',        labelEn:'Share IGNIS on X',            reward:10},
     ];
     const CELL=10, GRID_HALF=100;
     const EMP_COLORS=[
@@ -793,11 +810,14 @@
     const COIN_REASONS={
       task_login:    {ja:'ログインボーナス',     en:'Login Bonus',         icon:'🌅'},
       task_build:    {ja:'デイリー：ビル建設',    en:'Daily: Build',        icon:'🏗'},
+      task_hire:     {ja:'デイリー：従業員採用',  en:'Daily: Hire',         icon:'👷'},
       task_get_land: {ja:'デイリー：土地取得',    en:'Daily: Get Land',     icon:'🏡'},
+      task_view:     {ja:'デイリー：ビル閲覧',    en:'Daily: View Building',icon:'👀'},
       task_share:    {ja:'デイリー：Xでシェア',   en:'Daily: Share on X',   icon:'🐦'},
       land_buy:      {ja:'土地購入',             en:'Land Purchase',       icon:'🏞'},
       gacha_spin:    {ja:'ガチャ',               en:'Gacha',               icon:'🎰'},
       random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
+      hire_employee: {ja:'従業員採用',           en:'Hire Employee',       icon:'👷'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
@@ -989,6 +1009,12 @@
       document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
       document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 ガチャで建て替える（50コイン）':'🔄 Rebuild with Gacha (50 coins)';
+      const empTotal=document.querySelector('[data-i18n="emp-total"]');if(empTotal)empTotal.textContent=isJa?'合計従業員':'Total Emp';
+      const empBench=document.querySelector('[data-i18n="emp-bench"]');if(empBench)empBench.textContent=isJa?'休職中':'Bench';
+      document.querySelectorAll('[data-i18n="emp-unit"],[data-i18n="emp-unit2"]').forEach(el=>el.textContent=isJa?'人':'');
+      const orLabel=document.getElementById('gacha-or-label');if(orLabel)orLabel.textContent=isJa?'または':'OR';
+      const hireBtn=document.getElementById('gacha-hire-btn');if(hireBtn)hireBtn.textContent=isJa?'👷 従業員を採用（30コイン）':'👷 Hire Employee (30 coins)';
+      const hireInfo=document.getElementById('hire-info');if(hireInfo)hireInfo.innerHTML=isJa?'従業員を採用：<span>30</span>コイン → 休職中プールに +1人':'Hire employee: <span>30</span> coins → +1 to bench pool';
       document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;});
       document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
       document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
@@ -1153,14 +1179,17 @@
       currentUser=user;
       let displayName=usernameOverride,xName=xUsernameOverride;
       if(!displayName){
-        const{data}=await db.from('users').select('username,x_username,coin_column,rank').eq('id',user.id).single();
-        if(data){displayName=data.username||user.email;xName=data.x_username||'';document.getElementById('coin-count').textContent=data.coin_column||0;currentUser.rank=data.rank||1;}
+        const{data}=await db.from('users').select('username,x_username,coin_column,rank,bench_employees').eq('id',user.id).single();
+        if(data){displayName=data.username||user.email;xName=data.x_username||'';document.getElementById('coin-count').textContent=data.coin_column||0;currentUser.rank=data.rank||1;currentUser.benchEmployees=data.bench_employees||0;}
         else displayName=user.email;
       } else {
-        const{data:rd}=await db.from('users').select('rank').eq('id',user.id).single();
+        const{data:rd}=await db.from('users').select('rank,bench_employees').eq('id',user.id).single();
         currentUser.rank=(rd&&rd.rank)||1;
+        currentUser.benchEmployees=(rd&&rd.bench_employees)||0;
       }
       currentUser.xUsername=xName;
+      document.getElementById('emp-stats').style.display='block';
+      await refreshEmployeeHeader();
       document.getElementById('login-btn-header').style.display='none';
       document.getElementById('logged-in-area').style.display='flex';
       document.getElementById('user-name').textContent=xName?`@${xName}`:displayName;
@@ -1175,6 +1204,9 @@
       document.getElementById('logged-in-area').style.display='none';
       document.getElementById('user-name').textContent='';
       document.getElementById('coin-count').textContent='0';
+      document.getElementById('emp-stats').style.display='none';
+      document.getElementById('emp-total-count').textContent='0';
+      document.getElementById('emp-bench-count').textContent='0';
       document.getElementById('task-toggle-btn').style.display='none';
       document.getElementById('task-panel').classList.remove('open');
       document.getElementById('coin-history-overlay').classList.remove('open');
@@ -1457,7 +1489,7 @@
         }
         const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${selectedShape}_gacha`,owner_id:currentUser.id,employees});
         if(error)throw error;
-        addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey);
+        addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey,0,currentUser.id);
         refreshTile(gachaState.landKey);
         await completeTask('build');
         const savedLandKey=gachaState.landKey;
@@ -1622,7 +1654,57 @@
     const SHAPE_LABELS_EN={box:'Standard',slim:'Slim',wide:'Wide',cylinder:'Cylinder'};
     const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
     function getStarByFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
+    // ========================================
+    // 従業員採用
+    // ========================================
+    async function handleHireEmployee(){
+      if(!currentUser){showToast('ログインが必要です');return;}
+      const btn=document.getElementById('gacha-hire-btn');
+      btn.disabled=true;const originalText=btn.textContent;btn.textContent='採用中...';
+      try{
+        const{data,error}=await db.rpc('hire_employee');
+        if(error)throw error;
+        const isJa=currentLang==='ja';
+        if(!data||!data.ok){
+          if(data&&data.reason==='insufficient_coins'){
+            showToast(isJa?`⚠️ コインが不足しています（${data.coins}/30）`:`⚠️ Not enough coins (${data.coins}/30)`);
+          } else {
+            showToast(isJa?'採用に失敗しました':'Hire failed');
+          }
+          return;
+        }
+        document.getElementById('coin-count').textContent=data.coins_remaining;
+        await recordCoin(-30,'hire_employee');
+        await completeTask('hire');
+        await refreshEmployeeHeader();
+        showToast(isJa?`👷 従業員を1人採用！休職中プールに加算`:`👷 Hired 1 employee! Added to bench`);
+      }catch(e){console.warn('hire error:',e.message);showToast('採用に失敗: '+e.message);}
+      finally{btn.disabled=false;btn.textContent=originalText;}
+    }
+    // ========================================
+    // 従業員ヘッダー
+    // ========================================
+    async function refreshEmployeeHeader(){
+      if(!currentUser){
+        document.getElementById('emp-stats').style.display='none';
+        return;
+      }
+      try{
+        const{data}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
+        const bench=(data&&data.bench_employees)||0;
+        currentUser.benchEmployees=bench;
+        // 自分のビルの配属従業員合計
+        let assigned=0;
+        buildings.forEach(b=>{if(b.ownerId===currentUser.id)assigned+=(b.employees||0);});
+        const total=assigned+bench;
+        document.getElementById('emp-total-count').textContent=total.toLocaleString();
+        document.getElementById('emp-bench-count').textContent=bench.toLocaleString();
+        document.getElementById('emp-stats').style.display='block';
+      }catch(e){console.warn('refresh emp header:',e.message);}
+    }
+    let currentModalBuilding=null;
     function openBuildingModal(buildingData){
+      currentModalBuilding=buildingData;
       const star=getStarByFloors(buildingData.totalFloors);
       const capsuleColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
       const starLabels={5:'★★★★★',4:'★★★★',3:'★★★',2:'★★',1:'★'};
@@ -1636,8 +1718,19 @@
       empVal.textContent=isJa?`${buildingData.employees||0}人`:`${buildingData.employees||0}`;
       empVal.className='bm-stat-value';
       if(ci.name==='rainbow')empVal.classList.add('emp-rainbow');else if(ci.name==='gold')empVal.classList.add('emp-gold');else if(ci.name==='red')empVal.classList.add('emp-red');
-      document.getElementById('bm-shape-val').textContent=isJa?(SHAPE_LABELS[buildingData.shape]||buildingData.shape):(SHAPE_LABELS_EN[buildingData.shape]||buildingData.shape||'-');
+      document.getElementById('bm-views-val').textContent=(buildingData.viewCount||0).toLocaleString();
+      document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
+      // 売却ボタン表示制御
+      const sellBtn=document.getElementById('building-sell-btn');
+      const isOwn=currentUser&&buildingData.ownerId===currentUser.id;
+      if(isOwn){
+        sellBtn.style.display='block';
+        const reward=Math.max(0,(buildingData.employees||0)+(buildingData.baseFloors||buildingData.totalFloors||0)-50);
+        sellBtn.textContent=isJa?`💰 ビルを売却（土地ごと） 報酬: ${reward}人`:`💰 Sell Building (with Land) Reward: ${reward}`;
+      } else {
+        sellBtn.style.display='none';
+      }
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const land=landMap[key];const ownerEl=document.getElementById('building-modal-owner');
       if(land){
@@ -1661,11 +1754,69 @@
       else{notesEl.style.display='none';}
       document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
       document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
-      document.getElementById('bml-shape').textContent=isJa?'形状':'Shape';
       document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
       document.getElementById('building-modal').classList.add('open');
+      recordBuildingView(buildingData);
     }
-    function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');}
+    function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
+    async function recordBuildingView(buildingData){
+      if(!currentUser||!buildingData)return;
+      if(currentUser.id===buildingData.ownerId)return;
+      try{
+        const{data,error}=await db.rpc('record_building_view',{bx:buildingData.x,bz:buildingData.z});
+        if(error)throw error;
+        if(data&&data.counted){
+          buildingData.viewCount=data.view_count;
+          document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
+          // ビル色を再評価（300/1000で変化する可能性）
+          if(buildingData.mesh&&buildingData.mesh.material){
+            applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh);
+          }
+          // 閲覧タスク進捗
+          await completeTask('view');
+          // 従業員獲得通知
+          if(data.employees_added>0){
+            const isJa=currentLang==='ja';
+            showToast(isJa?`🎉 30閲覧達成！従業員+${data.employees_added}人を獲得`:`🎉 30 views! +${data.employees_added} employee(s)`);
+          }
+          // ヘッダー表示更新
+          await refreshEmployeeHeader();
+        } else if(data&&data.view_count!==undefined){
+          document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
+        }
+      }catch(e){console.warn('view record error:',e.message);}
+    }
+    async function confirmSellBuilding(){
+      if(!currentModalBuilding||!currentUser)return;
+      const b=currentModalBuilding;
+      if(b.ownerId!==currentUser.id)return;
+      const floors=b.baseFloors||b.totalFloors||0;
+      const emp=b.employees||0;
+      const reward=Math.max(0,emp+floors-50);
+      const isJa=currentLang==='ja';
+      const msg=isJa
+        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得: ${reward}人 (内訳: 配属${emp} + 階数${floors} - 基礎50)\n\n土地と建物は失われ、休職中プールに従業員が加算されます。`
+        :`Sell this building (${floors}F, ${emp} employees)?\n\nReward: ${reward} (= assigned ${emp} + floors ${floors} - base 50)\n\nBoth land and building will be lost. Employees go to bench pool.`;
+      if(!confirm(msg))return;
+      try{
+        const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});
+        if(error)throw error;
+        if(!data||!data.ok){showToast(isJa?'売却に失敗':'Sell failed: '+(data?data.reason:'unknown'));return;}
+        // 3D mesh, motto削除
+        if(b.mesh)b.mesh.dispose();
+        const mottoMesh=scene.getMeshByName('motto_'+b.x+'_'+b.z);if(mottoMesh)mottoMesh.dispose();
+        buildings=buildings.filter(x=>!(x.x===b.x&&x.z===b.z));
+        delete buildingMap[b.landKey];
+        delete landMap[b.landKey];
+        delete approvedProfiles[b.landKey];
+        document.getElementById('building-count').textContent=buildings.length;
+        refreshTile(b.landKey);
+        drawMinimap();
+        closeBuildingModal();
+        showToast(isJa?`💰 売却完了！${data.reward}人を休職中に獲得`:`💰 Sold! +${data.reward} to bench`);
+        await refreshEmployeeHeader();
+      }catch(e){console.warn('sell error:',e.message);showToast('売却失敗: '+e.message);}
+    }
     // ========================================
     // ミニマップ
     // ========================================
@@ -1729,41 +1880,50 @@
         animatedBuildingMats.forEach((entry)=>{
           const{mat,type}=entry;
           if(type==='rainbow'){
-            const hue=((t/30)%360)/360;
-            const c=hslToRgb(hue,0.9,0.55);
+            // 速い色変化レインボー
+            const hue=((t/12)%360)/360;
+            const c=hslToRgb(hue,1.0,0.55);
             mat.diffuseColor.r=c.r;mat.diffuseColor.g=c.g;mat.diffuseColor.b=c.b;
-            const eh=((t/30+90)%360)/360;
-            const e=hslToRgb(eh,0.95,0.3);
+            const eh=((t/12+60)%360)/360;
+            const e=hslToRgb(eh,1.0,0.35);
             mat.emissiveColor.r=e.r;mat.emissiveColor.g=e.g;mat.emissiveColor.b=e.b;
           } else if(type==='gold'){
-            const pulse=0.5+0.5*Math.sin(t/450);
-            mat.diffuseColor.r=1.0;mat.diffuseColor.g=0.84;mat.diffuseColor.b=0.0;
-            mat.emissiveColor.r=0.28+pulse*0.25;mat.emissiveColor.g=0.18+pulse*0.18;mat.emissiveColor.b=0;
+            // インゴット風シマー：高速で明暗が走る金色
+            const shimmer=0.5+0.5*Math.sin(t/180);
+            const shimmer2=0.5+0.5*Math.sin(t/120+1.5);
+            mat.diffuseColor.r=0.95+shimmer*0.05;
+            mat.diffuseColor.g=0.78+shimmer*0.1;
+            mat.diffuseColor.b=0.0+shimmer2*0.15;
+            mat.emissiveColor.r=0.35+shimmer*0.5;
+            mat.emissiveColor.g=0.22+shimmer*0.35;
+            mat.emissiveColor.b=0.0+shimmer2*0.08;
           }
         });
       });
     }
-    function applyBuildingRankColor(mat,totalFloors,mesh){
-      mat.specularColor=new BABYLON.Color3(0.5,0.5,0.7);
+    function applyBuildingRankColor(mat,viewCount,mesh){
+      mat.specularColor=new BABYLON.Color3(0.6,0.6,0.75);
       const key=mat.uniqueId;
       animatedBuildingMats.delete(key);
-      if(totalFloors>=48){
+      if(viewCount>=1000){
         mat.diffuseColor=new BABYLON.Color3(1,0.2,0.5);
         mat.emissiveColor=new BABYLON.Color3(0.3,0.0,0.3);
         animatedBuildingMats.set(key,{mat,type:'rainbow'});
         ensureBuildingAnimation();
-      } else if(totalFloors>=40){
+      } else if(viewCount>=300){
         mat.diffuseColor=new BABYLON.Color3(1.0,0.84,0.0);
         mat.emissiveColor=new BABYLON.Color3(0.4,0.28,0.0);
+        mat.specularColor=new BABYLON.Color3(1,0.9,0.4);
         animatedBuildingMats.set(key,{mat,type:'gold'});
         ensureBuildingAnimation();
       } else {
+        // 全て灰色（default）
         mat.diffuseColor=new BABYLON.Color3(0.6,0.65,0.72);
         mat.emissiveColor=new BABYLON.Color3(0.05,0.05,0.07);
       }
       if(mesh){mesh.onDisposeObservable.add(()=>{animatedBuildingMats.delete(key);});}
     }
-    function addBuilding(x,z,baseFloors,shape='box',employees=0,fromDB=false,lKey=null){
+    function addBuilding(x,z,baseFloors,shape='box',employees=0,fromDB=false,lKey=null,viewCount=0,ownerId=null){
       const totalFloors=calcTotalFloors(baseFloors,employees);
       const height=totalFloors*0.5;
       const w=SHAPES[shape]?.w||5.5,d=SHAPES[shape]?.d||5.5;
@@ -1772,10 +1932,10 @@
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:d},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
-      applyBuildingRankColor(mat,totalFloors,mesh);
+      applyBuildingRankColor(mat,viewCount,mesh);
       mesh.material=mat;
       const key=lKey||landKey(x,z);
-      const buildingData={x,z,baseFloors,totalFloors,shape,employees,mesh,landKey:key};
+      const buildingData={x,z,baseFloors,totalFloors,shape,employees,mesh,landKey:key,viewCount,ownerId};
       buildings.push(buildingData);buildingMap[key]=buildingData;
       document.getElementById('building-count').textContent=buildings.length;
     }
@@ -1783,7 +1943,7 @@
       try{
         const{data,error}=await db.from('buildings').select('*');
         if(error)throw error;
-        data.forEach(b=>{let shape='box';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true);});
+        data.forEach(b=>{let shape='box';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true,null,b.view_count||0,b.owner_id||null);});
       }catch(e){
         console.warn('Supabase error:',e.message);
         [[0,0,20,'box',0],[10,5,35,'slim',30],[-8,12,15,'wide',100],[15,-10,50,'cylinder',300],[-15,-5,28,'box',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));

@@ -474,8 +474,8 @@
           &nbsp;|&nbsp;
           <span data-i18n="coins">コイン</span>&nbsp;<span id="coin-count" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
         </div>
-        <div id="emp-stats" style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;display:none;">
-          <span data-i18n="emp-total">合計従業員</span>&nbsp;<span id="emp-total-count">0</span><span data-i18n="emp-unit">人</span>
+        <div id="emp-stats" style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;display:none;" title="合計=自分の土地の配属+休職中">
+          <span data-i18n="emp-total">自分の合計</span>&nbsp;<span id="emp-total-count">0</span><span data-i18n="emp-unit">人</span>
           &nbsp;|&nbsp;
           <span data-i18n="emp-bench">休職中</span>&nbsp;<span id="emp-bench-count">0</span><span data-i18n="emp-unit2">人</span>
         </div>
@@ -1009,7 +1009,7 @@
       document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
       document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 ガチャで建て替える（50コイン）':'🔄 Rebuild with Gacha (50 coins)';
-      const empTotal=document.querySelector('[data-i18n="emp-total"]');if(empTotal)empTotal.textContent=isJa?'合計従業員':'Total Emp';
+      const empTotal=document.querySelector('[data-i18n="emp-total"]');if(empTotal)empTotal.textContent=isJa?'自分の合計':'Your Total';
       const empBench=document.querySelector('[data-i18n="emp-bench"]');if(empBench)empBench.textContent=isJa?'休職中':'Bench';
       document.querySelectorAll('[data-i18n="emp-unit"],[data-i18n="emp-unit2"]').forEach(el=>el.textContent=isJa?'人':'');
       const orLabel=document.getElementById('gacha-or-label');if(orLabel)orLabel.textContent=isJa?'または':'OR';
@@ -1689,31 +1689,41 @@
         document.getElementById('emp-stats').style.display='none';
         return;
       }
+      const isJa=currentLang==='ja';
       try{
         const{data}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
         const bench=(data&&data.bench_employees)||0;
         currentUser.benchEmployees=bench;
-        // 自分のビルの配属従業員合計
         let assigned=0;
-        buildings.forEach(b=>{if(b.ownerId===currentUser.id)assigned+=(b.employees||0);});
+        buildings.forEach(b=>{if(isOwnLandBuilding(b))assigned+=(b.employees||0);});
         const total=assigned+bench;
         document.getElementById('emp-total-count').textContent=total.toLocaleString();
         document.getElementById('emp-bench-count').textContent=bench.toLocaleString();
+        document.getElementById('emp-stats').title=isJa?'合計=自分の土地の配属+休職中。休職中=採用・売却・閲覧で貯まった未配属の人':'Total = assigned on your land + bench. Bench = unassigned pool';
         document.getElementById('emp-stats').style.display='block';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
-    function calcSellReward(floors){
+    function calcSellRewardFloors(floors){
       const f=Math.max(0,floors||0);
       if(f<=0)return 0;
       if(f<=50)return Math.round(f/10);
       if(f<=100)return Math.round(f/9.2);
       return Math.round(f/8);
     }
+    function calcSellReward(floors,assigned){
+      return calcSellRewardFloors(floors)+Math.max(0,assigned||0);
+    }
     function sellRewardLabel(floors,isJa){
       const f=Math.max(0,floors||0);
       if(f<=50)return isJa?`${f}階 ÷ 10`:`${f}F ÷ 10`;
       if(f<=100)return isJa?`${f}階 ÷ 9.2`:`${f}F ÷ 9.2`;
       return isJa?`${f}階 ÷ 8`:`${f}F ÷ 8`;
+    }
+    function isOwnLandBuilding(buildingData){
+      if(!currentUser||!buildingData)return false;
+      const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
+      const land=landMap[key];
+      return !!(land&&land.owner_id===currentUser.id);
     }
     function getBuildingOwnerId(b){
       if(!b)return null;
@@ -1743,18 +1753,20 @@
       document.getElementById('bm-views-val').textContent=(buildingData.viewCount||0).toLocaleString();
       document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
-      // 売却ボタン表示制御
+      const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
-      const isOwn=!!(currentUser&&ownerId&&ownerId===currentUser.id);
-      if(isOwn){
+      const isOwnLand=isOwnLandBuilding(buildingData);
+      if(isOwnLand){
         sellBtn.style.display='block';
+        sellBtn.hidden=false;
         const floors=buildingData.baseFloors||buildingData.totalFloors||0;
-        const reward=calcSellReward(floors);
+        const emp=buildingData.employees||0;
+        const reward=calcSellReward(floors,emp);
         sellBtn.textContent=isJa?`💰 ビルを売却（土地ごと） 報酬: ${reward}人`:`💰 Sell Building (with Land) Reward: ${reward}`;
       } else {
         sellBtn.style.display='none';
+        sellBtn.hidden=true;
       }
-      const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const land=landMap[key];const ownerEl=document.getElementById('building-modal-owner');
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
@@ -1784,11 +1796,17 @@
     function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
     async function recordBuildingView(buildingData){
       if(!currentUser||!buildingData)return;
-      const ownerId=getBuildingOwnerId(buildingData);
-      if(ownerId&&currentUser.id===ownerId)return;
+      if(isOwnLandBuilding(buildingData))return;
       try{
         const{data,error}=await db.rpc('record_building_view',{bx:buildingData.x,bz:buildingData.z});
         if(error)throw error;
+        if(!data||!data.ok){
+          if(data&&data.reason==='building_not_found'){
+            const isJa=currentLang==='ja';
+            showToast(isJa?'このビルは閲覧記録の対象外です':'This building cannot be tracked');
+          }
+          return;
+        }
         if(data&&data.counted){
           buildingData.viewCount=data.view_count;
           document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
@@ -1812,21 +1830,21 @@
             showToast(isJa?'👀 このビルは本日すでに閲覧済みです':'👀 Already viewed this building today');
           }
         }
-      }catch(e){console.warn('view record error:',e.message);}
+      }catch(e){console.warn('view record error:',e.message);showToast('閲覧記録エラー: '+e.message);}
     }
     async function confirmSellBuilding(){
       if(!currentModalBuilding||!currentUser)return;
       const b=currentModalBuilding;
-      const ownerId=getBuildingOwnerId(b);
-      if(!ownerId||ownerId!==currentUser.id)return;
+      if(!isOwnLandBuilding(b))return;
       const floors=b.baseFloors||b.totalFloors||0;
       const emp=b.employees||0;
-      const reward=calcSellReward(floors);
+      const floorReward=calcSellRewardFloors(floors);
+      const reward=calcSellReward(floors,emp);
       const isJa=currentLang==='ja';
       const formula=sellRewardLabel(floors,isJa);
       const msg=isJa
-        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得: ${reward}人（${formula}、四捨五入）\n\n土地と建物は失われ、休職中プールに従業員が加算されます。`
-        :`Sell this building (${floors}F, ${emp} assigned)?\n\nReward: ${reward} (${formula}, rounded)\n\nBoth land and building will be lost. Employees go to bench pool.`;
+        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得: ${reward}人\n（階数: ${floorReward}人 [${formula}] + 配属: ${emp}人）\n\n土地と建物は失われ、休職中プールに加算されます。`
+        :`Sell this building (${floors}F, ${emp} assigned)?\n\nReward: ${reward}\n(Floors: ${floorReward} [${formula}] + assigned: ${emp})\n\nLand and building will be lost.`;
       if(!confirm(msg))return;
       try{
         const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});
@@ -1922,8 +1940,8 @@
             mat.emissiveColor.r=e.r;mat.emissiveColor.g=e.g;mat.emissiveColor.b=e.b;
           } else if(type==='gold'){
             // インゴット風シマー：高速で明暗が走る金色
-            const shimmer=0.5+0.5*Math.sin(t/180);
-            const shimmer2=0.5+0.5*Math.sin(t/120+1.5);
+            const shimmer=0.5+0.5*Math.sin(t/420);
+            const shimmer2=0.5+0.5*Math.sin(t/300+1.5);
             mat.diffuseColor.r=0.95+shimmer*0.05;
             mat.diffuseColor.g=0.78+shimmer*0.1;
             mat.diffuseColor.b=0.0+shimmer2*0.15;

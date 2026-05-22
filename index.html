@@ -1702,9 +1702,31 @@
         document.getElementById('emp-stats').style.display='block';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
+    function calcSellReward(floors){
+      const f=Math.max(0,floors||0);
+      if(f<=0)return 0;
+      if(f<=50)return Math.round(f/10);
+      if(f<=100)return Math.round(f/9.2);
+      return Math.round(f/8);
+    }
+    function sellRewardLabel(floors,isJa){
+      const f=Math.max(0,floors||0);
+      if(f<=50)return isJa?`${f}階 ÷ 10`:`${f}F ÷ 10`;
+      if(f<=100)return isJa?`${f}階 ÷ 9.2`:`${f}F ÷ 9.2`;
+      return isJa?`${f}階 ÷ 8`:`${f}F ÷ 8`;
+    }
+    function getBuildingOwnerId(b){
+      if(!b)return null;
+      if(b.ownerId)return b.ownerId;
+      const key=b.landKey||landKey(b.x,b.z);
+      const land=landMap[key];
+      return land&&land.owner_id?land.owner_id:null;
+    }
     let currentModalBuilding=null;
     function openBuildingModal(buildingData){
       currentModalBuilding=buildingData;
+      const ownerId=getBuildingOwnerId(buildingData);
+      if(ownerId&&!buildingData.ownerId)buildingData.ownerId=ownerId;
       const star=getStarByFloors(buildingData.totalFloors);
       const capsuleColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
       const starLabels={5:'★★★★★',4:'★★★★',3:'★★★',2:'★★',1:'★'};
@@ -1723,10 +1745,11 @@
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
       // 売却ボタン表示制御
       const sellBtn=document.getElementById('building-sell-btn');
-      const isOwn=currentUser&&buildingData.ownerId===currentUser.id;
+      const isOwn=!!(currentUser&&ownerId&&ownerId===currentUser.id);
       if(isOwn){
         sellBtn.style.display='block';
-        const reward=Math.max(0,(buildingData.employees||0)+(buildingData.baseFloors||buildingData.totalFloors||0)-50);
+        const floors=buildingData.baseFloors||buildingData.totalFloors||0;
+        const reward=calcSellReward(floors);
         sellBtn.textContent=isJa?`💰 ビルを売却（土地ごと） 報酬: ${reward}人`:`💰 Sell Building (with Land) Reward: ${reward}`;
       } else {
         sellBtn.style.display='none';
@@ -1761,42 +1784,49 @@
     function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
     async function recordBuildingView(buildingData){
       if(!currentUser||!buildingData)return;
-      if(currentUser.id===buildingData.ownerId)return;
+      const ownerId=getBuildingOwnerId(buildingData);
+      if(ownerId&&currentUser.id===ownerId)return;
       try{
         const{data,error}=await db.rpc('record_building_view',{bx:buildingData.x,bz:buildingData.z});
         if(error)throw error;
         if(data&&data.counted){
           buildingData.viewCount=data.view_count;
           document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
-          // ビル色を再評価（300/1000で変化する可能性）
           if(buildingData.mesh&&buildingData.mesh.material){
             applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh);
           }
-          // 閲覧タスク進捗
           await completeTask('view');
-          // 従業員獲得通知
           if(data.employees_added>0){
             const isJa=currentLang==='ja';
             showToast(isJa?`🎉 30閲覧達成！従業員+${data.employees_added}人を獲得`:`🎉 30 views! +${data.employees_added} employee(s)`);
           }
-          // ヘッダー表示更新
+          if(data.bench_employees!==undefined){
+            currentUser.benchEmployees=data.bench_employees;
+            document.getElementById('emp-bench-count').textContent=Number(data.bench_employees).toLocaleString();
+          }
           await refreshEmployeeHeader();
         } else if(data&&data.view_count!==undefined){
           document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
+          if(data.reason==='already_today'){
+            const isJa=currentLang==='ja';
+            showToast(isJa?'👀 このビルは本日すでに閲覧済みです':'👀 Already viewed this building today');
+          }
         }
       }catch(e){console.warn('view record error:',e.message);}
     }
     async function confirmSellBuilding(){
       if(!currentModalBuilding||!currentUser)return;
       const b=currentModalBuilding;
-      if(b.ownerId!==currentUser.id)return;
+      const ownerId=getBuildingOwnerId(b);
+      if(!ownerId||ownerId!==currentUser.id)return;
       const floors=b.baseFloors||b.totalFloors||0;
       const emp=b.employees||0;
-      const reward=Math.max(0,emp+floors-50);
+      const reward=calcSellReward(floors);
       const isJa=currentLang==='ja';
+      const formula=sellRewardLabel(floors,isJa);
       const msg=isJa
-        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得: ${reward}人 (内訳: 配属${emp} + 階数${floors} - 基礎50)\n\n土地と建物は失われ、休職中プールに従業員が加算されます。`
-        :`Sell this building (${floors}F, ${emp} employees)?\n\nReward: ${reward} (= assigned ${emp} + floors ${floors} - base 50)\n\nBoth land and building will be lost. Employees go to bench pool.`;
+        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得: ${reward}人（${formula}、四捨五入）\n\n土地と建物は失われ、休職中プールに従業員が加算されます。`
+        :`Sell this building (${floors}F, ${emp} assigned)?\n\nReward: ${reward} (${formula}, rounded)\n\nBoth land and building will be lost. Employees go to bench pool.`;
       if(!confirm(msg))return;
       try{
         const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});
@@ -1813,6 +1843,9 @@
         refreshTile(b.landKey);
         drawMinimap();
         closeBuildingModal();
+        if(data.bench_employees!==undefined){
+          currentUser.benchEmployees=data.bench_employees;
+        }
         showToast(isJa?`💰 売却完了！${data.reward}人を休職中に獲得`:`💰 Sold! +${data.reward} to bench`);
         await refreshEmployeeHeader();
       }catch(e){console.warn('sell error:',e.message);showToast('売却失敗: '+e.message);}
@@ -1917,9 +1950,9 @@
         animatedBuildingMats.set(key,{mat,type:'gold'});
         ensureBuildingAnimation();
       } else {
-        // 全て灰色（default）
-        mat.diffuseColor=new BABYLON.Color3(0.6,0.65,0.72);
-        mat.emissiveColor=new BABYLON.Color3(0.05,0.05,0.07);
+        // 全て濃いグレー（default）
+        mat.diffuseColor=new BABYLON.Color3(0.32,0.35,0.40);
+        mat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
       }
       if(mesh){mesh.onDisposeObservable.add(()=>{animatedBuildingMats.delete(key);});}
     }
@@ -1936,6 +1969,7 @@
       mesh.material=mat;
       const key=lKey||landKey(x,z);
       const buildingData={x,z,baseFloors,totalFloors,shape,employees,mesh,landKey:key,viewCount,ownerId};
+      if(mesh){mesh.metadata={landKey:key,bx:x,bz:z};}
       buildings.push(buildingData);buildingMap[key]=buildingData;
       document.getElementById('building-count').textContent=buildings.length;
     }
@@ -1949,7 +1983,7 @@
         [[0,0,20,'box',0],[10,5,35,'slim',30],[-8,12,15,'wide',100],[15,-10,50,'cylinder',300],[-15,-5,28,'box',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
       }
     }
-    async function loadBuildingsAndLands(){await loadBuildings();await loadLands();await loadApprovedProfiles();drawMinimap();finishLoading();}
+    async function loadBuildingsAndLands(){await loadBuildings();await loadLands();buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});await loadApprovedProfiles();drawMinimap();finishLoading();}
     // ========================================
     // グリッドタップ
     // ========================================
@@ -1959,8 +1993,18 @@
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
       if(pick.pickedMesh.name.startsWith('b_')){
-        const hitPos=pick.pickedMesh.position;const{gx,gz}=worldToGrid(hitPos.x,hitPos.z);
-        const key=landKey(gx,gz);const bData=buildingMap[key];if(bData){openBuildingModal(bData);return;}
+        let bData=buildings.find(b=>b.mesh===pick.pickedMesh);
+        if(!bData&&pick.pickedMesh.metadata&&pick.pickedMesh.metadata.landKey){
+          bData=buildingMap[pick.pickedMesh.metadata.landKey];
+        }
+        if(!bData){
+          const md=pick.pickedMesh.metadata;
+          const bx=md&&md.bx!==undefined?md.bx:pick.pickedMesh.position.x;
+          const bz=md&&md.bz!==undefined?md.bz:pick.pickedMesh.position.z;
+          const key=landKey(Math.round(bx/CELL)*CELL,Math.round(bz/CELL)*CELL);
+          bData=buildingMap[key];
+        }
+        if(bData){openBuildingModal(bData);return;}
       }
       if(pick.pickedMesh.name==='ground'){
         const wp=pick.pickedPoint;const{gx,gz}=worldToGrid(wp.x,wp.z);

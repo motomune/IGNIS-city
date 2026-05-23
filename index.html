@@ -27,6 +27,13 @@
       padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
     }
     #lang-btn:hover { opacity: 0.85; }
+    #sound-toggle {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.85); padding: 5px 12px; border-radius: 20px;
+      font-size: 14px; cursor: pointer; line-height: 1;
+    }
+    #sound-toggle:hover { background: rgba(255,255,255,0.14); }
+    #sound-toggle.muted { opacity: 0.45; }
     #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
@@ -481,6 +488,7 @@
         </div>
       </div>
       <div id="user-area">
+        <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
         <button id="lang-btn" onclick="toggleLang()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span id="lang-label">EN</span>
@@ -760,6 +768,159 @@
     const SUPABASE_URL='https://xssjhgosxyhknonlrjrq.supabase.co';
     const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  // ========================================
+  // サウンド（BGM・UIクリック・ガチャクリック）
+  // ========================================
+  const IgnisAudio={
+    ctx:null,master:null,bgmGain:null,sfxGain:null,bgmStarted:false,muted:false,_inited:false,bgmTimer:null,
+    init(){
+      if(this._inited)return;
+      try{
+        const AC=window.AudioContext||window.webkitAudioContext;
+        if(!AC)return;
+        this.ctx=new AC();
+        this.master=this.ctx.createGain();
+        this.bgmGain=this.ctx.createGain();
+        this.sfxGain=this.ctx.createGain();
+        this.bgmGain.gain.value=0.11;
+        this.sfxGain.gain.value=0.38;
+        this.bgmGain.connect(this.master);
+        this.sfxGain.connect(this.master);
+        this.master.connect(this.ctx.destination);
+        this.muted=localStorage.getItem('ignis_mute')==='1';
+        this._inited=true;
+        this.applyMute();
+        this.updateToggleBtn();
+      }catch(e){console.warn('audio init',e);}
+    },
+    ensure(){
+      if(!this._inited)this.init();
+      if(this.ctx&&this.ctx.state==='suspended')return this.ctx.resume();
+      return Promise.resolve();
+    },
+    applyMute(){
+      if(!this.master||!this.ctx)return;
+      const v=this.muted?0:1;
+      this.master.gain.cancelScheduledValues(this.ctx.currentTime);
+      this.master.gain.setTargetAtTime(v,this.ctx.currentTime,0.08);
+    },
+    updateToggleBtn(){
+      const btn=document.getElementById('sound-toggle');
+      if(!btn)return;
+      btn.textContent=this.muted?'🔇':'🔊';
+      btn.classList.toggle('muted',this.muted);
+      btn.title=this.muted?(currentLang==='ja'?'音をオン':'Sound on'):(currentLang==='ja'?'音をオフ':'Sound off');
+    },
+    toggleMute(){
+      this.init();
+      this.muted=!this.muted;
+      localStorage.setItem('ignis_mute',this.muted?'1':'0');
+      this.applyMute();
+      this.updateToggleBtn();
+      if(!this.muted&&!this.bgmStarted)this.startBgm();
+    },
+    playClick(){
+      if(this.muted||!this.ctx)return;
+      const t=this.ctx.currentTime;
+      const o=this.ctx.createOscillator();
+      const g=this.ctx.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(720,t);
+      o.frequency.exponentialRampToValueAtTime(380,t+0.045);
+      g.gain.setValueAtTime(0.09,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.05);
+      o.connect(g);g.connect(this.sfxGain);
+      o.start(t);o.stop(t+0.055);
+    },
+    playGachaClick(){
+      if(this.muted||!this.ctx)return;
+      const t=this.ctx.currentTime;
+      const bufSize=this.ctx.sampleRate*0.03;
+      const buf=this.ctx.createBuffer(1,bufSize,this.ctx.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<bufSize;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(bufSize*0.15));
+      const noise=this.ctx.createBufferSource();
+      noise.buffer=buf;
+      const bp=this.ctx.createBiquadFilter();
+      bp.type='bandpass';bp.frequency.value=2200;bp.Q.value=1.2;
+      const ng=this.ctx.createGain();
+      ng.gain.setValueAtTime(0.14,t);
+      ng.gain.exponentialRampToValueAtTime(0.001,t+0.028);
+      noise.connect(bp);bp.connect(ng);ng.connect(this.sfxGain);
+      noise.start(t);noise.stop(t+0.03);
+      const o=this.ctx.createOscillator();
+      const g=this.ctx.createGain();
+      o.type='triangle';
+      o.frequency.setValueAtTime(1180,t);
+      o.frequency.exponentialRampToValueAtTime(520,t+0.035);
+      g.gain.setValueAtTime(0.07,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+      o.connect(g);g.connect(this.sfxGain);
+      o.start(t+0.008);o.stop(t+0.05);
+    },
+    playSuccess(){
+      if(this.muted||!this.ctx)return;
+      const t=this.ctx.currentTime;
+      [523,659,784].forEach((f,i)=>{
+        const o=this.ctx.createOscillator();
+        const g=this.ctx.createGain();
+        o.type='sine';o.frequency.value=f;
+        const st=t+i*0.07;
+        g.gain.setValueAtTime(0,t+st);
+        g.gain.linearRampToValueAtTime(0.06,st+0.02);
+        g.gain.exponentialRampToValueAtTime(0.001,st+0.35);
+        o.connect(g);g.connect(this.sfxGain);
+        o.start(st);o.stop(st+0.36);
+      });
+    },
+    _playCalmChord(){
+      if(this.muted||!this.ctx)return;
+      const chords=[[130.81,164.81,196.00],[110.00,130.81,164.81],[87.31,110.00,130.81],[98.00,123.47,146.83]];
+      if(!this._chordIdx)this._chordIdx=0;
+      const chord=chords[this._chordIdx%chords.length];
+      this._chordIdx++;
+      const t=this.ctx.currentTime;
+      const dur=7.5;
+      chord.forEach(freq=>{
+        const o=this.ctx.createOscillator();
+        const g=this.ctx.createGain();
+        const f=this.ctx.createBiquadFilter();
+        f.type='lowpass';f.frequency.value=520;f.Q.value=0.4;
+        o.type='sine';o.frequency.value=freq;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.028,t+1.8);
+        g.gain.linearRampToValueAtTime(0.022,t+dur-1.5);
+        g.gain.linearRampToValueAtTime(0,t+dur);
+        o.connect(f);f.connect(g);g.connect(this.bgmGain);
+        o.start(t);o.stop(t+dur+0.1);
+      });
+    },
+    startBgm(){
+      if(this.bgmStarted||this.muted||!this.ctx)return;
+      this.bgmStarted=true;
+      this._playCalmChord();
+      this.bgmTimer=setInterval(()=>this._playCalmChord(),6500);
+    },
+    boot(){
+      this.init();
+      if(!this.muted)this.startBgm();
+    }
+  };
+  function bootIgnisAudioOnce(){
+    IgnisAudio.boot();
+    document.removeEventListener('pointerdown',bootIgnisAudioOnce,true);
+    document.removeEventListener('keydown',bootIgnisAudioOnce,true);
+  }
+  document.addEventListener('pointerdown',bootIgnisAudioOnce,true);
+  document.addEventListener('keydown',bootIgnisAudioOnce,true);
+  document.addEventListener('click',(e)=>{
+    if(e.target.closest('#sound-toggle'))return;
+    const el=e.target.closest('button, .shape-btn, .ch-tab, .ranking-tab, .zukan-tab, #coin-count');
+    if(!el)return;
+    IgnisAudio.ensure();
+    if(el.id==='gacha-spin-btn')return;
+    IgnisAudio.playClick();
+  },true);
     let currentUser=null;
     const LAND_COST=100;
     const GACHA_COST=50;
@@ -1022,6 +1183,7 @@
       document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
       document.getElementById('task-progress-label').textContent=isJa?'今日の進捗':'Today\'s Progress';
       document.getElementById('minimap-label').textContent='MINIMAP';
+      IgnisAudio.updateToggleBtn();
     }
     // ========================================
     // デイリータスク
@@ -1389,6 +1551,8 @@
     function closeGachaModal(){document.getElementById('gacha-modal').classList.remove('open');}
     async function handleGachaSpin(){
       if(!currentUser){closeGachaModal();openAuthModal();return;}
+      await IgnisAudio.ensure();
+      IgnisAudio.playGachaClick();
       const btn=document.getElementById('gacha-spin-btn');
       const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
       const balance=ud?ud.coin_column||0:0;
@@ -1416,7 +1580,10 @@
       setTimeout(()=>{capsule.className='drop';},600);
       setTimeout(()=>{
         phase1.style.display='none';phase2.style.display='flex';
-        if(result.star>=4){flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash');}
+        if(result.star>=4){
+          flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash');
+          IgnisAudio.playSuccess();
+        }
         const top=document.getElementById('capsule-top'),bottom=document.getElementById('capsule-bottom');
         top.style.background=`linear-gradient(180deg, ${capsuleColors[result.star]}aa, ${capsuleColors[result.star]}44)`;
         bottom.style.background=`linear-gradient(0deg, ${capsuleColors[result.star]}88, ${capsuleColors[result.star]}22)`;

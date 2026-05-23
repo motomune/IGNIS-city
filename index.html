@@ -106,6 +106,10 @@
     }
     #loading-bar-wrap { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
     #loading-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #ff6a00, #ee0979); border-radius: 2px; transition: width 0.3s; }
+    #loading-status { margin-top:14px;font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.06em;max-width:280px;text-align:center;line-height:1.5; }
+    #loading-tap-hint { margin-top:10px;font-size:12px;color:#ff6a00;font-weight:700;display:none;animation:audioHintPulse 2s ease-in-out infinite; }
+    #loading.tap-ready #loading-tap-hint { display:block; }
+    #loading.tap-ready { cursor:pointer; }
     #toast {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(255,106,0,0.9); color: #fff; padding: 10px 24px;
@@ -479,9 +483,24 @@
   </style>
 </head>
 <body>
+  <script>
+    window.__ignisStatus=function(msg){
+      var el=document.getElementById('loading-status');
+      if(el)el.textContent=msg;
+      console.warn('[IGNIS BOOT]',msg);
+    };
+    window.__ignisForceStart=function(){
+      var ld=document.getElementById('loading');
+      if(ld){ld.style.opacity='0';setTimeout(function(){ld.style.display='none';},500);}
+      console.warn('[IGNIS BOOT] 手動/強制でロード画面を閉じました');
+    };
+    __ignisStatus('① HTML読込OK');
+  </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
     <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+    <div id="loading-status">② ライブラリ読込中...</div>
+    <div id="loading-tap-hint">画面をタップして開始</div>
   </div>
   <canvas id="renderCanvas"></canvas>
   <canvas id="fire-canvas"></canvas>
@@ -792,14 +811,58 @@
       <div id="auth-error"></div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
+  <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v3';
-    console.info('[IGNIS CITY] build',IGNIS_BUILD);
+    const IGNIS_BUILD='2026-05-22-v5';
+    console.warn('[IGNIS CITY] build',IGNIS_BUILD);
+    function withTimeout(promise,ms,label){
+      return Promise.race([
+        promise,
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error((label||'op')+' timeout after '+ms+'ms')),ms))
+      ]);
+    }
+    let loadingFinished=false;
+    function forceShowGame(){
+      if(loadingFinished)return;
+      loadingFinished=true;
+      if(typeof finishLoading==='function')finishLoading();
+      else __ignisForceStart();
+    }
+    setTimeout(function(){
+      var ld=document.getElementById('loading');
+      if(ld)ld.classList.add('tap-ready');
+      __ignisStatus('時間がかかっています — 画面をタップして開始');
+    },4000);
+    setTimeout(function(){
+      if(!loadingFinished){
+        __ignisStatus('強制開始します…');
+        forceShowGame();
+      }
+    },8000);
+    document.getElementById('loading').addEventListener('click',function(){forceShowGame();});
+    document.getElementById('loading').addEventListener('pointerdown',function(){forceShowGame();});
+    window.addEventListener('error',function(e){
+      console.error('[IGNIS ERROR]',e.error||e.message);
+      __ignisStatus('❌ エラー: '+(e.message||'不明'));
+      forceShowGame();
+    });
+    window.addEventListener('unhandledrejection',function(e){
+      console.error('[IGNIS REJECT]',e.reason);
+      __ignisStatus('❌ 通信エラー（タップで開始可）');
+      forceShowGame();
+    });
     const SUPABASE_URL='https://xssjhgosxyhknonlrjrq.supabase.co';
     const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
-    const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    let db=null;
+    try{
+      if(!window.supabase)throw new Error('Supabase未読込');
+      db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+      __ignisStatus('③ DB準備OK');
+    }catch(e){
+      __ignisStatus('❌ DB初期化失敗 — タップでオフライン開始');
+      console.error('[IGNIS] db init',e);
+    }
   // ========================================
   // サウンド（BGM・UIクリック・ガチャクリック）
   // ========================================
@@ -959,10 +1022,8 @@
           this.playUnlockChime();
           const hint=document.getElementById('audio-unlock-hint');
           if(hint)hint.classList.remove('show');
-          const isJa=currentLang==='ja';
-          showToast(isJa?'🔊 BGMオン':'🔊 BGM on');
         }
-      });
+      }).catch(e=>console.warn('[IGNIS] audio boot',e));
     }
   };
   function bootIgnisAudioOnce(){
@@ -1443,6 +1504,9 @@
     let loadProgress=0;
     const loadInterval=setInterval(()=>{loadProgress+=Math.random()*15;if(loadProgress>90)loadProgress=90;loadingBar.style.width=loadProgress+'%';},200);
     function finishLoading(){
+      if(loadingFinished)return;
+      loadingFinished=true;
+      __ignisStatus('④ 起動完了');
       clearInterval(loadInterval);loadingBar.style.width='100%';
       const hint=document.getElementById('audio-unlock-hint');
       if(hint&&!IgnisAudio.bgmStarted&&!IgnisAudio.muted)hint.classList.add('show');
@@ -1585,13 +1649,20 @@
       coinHistoryData=[];
       redrawAllTiles();showToast('ログアウトしました');
     }
-    async function restoreSession(){const{data:{session}}=await db.auth.getSession();if(session)await onLoginSuccess(session.user);}
+    async function restoreSession(){
+      const{data:{session}}=await db.auth.getSession();
+      if(!session)return;
+      try{await onLoginSuccess(session.user);}
+      catch(e){console.warn('[IGNIS] restoreSession onLoginSuccess',e);}
+    }
     // ========================================
     // Babylon.js
     // ========================================
     const canvas=document.getElementById('renderCanvas');
-    const engine=new BABYLON.Engine(canvas,true);
-    const scene=new BABYLON.Scene(engine);
+    if(!window.BABYLON){__ignisStatus('❌ 3Dライブラリ未読込 — タップで開始');}
+    else{__ignisStatus('④ 3Dエンジン起動中...');}
+    const engine=window.BABYLON?new BABYLON.Engine(canvas,true):{runRenderLoop:function(){},resize:function(){}};
+    const scene=window.BABYLON?new BABYLON.Scene(engine):{onPointerObservable:{add:function(){}},activeCamera:null};
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
@@ -1668,16 +1739,42 @@
     function redrawAllTiles(){Object.entries(landMap).forEach(([key,land])=>{const{gx,gz}=keyToCoord(key);land.tile=drawOwnedTile(gx,gz,key,land.owner_id);});}
     function refreshTile(key){const land=landMap[key];if(!land)return;const{gx,gz}=keyToCoord(key);land.tile=drawOwnedTile(gx,gz,key,land.owner_id);}
     async function loadLands(){
+      if(!db)return;
       try{
-        const{data,error}=await db.from('lands').select('grid_x,grid_z,owner_id,users(username,x_username)');
+        let data=null,error=null;
+        ({data,error}=await withTimeout(
+          db.from('lands').select('grid_x,grid_z,owner_id,users(username,x_username)'),
+          8000,'loadLands'
+        ));
         if(error)throw error;
-        data.forEach(l=>{
+        const ownerIds=[...new Set((data||[]).map(l=>l.owner_id).filter(Boolean))];
+        const userMap={};
+        if(ownerIds.length){
+          try{
+            const{data:users}=await withTimeout(
+              db.from('users').select('id,username,x_username').in('id',ownerIds),
+              5000,'loadLandUsers'
+            );
+            (users||[]).forEach(u=>{userMap[u.id]=u;});
+          }catch(e){console.warn('[IGNIS] land users fallback',e.message);}
+        }
+        (data||[]).forEach(l=>{
           const k=landKey(l.grid_x,l.grid_z);
-          const u=l.users;
+          const u=l.users||userMap[l.owner_id];
           landMap[k]={owner_id:l.owner_id,owner_display:u&&u.x_username?`@${u.x_username}`:u&&u.username?u.username:'?',tile:null};
         });
         redrawAllTiles();
-      }catch(e){console.warn('land load error:',e.message);}
+      }catch(e){
+        console.warn('land load error:',e.message);
+        try{
+          const{data:fallback}=await withTimeout(db.from('lands').select('grid_x,grid_z,owner_id'),5000,'loadLandsBasic');
+          (fallback||[]).forEach(l=>{
+            const k=landKey(l.grid_x,l.grid_z);
+            landMap[k]={owner_id:l.owner_id,owner_display:'?',tile:null};
+          });
+          redrawAllTiles();
+        }catch(e2){console.warn('[IGNIS] loadLands basic failed',e2.message);}
+      }
     }
     function openLandPanel(gx,gz){
       selectedLandKey=landKey(gx,gz);
@@ -1961,6 +2058,7 @@
     // 承認済みプロフィールのキャッシュ
     let approvedProfiles={};
     async function loadApprovedProfiles(){
+      if(!db)return;
       try{
         const{data,error}=await db.from('building_profiles').select('building_x,building_z,motto_text,notes_text').eq('status','approved');
         if(error)throw error;
@@ -2385,8 +2483,9 @@
       document.getElementById('building-count').textContent=buildings.length;
     }
     async function loadBuildings(){
+      if(!db){console.warn('[IGNIS] no db — demo buildings');[[0,0,20,'box',0],[10,5,35,'slim',30]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));return;}
       try{
-        const{data,error}=await db.from('buildings').select('*');
+        const{data,error}=await withTimeout(db.from('buildings').select('*'),8000,'buildings');
         if(error)throw error;
         data.forEach(b=>{let shape='box';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true,null,b.view_count||0,b.owner_id||null);});
       }catch(e){
@@ -2394,7 +2493,15 @@
         [[0,0,20,'box',0],[10,5,35,'slim',30],[-8,12,15,'wide',100],[15,-10,50,'cylinder',300],[-15,-5,28,'box',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
       }
     }
-    async function loadBuildingsAndLands(){await loadBuildings();await loadLands();buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});await loadApprovedProfiles();drawMinimap();finishLoading();}
+    async function loadBuildingsAndLands(){
+      try{
+        await withTimeout(loadBuildings(),8000,'loadBuildings');
+        await loadLands();
+        buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
+        try{await withTimeout(loadApprovedProfiles(),5000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
+        drawMinimap();
+      }finally{finishLoading();}
+    }
     // ========================================
     // グリッドタップ
     // ========================================
@@ -2495,4 +2602,82 @@
         const section=document.createElement('div');section.className='zukan-rarity-section';
         const countLabel=isJa?myBuildings.length+'棟':myBuildings.length+'';
         const countClass=myBuildings.length>0?'zukan-rarity-count has-count':'zukan-rarity-count';
-        section.innerHTML=`<div class="zukan-rarity-header"><span class="zukan-rar
+        section.innerHTML=`<div class="zukan-rarity-header"><span class="zukan-rarity-stars" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</span><span class="zukan-rarity-label">${rarityNames[star]}</span><span class="${countClass}">${countLabel}</span></div><div class="zukan-rarity-buildings" id="zukan-rarity-${star}"></div>`;
+        container.appendChild(section);
+        const buildingsEl=section.querySelector(`#zukan-rarity-${star}`);
+        if(myBuildings.length===0){buildingsEl.innerHTML=`<span class="zukan-empty-rarity">${isJa?'未所有':'Not owned'}</span>`;}
+        else{myBuildings.forEach(b=>{const mini=document.createElement('div');mini.className='zukan-mini-card';mini.innerHTML=`${BUILDING_ICONS[star]} ${b.floors}F`;mini.style.cursor='pointer';mini.title=`X:${b.x} Z:${b.z}`;mini.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;});buildingsEl.appendChild(mini);});}
+      });
+    }
+    // ========================================
+    // ランキング
+    // ========================================
+    let rankingTab='emp',rankingCache={emp:null,buildings:null};
+    async function openRanking(){document.getElementById('ranking-overlay').classList.add('open');await loadRanking();}
+    function closeRanking(){document.getElementById('ranking-overlay').classList.remove('open');}
+    function switchRankingTab(tab){
+      rankingTab=tab;
+      document.getElementById('rtab-emp').classList.toggle('active',tab==='emp');
+      document.getElementById('rtab-buildings').classList.toggle('active',tab==='buildings');
+      document.getElementById('ranking-emp-list').style.display=tab==='emp'?'block':'none';
+      document.getElementById('ranking-buildings-list').style.display=tab==='buildings'?'block':'none';
+    }
+    async function loadRanking(){
+      const loadingEl=document.getElementById('ranking-loading-msg');loadingEl.classList.add('show');
+      document.getElementById('ranking-emp-list').innerHTML='';document.getElementById('ranking-buildings-list').innerHTML='';
+      try{
+        const{data,error}=await db.from('buildings').select('owner_id,floors,employees,users(username,x_username)');
+        if(error)throw error;
+        const userMap={};
+        data.forEach(b=>{
+          const uid=b.owner_id;if(!uid)return;
+          if(!userMap[uid]){const u=b.users;userMap[uid]={uid,username:u?.username||'?',x_username:u?.x_username||'',totalEmp:0,buildingCount:0};}
+          userMap[uid].totalEmp+=(b.employees||0);userMap[uid].buildingCount+=1;
+        });
+        const users=Object.values(userMap);
+        const empRanking=[...users].sort((a,b)=>b.totalEmp-a.totalEmp).slice(0,50);
+        const buildingsRanking=[...users].sort((a,b)=>b.buildingCount-a.buildingCount).slice(0,50);
+        rankingCache.emp=empRanking;rankingCache.buildings=buildingsRanking;
+        renderRankingList('ranking-emp-list',empRanking,'emp');
+        renderRankingList('ranking-buildings-list',buildingsRanking,'buildings');
+      }catch(e){
+        console.warn('ranking load error:',e.message);
+        document.getElementById('ranking-emp-list').innerHTML='<div class="ranking-empty">読み込みに失敗しました</div>';
+      }finally{loadingEl.classList.remove('show');}
+    }
+    function renderRankingList(containerId,rankData,type){
+      const container=document.getElementById(containerId);
+      if(!rankData||rankData.length===0){container.innerHTML='<div class="ranking-empty">🏗 まだデータがありません</div>';return;}
+      const medals=['🥇','🥈','🥉'];const isJa=currentLang==='ja';
+      const now=new Date().toLocaleTimeString(isJa?'ja-JP':'en-US',{hour:'2-digit',minute:'2-digit'});
+      let html='';
+      rankData.forEach((u,i)=>{
+        const rank=i+1;const isMe=currentUser&&u.uid===currentUser.id;
+        const topClass=rank<=3?`top${rank}`:'';const meClass=isMe?' me':'';
+        const badgeHtml=rank<=3?`<div class="rank-medal">${medals[rank-1]}</div>`:`<div class="rank-badge" style="color:rgba(255,255,255,0.35);">${rank}</div>`;
+        const displayName=u.x_username?`<span class="x-handle">@${u.x_username}</span>`:u.username;
+        let value,unit,subText;
+        if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`🏢 ${u.buildingCount}棟`:`🏢 ${u.buildingCount} bldgs`;}
+        else{value=u.buildingCount;unit=isJa?'棟':'bldgs';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人`:`👥 ${u.totalEmp.toLocaleString()} emp`;}
+        let valueColor='#fff';
+        if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}
+        else{if(rank===1)valueColor='#f59e0b';else if(rank===2)valueColor='#94a3b8';else if(rank===3)valueColor='#b4783c';}
+        const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
+        html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="ranking-username">${displayName}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
+      });
+      html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}</div>`;
+      container.innerHTML=html;
+    }
+    engine.runRenderLoop(()=>scene.render());
+    window.addEventListener('resize',()=>engine.resize());
+    applyGameI18n();
+    switchTab('login');
+    __ignisStatus('⑤ データ読込中...');
+    (async()=>{
+      try{await loadBuildingsAndLands();}
+      catch(e){console.warn('[IGNIS] bootstrap load',e);__ignisStatus('データ読込失敗 — 街だけ表示');finishLoading();}
+      if(db)withTimeout(restoreSession(),8000,'restoreSession').catch(e=>console.warn('[IGNIS]',e.message));
+    })();
+  </script>
+</body>
+</html>

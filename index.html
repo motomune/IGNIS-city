@@ -181,8 +181,14 @@
     @keyframes resultFadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
     #gacha-result-rank { font-size:28px;font-weight:900;letter-spacing:0.1em;margin-bottom:6px; }
     #gacha-result-floors { font-size:16px;color:rgba(255,255,255,0.7);font-weight:700;margin-bottom:20px; }
-    #gacha-result-close { background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;padding:12px 40px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer; }
-    #gacha-result-close:hover { opacity: 0.85; }
+    #gacha-result-actions { display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;margin:0 auto; }
+    #gacha-result-build { background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;padding:12px 24px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;width:100%; }
+    #gacha-result-build:hover { opacity: 0.85; }
+    #gacha-result-city { background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:11px 24px;border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;width:100%; }
+    #gacha-result-city:hover { background:rgba(255,255,255,0.14);color:#fff; }
+    #audio-unlock-hint { display:none;position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(10,10,20,0.92);border:1px solid rgba(255,106,0,0.5);color:#fff;padding:10px 18px;border-radius:24px;font-size:12px;font-weight:700;z-index:15;pointer-events:none;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
+    #audio-unlock-hint.show { display:block;animation:audioHintPulse 2s ease-in-out infinite; }
+    @keyframes audioHintPulse { 0%,100%{opacity:0.7;} 50%{opacity:1;} }
     #gacha-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:160;align-items:center;justify-content:center; }
     #gacha-modal.open { display: flex; }
     #gacha-box { background:#0a0a14;border:1px solid rgba(168,85,247,0.5);border-radius:24px;padding:28px 28px 24px;width:360px;max-width:94vw;position:relative;box-shadow:0 0 60px rgba(168,85,247,0.2),0 20px 60px rgba(0,0,0,0.8);text-align:center; }
@@ -622,7 +628,10 @@
       <div id="gacha-result-text">
         <div id="gacha-result-rank"></div>
         <div id="gacha-result-floors"></div>
-        <button id="gacha-result-close" onclick="onGachaResultClose()">建設する →</button>
+        <div id="gacha-result-actions">
+          <button id="gacha-result-build" onclick="onGachaResultClose()">建設する →</button>
+          <button id="gacha-result-city" type="button" onclick="onGachaResultBackToCity()">🏙 街に戻る</button>
+        </div>
       </div>
     </div>
   </div>
@@ -725,6 +734,7 @@
     </div>
   </div>
   <div id="toast"></div>
+  <div id="audio-unlock-hint">🔊 画面をタップしてBGMをオン</div>
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" onclick="closeAuthModal()">×</button>
@@ -740,14 +750,15 @@
         <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">新規登録</div>
       </div>
       <div id="x-username-field">
+        <div class="custom-label" id="x-username-label" style="margin-bottom:6px;font-size:11px;color:rgba(255,255,255,0.5);">X（Twitter）アカウント名 <span style="color:#ff6a00;">*</span></div>
         <div class="auth-input-prefix">
           <span class="auth-prefix-at">@</span>
-          <input id="input-x-username" type="text" placeholder="XのユーザーID" autocomplete="off">
+          <input id="input-x-username" type="text" data-placeholder-ja="ユーザーID（例: soultamash81989）" data-placeholder-en="Username (e.g. soultamash81989)" placeholder="ユーザーID（例: soultamash81989）" autocomplete="off">
         </div>
       </div>
-      <div id="username-field">
+      <div id="username-field" style="display:none;">
         <div class="auth-input-wrap">
-          <input class="auth-input" id="input-username" type="text" data-placeholder-ja="表示名（ニックネーム）" data-placeholder-en="Display name" placeholder="表示名（ニックネーム）" autocomplete="off">
+          <input class="auth-input" id="input-username" type="text" data-placeholder-ja="表示名（任意）" data-placeholder-en="Display name (optional)" placeholder="表示名（任意）" autocomplete="off">
         </div>
       </div>
       <div class="auth-input-wrap"><input class="auth-input" id="input-email" type="email" data-placeholder-ja="メールアドレス" data-placeholder-en="Email address" placeholder="メールアドレス" autocomplete="email"></div>
@@ -782,8 +793,8 @@
         this.master=this.ctx.createGain();
         this.bgmGain=this.ctx.createGain();
         this.sfxGain=this.ctx.createGain();
-        this.bgmGain.gain.value=0.11;
-        this.sfxGain.gain.value=0.38;
+        this.bgmGain.gain.value=0.2;
+        this.sfxGain.gain.value=0.42;
         this.bgmGain.connect(this.master);
         this.sfxGain.connect(this.master);
         this.master.connect(this.ctx.destination);
@@ -817,7 +828,11 @@
       localStorage.setItem('ignis_mute',this.muted?'1':'0');
       this.applyMute();
       this.updateToggleBtn();
-      if(!this.muted&&!this.bgmStarted)this.startBgm();
+      if(!this.muted){
+        if(!this.bgmStarted)this.startBgm();
+        const hint=document.getElementById('audio-unlock-hint');
+        if(hint)hint.classList.remove('show');
+      }
     },
     playClick(){
       if(this.muted||!this.ctx)return;
@@ -903,16 +918,22 @@
     },
     boot(){
       this.init();
-      if(!this.muted)this.startBgm();
+      if(!this.muted){
+        this.startBgm();
+        const hint=document.getElementById('audio-unlock-hint');
+        if(hint)hint.classList.remove('show');
+      }
     }
   };
   function bootIgnisAudioOnce(){
     IgnisAudio.boot();
     document.removeEventListener('pointerdown',bootIgnisAudioOnce,true);
     document.removeEventListener('keydown',bootIgnisAudioOnce,true);
+    document.removeEventListener('click',bootIgnisAudioOnce,true);
   }
   document.addEventListener('pointerdown',bootIgnisAudioOnce,true);
   document.addEventListener('keydown',bootIgnisAudioOnce,true);
+  document.addEventListener('click',bootIgnisAudioOnce,true);
   document.addEventListener('click',(e)=>{
     if(e.target.closest('#sound-toggle'))return;
     const el=e.target.closest('button, .shape-btn, .ch-tab, .ranking-tab, .zukan-tab, #coin-count');
@@ -928,7 +949,7 @@
     const DAILY_TASKS=[
       {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:3},
       {type:'hire',  label:'従業員を1人採用する',         labelEn:'Hire 1 employee',             reward:5},
-      {type:'view',  label:'他のユーザーのビルを閲覧する', labelEn:'View another user\u2019s building', reward:5},
+      {type:'view',  label:'他のビルを20棟閲覧', labelEn:'View 20 other buildings', reward:5, goal:20},
       {type:'share', label:'IGNISをXでシェアする',        labelEn:'Share IGNIS on X',            reward:10},
     ];
     const CELL=10, GRID_HALF=100;
@@ -1184,6 +1205,73 @@
       document.getElementById('task-progress-label').textContent=isJa?'今日の進捗':'Today\'s Progress';
       document.getElementById('minimap-label').textContent='MINIMAP';
       IgnisAudio.updateToggleBtn();
+      const audioHint=document.getElementById('audio-unlock-hint');
+      if(audioHint)audioHint.textContent=isJa?'🔊 画面をタップしてBGMをオン':'🔊 Tap anywhere to enable BGM';
+      applyGameI18n();
+      if(gachaState.result){
+        document.getElementById('build-modal-info').textContent=`${getStarLabel(gachaState.result.star)}　${gachaState.result.floors}${isJa?'階建て':`F`}`;
+      }
+      updateViewTaskProgressLabel();
+    }
+    const STAR_LABELS_GACHA={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
+    const STAR_LABELS_GACHA_EN={5:'★★★★★ Legendary',4:'★★★★ Epic',3:'★★ Rare',2:'★★ Uncommon',1:'★ Common'};
+    function getStarLabel(star){return currentLang==='ja'?STAR_LABELS_GACHA[star]:STAR_LABELS_GACHA_EN[star];}
+    function applyGameI18n(){
+      const isJa=currentLang==='ja';
+      const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=isJa?ja:en;};
+      set('gacha-title','🎰 ビルガチャ','🎰 Building Gacha');
+      const costEl=document.getElementById('gacha-cost-info');
+      if(costEl)costEl.innerHTML=isJa?`消費コイン：<span>${GACHA_COST}</span>コイン`:`Cost: <span>${GACHA_COST}</span> coins`;
+      const warnEl=document.getElementById('gacha-no-land-warning');
+      if(warnEl)warnEl.innerHTML=isJa?'⚠️ 土地が選択されていません。<br>ガチャ後に建設先の土地をタップしてください。':'⚠️ No land selected.<br>Tap your land after gacha to build.';
+      set('gacha-spin-btn','🎰 ガチャを回す','🎰 Spin Gacha');
+      set('gacha-or-label','または','OR');
+      const hireInfo=document.getElementById('hire-info');
+      if(hireInfo)hireInfo.innerHTML=isJa?'従業員を採用：<span>30</span>コイン → 休職中プールに +1人':'Hire: <span>30</span> coins → +1 to bench';
+      set('gacha-hire-btn','👷 従業員を採用（30コイン）','👷 Hire Employee (30 coins)');
+      set('gacha-result-build',isJa?'建設する →':'Build →');
+      set('gacha-result-city',isJa?'🏙 街に戻る':'🏙 Back to City');
+      set('build-modal-title',isJa?'🏗 形状を選ぶ':'🏗 Choose Shape');
+      set('build-confirm-btn',isJa?'🏢 建設する':'🏢 Build');
+      document.querySelectorAll('.shape-btn').forEach(btn=>{
+        const shape=btn.dataset.shape;
+        const names={box:['スタンダード','Standard'],slim:['スリム','Slim'],wide:['ワイド','Wide'],cylinder:['円柱','Cylinder']};
+        const sn=btn.querySelector('.shape-name');
+        if(sn&&names[shape])sn.textContent=isJa?names[shape][0]:names[shape][1];
+      });
+      const xLabel=document.getElementById('x-username-label');
+      if(xLabel)xLabel.innerHTML=isJa?'X（Twitter）アカウント名 <span style="color:#ff6a00;">*</span>':'X (Twitter) username <span style="color:#ff6a00;">*</span>';
+      const xInput=document.getElementById('input-x-username');
+      if(xInput)xInput.placeholder=isJa?xInput.dataset.placeholderJa:xInput.dataset.placeholderEn;
+      ['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>{
+        const el=document.getElementById(id);
+        if(!el)return;
+        const spans=[['8文字以上','8+ characters'],['大文字（A-Z）','Uppercase (A-Z)'],['小文字（a-z）','Lowercase (a-z)'],['数字（0-9）','Number (0-9)']];
+        const sp=el.querySelector('span');
+        if(sp)sp.textContent=isJa?spans[i][0]:spans[i][1];
+      });
+    }
+    async function getTodayUniqueViewCount(){
+      if(!currentUser)return 0;
+      const today=new Date().toISOString().slice(0,10);
+      const{data}=await db.from('building_views').select('building_x,building_z').eq('viewer_id',currentUser.id).eq('viewed_date',today);
+      return data?data.length:0;
+    }
+    async function updateViewTaskProgressLabel(){
+      const task=DAILY_TASKS.find(t=>t.type==='view');
+      const row=document.getElementById('task-row-view');
+      if(!task||!row)return;
+      const n=await getTodayUniqueViewCount();
+      const isJa=currentLang==='ja';
+      const base=isJa?task.label:task.labelEn;
+      const labelEl=row.querySelector('.task-label');
+      if(labelEl&&!row.classList.contains('task-done'))labelEl.textContent=`${base} (${n}/${task.goal})`;
+    }
+    async function checkViewTaskProgress(){
+      await updateViewTaskProgressLabel();
+      const task=DAILY_TASKS.find(t=>t.type==='view');
+      const n=await getTodayUniqueViewCount();
+      if(task&&n>=task.goal)await completeTask('view');
     }
     // ========================================
     // デイリータスク
@@ -1199,6 +1287,7 @@
       }
       renderTaskUI();
       await refreshTaskUI();
+      await updateViewTaskProgressLabel();
       document.getElementById('task-toggle-btn').style.display='block';
     }
     async function completeTask(taskType){
@@ -1257,6 +1346,7 @@
       bar.style.width=pct+'%';
       document.getElementById('task-progress-pct').textContent=pct+'%';
       bar.classList.toggle('complete',pct===100);
+      await updateViewTaskProgressLabel();
     }
     function toggleTaskPanel(){document.getElementById('task-panel').classList.toggle('open');}
     // ========================================
@@ -1277,7 +1367,16 @@
     const loadingBar=document.getElementById('loading-bar'),loadingEl=document.getElementById('loading');
     let loadProgress=0;
     const loadInterval=setInterval(()=>{loadProgress+=Math.random()*15;if(loadProgress>90)loadProgress=90;loadingBar.style.width=loadProgress+'%';},200);
-    function finishLoading(){clearInterval(loadInterval);loadingBar.style.width='100%';setTimeout(()=>{loadingEl.style.opacity='0';setTimeout(()=>loadingEl.style.display='none',800);},400);}
+    function finishLoading(){
+      clearInterval(loadInterval);loadingBar.style.width='100%';
+      const hint=document.getElementById('audio-unlock-hint');
+      if(hint&&!IgnisAudio.bgmStarted&&!IgnisAudio.muted)hint.classList.add('show');
+      const unlockOnLoad=()=>{IgnisAudio.boot();};
+      loadingEl.style.cursor='pointer';
+      loadingEl.addEventListener('click',unlockOnLoad,{once:true});
+      loadingEl.addEventListener('pointerdown',unlockOnLoad,{once:true});
+      setTimeout(()=>{loadingEl.style.opacity='0';setTimeout(()=>{loadingEl.style.display='none';loadingEl.style.cursor='default';},800);},400);
+    }
     function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2800);}
     // ========================================
     // 認証
@@ -1289,10 +1388,10 @@
       authMode=mode;
       document.getElementById('tab-login').classList.toggle('active',mode==='login');
       document.getElementById('tab-signup').classList.toggle('active',mode==='signup');
-      document.getElementById('username-field').style.display=mode==='signup'?'block':'none';
       document.getElementById('x-username-field').style.display=mode==='signup'?'block':'none';
       document.getElementById('pw-checks').classList.toggle('visible',mode==='signup');
-      document.getElementById('auth-submit').textContent=mode==='login'?'ログイン':'登録する';
+      const isJa=currentLang==='ja';
+      document.getElementById('auth-submit').textContent=mode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Sign Up');
       document.getElementById('auth-error').textContent='';
       startBlinking();
     }
@@ -1315,8 +1414,10 @@
       const btn=document.getElementById('auth-submit'),errEl=document.getElementById('auth-error');
       errEl.textContent='';errEl.style.color='#ff4444';
       if(!email||!password){errEl.textContent='メールアドレスとパスワードを入力してください';return;}
-      if(authMode==='signup'&&!username){errEl.textContent='表示名を入力してください';return;}
-      if(authMode==='signup'&&!xUsername){errEl.textContent='XのユーザーIDを入力してください';return;}
+      if(authMode==='signup'&&!xUsername){
+        errEl.textContent=currentLang==='ja'?'Xアカウント名を入力してください':'Please enter your X username';
+        return;
+      }
       if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent='パスワードの条件を全て満たしてください';return;}
       btn.disabled=true;btn.textContent='処理中...';
       try{
@@ -1328,22 +1429,28 @@
           const{data,error}=await db.auth.signUp({email,password});
           if(error)throw error;
           if(data.user){
-            await db.from('users').upsert({id:data.user.id,username,x_username:xUsername,rank:1,coin_column:0});
-            await onLoginSuccess(data.user,username,xUsername);closeAuthModal();
-            showToast('🎉 登録完了！IGNIS CITYへようこそ！');
+            const displayUsername=username||xUsername;
+            await db.from('users').upsert({id:data.user.id,username:displayUsername,x_username:xUsername,rank:1,coin_column:0});
+            await onLoginSuccess(data.user,displayUsername,xUsername);closeAuthModal();
+            showToast(currentLang==='ja'?'🎉 登録完了！IGNIS CITYへようこそ！':'🎉 Welcome to IGNIS CITY!');
           }else{errEl.style.color='#4caf50';errEl.textContent='確認メールを送信しました。';}
         }
       }catch(e){errEl.style.color='#ff4444';errEl.textContent=translateError(e.message);}
-      finally{btn.disabled=false;btn.textContent=authMode==='login'?'ログイン':'登録する';}
+      finally{btn.disabled=false;btn.textContent=authMode==='login'?(currentLang==='ja'?'ログイン':'Login'):(currentLang==='ja'?'登録する':'Sign Up');}
     }
     function translateError(msg){if(msg.includes('Invalid login credentials'))return'メールアドレスまたはパスワードが違います';if(msg.includes('Email not confirmed'))return'メールアドレスの確認が完了していません';if(msg.includes('already registered'))return'このメールアドレスはすでに登録されています';return msg;}
     async function onLoginSuccess(user,usernameOverride=null,xUsernameOverride=null){
       currentUser=user;
-      let displayName=usernameOverride,xName=xUsernameOverride;
+      let displayName=usernameOverride,xName=xUsernameOverride||'';
       if(!displayName){
         const{data}=await db.from('users').select('username,x_username,coin_column,rank,bench_employees').eq('id',user.id).single();
-        if(data){displayName=data.username||user.email;xName=data.x_username||'';document.getElementById('coin-count').textContent=data.coin_column||0;currentUser.rank=data.rank||1;currentUser.benchEmployees=data.bench_employees||0;}
-        else displayName=user.email;
+        if(data){
+          xName=data.x_username||'';
+          displayName=xName||data.username||user.email;
+          document.getElementById('coin-count').textContent=data.coin_column||0;
+          currentUser.rank=data.rank||1;
+          currentUser.benchEmployees=data.bench_employees||0;
+        } else displayName=user.email;
       } else {
         const{data:rd}=await db.from('users').select('rank,bench_employees').eq('id',user.id).single();
         currentUser.rank=(rd&&rd.rank)||1;
@@ -1354,11 +1461,12 @@
       await refreshEmployeeHeader();
       document.getElementById('login-btn-header').style.display='none';
       document.getElementById('logged-in-area').style.display='flex';
-      document.getElementById('user-name').textContent=xName?`@${xName}`:displayName;
+      document.getElementById('user-name').textContent=xName?`@${xName}`:(currentLang==='ja'?'X未登録':'X not set');
       redrawAllTiles();
       await initDailyTasks();
       await completeTask('login');
-      showToast(`👋 おかえり、${xName?'@'+xName:displayName}！`);
+      const isJa=currentLang==='ja';
+      showToast(xName?(isJa?`👋 おかえり、@${xName}！`:`👋 Welcome back, @${xName}!`):(isJa?'👋 おかえり！':'👋 Welcome back!'));
     }
     async function handleLogout(){
       await db.auth.signOut();currentUser=null;
@@ -1542,10 +1650,12 @@
     let gachaState={result:null,isRebuild:false,landKey:null};
     function openGachaModal(isRebuild=false){
       gachaState.isRebuild=isRebuild;gachaState.landKey=selectedLandKey;
+      const isJa=currentLang==='ja';
       const noLandWarning=document.getElementById('gacha-no-land-warning');
       const infoEl=document.getElementById('gacha-land-info');
-      if(selectedLandKey){const{gx,gz}=keyToCoord(selectedLandKey);infoEl.textContent=`対象：X:${gx} / Z:${gz}`;noLandWarning.classList.remove('show');}
+      if(selectedLandKey){const{gx,gz}=keyToCoord(selectedLandKey);infoEl.textContent=isJa?`対象：X:${gx} / Z:${gz}`:`Target: X:${gx} / Z:${gz}`;noLandWarning.classList.remove('show');}
       else{infoEl.textContent='';noLandWarning.classList.add('show');}
+      applyGameI18n();
       closeLandPanel();document.getElementById('gacha-modal').classList.add('open');
     }
     function closeGachaModal(){document.getElementById('gacha-modal').classList.remove('open');}
@@ -1556,17 +1666,19 @@
       const btn=document.getElementById('gacha-spin-btn');
       const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
       const balance=ud?ud.coin_column||0:0;
-      if(balance<GACHA_COST){showToast(`コインが足りません（必要：${GACHA_COST}）`);return;}
-      btn.disabled=true;btn.textContent='抽選中...';
+      const isJa=currentLang==='ja';
+      if(balance<GACHA_COST){showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);return;}
+      btn.disabled=true;btn.textContent=isJa?'抽選中...':'Spinning...';
       const newCoins=balance-GACHA_COST;
       await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
       document.getElementById('coin-count').textContent=newCoins;
       await recordCoin(-GACHA_COST,'gacha_spin');
       const result=rollGacha();gachaState.result=result;
       closeGachaModal();playGachaAnimation(result);
-      btn.disabled=false;btn.textContent='🎰 ガチャを回す';
+      btn.disabled=false;btn.textContent=currentLang==='ja'?'🎰 ガチャを回す':'🎰 Spin Gacha';
     }
     function playGachaAnimation(result){
+      const isJa=currentLang==='ja';
       const overlay=document.getElementById('gacha-overlay');
       const phase1=document.getElementById('gacha-phase1'),phase2=document.getElementById('gacha-phase2');
       const capsule=document.getElementById('gacha-capsule'),flash=document.getElementById('gacha-flash');
@@ -1595,8 +1707,9 @@
         setTimeout(()=>bEl.classList.add('appear'),200);
         setTimeout(()=>{
           const rankEl=document.getElementById('gacha-result-rank');
-          rankEl.textContent=result.label;rankEl.style.color=capsuleColors[result.star];
-          document.getElementById('gacha-result-floors').textContent=`${result.floors}階建てのビルをGET！`;
+          rankEl.textContent=getStarLabel(result.star);rankEl.style.color=capsuleColors[result.star];
+          document.getElementById('gacha-result-floors').textContent=isJa?`${result.floors}階建てのビルをGET！`:`You got a ${result.floors}-floor building!`;
+          applyGameI18n();
           document.getElementById('gacha-result-text').classList.add('show');
         },700);
       },2200);
@@ -1613,6 +1726,10 @@
       }
     }
     function onGachaResultClose(){document.getElementById('gacha-overlay').classList.remove('show');openBuildModal();}
+    function onGachaResultBackToCity(){
+      document.getElementById('gacha-overlay').classList.remove('show');
+      gachaState={result:null,isRebuild:false,landKey:selectedLandKey};
+    }
     // ========================================
     // 建設モーダル
     // ========================================
@@ -1621,12 +1738,14 @@
     const SHAPES={box:{w:5.5,d:5.5},slim:{w:3.0,d:3.0},wide:{w:8.0,d:8.0},cylinder:{w:5.0,d:5.0}};
     function openBuildModal(){
       if(!gachaState.result)return;
+      const isJa=currentLang==='ja';
       selectedShape='box';
       document.querySelectorAll('.shape-btn').forEach((b,i)=>b.classList.toggle('selected',i===0));
-      document.getElementById('build-modal-info').textContent=`${gachaState.result.label}　${gachaState.result.floors}階建て`;
+      document.getElementById('build-modal-info').textContent=`${getStarLabel(gachaState.result.star)}　${gachaState.result.floors}${isJa?'階建て':'F'}`;
       const landSelectEl=document.getElementById('build-land-select');
-      if(gachaState.landKey){const{gx,gz}=keyToCoord(gachaState.landKey);landSelectEl.textContent=`📍 建設先：X:${gx} / Z:${gz}`;landSelectEl.classList.add('has-land');}
-      else{landSelectEl.textContent='📍 土地未選択 — 建設後に土地をタップして配置先を選んでください';landSelectEl.classList.remove('has-land');}
+      if(gachaState.landKey){const{gx,gz}=keyToCoord(gachaState.landKey);landSelectEl.textContent=isJa?`📍 建設先：X:${gx} / Z:${gz}`:`📍 Build at: X:${gx} / Z:${gz}`;landSelectEl.classList.add('has-land');}
+      else{landSelectEl.textContent=isJa?'📍 土地未選択 — 建設後に土地をタップして配置先を選んでください':'📍 No land — tap your land after closing to place';landSelectEl.classList.remove('has-land');}
+      applyGameI18n();
       document.getElementById('build-modal').classList.add('open');
     }
     function closeBuildModal(){document.getElementById('build-modal').classList.remove('open');}
@@ -1980,7 +2099,7 @@
           if(buildingData.mesh&&buildingData.mesh.material){
             applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh);
           }
-          await completeTask('view');
+          await checkViewTaskProgress();
           if(data.employees_added>0){
             const isJa=currentLang==='ja';
             showToast(isJa?`🎉 30閲覧達成！従業員+${data.employees_added}人を獲得`:`🎉 30 views! +${data.employees_added} employee(s)`);
@@ -2337,6 +2456,8 @@
     }
     engine.runRenderLoop(()=>scene.render());
     window.addEventListener('resize',()=>engine.resize());
+    applyGameI18n();
+    switchTab('login');
     (async()=>{await restoreSession();await loadBuildingsAndLands();})();
   </script>
 </body>

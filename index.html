@@ -190,8 +190,9 @@
     #gacha-result-build:hover { opacity: 0.85; }
     #gacha-result-city { background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:11px 24px;border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;width:100%; }
     #gacha-result-city:hover { background:rgba(255,255,255,0.14);color:#fff; }
-    #audio-unlock-hint { display:none;position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(10,10,20,0.92);border:1px solid rgba(255,106,0,0.5);color:#fff;padding:10px 18px;border-radius:24px;font-size:12px;font-weight:700;z-index:15;pointer-events:none;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
-    #audio-unlock-hint.show { display:block;animation:audioHintPulse 2s ease-in-out infinite; }
+    #audio-unlock-btn { display:none;position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:12px 22px;border-radius:28px;font-size:13px;font-weight:800;z-index:200;cursor:pointer;box-shadow:0 4px 24px rgba(255,106,0,0.45);letter-spacing:0.04em; }
+    #audio-unlock-btn.show { display:block;animation:audioHintPulse 2s ease-in-out infinite; }
+    #audio-unlock-btn:hover { filter:brightness(1.08); }
     #x-setup-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:250;align-items:center;justify-content:center; }
     #x-setup-modal.open { display:flex; }
     #x-setup-box { background:linear-gradient(160deg,#1a0a2e,#0f0820);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:24px;width:min(340px,92vw); }
@@ -760,7 +761,7 @@
     </div>
   </div>
   <div id="toast"></div>
-  <div id="audio-unlock-hint">🔊 画面をタップしてBGMをオン</div>
+  <button type="button" id="audio-unlock-btn" onclick="tryUnlockBgm()">🔊 BGMをオンにする</button>
   <div id="x-setup-modal">
     <div id="x-setup-box">
       <div id="x-setup-title">Xアカウント名を登録</div>
@@ -814,7 +815,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v5';
+    const IGNIS_BUILD='2026-05-22-v6';
     console.warn('[IGNIS CITY] build',IGNIS_BUILD);
     function withTimeout(promise,ms,label){
       return Promise.race([
@@ -840,8 +841,8 @@
         forceShowGame();
       }
     },8000);
-    document.getElementById('loading').addEventListener('click',function(){forceShowGame();});
-    document.getElementById('loading').addEventListener('pointerdown',function(){forceShowGame();});
+    document.getElementById('loading').addEventListener('pointerdown',function(){tryUnlockBgm();forceShowGame();});
+    document.getElementById('loading').addEventListener('click',function(){tryUnlockBgm();forceShowGame();});
     window.addEventListener('error',function(e){
       console.error('[IGNIS ERROR]',e.error||e.message);
       __ignisStatus('❌ エラー: '+(e.message||'不明'));
@@ -867,18 +868,18 @@
   // サウンド（BGM・UIクリック・ガチャクリック）
   // ========================================
   const IgnisAudio={
-    ctx:null,master:null,bgmGain:null,sfxGain:null,bgmStarted:false,muted:false,_inited:false,bgmTimer:null,
+    ctx:null,master:null,bgmGain:null,sfxGain:null,bgmStarted:false,muted:false,_inited:false,bgmTimer:null,_bgmOscs:[],
     init(){
       if(this._inited)return;
       try{
         const AC=window.AudioContext||window.webkitAudioContext;
-        if(!AC)return;
+        if(!AC){console.warn('[IGNIS] AudioContext unavailable');return;}
         this.ctx=new AC();
         this.master=this.ctx.createGain();
         this.bgmGain=this.ctx.createGain();
         this.sfxGain=this.ctx.createGain();
-        this.bgmGain.gain.value=0.38;
-        this.sfxGain.gain.value=0.5;
+        this.bgmGain.gain.value=0.55;
+        this.sfxGain.gain.value=0.55;
         this.bgmGain.connect(this.master);
         this.sfxGain.connect(this.master);
         this.master.connect(this.ctx.destination);
@@ -888,10 +889,10 @@
         this.updateToggleBtn();
       }catch(e){console.warn('audio init',e);}
     },
-    ensure(){
+    async ensure(){
       if(!this._inited)this.init();
-      if(this.ctx&&this.ctx.state==='suspended')return this.ctx.resume();
-      return Promise.resolve();
+      if(!this.ctx)return;
+      if(this.ctx.state==='suspended')await this.ctx.resume();
     },
     applyMute(){
       if(!this.master||!this.ctx)return;
@@ -910,13 +911,11 @@
       this.init();
       this.muted=!this.muted;
       localStorage.setItem('ignis_mute',this.muted?'1':'0');
+      if(this.muted)this.stopBgm();
       this.applyMute();
       this.updateToggleBtn();
-      if(!this.muted){
-        if(!this.bgmStarted)this.startBgm();
-        const hint=document.getElementById('audio-unlock-hint');
-        if(hint)hint.classList.remove('show');
-      }
+      if(!this.muted)tryUnlockBgm();
+      else hideBgmUnlockBtn();
     },
     playClick(){
       if(this.muted||!this.ctx)return;
@@ -972,33 +971,45 @@
         o.start(st);o.stop(st+0.36);
       });
     },
-    _playCalmChord(){
+    stopBgm(){
+      this._bgmOscs.forEach(o=>{try{o.stop();}catch(e){}});
+      this._bgmOscs=[];
+      if(this.bgmTimer){clearInterval(this.bgmTimer);this.bgmTimer=null;}
+      this.bgmStarted=false;
+    },
+    _startAmbientPad(){
       if(this.muted||!this.ctx)return;
-      const chords=[[130.81,164.81,196.00],[110.00,130.81,164.81],[87.31,110.00,130.81],[98.00,123.47,146.83]];
-      if(!this._chordIdx)this._chordIdx=0;
-      const chord=chords[this._chordIdx%chords.length];
-      this._chordIdx++;
       const t=this.ctx.currentTime;
-      const dur=7.5;
-      chord.forEach(freq=>{
+      const freqs=[130.81,164.81,196.00,98.00];
+      freqs.forEach((freq,i)=>{
         const o=this.ctx.createOscillator();
         const g=this.ctx.createGain();
         const f=this.ctx.createBiquadFilter();
-        f.type='lowpass';f.frequency.value=520;f.Q.value=0.4;
-        o.type='sine';o.frequency.value=freq;
+        f.type='lowpass';f.frequency.value=900;f.Q.value=0.5;
+        o.type=i%2?'triangle':'sine';
+        o.frequency.value=freq;
         g.gain.setValueAtTime(0,t);
-        g.gain.linearRampToValueAtTime(0.028,t+1.8);
-        g.gain.linearRampToValueAtTime(0.022,t+dur-1.5);
-        g.gain.linearRampToValueAtTime(0,t+dur);
+        g.gain.linearRampToValueAtTime(0.14,t+0.8);
         o.connect(f);f.connect(g);g.connect(this.bgmGain);
-        o.start(t);o.stop(t+dur+0.1);
+        o.start(t);
+        this._bgmOscs.push(o);
       });
+      let chordIdx=0;
+      const chords=[[130.81,164.81,196.00],[110.00,130.81,164.81],[87.31,110.00,130.81]];
+      this.bgmTimer=setInterval(()=>{
+        if(this.muted||!this.ctx)return;
+        chordIdx=(chordIdx+1)%chords.length;
+        const ct=this.ctx.currentTime;
+        chords[chordIdx].forEach((freq,j)=>{
+          if(!this._bgmOscs[j])return;
+          this._bgmOscs[j].frequency.setTargetAtTime(freq,ct,2.5);
+        });
+      },8000);
     },
     startBgm(){
       if(this.bgmStarted||this.muted||!this.ctx)return;
       this.bgmStarted=true;
-      this._playCalmChord();
-      this.bgmTimer=setInterval(()=>this._playCalmChord(),6500);
+      this._startAmbientPad();
     },
     playUnlockChime(){
       if(this.muted||!this.ctx)return;
@@ -1016,18 +1027,34 @@
       });
     },
     boot(){
-      this.ensure().then(()=>{
-        if(!this.muted){
-          this.startBgm();
-          this.playUnlockChime();
-          const hint=document.getElementById('audio-unlock-hint');
-          if(hint)hint.classList.remove('show');
-        }
-      }).catch(e=>console.warn('[IGNIS] audio boot',e));
+      return tryUnlockBgm();
     }
   };
+  function showBgmUnlockBtn(){
+    const btn=document.getElementById('audio-unlock-btn');
+    if(btn&&!IgnisAudio.muted&&!IgnisAudio.bgmStarted)btn.classList.add('show');
+  }
+  function hideBgmUnlockBtn(){
+    const btn=document.getElementById('audio-unlock-btn');
+    if(btn)btn.classList.remove('show');
+  }
+  async function tryUnlockBgm(){
+    if(IgnisAudio.muted)return false;
+    try{
+      await IgnisAudio.ensure();
+      if(!IgnisAudio.ctx)return false;
+      IgnisAudio.playUnlockChime();
+      IgnisAudio.startBgm();
+      if(IgnisAudio.bgmStarted){
+        hideBgmUnlockBtn();
+        return true;
+      }
+    }catch(e){console.warn('[IGNIS] tryUnlockBgm',e);}
+    showBgmUnlockBtn();
+    return false;
+  }
   function bootIgnisAudioOnce(){
-    IgnisAudio.boot();
+    tryUnlockBgm();
     document.removeEventListener('pointerdown',bootIgnisAudioOnce,true);
     document.removeEventListener('keydown',bootIgnisAudioOnce,true);
     document.removeEventListener('click',bootIgnisAudioOnce,true);
@@ -1306,8 +1333,8 @@
       document.getElementById('task-progress-label').textContent=isJa?'今日の進捗':'Today\'s Progress';
       document.getElementById('minimap-label').textContent='MINIMAP';
       IgnisAudio.updateToggleBtn();
-      const audioHint=document.getElementById('audio-unlock-hint');
-      if(audioHint)audioHint.textContent=isJa?'🔊 画面をタップしてBGMをオン':'🔊 Tap anywhere to enable BGM';
+      const audioBtn=document.getElementById('audio-unlock-btn');
+      if(audioBtn)audioBtn.textContent=isJa?'🔊 BGMをオンにする':'🔊 Turn on BGM';
       applyGameI18n();
       if(gachaState.result){
         document.getElementById('build-modal-info').textContent=`${getStarLabel(gachaState.result.star)}　${gachaState.result.floors}${isJa?'階建て':`F`}`;
@@ -1508,12 +1535,7 @@
       loadingFinished=true;
       __ignisStatus('④ 起動完了');
       clearInterval(loadInterval);loadingBar.style.width='100%';
-      const hint=document.getElementById('audio-unlock-hint');
-      if(hint&&!IgnisAudio.bgmStarted&&!IgnisAudio.muted)hint.classList.add('show');
-      const unlockOnLoad=()=>{IgnisAudio.boot();};
-      loadingEl.style.cursor='pointer';
-      loadingEl.addEventListener('click',unlockOnLoad,{once:true});
-      loadingEl.addEventListener('pointerdown',unlockOnLoad,{once:true});
+      if(!IgnisAudio.muted&&!IgnisAudio.bgmStarted)showBgmUnlockBtn();
       setTimeout(()=>{loadingEl.style.opacity='0';setTimeout(()=>{loadingEl.style.display='none';loadingEl.style.cursor='default';},800);},400);
     }
     function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2800);}

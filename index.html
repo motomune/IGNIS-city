@@ -156,19 +156,34 @@
       align-items: center; justify-content: center; flex-direction: column;
     }
     #gacha-overlay.show { display: flex; }
-    #gacha-amida-wrap { width:min(92vw,360px);display:flex;flex-direction:column;align-items:center;animation:machineEntry 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    #gacha-book-phase { width:min(94vw,440px);display:flex;flex-direction:column;align-items:center;animation:machineEntry 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
     @keyframes machineEntry { 0%{transform:translateY(-40px) scale(0.92);opacity:0;} 100%{transform:translateY(0) scale(1);opacity:1;} }
-    #gacha-amida-title { font-size:13px;font-weight:800;letter-spacing:0.35em;color:rgba(168,85,247,0.9);margin-bottom:12px; }
-    #gacha-amida-board { position:relative;width:100%;aspect-ratio:320/380;background:rgba(0,0,0,0.35);border:1px solid rgba(168,85,247,0.35);border-radius:16px;padding:8px;box-shadow:0 0 40px rgba(168,85,247,0.25); }
-    #gacha-amida-svg { width:100%;height:auto;display:block; }
-    #gacha-amida-ball { position:absolute;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ff6a00 55%,#ee0979);box-shadow:0 0 16px rgba(255,106,0,0.9);transform:translate(-50%,-50%);transition:left 0.32s cubic-bezier(0.4,0,0.2,1),top 0.32s cubic-bezier(0.4,0,0.2,1);pointer-events:none;z-index:2; }
-    #gacha-amida-labels { display:flex;justify-content:space-between;width:100%;margin-top:10px;padding:0 6px; }
-    .amida-lane-label { flex:1;text-align:center;font-size:11px;font-weight:800;opacity:0.45;transition:opacity 0.3s,transform 0.3s; }
-    .amida-lane-label.win { opacity:1;transform:scale(1.15);text-shadow:0 0 12px currentColor; }
-    .amida-vline { stroke:rgba(168,85,247,0.55);stroke-width:2.5;stroke-linecap:round; }
-    .amida-hline { stroke:rgba(255,106,0,0.85);stroke-width:3;stroke-linecap:round;opacity:0; }
-    .amida-hline.show { opacity:1;animation:amidaHlinePop 0.25s ease forwards; }
-    @keyframes amidaHlinePop { from{stroke-width:1;opacity:0;} to{stroke-width:3;opacity:1;} }
+    #gacha-book { position:relative;width:100%;height:min(52vh,300px);perspective:1400px;margin-bottom:14px; }
+    #gacha-book-closed { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#4a2810,#2a1608);border-radius:8px 14px 14px 8px;box-shadow:0 12px 40px rgba(0,0,0,0.6),inset 0 2px 0 rgba(255,255,255,0.12);border:2px solid rgba(255,200,120,0.25);transition:opacity 0.5s,transform 0.6s;z-index:3; }
+    #gacha-book-closed span { font-size:22px;font-weight:900;letter-spacing:0.2em;color:rgba(255,220,160,0.95);text-shadow:0 2px 8px rgba(0,0,0,0.5); }
+    #gacha-book.open #gacha-book-closed { opacity:0;transform:scale(0.85) rotateY(-20deg);pointer-events:none; }
+    #gacha-book-spread { position:absolute;inset:0;display:flex;opacity:0;transform:rotateY(-12deg) scale(0.92);transform-origin:left center;transition:opacity 0.55s,transform 0.75s cubic-bezier(0.34,1.2,0.64,1); }
+    #gacha-book.open #gacha-book-spread { opacity:1;transform:rotateY(0deg) scale(1); }
+    .book-page { flex:1;background:linear-gradient(160deg,#faf3e0,#e8d5b5);color:#3d2a14;border-radius:4px;padding:12px 10px;box-shadow:inset 0 0 24px rgba(139,90,43,0.12);position:relative;overflow:hidden; }
+    .book-page-left { border-right:1px solid rgba(100,60,20,0.15);margin-right:3px; }
+    .book-page-right { margin-left:3px; }
+    .book-page-title { font-size:11px;font-weight:800;letter-spacing:0.2em;color:rgba(80,50,20,0.55);margin-bottom:10px;text-align:center;border-bottom:1px solid rgba(80,50,20,0.12);padding-bottom:6px; }
+    .book-rate-row { display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 4px;border-radius:6px;margin-bottom:3px;background:rgba(255,255,255,0.35); }
+    .book-rate-row .br-stars { font-weight:900;min-width:52px; }
+    .book-rate-row .br-floors { color:rgba(60,40,15,0.55);font-size:10px; }
+    .book-rate-row .br-prob { font-weight:800;color:#7c4a12; }
+    #book-prize-layer { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;z-index:1; }
+    #book-prize-icon { font-size:44px;line-height:1;margin-bottom:6px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.2)); }
+    #book-prize-rank { font-size:20px;font-weight:900;letter-spacing:0.08em;margin-bottom:4px; }
+    #book-prize-floors { font-size:15px;font-weight:800;color:rgba(60,40,15,0.75); }
+    #book-scratch-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none;cursor:pointer;transition:opacity 0.45s; }
+    #book-scratch-canvas.done { opacity:0;pointer-events:none; }
+    #book-scratch-hint { font-size:12px;font-weight:700;color:rgba(255,200,120,0.85);letter-spacing:0.08em;margin-bottom:12px;animation:audioHintPulse 2s ease-in-out infinite; }
+    #book-scratch-hint.hide { display:none; }
+    #book-result-actions { display:none;flex-direction:column;gap:10px;width:100%;max-width:280px; }
+    #book-result-actions.show { display:flex;animation:resultFadeIn 0.45s ease forwards; }
+    #book-result-build { background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;padding:12px 24px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;width:100%; }
+    #book-result-city { background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:11px 24px;border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;width:100%; }
     #gacha-flash { position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:301;transition:opacity 0.1s; }
     #gacha-flash.flash { animation: flashAnim 0.6s ease-out forwards; }
     @keyframes flashAnim { 0%{opacity:0.9;} 100%{opacity:0;} }
@@ -618,25 +633,28 @@
   </div>
   <div id="gacha-overlay">
     <div id="gacha-flash"></div>
-    <div id="gacha-amida-phase" style="display:none;flex-direction:column;align-items:center;">
-      <div id="gacha-amida-wrap">
-        <div id="gacha-amida-title">🎰 あみだくじ</div>
-        <div id="gacha-amida-board">
-          <svg id="gacha-amida-svg" viewBox="0 0 320 380" xmlns="http://www.w3.org/2000/svg"></svg>
-          <div id="gacha-amida-ball"></div>
+    <div id="gacha-book-phase" style="display:none;flex-direction:column;align-items:center;">
+      <div id="gacha-book">
+        <div id="gacha-book-closed"><span>📕 IGNIS CITY</span></div>
+        <div id="gacha-book-spread">
+          <div class="book-page book-page-left">
+            <div class="book-page-title" id="book-rates-title">出現率</div>
+            <div id="book-rates-list"></div>
+          </div>
+          <div class="book-page book-page-right">
+            <div id="book-prize-layer">
+              <div id="book-prize-icon">🏢</div>
+              <div id="book-prize-rank">???</div>
+              <div id="book-prize-floors">???</div>
+            </div>
+            <canvas id="book-scratch-canvas"></canvas>
+          </div>
         </div>
-        <div id="gacha-amida-labels"></div>
       </div>
-    </div>
-    <div id="gacha-result-phase" style="display:none;flex-direction:column;align-items:center;">
-      <div id="gacha-particles" style="position:relative;width:200px;height:80px;margin-bottom:8px;"></div>
-      <div id="gacha-result-text">
-        <div id="gacha-result-rank"></div>
-        <div id="gacha-result-floors"></div>
-        <div id="gacha-result-actions">
-          <button id="gacha-result-build" onclick="onGachaResultClose()">建設する →</button>
-          <button id="gacha-result-city" type="button" onclick="onGachaResultBackToCity()">🏙 IGNIS Cityへ戻る</button>
-        </div>
+      <p id="book-scratch-hint">右のページをなぞって削る</p>
+      <div id="book-result-actions">
+        <button id="book-result-build" type="button" onclick="onGachaResultClose()">建設する →</button>
+        <button id="book-result-city" type="button" onclick="onGachaResultBackToCity()">🏙 IGNIS Cityへ戻る</button>
       </div>
     </div>
   </div>
@@ -794,7 +812,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v11';
+    const IGNIS_BUILD='2026-05-22-v12';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -1148,80 +1166,108 @@
       for(const g of GACHA_TABLE){cum+=g.prob;if(r<cum)return{...g,floors:Math.floor(Math.random()*(g.maxF-g.minF+1))+g.minF};}
       return{...GACHA_TABLE[GACHA_TABLE.length-1],floors:10};
     }
-    const AMIDA_COLS=5,AMIDA_ROWS=11;
-    const AMIDA_STAR_COLORS={1:'#94a3b8',2:'#22c55e',3:'#3b82f6',4:'#f59e0b',5:'#ee0979'};
-    function buildAmidaBoard(targetCol,cols=AMIDA_COLS,rows=AMIDA_ROWS){
-      const startCol=Math.floor(Math.random()*cols);
-      const bridges=Array.from({length:rows},()=>Array(cols-1).fill(false));
-      let col=startCol;
-      const pathCols=[col];
-      let need=targetCol-startCol;
-      const moves=[];
-      for(let r=0;r<rows;r++){
-        if(need>0){moves.push(1);need--;}
-        else if(need<0){moves.push(-1);need++;}
-        else moves.push(0);
-      }
-      for(let i=moves.length-1;i>0;i--){
-        const j=Math.floor(Math.random()*(i+1));
-        [moves[i],moves[j]]=[moves[j],moves[i]];
-      }
-      for(let r=0;r<rows;r++){
-        const m=moves[r];
-        if(m===1&&col<cols-1){bridges[r][col]=true;col++;}
-        else if(m===-1&&col>0){bridges[r][col-1]=true;col--;}
-        else{
-          const dec=[];
-          for(let b=0;b<cols-1;b++){if(b!==col&&b!==col-1&&!bridges[r][b])dec.push(b);}
-          if(dec.length&&Math.random()<0.38)bridges[r][dec[Math.floor(Math.random()*dec.length)]]=true;
-        }
-        pathCols.push(col);
-      }
-      return {bridges,pathCols,startCol,targetCol:targetCol};
-    }
-    function amidaPoint(col,row,cols,rows,w,h){
-      const padX=26,padTop=28,padBot=44;
-      const innerW=w-padX*2,innerH=h-padTop-padBot;
-      return {x:padX+(cols<=1?0:(col/(cols-1))*innerW),y:padTop+(row/rows)*innerH};
-    }
-    function renderAmidaSvg(svg,bridges,cols,rows){
-      const w=320,h=380;
-      svg.innerHTML='';
-      for(let c=0;c<cols;c++){
-        const t=amidaPoint(c,0,cols,rows,w,h),b=amidaPoint(c,rows,cols,rows,w,h);
-        const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
-        ln.setAttribute('x1',t.x);ln.setAttribute('y1',t.y);ln.setAttribute('x2',b.x);ln.setAttribute('y2',b.y);
-        ln.setAttribute('class','amida-vline');svg.appendChild(ln);
-      }
-      const hlines=[];
-      for(let r=0;r<rows;r++){
-        for(let b=0;b<cols-1;b++){
-          if(!bridges[r][b])continue;
-          const p1=amidaPoint(b,r,cols,rows,w,h),p2=amidaPoint(b+1,r,cols,rows,w,h);
-          const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
-          ln.setAttribute('x1',p1.x);ln.setAttribute('y1',p1.y);ln.setAttribute('x2',p2.x);ln.setAttribute('y2',p2.y);
-          ln.setAttribute('class','amida-hline');ln.dataset.row=String(r);svg.appendChild(ln);
-          hlines.push(ln);
-        }
-      }
-      return {w,h,hlines};
-    }
-    function amidaBallPct(col,row,cols,rows){
-      const p=amidaPoint(col,row,cols,rows,320,380);
-      return {left:(p.x/320)*100,top:(p.y/380)*100};
-    }
+    const BOOK_STAR_COLORS={1:'#94a3b8',2:'#22c55e',3:'#3b82f6',4:'#f59e0b',5:'#ee0979'};
+    const BOOK_BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
+    let bookScratchCleanup=null;
     function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-    async function animateAmidaBall(ball,pathCols,cols,rows,hlines){
-      for(let i=0;i<pathCols.length;i++){
-        const pct=amidaBallPct(pathCols[i],i,cols,rows);
-        ball.style.left=pct.left+'%';
-        ball.style.top=pct.top+'%';
-        if(i>0){
-          const rowHlines=hlines.filter(ln=>Number(ln.dataset.row)===i-1);
-          rowHlines.forEach(ln=>ln.classList.add('show'));
+    function renderBookRates(isJa){
+      const list=document.getElementById('book-rates-list');
+      list.innerHTML='';
+      GACHA_TABLE.forEach(g=>{
+        const row=document.createElement('div');
+        row.className='book-rate-row';
+        const prob=(g.prob*100);
+        const probStr=prob<1?prob.toFixed(1):prob.toFixed(0);
+        const floors=isJa?`${g.minF}〜${g.maxF}階`:`${g.minF}–${g.maxF}F`;
+        row.innerHTML=`<span class="br-stars star${g.star}" style="color:${BOOK_STAR_COLORS[g.star]}">${g.label}</span><span class="br-floors">${floors}</span><span class="br-prob">${probStr}%</span>`;
+        list.appendChild(row);
+      });
+    }
+    function fillBookMosaic(ctx,w,h){
+      const tile=14;
+      for(let y=0;y<h;y+=tile){
+        for(let x=0;x<w;x+=tile){
+          const hue=((x+y)*7)%360;
+          ctx.fillStyle=`hsl(${hue},28%,${38+((x^y)%20)}%)`;
+          ctx.fillRect(x,y,tile,tile);
         }
-        await sleep(i===0?280:340);
       }
+      ctx.fillStyle='rgba(40,25,10,0.25)';
+      ctx.fillRect(0,0,w,h);
+      ctx.font='bold 28px sans-serif';
+      ctx.fillStyle='rgba(255,255,255,0.35)';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText('?',w/2,h/2);
+    }
+    function initBookScratch(canvas,onReveal){
+      if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
+      const parent=canvas.parentElement;
+      const dpr=Math.min(window.devicePixelRatio||1,2);
+      const resize=()=>{
+        const r=parent.getBoundingClientRect();
+        const w=Math.max(1,Math.floor(r.width));
+        const h=Math.max(1,Math.floor(r.height));
+        canvas.width=Math.floor(w*dpr);
+        canvas.height=Math.floor(h*dpr);
+        canvas.style.width=w+'px';
+        canvas.style.height=h+'px';
+        const ctx=canvas.getContext('2d');
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        fillBookMosaic(ctx,w,h);
+        return {ctx,w,h};
+      };
+      let {ctx,w,h}=resize();
+      let revealed=false;
+      const brush=22;
+      const scratchAt=(clientX,clientY)=>{
+        if(revealed)return;
+        const rect=canvas.getBoundingClientRect();
+        const x=clientX-rect.left;
+        const y=clientY-rect.top;
+        ctx.globalCompositeOperation='destination-out';
+        ctx.beginPath();
+        ctx.arc(x,y,brush,0,Math.PI*2);
+        ctx.fill();
+        ctx.globalCompositeOperation='source-over';
+      };
+      const tryReveal=()=>{
+        if(revealed)return;
+        const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+        let clear=0,total=img.data.length/4;
+        for(let i=3;i<img.data.length;i+=4){if(img.data[i]<48)clear++;}
+        if(clear/total>0.42){
+          revealed=true;
+          onReveal();
+        }
+      };
+      let scratchTimer=null;
+      const onMove=(e)=>{
+        e.preventDefault();
+        const pt=e.touches?e.touches[0]:e;
+        scratchAt(pt.clientX,pt.clientY);
+        if(!scratchTimer){scratchTimer=setTimeout(()=>{scratchTimer=null;tryReveal();},120);}
+      };
+      const onMoveMouse=(e)=>{if(e.buttons===1)onMove(e);};
+      const onDown=(e)=>{
+        canvas.classList.add('scratching');
+        onMove(e);
+      };
+      const onUp=()=>{canvas.classList.remove('scratching');tryReveal();};
+      canvas.addEventListener('mousedown',onDown);
+      canvas.addEventListener('mousemove',onMoveMouse);
+      window.addEventListener('mouseup',onUp);
+      canvas.addEventListener('touchstart',onDown,{passive:false});
+      canvas.addEventListener('touchmove',onMove,{passive:false});
+      canvas.addEventListener('touchend',onUp);
+      bookScratchCleanup=()=>{
+        canvas.removeEventListener('mousedown',onDown);
+        canvas.removeEventListener('mousemove',onMoveMouse);
+        canvas.removeEventListener('touchstart',onDown);
+        canvas.removeEventListener('touchmove',onMove);
+        canvas.removeEventListener('touchend',onUp);
+        window.removeEventListener('mouseup',onUp);
+      };
     }
     // ========================================
     // コイン履歴
@@ -1478,10 +1524,12 @@
       const hireInfo=document.getElementById('hire-info');
       if(hireInfo)hireInfo.innerHTML=isJa?'従業員を採用：<span>30</span>コイン → 休職中プールに +1人':'Hire: <span>30</span> coins → +1 to bench';
       set('gacha-hire-btn','👷 従業員を採用（30コイン）','👷 Hire Employee (30 coins)');
-      set('gacha-result-build',isJa?'建設する →':'Build →');
-      set('gacha-result-city',isJa?'🏙 IGNIS Cityへ戻る':'🏙 Return to IGNIS City');
-      const amidaTitle=document.getElementById('gacha-amida-title');
-      if(amidaTitle)amidaTitle.textContent=isJa?'🎰 あみだくじ':'🎰 Amidakuji';
+      const bookRatesTitle=document.getElementById('book-rates-title');
+      if(document.getElementById('gacha-overlay')?.classList.contains('show'))renderBookRates(isJa);
+      if(bookRatesTitle)bookRatesTitle.textContent=isJa?'出現率':'Drop Rates';
+      const bookHint=document.getElementById('book-scratch-hint');
+      if(bookHint)bookHint.textContent=isJa?'右のページをなぞって削る':'Scratch the right page';
+      syncGachaResultButtonsI18n();
       set('build-modal-title',isJa?'🏗 形状を選ぶ':'🏗 Choose Shape');
       set('build-confirm-btn',isJa?'🏢 建設する':'🏢 Build');
       const shapeLbl=document.querySelector('#build-box .custom-label');
@@ -2029,66 +2077,56 @@
     async function playGachaAnimation(result){
       const isJa=currentLang==='ja';
       const overlay=document.getElementById('gacha-overlay');
-      const amidaPhase=document.getElementById('gacha-amida-phase');
-      const resultPhase=document.getElementById('gacha-result-phase');
+      const bookPhase=document.getElementById('gacha-book-phase');
+      const book=document.getElementById('gacha-book');
       const flash=document.getElementById('gacha-flash');
-      const color=AMIDA_STAR_COLORS[result.star]||'#a855f7';
-      const targetCol=result.star-1;
-      const {bridges,pathCols}=buildAmidaBoard(targetCol);
-      const svg=document.getElementById('gacha-amida-svg');
-      const ball=document.getElementById('gacha-amida-ball');
-      const labelsEl=document.getElementById('gacha-amida-labels');
-      const titleEl=document.getElementById('gacha-amida-title');
-      titleEl.textContent=isJa?'🎰 あみだくじ':'🎰 Amidakuji';
-      labelsEl.innerHTML='';
-      for(let s=1;s<=5;s++){
-        const el=document.createElement('div');
-        el.className='amida-lane-label star'+s;
-        el.style.color=AMIDA_STAR_COLORS[s];
-        el.textContent='★'.repeat(s);
-        el.dataset.star=String(s);
-        labelsEl.appendChild(el);
-      }
-      const {hlines}=renderAmidaSvg(svg,bridges,AMIDA_COLS,AMIDA_ROWS);
-      const startPct=amidaBallPct(pathCols[0],0,AMIDA_COLS,AMIDA_ROWS);
-      ball.style.left=startPct.left+'%';
-      ball.style.top=startPct.top+'%';
-      ball.style.display='block';
-      document.getElementById('gacha-result-text').classList.remove('show');
-      resultPhase.style.display='none';
-      amidaPhase.style.display='flex';
+      const color=BOOK_STAR_COLORS[result.star]||'#a855f7';
+      const canvas=document.getElementById('book-scratch-canvas');
+      const hint=document.getElementById('book-scratch-hint');
+      const actions=document.getElementById('book-result-actions');
+      if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
+      canvas.classList.remove('done');
+      actions.classList.remove('show');
+      hint.classList.remove('hide');
+      book.classList.remove('open');
+      const prizeLayer=document.getElementById('book-prize-layer');
+      prizeLayer.style.animation='';
+      document.getElementById('book-prize-icon').textContent='❓';
+      document.getElementById('book-prize-rank').textContent='???';
+      document.getElementById('book-prize-rank').style.color='rgba(60,40,15,0.45)';
+      document.getElementById('book-prize-floors').textContent='???';
+      renderBookRates(isJa);
+      applyGameI18n();
+      bookPhase.style.display='flex';
       overlay.classList.add('show');
       IgnisAudio.playBgmTrack('opening').catch(()=>{});
-      await sleep(400);
-      await animateAmidaBall(ball,pathCols,AMIDA_COLS,AMIDA_ROWS,hlines);
-      labelsEl.querySelectorAll('.amida-lane-label').forEach(el=>{
-        el.classList.toggle('win',Number(el.dataset.star)===result.star);
+      await sleep(700);
+      book.classList.add('open');
+      await sleep(750);
+      initBookScratch(canvas,()=>{
+        canvas.classList.add('done');
+        hint.classList.add('hide');
+        if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
+        document.getElementById('book-prize-icon').textContent=BOOK_BUILDING_ICONS[result.star]||'🏢';
+        document.getElementById('book-prize-rank').textContent=getStarLabel(result.star);
+        document.getElementById('book-prize-rank').style.color=color;
+        prizeLayer.style.animation='resultFadeIn 0.5s ease forwards';
+        if(result.star>=4){
+          flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash');
+          IgnisAudio.playSuccess();
+        }
+        const floorsEl=document.getElementById('book-prize-floors');
+        floorsEl.textContent=isJa?`${result.floors}階建てのビルをGET！`:`You got a ${result.floors}-floor building!`;
+        actions.classList.add('show');
+        syncGachaResultButtonsI18n();
       });
-      await sleep(500);
-      if(result.star>=4){
-        flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash');
-        IgnisAudio.playSuccess();
-      }
-      spawnGachaParticles(result.star);
-      amidaPhase.style.display='none';
-      resultPhase.style.display='flex';
-      const rankEl=document.getElementById('gacha-result-rank');
-      rankEl.textContent=getStarLabel(result.star);
-      rankEl.style.color=color;
-      document.getElementById('gacha-result-floors').textContent=isJa?`${result.floors}階建てのビルをGET！`:`You got a ${result.floors}-floor building!`;
-      applyGameI18n();
-      document.getElementById('gacha-result-text').classList.add('show');
     }
-    function spawnGachaParticles(star){
-      const container=document.getElementById('gacha-particles');container.innerHTML='';
-      const count=star*8+10;
-      const colors=['#ff6a00','#ee0979','#a855f7','#6366f1','#f59e0b','#22c55e','#3b82f6','#fff'];
-      for(let i=0;i<count;i++){
-        const p=document.createElement('div');p.className='particle';
-        const angle=Math.random()*Math.PI*2,dist=60+Math.random()*80;
-        p.style.cssText=`left:50%;top:50%;background:${colors[Math.floor(Math.random()*colors.length)]};--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;animation-delay:${Math.random()*0.3}s;animation-duration:${0.6+Math.random()*0.6}s;width:${4+star*2}px;height:${4+star*2}px;`;
-        container.appendChild(p);
-      }
+    function syncGachaResultButtonsI18n(){
+      const isJa=currentLang==='ja';
+      const bb=document.getElementById('book-result-build');
+      const bc=document.getElementById('book-result-city');
+      if(bb)bb.textContent=isJa?'建設する →':'Build →';
+      if(bc)bc.textContent=isJa?'🏙 IGNIS Cityへ戻る':'🏙 Return to IGNIS City';
     }
     function onGachaResultClose(){document.getElementById('gacha-overlay').classList.remove('show');openBuildModal();}
     function onGachaResultBackToCity(){

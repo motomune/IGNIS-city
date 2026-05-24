@@ -761,6 +761,7 @@
     </div>
   </div>
   <div id="toast"></div>
+  <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <button type="button" id="audio-unlock-btn" onclick="tryUnlockBgm()">🔊 BGMをオンにする</button>
   <div id="x-setup-modal">
     <div id="x-setup-box">
@@ -815,7 +816,32 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v6';
+    const IGNIS_BUILD='2026-05-22-v8';
+    const IGNIS_BGM={
+      city:{
+        label:'My World BGM',
+        volume:0.35,
+        sources:[
+          'audio_myworld-bgm.mp3',
+          'audio/myworld-bgm.mp3',
+          'https://motomune.github.io/IGNIS-game/audio:myworld-bgm.mp3',
+          'https://cdn.jsdelivr.net/gh/motomune/IGNIS-GAME@main/audio%3Amyworld-bgm.mp3',
+          'https://raw.githubusercontent.com/motomune/IGNIS-GAME/main/audio%3Amyworld-bgm.mp3'
+        ]
+      },
+      gacha:{
+        label:'Ending BGM',
+        volume:0.38,
+        sources:[
+          'audio_ending-bgm.mp3',
+          'audio/ending-bgm.mp3',
+          'https://motomune.github.io/IGNIS-city/audio_ending-bgm.mp3',
+          'https://motomune.github.io/IGNIS-game/audio:ending-bgm.mp3',
+          'https://cdn.jsdelivr.net/gh/motomune/IGNIS-GAME@main/audio%3Aending-bgm.mp3',
+          'https://raw.githubusercontent.com/motomune/IGNIS-GAME/main/audio%3Aending-bgm.mp3'
+        ]
+      }
+    };
     console.warn('[IGNIS CITY] build',IGNIS_BUILD);
     function withTimeout(promise,ms,label){
       return Promise.race([
@@ -868,19 +894,68 @@
   // サウンド（BGM・UIクリック・ガチャクリック）
   // ========================================
   const IgnisAudio={
-    ctx:null,master:null,bgmGain:null,sfxGain:null,bgmStarted:false,muted:false,_inited:false,bgmTimer:null,_bgmOscs:[],
+    ctx:null,master:null,sfxGain:null,bgmEl:null,bgmStarted:false,muted:false,_inited:false,currentTrack:'city',
+    _ensureBgmElement(){
+      if(this.bgmEl)return this.bgmEl;
+      const el=document.getElementById('ignis-bgm');
+      this.bgmEl=el||document.createElement('audio');
+      if(!el)document.body.appendChild(this.bgmEl);
+      this.bgmEl.loop=true;
+      this.bgmEl.preload='auto';
+      this.bgmEl.setAttribute('playsinline','');
+      return this.bgmEl;
+    },
+    _bgmVolume(){
+      const t=IGNIS_BGM[this.currentTrack];
+      return t?t.volume:0.35;
+    },
+    setBgmTrack(trackId){
+      const track=IGNIS_BGM[trackId];
+      if(!track)return Promise.resolve(false);
+      const el=this._ensureBgmElement();
+      const wasPlaying=this.bgmStarted;
+      if(wasPlaying){el.pause();this.bgmStarted=false;}
+      if(this.currentTrack===trackId&&el.src)return Promise.resolve(true);
+      this.currentTrack=trackId;
+      return new Promise(resolve=>{
+        let i=0;
+        const tryNext=()=>{
+          if(i>=track.sources.length){
+            console.warn('[IGNIS] BGM load failed:',trackId);
+            resolve(false);
+            return;
+          }
+          const url=track.sources[i++];
+          const onOk=()=>{cleanup();resolve(true);};
+          const onFail=()=>{cleanup();tryNext();};
+          const cleanup=()=>{
+            el.removeEventListener('canplaythrough',onOk);
+            el.removeEventListener('error',onFail);
+          };
+          el.addEventListener('canplaythrough',onOk,{once:true});
+          el.addEventListener('error',onFail,{once:true});
+          el.src=url;
+          el.load();
+        };
+        tryNext();
+      });
+    },
+    async playBgmTrack(trackId){
+      if(this.muted)return false;
+      const ok=await this.setBgmTrack(trackId);
+      if(!ok)return false;
+      return this.startBgm();
+    },
     init(){
       if(this._inited)return;
+      this._ensureBgmElement();
       try{
         const AC=window.AudioContext||window.webkitAudioContext;
         if(!AC){console.warn('[IGNIS] AudioContext unavailable');return;}
         this.ctx=new AC();
         this.master=this.ctx.createGain();
-        this.bgmGain=this.ctx.createGain();
         this.sfxGain=this.ctx.createGain();
-        this.bgmGain.gain.value=0.55;
         this.sfxGain.gain.value=0.55;
-        this.bgmGain.connect(this.master);
         this.sfxGain.connect(this.master);
         this.master.connect(this.ctx.destination);
         this.muted=localStorage.getItem('ignis_mute')==='1';
@@ -895,6 +970,7 @@
       if(this.ctx.state==='suspended')await this.ctx.resume();
     },
     applyMute(){
+      if(this.bgmEl)this.bgmEl.volume=this.muted?0:this._bgmVolume();
       if(!this.master||!this.ctx)return;
       const v=this.muted?0:1;
       this.master.gain.cancelScheduledValues(this.ctx.currentTime);
@@ -972,44 +1048,23 @@
       });
     },
     stopBgm(){
-      this._bgmOscs.forEach(o=>{try{o.stop();}catch(e){}});
-      this._bgmOscs=[];
-      if(this.bgmTimer){clearInterval(this.bgmTimer);this.bgmTimer=null;}
+      if(this.bgmEl){this.bgmEl.pause();}
       this.bgmStarted=false;
     },
-    _startAmbientPad(){
-      if(this.muted||!this.ctx)return;
-      const t=this.ctx.currentTime;
-      const freqs=[130.81,164.81,196.00,98.00];
-      freqs.forEach((freq,i)=>{
-        const o=this.ctx.createOscillator();
-        const g=this.ctx.createGain();
-        const f=this.ctx.createBiquadFilter();
-        f.type='lowpass';f.frequency.value=900;f.Q.value=0.5;
-        o.type=i%2?'triangle':'sine';
-        o.frequency.value=freq;
-        g.gain.setValueAtTime(0,t);
-        g.gain.linearRampToValueAtTime(0.14,t+0.8);
-        o.connect(f);f.connect(g);g.connect(this.bgmGain);
-        o.start(t);
-        this._bgmOscs.push(o);
-      });
-      let chordIdx=0;
-      const chords=[[130.81,164.81,196.00],[110.00,130.81,164.81],[87.31,110.00,130.81]];
-      this.bgmTimer=setInterval(()=>{
-        if(this.muted||!this.ctx)return;
-        chordIdx=(chordIdx+1)%chords.length;
-        const ct=this.ctx.currentTime;
-        chords[chordIdx].forEach((freq,j)=>{
-          if(!this._bgmOscs[j])return;
-          this._bgmOscs[j].frequency.setTargetAtTime(freq,ct,2.5);
-        });
-      },8000);
-    },
-    startBgm(){
-      if(this.bgmStarted||this.muted||!this.ctx)return;
-      this.bgmStarted=true;
-      this._startAmbientPad();
+    async startBgm(){
+      if(this.muted)return false;
+      const el=this._ensureBgmElement();
+      if(!el||!el.src)return false;
+      el.volume=this.muted?0:this._bgmVolume();
+      try{
+        await el.play();
+        this.bgmStarted=true;
+        return true;
+      }catch(e){
+        this.bgmStarted=false;
+        console.warn('[IGNIS] BGM play',e);
+        return false;
+      }
     },
     playUnlockChime(){
       if(this.muted||!this.ctx)return;
@@ -1041,11 +1096,11 @@
   async function tryUnlockBgm(){
     if(IgnisAudio.muted)return false;
     try{
+      IgnisAudio.init();
       await IgnisAudio.ensure();
-      if(!IgnisAudio.ctx)return false;
       IgnisAudio.playUnlockChime();
-      IgnisAudio.startBgm();
-      if(IgnisAudio.bgmStarted){
+      const ok=await IgnisAudio.playBgmTrack('city');
+      if(ok){
         hideBgmUnlockBtn();
         return true;
       }
@@ -1879,7 +1934,10 @@
       applyGameI18n();
       closeLandPanel();document.getElementById('gacha-modal').classList.add('open');
     }
-    function closeGachaModal(){document.getElementById('gacha-modal').classList.remove('open');}
+    function closeGachaModal(){
+      document.getElementById('gacha-modal').classList.remove('open');
+      if(!document.getElementById('gacha-overlay').classList.contains('show'))IgnisAudio.playBgmTrack('city').catch(()=>{});
+    }
     async function handleGachaSpin(){
       if(!currentUser){closeGachaModal();openAuthModal();return;}
       await IgnisAudio.ensure();
@@ -1895,7 +1953,9 @@
       document.getElementById('coin-count').textContent=newCoins;
       await recordCoin(-GACHA_COST,'gacha_spin');
       const result=rollGacha();gachaState.result=result;
-      closeGachaModal();playGachaAnimation(result);
+      closeGachaModal();
+      IgnisAudio.playBgmTrack('gacha').catch(()=>{});
+      playGachaAnimation(result);
       btn.disabled=false;btn.textContent=currentLang==='ja'?'🎰 ガチャを回す':'🎰 Spin Gacha';
     }
     function playGachaAnimation(result){
@@ -1950,6 +2010,7 @@
     function onGachaResultBackToCity(){
       document.getElementById('gacha-overlay').classList.remove('show');
       gachaState={result:null,isRebuild:false,landKey:selectedLandKey};
+      IgnisAudio.playBgmTrack('city').catch(()=>{});
     }
     // ========================================
     // 建設モーダル
@@ -1969,7 +2030,10 @@
       applyGameI18n();
       document.getElementById('build-modal').classList.add('open');
     }
-    function closeBuildModal(){document.getElementById('build-modal').classList.remove('open');}
+    function closeBuildModal(){
+      document.getElementById('build-modal').classList.remove('open');
+      if(!document.getElementById('gacha-overlay').classList.contains('show'))IgnisAudio.playBgmTrack('city').catch(()=>{});
+    }
     async function handleBuildConfirm(){
       if(!gachaState.result||!currentUser)return;
       const isJa=currentLang==='ja';

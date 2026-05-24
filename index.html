@@ -816,7 +816,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v9';
+    const IGNIS_BUILD='2026-05-22-v10';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -830,19 +830,22 @@
           'https://raw.githubusercontent.com/motomune/IGNIS-GAME/main/audio%3Aending-bgm.mp3'
         ]
       },
-      gacha:{
-        label:'My World BGM',
+      opening:{
+        label:'Opening BGM',
         volume:0.35,
         sources:[
+          'audio_opening-bgm.mp3',
+          'audio/opening-bgm.mp3',
           'audio_myworld-bgm.mp3',
           'audio/myworld-bgm.mp3',
+          'https://motomune.github.io/IGNIS-city/audio_opening-bgm.mp3',
           'https://motomune.github.io/IGNIS-game/audio:myworld-bgm.mp3',
           'https://cdn.jsdelivr.net/gh/motomune/IGNIS-GAME@main/audio%3Amyworld-bgm.mp3',
           'https://raw.githubusercontent.com/motomune/IGNIS-GAME/main/audio%3Amyworld-bgm.mp3'
         ]
       }
     };
-    function isGachaBgmScreenOpen(){
+    function isOpeningBgmScreenOpen(){
       return document.getElementById('gacha-modal').classList.contains('open')
         ||document.getElementById('gacha-overlay').classList.contains('show')
         ||document.getElementById('build-modal').classList.contains('open')
@@ -850,7 +853,7 @@
     }
     function refreshCityBgm(){
       if(IgnisAudio.muted)return;
-      if(isGachaBgmScreenOpen())IgnisAudio.playBgmTrack('gacha').catch(()=>{});
+      if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
       else IgnisAudio.playBgmTrack('city').catch(()=>{});
     }
     console.warn('[IGNIS CITY] build',IGNIS_BUILD);
@@ -1943,7 +1946,7 @@
       else{infoEl.textContent='';noLandWarning.classList.add('show');}
       applyGameI18n();
       closeLandPanel();document.getElementById('gacha-modal').classList.add('open');
-      IgnisAudio.playBgmTrack('gacha').catch(()=>{});
+      IgnisAudio.playBgmTrack('opening').catch(()=>{});
     }
     function closeGachaModal(skipBgmRefresh){
       document.getElementById('gacha-modal').classList.remove('open');
@@ -1980,7 +1983,7 @@
       phase1.style.display='block';phase2.style.display='none';
       document.getElementById('gacha-result-text').classList.remove('show');
       capsule.className='';overlay.classList.add('show');
-      IgnisAudio.playBgmTrack('gacha').catch(()=>{});
+      IgnisAudio.playBgmTrack('opening').catch(()=>{});
       setTimeout(()=>{capsule.className='drop';},600);
       setTimeout(()=>{
         phase1.style.display='none';phase2.style.display='flex';
@@ -2040,7 +2043,7 @@
       else{landSelectEl.textContent=isJa?'📍 土地未選択 — 建設後に土地をタップして配置先を選んでください':'📍 No land — tap your land after closing to place';landSelectEl.classList.remove('has-land');}
       applyGameI18n();
       document.getElementById('build-modal').classList.add('open');
-      IgnisAudio.playBgmTrack('gacha').catch(()=>{});
+      IgnisAudio.playBgmTrack('opening').catch(()=>{});
     }
     function closeBuildModal(){
       document.getElementById('build-modal').classList.remove('open');
@@ -2645,7 +2648,7 @@
     async function openZukan(){
       if(!currentUser){showToast('ログインが必要です');return;}
       document.getElementById('zukan-overlay').classList.add('open');
-      IgnisAudio.playBgmTrack('gacha').catch(()=>{});
+      IgnisAudio.playBgmTrack('opening').catch(()=>{});
       await loadZukanBuildings();
     }
     function closeZukan(){

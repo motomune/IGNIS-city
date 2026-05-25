@@ -156,33 +156,47 @@
       align-items: center; justify-content: center; flex-direction: column;
     }
     #gacha-overlay.show { display: flex; }
-    #gacha-book-phase { width:min(94vw,460px);display:flex;flex-direction:column;align-items:center;animation:machineEntry 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    #gacha-book-phase { width:min(94vw,480px);display:flex;flex-direction:column;align-items:center;animation:machineEntry 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
     @keyframes machineEntry { 0%{transform:translateY(-48px) scale(0.88);opacity:0;} 100%{transform:translateY(0) scale(1);opacity:1;} }
-    #gacha-book { position:relative;width:100%;height:min(58vh,360px);margin-bottom:14px; }
-    .book-scene { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1600px;perspective-origin:50% 42%; }
-    .book-closed-shell { position:relative;width:min(52vw,220px);height:min(48vh,300px);transform-style:preserve-3d;transition:opacity 0.45s,transform 0.5s;z-index:4; }
-    #gacha-book.opening .book-closed-shell, #gacha-book.open .book-closed-shell { opacity:0;transform:translateZ(-40px) scale(0.92);pointer-events:none; }
-    .book-spine { position:absolute;left:0;top:4%;width:22px;height:92%;background:linear-gradient(90deg,#1a0c04,#3d2210 35%,#2a1508 70%,#120804);border-radius:4px 0 0 4px;box-shadow:inset -4px 0 8px rgba(0,0,0,0.5),4px 0 12px rgba(0,0,0,0.35);transform:translateZ(8px); }
-    .book-spine::after { content:'IGNIS';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:9px;font-weight:900;letter-spacing:0.35em;color:rgba(255,200,120,0.35);white-space:nowrap; }
-    .book-cover-front { position:absolute;left:20px;top:0;width:calc(100% - 20px);height:100%;transform-origin:left center;transform-style:preserve-3d;transition:transform 1s cubic-bezier(0.25,0.9,0.35,1);border-radius:2px 10px 10px 2px;background:linear-gradient(145deg,#5c3218 0%,#3a1e0c 40%,#2a1206 100%);box-shadow:8px 12px 36px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,220,160,0.2),inset 0 -8px 24px rgba(0,0,0,0.35);border:1px solid rgba(255,190,100,0.22); }
-    .book-cover-front::before { content:'';position:absolute;inset:8px;border-radius:2px 8px 8px 2px;border:1px solid rgba(255,210,130,0.18);pointer-events:none; }
-    .book-cover-front::after { content:'';position:absolute;top:0;left:0;width:45%;height:100%;background:linear-gradient(105deg,rgba(255,255,255,0.12),transparent 55%);pointer-events:none;border-radius:2px 10px 10px 2px; }
-    #gacha-book.opening .book-cover-front, #gacha-book.open .book-cover-front { transform:rotateY(-168deg); }
-    .book-cover-frame { position:absolute;inset:14px 12px 14px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:2px solid rgba(212,168,75,0.45);border-radius:4px;background:linear-gradient(160deg,rgba(80,45,20,0.35),rgba(30,15,5,0.5));box-shadow:inset 0 0 20px rgba(0,0,0,0.25); }
-    .book-emblem { font-size:36px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 4px 8px rgba(255,120,0,0.4)); }
-    .book-cover-title { margin:0;font-size:clamp(16px,4.5vw,22px);font-weight:900;letter-spacing:0.18em;color:#f5e6c8;text-shadow:0 2px 0 rgba(0,0,0,0.4),0 0 20px rgba(255,140,40,0.25); }
-    .book-cover-sub { margin:8px 0 0;font-size:10px;font-weight:700;letter-spacing:0.28em;color:rgba(255,210,150,0.55); }
-    .book-page-edges { position:absolute;right:-6px;top:6%;width:14px;height:88%;background:repeating-linear-gradient(180deg,#f8f0dc 0px,#f8f0dc 3px,#e8dcc4 3px,#e8dcc4 4px);border-radius:0 3px 3px 0;box-shadow:2px 0 6px rgba(0,0,0,0.25);transform:translateZ(-2px); }
-    .book-spread-shell { position:absolute;width:min(92vw,400px);height:min(50vh,280px);display:flex;align-items:stretch;gap:0;opacity:0;transform:scale(0.9) rotateX(8deg);transform-style:preserve-3d;transition:opacity 0.5s,transform 0.7s cubic-bezier(0.34,1.15,0.64,1);pointer-events:none; }
-    #gacha-book.opening .book-spread-shell { opacity:0.35;pointer-events:auto; }
-    #gacha-book.open .book-spread-shell { opacity:1;transform:scale(1) rotateX(0deg);pointer-events:auto; }
-    .book-page { flex:1;background:linear-gradient(165deg,#fff9ee 0%,#f0e2c8 45%,#e2d0a8 100%);color:#3d2a14;border-radius:2px 6px 6px 2px;padding:12px 10px;box-shadow:inset 0 0 28px rgba(139,90,43,0.1),0 4px 16px rgba(0,0,0,0.2);position:relative;overflow:hidden;transition:transform 0.85s cubic-bezier(0.34,1.1,0.64,1);backface-visibility:hidden; }
-    .book-page::before { content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 23px,rgba(139,90,43,0.04) 23px,rgba(139,90,43,0.04) 24px);pointer-events:none; }
-    .book-page-left { transform-origin:right center;transform:rotateY(0deg);margin-right:2px;border-right:1px solid rgba(100,60,20,0.12); }
-    .book-page-right { transform-origin:left center;transform:rotateY(0deg);margin-left:2px; }
-    #gacha-book.open .book-page-left { transform:rotateY(-26deg); }
-    #gacha-book.open .book-page-right { transform:rotateY(26deg); }
-    .book-gutter { width:4px;flex-shrink:0;background:linear-gradient(180deg,#2a1508,#4a2818,#2a1508);box-shadow:inset 0 0 6px rgba(0,0,0,0.6);align-self:stretch;border-radius:2px;opacity:0;transition:opacity 0.4s; }
+    #gacha-book { position:relative;width:100%;height:min(62vh,380px);margin-bottom:8px; }
+    .book-desk-shadow { position:absolute;left:50%;bottom:6%;width:min(78vw,340px);height:28px;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(0,0,0,0.55) 0%,transparent 72%);filter:blur(4px);opacity:0;transition:opacity 0.6s;pointer-events:none; }
+    #gacha-book.opening .book-desk-shadow, #gacha-book.open .book-desk-shadow { opacity:1; }
+    .book-scene { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1800px;perspective-origin:50% 38%; }
+    .book-closed-shell { position:relative;width:min(54vw,232px);height:min(50vh,310px);transform-style:preserve-3d;transition:opacity 0.5s,transform 0.55s;z-index:4;filter:drop-shadow(0 18px 32px rgba(0,0,0,0.5)); }
+    #gacha-book.opening .book-closed-shell, #gacha-book.open .book-closed-shell { opacity:0;transform:translateZ(-60px) scale(0.9);pointer-events:none;visibility:hidden; }
+    .book-spine { position:absolute;left:0;top:3%;width:26px;height:94%;background:linear-gradient(90deg,#120804 0%,#3d2210 28%,#5a3820 50%,#2a1508 78%,#0e0602 100%);border-radius:5px 0 0 5px;box-shadow:inset -5px 0 10px rgba(0,0,0,0.55),5px 0 14px rgba(0,0,0,0.4); }
+    .book-spine::before { content:'';position:absolute;left:3px;top:8%;bottom:8%;width:3px;background:linear-gradient(180deg,transparent,rgba(255,200,120,0.2),transparent); }
+    .book-spine::after { content:'IGNIS CITY';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:8px;font-weight:900;letter-spacing:0.22em;color:rgba(255,200,120,0.4);white-space:nowrap; }
+    .book-cover-front { position:absolute;left:24px;top:0;width:calc(100% - 24px);height:100%;transform-origin:left center;transform-style:preserve-3d;border-radius:3px 12px 12px 3px;background:linear-gradient(148deg,#6b3d1f 0%,#4a2812 32%,#2e1408 68%,#1a0a04 100%);box-shadow:10px 14px 40px rgba(0,0,0,0.55),inset 0 2px 0 rgba(255,230,180,0.18),inset 0 -10px 28px rgba(0,0,0,0.4);border:1px solid rgba(255,190,100,0.28); }
+    .book-cover-front::before { content:'';position:absolute;inset:0;border-radius:3px 12px 12px 3px;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");pointer-events:none;mix-blend-mode:overlay; }
+    .book-cover-front::after { content:'';position:absolute;top:0;left:0;width:48%;height:100%;background:linear-gradient(108deg,rgba(255,255,255,0.14),transparent 58%);pointer-events:none;border-radius:3px 12px 12px 3px; }
+    #gacha-book.opening .book-cover-front { animation:bookCoverOpen 1.15s cubic-bezier(0.33,0.9,0.35,1) forwards; }
+    #gacha-book.open .book-cover-front { transform:rotateY(-172deg); }
+    @keyframes bookCoverOpen { 0%{transform:rotateY(0deg);} 100%{transform:rotateY(-172deg);} }
+    .book-ribbon { position:absolute;top:-2px;right:28px;width:22px;height:72px;background:linear-gradient(180deg,#c41e3a,#8b1028);box-shadow:2px 4px 10px rgba(0,0,0,0.35);clip-path:polygon(0 0,100% 0,100% 88%,50% 100%,0 88%);z-index:2; }
+    .book-cover-frame { position:absolute;inset:16px 14px 16px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:2px solid rgba(212,168,75,0.55);border-radius:5px;background:linear-gradient(165deg,rgba(90,52,28,0.45),rgba(25,12,4,0.65));box-shadow:inset 0 0 24px rgba(0,0,0,0.3),0 0 0 1px rgba(255,220,160,0.08); }
+    .book-cover-frame::before, .book-cover-frame::after { content:'';position:absolute;width:14px;height:14px;border:2px solid rgba(212,168,75,0.7);pointer-events:none; }
+    .book-cover-frame::before { top:6px;left:6px;border-right:none;border-bottom:none; }
+    .book-cover-frame::after { bottom:6px;right:6px;border-left:none;border-top:none; }
+    .book-emblem { font-size:38px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 4px 10px rgba(255,100,0,0.45)); }
+    .book-cover-title { margin:0;font-size:clamp(15px,4.2vw,21px);font-weight:900;letter-spacing:0.2em;color:#f8edd4;text-shadow:0 2px 0 rgba(0,0,0,0.45),0 0 24px rgba(255,140,40,0.2); }
+    .book-cover-sub { margin:8px 0 0;font-size:9px;font-weight:700;letter-spacing:0.32em;color:rgba(255,210,150,0.6); }
+    .book-page-edges { position:absolute;right:-8px;top:5%;width:16px;height:90%;background:repeating-linear-gradient(180deg,#faf4e4 0px,#faf4e4 2px,#e5d9c0 2px,#e5d9c0 3px);border-radius:0 4px 4px 0;box-shadow:3px 0 8px rgba(0,0,0,0.3); }
+    .book-page-edges::after { content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.08),transparent); }
+    .book-spread-shell { position:absolute;width:min(94vw,420px);height:min(52vh,300px);display:flex;align-items:stretch;opacity:0;transform:scale(0.88) translateY(12px);transform-style:preserve-3d;pointer-events:none;filter:drop-shadow(0 16px 36px rgba(0,0,0,0.45));overflow:visible; }
+    #gacha-book.opening .book-spread-shell { opacity:0.5;pointer-events:none; }
+    #gacha-book.open .book-spread-shell { opacity:1;transform:scale(1) translateY(0);pointer-events:auto;animation:bookSpreadIn 0.75s cubic-bezier(0.34,1.12,0.64,1) forwards; }
+    @keyframes bookSpreadIn { from{opacity:0.4;transform:scale(0.92) translateY(8px);} to{opacity:1;transform:scale(1) translateY(0);} }
+    .book-half { flex:1;position:relative;min-width:0;min-height:100%;align-self:stretch;transform-style:preserve-3d; }
+    .book-half-left { transform-origin:right center;transform:rotateY(0deg);transition:transform 0.95s cubic-bezier(0.25,0.85,0.35,1); }
+    #gacha-book.open .book-half-left { transform:rotateY(-32deg);transition-delay:0.15s; }
+    .book-half-right { transform:none !important;z-index:2; }
+    .book-page-right.book-page-deco { position:absolute;inset:0;pointer-events:none;z-index:1;box-shadow:-4px 0 12px rgba(0,0,0,0.08); }
+    .book-page { height:100%;background:linear-gradient(165deg,#fffdf6 0%,#f3e6cc 42%,#e0cfa8 100%);color:#3d2a14;border-radius:3px 8px 8px 3px;padding:12px 10px;box-shadow:inset 0 0 32px rgba(139,90,43,0.08),0 6px 20px rgba(0,0,0,0.18);position:relative;overflow:hidden; }
+    .book-page::before { content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 23px,rgba(139,90,43,0.045) 23px,rgba(139,90,43,0.045) 24px);pointer-events:none;z-index:0; }
+    .book-page-left { margin-right:0;border-right:1px solid rgba(100,60,20,0.1); }
+    .book-scratch-page { position:absolute;inset:0;transform:none !important;z-index:5;isolation:isolate;background:linear-gradient(165deg,#fffdf6 0%,#f3e6cc 42%,#e0cfa8 100%);border-radius:3px 8px 8px 3px;box-shadow:inset 0 0 32px rgba(139,90,43,0.08),0 6px 20px rgba(0,0,0,0.18); }
+    .book-gutter { width:6px;flex-shrink:0;background:linear-gradient(180deg,#1a0c04,#4a2818 30%,#3d2210 70%,#1a0c04);box-shadow:inset 0 0 8px rgba(0,0,0,0.65);align-self:stretch;border-radius:2px;opacity:0;transition:opacity 0.35s; }
     #gacha-book.open .book-gutter { opacity:1; }
     .book-page-title { font-size:11px;font-weight:800;letter-spacing:0.2em;color:rgba(80,50,20,0.55);margin-bottom:10px;text-align:center;border-bottom:1px solid rgba(80,50,20,0.12);padding-bottom:6px;position:relative;z-index:1; }
     .book-rate-row { display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 4px;border-radius:6px;margin-bottom:3px;background:rgba(255,255,255,0.35);position:relative;z-index:1; }
@@ -194,8 +208,9 @@
     #book-prize-rank { font-size:28px;font-weight:900;letter-spacing:0.12em;line-height:1.1;margin-bottom:2px;text-shadow:0 1px 0 rgba(255,255,255,0.5); }
     #book-prize-floors { font-size:14px;font-weight:800;color:rgba(60,40,15,0.8);margin-top:6px; }
     #book-prize-floors.prize-floor-hidden { display:none; }
-    #book-scratch-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none;cursor:pointer;transition:opacity 0.45s; }
+    #book-scratch-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:10;touch-action:none;cursor:crosshair;transition:opacity 0.45s;pointer-events:auto;display:block; }
     #book-scratch-canvas.done { opacity:0;pointer-events:none; }
+    .book-scratch-label { position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:0.15em;color:rgba(80,80,100,0.5);pointer-events:none;z-index:3; }
     #book-scratch-hint { font-size:12px;font-weight:700;color:rgba(255,200,120,0.85);letter-spacing:0.08em;margin-bottom:12px;animation:audioHintPulse 2s ease-in-out infinite; }
     #book-scratch-hint.hide { display:none; }
     #book-result-actions { display:none;flex-direction:column;gap:10px;width:100%;max-width:280px; }
@@ -653,10 +668,12 @@
     <div id="gacha-flash"></div>
     <div id="gacha-book-phase" style="display:none;flex-direction:column;align-items:center;">
       <div id="gacha-book">
+        <div class="book-desk-shadow" aria-hidden="true"></div>
         <div class="book-scene">
           <div class="book-closed-shell" id="gacha-book-closed">
             <div class="book-spine"></div>
             <div class="book-cover-front">
+              <div class="book-ribbon" aria-hidden="true"></div>
               <div class="book-cover-frame">
                 <span class="book-emblem">🔥</span>
                 <h2 class="book-cover-title">IGNIS CITY</h2>
@@ -666,23 +683,29 @@
             <div class="book-page-edges"></div>
           </div>
           <div class="book-spread-shell" id="gacha-book-spread">
-            <div class="book-page book-page-left">
-              <div class="book-page-title" id="book-rates-title">出現率</div>
-              <div id="book-rates-list"></div>
+            <div class="book-half book-half-left">
+              <div class="book-page book-page-left">
+                <div class="book-page-title" id="book-rates-title">出現率</div>
+                <div id="book-rates-list"></div>
+              </div>
             </div>
             <div class="book-gutter" aria-hidden="true"></div>
-            <div class="book-page book-page-right">
-              <div id="book-prize-layer">
-                <div id="book-prize-icon">🏢</div>
-                <div id="book-prize-rank">★</div>
-                <div id="book-prize-floors" class="prize-floor-hidden"></div>
+            <div class="book-half book-half-right">
+              <div class="book-page book-page-right book-page-deco" aria-hidden="true"></div>
+              <div class="book-scratch-page">
+                <div id="book-prize-layer">
+                  <div id="book-prize-icon">🏢</div>
+                  <div id="book-prize-rank">★</div>
+                  <div id="book-prize-floors" class="prize-floor-hidden"></div>
+                </div>
+                <canvas id="book-scratch-canvas"></canvas>
+                <span class="book-scratch-label">SCRATCH</span>
               </div>
-              <canvas id="book-scratch-canvas"></canvas>
             </div>
           </div>
         </div>
       </div>
-      <p id="book-scratch-hint">右のページを削るとビルと★が現れる</p>
+      <p id="book-scratch-hint">右ページを削るとビル獲得！</p>
       <div id="book-result-actions">
         <button id="book-result-build" type="button" onclick="onGachaResultClose()">建設する →</button>
         <button id="book-result-city" type="button" onclick="onGachaResultBackToCity()">🏙 IGNIS Cityへ戻る</button>
@@ -843,7 +866,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v13';
+    const IGNIS_BUILD='2026-05-22-v14';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -1236,31 +1259,42 @@
       ctx.textBaseline='middle';
       ctx.fillText('SCRATCH',w/2,h/2);
     }
-    function initBookScratch(canvas,onReveal){
+    function waitBookLayout(){
+      return new Promise(resolve=>{
+        requestAnimationFrame(()=>requestAnimationFrame(resolve));
+      });
+    }
+    async function initBookScratch(canvas,onReveal){
       if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
       const parent=canvas.parentElement;
+      if(!parent)return;
+      await waitBookLayout();
       const dpr=Math.min(window.devicePixelRatio||1,2);
       const resize=()=>{
         const r=parent.getBoundingClientRect();
-        const w=Math.max(1,Math.floor(r.width));
-        const h=Math.max(1,Math.floor(r.height));
+        const w=Math.max(20,Math.floor(r.width));
+        const h=Math.max(20,Math.floor(r.height));
         canvas.width=Math.floor(w*dpr);
         canvas.height=Math.floor(h*dpr);
         canvas.style.width=w+'px';
         canvas.style.height=h+'px';
-        const ctx=canvas.getContext('2d');
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});
         ctx.setTransform(dpr,0,0,dpr,0,0);
         fillBookMosaic(ctx,w,h);
         return {ctx,w,h};
       };
       let {ctx,w,h}=resize();
+      if(w<30||h<30){await sleep(120);({ctx,w,h}=resize());}
       let revealed=false;
-      const brush=22;
+      let drawing=false;
+      const brush=26;
       const scratchAt=(clientX,clientY)=>{
         if(revealed)return;
         const rect=canvas.getBoundingClientRect();
+        if(rect.width<1)return;
         const x=clientX-rect.left;
         const y=clientY-rect.top;
+        if(x<-brush||y<-brush||x>rect.width+brush||y>rect.height+brush)return;
         ctx.globalCompositeOperation='destination-out';
         ctx.beginPath();
         ctx.arc(x,y,brush,0,Math.PI*2);
@@ -1270,39 +1304,51 @@
       const tryReveal=()=>{
         if(revealed)return;
         const img=ctx.getImageData(0,0,canvas.width,canvas.height);
-        let clear=0,total=img.data.length/4;
+        let clear=0;
+        const total=img.data.length/4;
         for(let i=3;i<img.data.length;i+=4){if(img.data[i]<48)clear++;}
-        if(clear/total>0.42){
+        if(clear/total>0.38){
           revealed=true;
+          drawing=false;
           onReveal();
         }
       };
       let scratchTimer=null;
       const onMove=(e)=>{
+        if(!drawing||revealed)return;
         e.preventDefault();
-        const pt=e.touches?e.touches[0]:e;
-        scratchAt(pt.clientX,pt.clientY);
-        if(!scratchTimer){scratchTimer=setTimeout(()=>{scratchTimer=null;tryReveal();},120);}
+        scratchAt(e.clientX,e.clientY);
+        if(!scratchTimer){scratchTimer=setTimeout(()=>{scratchTimer=null;tryReveal();},100);}
       };
-      const onMoveMouse=(e)=>{if(e.buttons===1)onMove(e);};
       const onDown=(e)=>{
-        canvas.classList.add('scratching');
-        onMove(e);
+        if(revealed)return;
+        e.preventDefault();
+        drawing=true;
+        try{canvas.setPointerCapture(e.pointerId);}catch(err){}
+        scratchAt(e.clientX,e.clientY);
       };
-      const onUp=()=>{canvas.classList.remove('scratching');tryReveal();};
-      canvas.addEventListener('mousedown',onDown);
-      canvas.addEventListener('mousemove',onMoveMouse);
-      window.addEventListener('mouseup',onUp);
-      canvas.addEventListener('touchstart',onDown,{passive:false});
-      canvas.addEventListener('touchmove',onMove,{passive:false});
-      canvas.addEventListener('touchend',onUp);
+      const onUp=(e)=>{
+        if(e&&e.pointerId!==undefined){
+          try{canvas.releasePointerCapture(e.pointerId);}catch(err){}
+        }
+        drawing=false;
+        tryReveal();
+      };
+      const onLostCapture=()=>{drawing=false;};
+      canvas.style.pointerEvents='auto';
+      canvas.style.touchAction='none';
+      canvas.addEventListener('pointerdown',onDown);
+      canvas.addEventListener('pointermove',onMove);
+      canvas.addEventListener('pointerup',onUp);
+      canvas.addEventListener('pointercancel',onUp);
+      canvas.addEventListener('lostpointercapture',onLostCapture);
       bookScratchCleanup=()=>{
-        canvas.removeEventListener('mousedown',onDown);
-        canvas.removeEventListener('mousemove',onMoveMouse);
-        canvas.removeEventListener('touchstart',onDown);
-        canvas.removeEventListener('touchmove',onMove);
-        canvas.removeEventListener('touchend',onUp);
-        window.removeEventListener('mouseup',onUp);
+        drawing=false;
+        canvas.removeEventListener('pointerdown',onDown);
+        canvas.removeEventListener('pointermove',onMove);
+        canvas.removeEventListener('pointerup',onUp);
+        canvas.removeEventListener('pointercancel',onUp);
+        canvas.removeEventListener('lostpointercapture',onLostCapture);
       };
     }
     // ========================================
@@ -1574,7 +1620,7 @@
       if(document.getElementById('gacha-overlay')?.classList.contains('show'))renderBookRates(isJa);
       if(bookRatesTitle)bookRatesTitle.textContent=isJa?'出現率':'Drop Rates';
       const bookHint=document.getElementById('book-scratch-hint');
-      if(bookHint)bookHint.textContent=isJa?'右のページを削るとビルと★が現れる':'Scratch to reveal building & stars';
+      if(bookHint)bookHint.textContent=isJa?'右ページを削るとビル獲得！':'Scratch the right page — win a building!';
       syncGachaResultButtonsI18n();
       set('build-modal-title',isJa?'🏗 形状を選ぶ':'🏗 Choose Shape');
       set('build-confirm-btn',isJa?'🏢 建設する':'🏢 Build');
@@ -2150,8 +2196,8 @@
       await sleep(1000);
       book.classList.add('open');
       setBookPrizeUnderScratch(result);
-      await sleep(650);
-      initBookScratch(canvas,()=>{
+      await sleep(800);
+      await initBookScratch(canvas,()=>{
         canvas.classList.add('done');
         hint.classList.add('hide');
         if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}

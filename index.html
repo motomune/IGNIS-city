@@ -203,7 +203,12 @@
     .book-rate-row .br-stars { font-weight:900;min-width:52px; }
     .book-rate-row .br-floors { color:rgba(60,40,15,0.55);font-size:10px; }
     .book-rate-row .br-prob { font-weight:800;color:#7c4a12; }
-    #book-prize-layer { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;z-index:1; }
+    #book-prize-layer { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;z-index:1;opacity:0;transition:opacity 0.15s; }
+    #book-prize-layer.prize-ready { opacity:1; }
+    #build-prize-card { background:rgba(255,106,0,0.1);border:1px solid rgba(255,106,0,0.28);border-radius:12px;padding:14px 16px;margin-bottom:16px;text-align:center; }
+    #build-prize-card .bpc-icon { font-size:40px;line-height:1;margin-bottom:8px; }
+    #build-prize-card .bpc-title { font-size:15px;font-weight:900;color:#fff;letter-spacing:0.04em; }
+    #build-prize-card .bpc-sub { font-size:12px;color:rgba(255,255,255,0.5);margin-top:6px;font-weight:700; }
     #book-prize-icon { font-size:52px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 6px 14px rgba(0,0,0,0.25)); }
     #book-prize-rank { font-size:28px;font-weight:900;letter-spacing:0.12em;line-height:1.1;margin-bottom:2px;text-shadow:0 1px 0 rgba(255,255,255,0.5); }
     #book-prize-floors { font-size:14px;font-weight:800;color:rgba(60,40,15,0.8);margin-top:6px; }
@@ -654,6 +659,7 @@
         <div class="rate-row"><span class="stars star1">★</span><span class="floors-range">1〜19階</span><span class="prob">50%</span></div>
       </div>
       <div id="gacha-cost-info">消費コイン：<span>50</span>コイン</div>
+      <div id="gacha-prism-note" style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:10px;line-height:1.5;">当たるビルは <b>円柱・三角柱・正四角柱</b> のいずれか（階数はレア度で決定）</div>
       <button id="gacha-spin-btn" onclick="handleGachaSpin()">🎰 ガチャを回す</button>
       <div style="display:flex;align-items:center;gap:8px;margin:16px 0 10px;color:rgba(255,255,255,0.3);font-size:11px;font-weight:700;letter-spacing:0.12em;">
         <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
@@ -715,17 +721,14 @@
   <div id="build-modal">
     <div id="build-box">
       <button id="build-modal-close" onclick="closeBuildModal()">×</button>
-      <div id="build-modal-title">🏗 形状を選ぶ</div>
-      <div id="build-modal-info"></div>
-      <div id="build-land-select">📍 土地未選択 — 建設後に土地をタップして配置先を選んでください</div>
-      <div class="custom-label">🔷 形状</div>
-      <div class="shape-grid">
-        <div class="shape-btn selected" data-shape="box" onclick="selectShape(this)"><span class="shape-icon">🟫</span><span class="shape-name">スタンダード</span></div>
-        <div class="shape-btn" data-shape="slim" onclick="selectShape(this)"><span class="shape-icon">🗼</span><span class="shape-name">スリム</span></div>
-        <div class="shape-btn" data-shape="wide" onclick="selectShape(this)"><span class="shape-icon">🏬</span><span class="shape-name">ワイド</span></div>
-        <div class="shape-btn" data-shape="cylinder" onclick="selectShape(this)"><span class="shape-icon">🛢</span><span class="shape-name">円柱</span></div>
+      <div id="build-modal-title">🏗 ガチャ結果を建設</div>
+      <div id="build-prize-card">
+        <div class="bpc-icon" id="build-prize-icon">🏢</div>
+        <div class="bpc-title" id="build-modal-info">—</div>
+        <div class="bpc-sub" id="build-prize-stars">★</div>
       </div>
-      <button id="build-confirm-btn" onclick="handleBuildConfirm()">🏢 建設する</button>
+      <div id="build-land-select">📍 土地未選択 — 建設後に土地をタップして配置先を選んでください</div>
+      <button id="build-confirm-btn" onclick="handleBuildConfirm()">🏢 このビルを建設する</button>
     </div>
   </div>
   <!-- ランキング -->
@@ -866,7 +869,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v14';
+    const IGNIS_BUILD='2026-05-22-v15';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -1215,13 +1218,28 @@
       {star:2,label:'★★',   minF:20,maxF:29,prob:0.30, emoji:'✨'},
       {star:1,label:'★',    minF:1, maxF:19,prob:0.50, emoji:'☆'},
     ];
+    const GACHA_PRISMS=['cylinder','triangle','square'];
+    const PRISM_ICONS={cylinder:'🛢',triangle:'🔺',square:'🟧'};
+    const PRISM_LABELS_JA={cylinder:'円柱',triangle:'三角柱',square:'正四角柱'};
+    const PRISM_LABELS_EN={cylinder:'cylinder',triangle:'triangular prism',square:'square prism'};
+    const PRISMS={cylinder:{w:5.0},triangle:{w:5.0},square:{w:5.5}};
+    function normalizePrism(shape){
+      if(shape==='cylinder')return 'cylinder';
+      if(shape==='triangle'||shape==='tri')return 'triangle';
+      return 'square';
+    }
+    function getPrismLabel(prism,isJa){const p=normalizePrism(prism);return isJa?(PRISM_LABELS_JA[p]||p):(PRISM_LABELS_EN[p]||p);}
+    function formatGachaBuildingLine(result,isJa){
+      const p=getPrismLabel(result.prism,isJa);
+      return isJa?`${result.floors}階の${p}`:`${result.floors}F ${p}`;
+    }
     function rollGacha(){
       const r=Math.random();let cum=0;
-      for(const g of GACHA_TABLE){cum+=g.prob;if(r<cum)return{...g,floors:Math.floor(Math.random()*(g.maxF-g.minF+1))+g.minF};}
-      return{...GACHA_TABLE[GACHA_TABLE.length-1],floors:10};
+      const prism=GACHA_PRISMS[Math.floor(Math.random()*GACHA_PRISMS.length)];
+      for(const g of GACHA_TABLE){cum+=g.prob;if(r<cum)return{...g,floors:Math.floor(Math.random()*(g.maxF-g.minF+1))+g.minF,prism};}
+      return{...GACHA_TABLE[GACHA_TABLE.length-1],floors:10,prism};
     }
     const BOOK_STAR_COLORS={1:'#94a3b8',2:'#22c55e',3:'#3b82f6',4:'#f59e0b',5:'#ee0979'};
-    const BOOK_BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
     let bookScratchCleanup=null;
     function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
     function renderBookRates(isJa){
@@ -1236,6 +1254,11 @@
         row.innerHTML=`<span class="br-stars star${g.star}" style="color:${BOOK_STAR_COLORS[g.star]}">${g.label}</span><span class="br-floors">${floors}</span><span class="br-prob">${probStr}%</span>`;
         list.appendChild(row);
       });
+      const note=document.createElement('div');
+      note.className='book-rates-note';
+      note.style.cssText='font-size:9px;color:rgba(80,50,20,0.5);margin-top:8px;line-height:1.45;text-align:center;';
+      note.textContent=isJa?'※ 柱: 円柱 / 三角柱 / 正四角柱':'※ Prism: cylinder, triangle, square';
+      list.appendChild(note);
     }
     function fillBookMosaic(ctx,w,h){
       const g=ctx.createLinearGradient(0,0,w,h);
@@ -1264,11 +1287,12 @@
         requestAnimationFrame(()=>requestAnimationFrame(resolve));
       });
     }
-    async function initBookScratch(canvas,onReveal){
+    async function initBookScratch(canvas,onReveal,result){
       if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
       const parent=canvas.parentElement;
+      const prizeLayer=document.getElementById('book-prize-layer');
+      if(prizeLayer)prizeLayer.classList.remove('prize-ready');
       if(!parent)return;
-      await waitBookLayout();
       const dpr=Math.min(window.devicePixelRatio||1,2);
       const resize=()=>{
         const r=parent.getBoundingClientRect();
@@ -1284,7 +1308,10 @@
         return {ctx,w,h};
       };
       let {ctx,w,h}=resize();
-      if(w<30||h<30){await sleep(120);({ctx,w,h}=resize());}
+      if(w<30||h<30){await waitBookLayout();({ctx,w,h}=resize());}
+      if(w<30||h<30){await sleep(80);({ctx,w,h}=resize());}
+      if(result)setBookPrizeUnderScratch(result);
+      else if(prizeLayer)prizeLayer.classList.add('prize-ready');
       let revealed=false;
       let drawing=false;
       const brush=26;
@@ -1585,9 +1612,7 @@
       const audioBtn=document.getElementById('audio-unlock-btn');
       if(audioBtn)audioBtn.textContent=isJa?'🔊 BGMをオンにする':'🔊 Turn on BGM';
       applyGameI18n();
-      if(gachaState.result){
-        document.getElementById('build-modal-info').textContent=`${getStarLabel(gachaState.result.star)}　${gachaState.result.floors}${isJa?'階建て':`F`}`;
-      }
+      if(gachaState.result)renderBuildModalPrize();
       updateViewTaskProgressLabel();
     }
     const STAR_LABELS_GACHA={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
@@ -1596,12 +1621,15 @@
     function getGachaStarSymbols(star){const g=GACHA_TABLE.find(x=>x.star===star);return g?g.label:'★';}
     function setBookPrizeUnderScratch(result){
       const color=BOOK_STAR_COLORS[result.star]||'#a855f7';
-      document.getElementById('book-prize-icon').textContent=BOOK_BUILDING_ICONS[result.star]||'🏢';
-      document.getElementById('book-prize-rank').textContent=getGachaStarSymbols(result.star);
-      document.getElementById('book-prize-rank').style.color=color;
+      const prism=normalizePrism(result.prism);
+      const iconEl=document.getElementById('book-prize-icon');
+      const rankEl=document.getElementById('book-prize-rank');
+      const layer=document.getElementById('book-prize-layer');
+      if(iconEl)iconEl.textContent=PRISM_ICONS[prism]||'🏢';
+      if(rankEl){rankEl.textContent=getGachaStarSymbols(result.star);rankEl.style.color=color;}
       const floorsEl=document.getElementById('book-prize-floors');
-      floorsEl.textContent='';
-      floorsEl.classList.add('prize-floor-hidden');
+      if(floorsEl){floorsEl.textContent='';floorsEl.classList.add('prize-floor-hidden');}
+      if(layer)layer.classList.add('prize-ready');
     }
     function applyGameI18n(){
       const isJa=currentLang==='ja';
@@ -1612,6 +1640,8 @@
       const warnEl=document.getElementById('gacha-no-land-warning');
       if(warnEl)warnEl.innerHTML=isJa?'⚠️ 土地が選択されていません。<br>ガチャ後に建設先の土地をタップしてください。':'⚠️ No land selected.<br>Tap your land after gacha to build.';
       set('gacha-spin-btn','🎰 ガチャを回す','🎰 Spin Gacha');
+      const prismNote=document.getElementById('gacha-prism-note');
+      if(prismNote)prismNote.innerHTML=isJa?'当たるビルは <b>円柱・三角柱・正四角柱</b> のいずれか（階数はレア度で決定）':'Prize buildings are <b>cylinder, triangular prism, or square prism</b> (floors by rarity)';
       set('gacha-or-label','または','OR');
       const hireInfo=document.getElementById('hire-info');
       if(hireInfo)hireInfo.innerHTML=isJa?'従業員を採用：<span>30</span>コイン → 休職中プールに +1人':'Hire: <span>30</span> coins → +1 to bench';
@@ -1622,10 +1652,8 @@
       const bookHint=document.getElementById('book-scratch-hint');
       if(bookHint)bookHint.textContent=isJa?'右ページを削るとビル獲得！':'Scratch the right page — win a building!';
       syncGachaResultButtonsI18n();
-      set('build-modal-title',isJa?'🏗 形状を選ぶ':'🏗 Choose Shape');
-      set('build-confirm-btn',isJa?'🏢 建設する':'🏢 Build');
-      const shapeLbl=document.querySelector('#build-box .custom-label');
-      if(shapeLbl)shapeLbl.textContent=isJa?'🔷 形状':'🔷 Shape';
+      set('build-modal-title',isJa?'🏗 ガチャ結果を建設':'🏗 Build Gacha Prize');
+      set('build-confirm-btn',isJa?'🏢 このビルを建設する':'🏢 Build This Building');
       const rateRows=document.querySelectorAll('.gacha-rates .rate-row');
       const rateFloorsJa=['48〜50階','40〜47階','30〜39階','20〜29階','1〜19階'];
       const rateFloorsEn=['48–50F','40–47F','30–39F','20–29F','1–19F'];
@@ -1639,12 +1667,6 @@
       set('x-setup-save',isJa?'保存':'Save');
       set('bml-views',isJa?'閲覧回数':'Views');
       set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');
-      document.querySelectorAll('.shape-btn').forEach(btn=>{
-        const shape=btn.dataset.shape;
-        const names={box:['スタンダード','Standard'],slim:['スリム','Slim'],wide:['ワイド','Wide'],cylinder:['円柱','Cylinder']};
-        const sn=btn.querySelector('.shape-name');
-        if(sn&&names[shape])sn.textContent=isJa?names[shape][0]:names[shape][1];
-      });
       const xLabel=document.getElementById('x-username-label');
       if(xLabel)xLabel.innerHTML=isJa?'X（Twitter）アカウント名 <span style="color:#ff6a00;">*</span>':'X (Twitter) username <span style="color:#ff6a00;">*</span>';
       const xInput=document.getElementById('input-x-username');
@@ -2182,9 +2204,9 @@
       book.classList.remove('open','opening');
       const prizeLayer=document.getElementById('book-prize-layer');
       prizeLayer.style.animation='';
-      document.getElementById('book-prize-icon').textContent='🏢';
-      document.getElementById('book-prize-rank').textContent='★';
-      document.getElementById('book-prize-rank').style.color='rgba(60,40,15,0.35)';
+      prizeLayer.classList.remove('prize-ready');
+      document.getElementById('book-prize-icon').textContent='';
+      document.getElementById('book-prize-rank').textContent='';
       document.getElementById('book-prize-floors').classList.add('prize-floor-hidden');
       renderBookRates(isJa);
       applyGameI18n();
@@ -2195,8 +2217,7 @@
       book.classList.add('opening');
       await sleep(1000);
       book.classList.add('open');
-      setBookPrizeUnderScratch(result);
-      await sleep(800);
+      await sleep(400);
       await initBookScratch(canvas,()=>{
         canvas.classList.add('done');
         hint.classList.add('hide');
@@ -2208,10 +2229,11 @@
         }
         const floorsEl=document.getElementById('book-prize-floors');
         floorsEl.classList.remove('prize-floor-hidden');
-        floorsEl.textContent=isJa?`${result.floors}階建てのビルをGET！`:`You got a ${result.floors}-floor building!`;
+        const pLabel=getPrismLabel(result.prism,isJa);
+        floorsEl.textContent=isJa?`${result.floors}階の${pLabel}のビルをGET！`:`You got a ${result.floors}F ${pLabel} building!`;
         actions.classList.add('show');
         syncGachaResultButtonsI18n();
-      });
+      },result);
     }
     function syncGachaResultButtonsI18n(){
       const isJa=currentLang==='ja';
@@ -2227,17 +2249,24 @@
       refreshCityBgm();
     }
     // ========================================
-    // 建設モーダル
+    // 建設モーダル（ガチャ当選ビルのみ建設可）
     // ========================================
-    let selectedShape='box';
-    function selectShape(el){selectedShape=el.getAttribute('data-shape');document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');}
-    const SHAPES={box:{w:5.5,d:5.5},slim:{w:3.0,d:3.0},wide:{w:8.0,d:8.0},cylinder:{w:5.0,d:5.0}};
+    function renderBuildModalPrize(){
+      if(!gachaState.result)return;
+      const isJa=currentLang==='ja';
+      const r=gachaState.result;
+      const prism=normalizePrism(r.prism);
+      const iconEl=document.getElementById('build-prize-icon');
+      const infoEl=document.getElementById('build-modal-info');
+      const starsEl=document.getElementById('build-prize-stars');
+      if(iconEl)iconEl.textContent=PRISM_ICONS[prism]||'🏢';
+      if(infoEl)infoEl.textContent=formatGachaBuildingLine(r,isJa);
+      if(starsEl){starsEl.textContent=getGachaStarSymbols(r.star);starsEl.style.color=BOOK_STAR_COLORS[r.star]||'#fff';}
+    }
     function openBuildModal(){
       if(!gachaState.result)return;
       const isJa=currentLang==='ja';
-      selectedShape='box';
-      document.querySelectorAll('.shape-btn').forEach((b,i)=>b.classList.toggle('selected',i===0));
-      document.getElementById('build-modal-info').textContent=`${getStarLabel(gachaState.result.star)}　${gachaState.result.floors}${isJa?'階建て':'F'}`;
+      renderBuildModalPrize();
       const landSelectEl=document.getElementById('build-land-select');
       if(gachaState.landKey){const{gx,gz}=keyToCoord(gachaState.landKey);landSelectEl.textContent=isJa?`📍 建設先：X:${gx} / Z:${gz}`:`📍 Build at: X:${gx} / Z:${gz}`;landSelectEl.classList.add('has-land');}
       else{landSelectEl.textContent=isJa?'📍 土地未選択 — 建設後に土地をタップして配置先を選んでください':'📍 No land — tap your land after closing to place';landSelectEl.classList.remove('has-land');}
@@ -2252,14 +2281,15 @@
     async function handleBuildConfirm(){
       if(!gachaState.result||!currentUser)return;
       const isJa=currentLang==='ja';
-      if(!gachaState.landKey){closeBuildModal();showToast(isJa?'🏗 形状確定！次に建設先の土地をタップしてください':'🏗 Shape locked! Now tap the land to build on');pendingBuildShape=selectedShape;pendingBuildMode=true;return;}
+      if(!gachaState.landKey){closeBuildModal();showToast(isJa?'🏗 次に建設先の土地をタップしてください':'🏗 Tap your land to choose build location');pendingBuildMode=true;return;}
       const{gx,gz}=keyToCoord(gachaState.landKey);
       const targetLand=landMap[gachaState.landKey];
       if(!targetLand||targetLand.owner_id!==currentUser.id){
         showToast(isJa?'⚠️ 自分の土地にのみ建設できます':'⚠️ You can only build on your own land');
         return;
       }
-      const{floors}=gachaState.result;
+      const{floors,prism}=gachaState.result;
+      const buildPrism=normalizePrism(prism);
       const btn=document.getElementById('build-confirm-btn');
       btn.disabled=true;btn.textContent=isJa?'建設中...':'Building...';
       try{
@@ -2273,9 +2303,9 @@
           document.getElementById('building-count').textContent=buildings.length;
           await db.from('buildings').delete().eq('x',gx).eq('z',gz);
         }
-        const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${selectedShape}_gacha`,owner_id:currentUser.id,employees});
+        const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${buildPrism}_gacha`,owner_id:currentUser.id,employees});
         if(error)throw error;
-        addBuilding(gx,gz,floors,selectedShape,employees,false,gachaState.landKey,0,currentUser.id);
+        addBuilding(gx,gz,floors,buildPrism,employees,false,gachaState.landKey,0,currentUser.id);
         refreshTile(gachaState.landKey);
         await completeTask('build');
         const savedLandKey=gachaState.landKey;
@@ -2283,11 +2313,11 @@
         closeBuildModal();
         const ci=getColorByEmployees(employees);
         showToast(`🏢 ${floors}${isJa?'階建て完成':'F building done'}！${isJa?ci.label:ci.labelEn}`);
-        gachaState={result:null,isRebuild:false,landKey:null};pendingBuildMode=false;pendingBuildShape=null;
+        gachaState={result:null,isRebuild:false,landKey:null};pendingBuildMode=false;
         openProfileModal(gx,gz,savedFloors);
       }catch(e){console.warn('build error:',e.message);showToast(isJa?'建設に失敗しました':'Build failed');btn.disabled=false;btn.textContent=isJa?'🏢 建設する':'🏢 Build';}
     }
-    let pendingBuildMode=false,pendingBuildShape=null;
+    let pendingBuildMode=false;
     // ========================================
     // ビルプロフィール（格言・備考）
     // ========================================
@@ -2437,8 +2467,6 @@
     // ========================================
     // ビル詳細モーダル
     // ========================================
-    const SHAPE_LABELS={box:'スタンダード',slim:'スリム',wide:'ワイド',cylinder:'円柱'};
-    const SHAPE_LABELS_EN={box:'Standard',slim:'Slim',wide:'Wide',cylinder:'Cylinder'};
     const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
     function getStarByFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
     // ========================================
@@ -2528,9 +2556,11 @@
       const capsuleColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
       const starLabels={5:'★★★★★',4:'★★★★',3:'★★★',2:'★★',1:'★'};
       const isJa=currentLang==='ja';
-      document.getElementById('building-modal-icon').textContent=BUILDING_ICONS[star]||'🏢';
+      const prism=normalizePrism(buildingData.shape);
+      document.getElementById('building-modal-icon').textContent=PRISM_ICONS[prism]||'🏢';
       const rankEl=document.getElementById('building-modal-rank');rankEl.textContent=starLabels[star];rankEl.style.color=capsuleColors[star];
-      document.getElementById('building-modal-floors').textContent=isJa?`${buildingData.totalFloors}階建て`:`${buildingData.totalFloors} floors`;
+      const pLabel=getPrismLabel(prism,isJa);
+      document.getElementById('building-modal-floors').textContent=isJa?`${buildingData.baseFloors}階の${pLabel}`:`${buildingData.baseFloors}F ${pLabel}`;
       document.getElementById('bm-floors-val').textContent=buildingData.totalFloors+'F';
       const empVal=document.getElementById('bm-emp-val');
       const ci=getColorByEmployees(buildingData.employees||0);
@@ -2766,32 +2796,34 @@
       }
       if(mesh){mesh.onDisposeObservable.add(()=>{animatedBuildingMats.delete(key);});}
     }
-    function addBuilding(x,z,baseFloors,shape='box',employees=0,fromDB=false,lKey=null,viewCount=0,ownerId=null){
+    function addBuilding(x,z,baseFloors,shape='square',employees=0,fromDB=false,lKey=null,viewCount=0,ownerId=null){
       const totalFloors=calcTotalFloors(baseFloors,employees);
       const height=totalFloors*0.5;
-      const w=SHAPES[shape]?.w||5.5,d=SHAPES[shape]?.d||5.5;
+      const prism=normalizePrism(shape);
+      const w=PRISMS[prism]?.w||5.5;
       let mesh;
-      if(shape==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:16},scene);
-      else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:d},scene);
+      if(prism==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:20},scene);
+      else if(prism==='triangle')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:3},scene);
+      else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:w},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
       applyBuildingRankColor(mat,viewCount,mesh);
       mesh.material=mat;
       const key=lKey||landKey(x,z);
-      const buildingData={x,z,baseFloors,totalFloors,shape,employees,mesh,landKey:key,viewCount,ownerId};
+      const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,ownerId};
       if(mesh){mesh.metadata={landKey:key,bx:x,bz:z};}
       buildings.push(buildingData);buildingMap[key]=buildingData;
       document.getElementById('building-count').textContent=buildings.length;
     }
     async function loadBuildings(){
-      if(!db){console.warn('[IGNIS] no db — demo buildings');[[0,0,20,'box',0],[10,5,35,'slim',30]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));return;}
+      if(!db){console.warn('[IGNIS] no db — demo buildings');[[0,0,20,'square',0],[10,5,35,'triangle',30]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));return;}
       try{
         const{data,error}=await withTimeout(db.from('buildings').select('*'),8000,'buildings');
         if(error)throw error;
-        data.forEach(b=>{let shape='box';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true,null,b.view_count||0,b.owner_id||null);});
+        data.forEach(b=>{let shape='square';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true,null,b.view_count||0,b.owner_id||null);});
       }catch(e){
         console.warn('Supabase error:',e.message);
-        [[0,0,20,'box',0],[10,5,35,'slim',30],[-8,12,15,'wide',100],[15,-10,50,'cylinder',300],[-15,-5,28,'box',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
+        [[0,0,20,'square',0],[10,5,35,'triangle',30],[-8,12,15,'square',100],[15,-10,50,'cylinder',300],[-15,-5,28,'square',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
       }
     }
     async function loadBuildingsAndLands(){
@@ -2831,7 +2863,7 @@
         if(pendingBuildMode&&gachaState.result){
           const key=landKey(gx,gz);const land=landMap[key];
           if(!land||land.owner_id!==currentUser?.id){showToast('自分の土地を選択してください');return;}
-          gachaState.landKey=key;selectedShape=pendingBuildShape||'box';openBuildModal();return;
+          gachaState.landKey=key;openBuildModal();return;
         }
         openLandPanel(gx,gz);
       }
@@ -2894,11 +2926,12 @@
       });
       zukanBuildings.forEach(b=>{
         const star=getStarByBaseFloors(b.floors);const ci=getColorByEmployees(b.employees||0);
-        const shape=b.style?b.style.split('_')[0]:'box';
-        const shapeLabel=isJa?(SHAPE_LABELS[shape]||shape):(SHAPE_LABELS_EN[shape]||shape);
+        const prism=normalizePrism(b.style?b.style.split('_')[0]:'square');
+        const prismLabel=getPrismLabel(prism,isJa);
+        const prismIcon=PRISM_ICONS[prism]||'🏢';
         const empDisplay=isJa?`${(b.employees||0).toLocaleString()}人`:`${(b.employees||0).toLocaleString()}`;
         const card=document.createElement('div');card.className=`zukan-card star${star}`;
-        card.innerHTML=`<div class="zcard-icon">${BUILDING_ICONS[star]||'🏢'}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${b.floors}F</div><div class="zcard-floors-label">${isJa?'階建て':'floors'}</div><div class="zcard-meta"><span class="zcard-emp" style="color:${ci.name==='gold'?'#f59e0b':ci.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">👥 ${empDisplay}</span><br><span style="margin-top:4px;display:inline-block;">📐 ${shapeLabel}</span><br><span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span></div>`;
+        card.innerHTML=`<div class="zcard-icon">${prismIcon}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${isJa?`${b.floors}階`:`${b.floors}F`}</div><div class="zcard-floors-label">${prismLabel}</div><div class="zcard-meta"><span class="zcard-emp" style="color:${ci.name==='gold'?'#f59e0b':ci.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">👥 ${empDisplay}</span><br><span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span></div>`;
         card.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;showToast(`📍 X:${b.x} / Z:${b.z} にフォーカス`);});
         grid.appendChild(card);
       });
@@ -2915,7 +2948,7 @@
         container.appendChild(section);
         const buildingsEl=section.querySelector(`#zukan-rarity-${star}`);
         if(myBuildings.length===0){buildingsEl.innerHTML=`<span class="zukan-empty-rarity">${isJa?'未所有':'Not owned'}</span>`;}
-        else{myBuildings.forEach(b=>{const mini=document.createElement('div');mini.className='zukan-mini-card';mini.innerHTML=`${BUILDING_ICONS[star]} ${b.floors}F`;mini.style.cursor='pointer';mini.title=`X:${b.x} Z:${b.z}`;mini.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;});buildingsEl.appendChild(mini);});}
+        else{myBuildings.forEach(b=>{const prism=normalizePrism(b.style?b.style.split('_')[0]:'square');const mini=document.createElement('div');mini.className='zukan-mini-card';mini.innerHTML=`${PRISM_ICONS[prism]||'🏢'} ${isJa?`${b.floors}階`:`${b.floors}F`} ${getPrismLabel(prism,isJa)}`;mini.style.cursor='pointer';mini.title=`X:${b.x} Z:${b.z}`;mini.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;});buildingsEl.appendChild(mini);});}
       });
     }
     // ========================================

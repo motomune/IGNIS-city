@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>IGNIS CITY</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -72,11 +72,16 @@
     }
     #build-btn {
       background: linear-gradient(135deg, #ff6a00, #ee0979); color: #fff; border: none;
-      padding: 14px 40px; font-size: 15px; font-weight: 700; letter-spacing: 0.1em;
+      padding: 14px 28px; font-size: 15px; font-weight: 700; letter-spacing: 0.06em;
       border-radius: 40px; cursor: pointer; box-shadow: 0 4px 30px rgba(255,106,0,0.4);
       transition: transform 0.15s, box-shadow 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      max-width: 100%;
     }
+    #build-btn .acq-icons { font-size: 1.2em; line-height: 1; letter-spacing: 0.02em; }
+    #build-btn #build-btn-text { font-size: 1em; white-space: nowrap; }
     #build-btn:hover { transform: scale(1.05); box-shadow: 0 8px 40px rgba(255,106,0,0.6); }
+    #gacha-float-btn .acq-icons { font-size: 1.15em; line-height: 1; }
     #mode-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;
       padding: 12px 22px; font-size: 13px; font-weight: 700; border-radius: 30px;
@@ -537,6 +542,66 @@
     #building-modal-notes-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
     /* 3D格言ラベル */
     .motto-pending-badge { display:inline-block;font-size:10px;background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);color:rgba(255,165,0,0.8);padding:2px 8px;border-radius:6px;margin-left:6px; }
+    /* スマホ・タブレット */
+    @media (max-width: 768px) {
+      #header { flex-wrap: wrap; padding: 10px 12px; gap: 6px 8px; align-items: flex-start; }
+      #logo { font-size: 15px; letter-spacing: 0.14em; flex: 1 1 auto; min-width: 0; }
+      #stats { font-size: 11px; flex: 1 1 100%; order: 3; line-height: 1.45; }
+      #emp-stats { font-size: 10px !important; }
+      #user-area { gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
+      #lang-btn, #sound-toggle { padding: 5px 10px; font-size: 11px; }
+      #login-btn-header { padding: 5px 12px; font-size: 11px; }
+      #logged-in-area { gap: 5px; flex-wrap: wrap; max-width: 100%; }
+      #user-name { font-size: 11px; max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #ranking-btn { padding: 5px 10px !important; font-size: 10px !important; }
+      #coin-history-btn, #logout-btn { padding: 5px 10px; font-size: 10px; }
+      #bottom-btns {
+        bottom: max(14px, env(safe-area-inset-bottom, 14px));
+        left: 50%; transform: translateX(-50%);
+        width: calc(100% - 20px); max-width: 340px;
+        flex-direction: column; gap: 8px;
+      }
+      #build-btn { width: 100%; padding: 13px 18px; font-size: 14px; border-radius: 28px; }
+      #build-btn .acq-icons { font-size: 22px; }
+      #build-btn #build-btn-text { font-size: 15px; font-weight: 800; }
+      #mode-btn { width: 100%; padding: 11px 16px; font-size: 12px; border-radius: 24px; }
+      #right-float-btns {
+        bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+        right: 10px; gap: 8px;
+      }
+      #zukan-float-btn, #gacha-float-btn {
+        padding: 10px 14px; font-size: 12px; border-radius: 28px;
+        min-width: 52px; min-height: 44px;
+      }
+      #gacha-float-btn .acq-icons { font-size: 20px; }
+      #task-toggle-btn { top: 72px; right: 10px; padding: 7px 12px; font-size: 11px; }
+      #minimap-wrap { bottom: calc(118px + env(safe-area-inset-bottom, 0px)); left: 10px; }
+      #minimap-canvas { width: 100px; height: 100px; }
+      #minimap-label { font-size: 8px; }
+      #fly-hint { top: 68px; font-size: 11px; padding: 6px 14px; max-width: 92vw; white-space: normal; text-align: center; }
+      #toast { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; max-width: 90vw; white-space: normal; text-align: center; }
+      #land-panel { bottom: calc(120px + env(safe-area-inset-bottom, 0px)); padding: 16px 18px; min-width: 0; width: calc(100% - 20px); }
+      .land-panel-btn { font-size: 13px; padding: 11px; }
+      #gacha-box, #build-box, #building-box, #auth-box { width: min(340px, 94vw); padding: 18px 16px; }
+      #gacha-title { font-size: 17px; }
+      #gacha-spin-btn, #gacha-hire-btn { font-size: 14px; padding: 12px; }
+      #gacha-prism-note { font-size: 10px !important; }
+      #gacha-book { height: min(54vh, 320px); }
+      #gacha-book-phase { width: 100%; }
+      #book-scratch-hint { font-size: 11px; text-align: center; padding: 0 8px; }
+      #book-result-actions { max-width: 100%; }
+      #book-result-build, #book-result-city { font-size: 13px; padding: 11px 18px; }
+      #audio-unlock-btn { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; padding: 10px 18px; }
+    }
+    @media (max-width: 380px) {
+      #logo { font-size: 13px; }
+      #stats { font-size: 10px; }
+      #ranking-btn { padding: 6px 9px !important; font-size: 0 !important; line-height: 1; }
+      #ranking-btn::after { content: '🏆'; font-size: 14px; }
+      #build-btn .acq-icons { font-size: 20px; }
+      #build-btn #build-btn-text { font-size: 14px; }
+      #user-name { max-width: 72px; }
+    }
   </style>
 </head>
 <body>
@@ -594,13 +659,13 @@
   </div>
   <div id="fly-hint">🕊 WASD / スワイプで空中移動</div>
   <div id="bottom-btns">
-    <button id="build-btn" onclick="openGachaModal(false)">🏢 ビル／従業員獲得</button>
+    <button id="build-btn" onclick="openGachaModal(false)"><span class="acq-icons" aria-hidden="true">🏢／👷</span><span id="build-btn-text">獲得</span></button>
     <button id="mode-btn" onclick="toggleFlyMode()">🕊 飛行モード</button>
   </div>
   <!-- 右下：図鑑（上）→ ガチャ（下） -->
   <div id="right-float-btns">
     <button id="zukan-float-btn" onclick="openZukan()">📖 図鑑</button>
-    <button id="gacha-float-btn" onclick="openGachaModal(false)">🏢 獲得</button>
+    <button id="gacha-float-btn" onclick="openGachaModal(false)" title="ビル／従業員獲得"><span class="acq-icons" aria-hidden="true">🏢／👷</span></button>
   </div>
   <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク</button>
   <div id="task-panel">
@@ -879,7 +944,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v17';
+    const IGNIS_BUILD='2026-05-22-v18';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -1584,9 +1649,11 @@
       document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
       document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
       document.getElementById('coin-count').title=isJa?'クリックでコイン履歴を表示':'Click to view coin history';
-      document.getElementById('build-btn').textContent=isJa?'🏢 ビル／従業員獲得':'🏢 Building / Employee';
+      const buildBtnText=document.getElementById('build-btn-text');
+      if(buildBtnText)buildBtnText.textContent=isJa?'獲得':'Get';
+      document.getElementById('build-btn').setAttribute('title',isJa?'ビル／従業員を獲得':'Get building / employee');
+      document.getElementById('gacha-float-btn').setAttribute('title',isJa?'ビル／従業員を獲得':'Get building / employee');
       document.getElementById('mode-btn').textContent=isFlying?(isJa?'🏙 街づくりモード':'🏙 City Mode'):(isJa?'🕊 飛行モード':'🕊 Fly Mode');
-      document.getElementById('gacha-float-btn').textContent=isJa?'🏢 獲得':'🏢 Acquire';
       // 図鑑フロートボタン：英語は Collection
       document.getElementById('zukan-float-btn').textContent=isJa?'📖 図鑑':'📖 Collection';
       document.getElementById('zukan-title').textContent=isJa?'📖 ビル図鑑':'📖 Building Collection';

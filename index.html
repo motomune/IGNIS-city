@@ -68,7 +68,19 @@
       max-width: 100%;
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     }
-    #build-btn .acq-icons { font-size: 1.2em; line-height: 1; letter-spacing: 0.02em; }
+    #build-btn .acq-icons {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 3px 8px; border-radius: 10px;
+      background: rgba(0,0,0,0.32); border: 1px solid rgba(255,255,255,0.28);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.22);
+      font-size: 1.15em; line-height: 1; letter-spacing: 0;
+    }
+    #build-btn .acq-icon-building,
+    #build-btn .acq-icon-worker {
+      display: inline-block;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.75));
+    }
+    #build-btn .acq-sep { font-size: 0.72em; font-weight: 800; opacity: 0.82; margin: 0 1px; }
     #build-btn #build-btn-text { font-size: 1em; white-space: nowrap; }
     #build-btn:hover { transform: scale(1.05); box-shadow: 0 8px 28px rgba(0,0,0,0.34); filter: brightness(1.06); }
     /* (右下フロート獲得ボタンは廃止) */
@@ -207,7 +219,10 @@
     .book-rate-row .br-stars { font-weight:900;min-width:52px; }
     .book-rate-row .br-floors { color:rgba(60,40,15,0.55);font-size:10px; }
     .book-rate-row .br-prob { font-weight:800;color:#7c4a12; }
-    #book-prize-layer { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;z-index:1;visibility:hidden;opacity:0; }
+    #book-prize-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;transition:transform 0.25s ease,filter 0.25s ease; }
+    #book-prize-canvas.prize-emerge { animation:prizeEmergePulse 0.45s ease-out; }
+    @keyframes prizeEmergePulse { 0%{transform:scale(0.94);filter:brightness(0.9);} 55%{transform:scale(1.03);filter:brightness(1.08);} 100%{transform:scale(1);filter:brightness(1);} }
+    #book-prize-layer { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;z-index:4;visibility:hidden;opacity:0;pointer-events:none; }
     #book-prize-layer.prize-ready { visibility:visible;opacity:1; }
     #build-prize-card { background:rgba(255,106,0,0.1);border:1px solid rgba(255,106,0,0.28);border-radius:12px;padding:14px 16px;margin-bottom:16px;text-align:center; }
     #build-prize-card .bpc-icon { font-size:40px;line-height:1;margin-bottom:8px; }
@@ -217,7 +232,7 @@
     #book-prize-rank { font-size:28px;font-weight:900;letter-spacing:0.12em;line-height:1.1;margin-bottom:2px;text-shadow:0 1px 0 rgba(255,255,255,0.5); }
     #book-prize-floors { font-size:14px;font-weight:800;color:rgba(60,40,15,0.8);margin-top:6px; }
     #book-prize-floors.prize-floor-hidden { display:none; }
-    #book-scratch-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:10;touch-action:none;-webkit-touch-callout:none;cursor:crosshair;transition:opacity 0.45s;pointer-events:auto !important;display:block; }
+    #book-scratch-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:10;touch-action:none;-webkit-touch-callout:none;cursor:crosshair;transition:opacity 0.45s;pointer-events:auto !important;display:block;background:transparent; }
     #book-scratch-canvas.done { opacity:0;pointer-events:none; }
     .book-scratch-label { position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:0.15em;color:rgba(80,80,100,0.5);pointer-events:none;z-index:3; }
     #book-scratch-hint { font-size:12px;font-weight:700;color:rgba(255,200,120,0.85);letter-spacing:0.08em;margin-bottom:12px;animation:audioHintPulse 2s ease-in-out infinite; }
@@ -644,7 +659,7 @@
   </div>
   <div id="fly-hint">🕊 WASD / スワイプで空中移動</div>
   <div id="bottom-btns">
-    <button id="build-btn" onclick="openGachaModal(false)"><span class="acq-icons" aria-hidden="true">🏢／👷</span><span id="build-btn-text">獲得</span></button>
+    <button id="build-btn" onclick="openGachaModal(false)"><span class="acq-icons" aria-hidden="true"><span class="acq-icon-building">🏢</span><span class="acq-sep">／</span><span class="acq-icon-worker">👨‍💼</span></span><span id="build-btn-text">獲得</span></button>
     <button id="mode-btn" onclick="toggleFlyMode()">🕊 飛行モード</button>
     <button id="zukan-float-btn" onclick="openZukan()">📖 図鑑</button>
   </div>
@@ -756,6 +771,7 @@
               <div class="book-page book-page-right book-page-deco" aria-hidden="true"></div>
               <div class="book-scratch-page" id="book-scratch-page">
                 <div class="book-scratch-shield" id="book-scratch-shield"></div>
+                <canvas id="book-prize-canvas" aria-hidden="true"></canvas>
                 <div id="book-prize-layer">
                   <div id="book-prize-icon">🏢</div>
                   <div id="book-prize-rank">★</div>
@@ -912,7 +928,10 @@
         </div>
       </div>
       <div class="auth-input-wrap"><input class="auth-input" id="input-email" type="email" data-placeholder-ja="メールアドレス" data-placeholder-en="Email address" placeholder="メールアドレス" autocomplete="email"></div>
-      <div class="auth-input-wrap"><input class="auth-input" id="input-password" type="password" data-placeholder-ja="パスワード（8文字以上）" data-placeholder-en="Password (8+ characters)" placeholder="パスワード（8文字以上）" autocomplete="current-password"></div>
+      <div class="auth-input-wrap"><input class="auth-input" id="input-password" type="password" data-placeholder-ja="パスワード（8文字以上）" data-placeholder-en="Password (8+ characters)" placeholder="パスワード（8文字以上）" autocomplete="new-password"></div>
+      <div class="auth-input-wrap" id="password-confirm-field" style="display:none;">
+        <input class="auth-input" id="input-password-confirm" type="password" data-placeholder-ja="パスワード（確認）" data-placeholder-en="Confirm password" placeholder="パスワード（確認）" autocomplete="new-password">
+      </div>
       <div id="pw-checks">
         <div class="pw-check-item" id="check-length"><div class="check-icon">✓</div><span>8文字以上</span></div>
         <div class="pw-check-item" id="check-upper"><div class="check-icon">✓</div><span>大文字（A-Z）を含む</span></div>
@@ -926,7 +945,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v20';
+    const IGNIS_BUILD='2026-05-22-v22';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -1322,6 +1341,59 @@
       note.textContent=isJa?'※ 柱: 円柱/三角柱/正四角柱 · 最大50階':'※ Prism types · max 50F';
       list.appendChild(note);
     }
+    function drawBookPrizeCanvas(canvas,result){
+      if(!canvas||!result)return;
+      const parent=canvas.parentElement;
+      const dpr=Math.min(window.devicePixelRatio||1,2);
+      const r=parent.getBoundingClientRect();
+      const w=Math.max(20,Math.floor(r.width));
+      const h=Math.max(20,Math.floor(r.height));
+      canvas.width=Math.floor(w*dpr);
+      canvas.height=Math.floor(h*dpr);
+      canvas.style.width=w+'px';
+      canvas.style.height=h+'px';
+      const ctx=canvas.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      const bg=ctx.createLinearGradient(0,0,w,h);
+      bg.addColorStop(0,'#fffdf6');
+      bg.addColorStop(0.5,'#f3e6cc');
+      bg.addColorStop(1,'#e0cfa8');
+      ctx.fillStyle=bg;
+      ctx.fillRect(0,0,w,h);
+      const prism=normalizePrism(result.prism);
+      const icon=PRISM_ICONS[prism]||'🏢';
+      const stars=getGachaStarSymbols(result.star);
+      const color=BOOK_STAR_COLORS[result.star]||'#a855f7';
+      const cx=w/2,cy=h/2;
+      const glow=ctx.createRadialGradient(cx,cy,8,cx,cy,Math.min(w,h)*0.45);
+      glow.addColorStop(0,'rgba(255,200,120,0.35)');
+      glow.addColorStop(1,'rgba(255,200,120,0)');
+      ctx.fillStyle=glow;
+      ctx.fillRect(0,0,w,h);
+      ctx.font='bold 56px "Segoe UI Emoji","Apple Color Emoji",sans-serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.2)';
+      ctx.shadowBlur=10;
+      ctx.fillText(icon,cx,cy-8);
+      ctx.shadowBlur=0;
+      ctx.font='bold 30px sans-serif';
+      ctx.fillStyle=color;
+      ctx.fillText(stars,cx,cy+36);
+    }
+    let prizeEmergeTimer=null,prizeEmergeLast=0;
+    function pulsePrizeEmerge(){
+      const now=Date.now();
+      if(now-prizeEmergeLast<200)return;
+      prizeEmergeLast=now;
+      const el=document.getElementById('book-prize-canvas');
+      if(!el)return;
+      if(prizeEmergeTimer)clearTimeout(prizeEmergeTimer);
+      el.classList.remove('prize-emerge');
+      void el.offsetWidth;
+      el.classList.add('prize-emerge');
+      prizeEmergeTimer=setTimeout(()=>el.classList.remove('prize-emerge'),480);
+    }
     function fillBookMosaic(ctx,w,h){
       const g=ctx.createLinearGradient(0,0,w,h);
       g.addColorStop(0,'#b8b8c4');
@@ -1357,10 +1429,12 @@
     async function initBookScratch(canvas,onReveal,result){
       if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
       const parent=canvas.parentElement;
+      const prizeCanvas=document.getElementById('book-prize-canvas');
       const prizeLayer=document.getElementById('book-prize-layer');
       const shield=document.getElementById('book-scratch-shield');
       const book=document.getElementById('gacha-book');
       if(prizeLayer){prizeLayer.classList.remove('prize-ready');prizeLayer.style.visibility='hidden';}
+      if(prizeCanvas){prizeCanvas.classList.remove('prize-emerge');}
       if(shield)shield.classList.remove('off');
       if(book)book.classList.remove('scratch-ready');
       if(!parent)return;
@@ -1382,7 +1456,10 @@
       if(w<30||h<30){await waitBookLayout();({ctx,w,h}=resize());}
       if(w<30||h<30){await sleep(120);({ctx,w,h}=resize());}
       if(shield)shield.classList.add('off');
-      if(result)setBookPrizeUnderScratch(result);
+      if(result){
+        drawBookPrizeCanvas(prizeCanvas,result);
+        setBookPrizeUnderScratch(result);
+      }
       if(book)book.classList.add('scratch-ready');
       let revealed=false;
       let drawing=false;
@@ -1398,6 +1475,7 @@
         ctx.arc(x,y,brush,0,Math.PI*2);
         ctx.fill();
         ctx.globalCompositeOperation='source-over';
+        pulsePrizeEmerge();
       };
       const tryReveal=()=>{
         if(revealed)return;
@@ -1597,25 +1675,39 @@
       listEl.innerHTML=html;
     }
     // ========================================
-    // Xシェア
-    // site_config テーブルに key='latest_post_url' で最新投稿URLを登録しておく
-    // 例: INSERT INTO site_config(key,value) VALUES('latest_post_url','https://x.com/soultamash81989/status/XXXXXXX')
+    // Xシェア（ゲームURL → 新規は登録画面へ）
     // ========================================
-    async function getLatestPostUrl(){
+    const GAME_PUBLIC_URL='https://motomune.github.io/IGNIS-city/';
+    function getShareGameUrl(){
       try{
-        const{data}=await db.from('site_config').select('value').eq('key','latest_post_url').single();
-        if(data&&data.value)return data.value;
+        const base=(window.location.origin&&window.location.pathname)
+          ?`${window.location.origin}${window.location.pathname}`
+          :GAME_PUBLIC_URL;
+        const u=new URL(base,window.location.href);
+        u.searchParams.set('open','signup');
+        u.hash='';
+        return u.toString();
+      }catch(e){
+        return GAME_PUBLIC_URL+'?open=signup';
+      }
+    }
+    function maybeOpenSignupFromUrl(){
+      try{
+        const p=new URLSearchParams(window.location.search);
+        if(p.get('open')!=='signup'&&p.get('signup')!=='1')return;
+        if(currentUser)return;
+        openAuthModal();
+        switchTab('signup');
       }catch(e){}
-      return`https://x.com/${OWNER_X_HANDLE}`;
     }
     async function handleShare(){
       if(!currentUser){openAuthModal();showToast('ログインが必要です');return;}
       const isJa=currentLang==='ja';
-      const postUrl=await getLatestPostUrl();
+      const gameUrl=getShareGameUrl();
       const shareText=isJa
         ?`🔥 IGNIS CITYで街を建設中！3D都市建設ゲームに参加しよう #IGNISCITY`
         :`🔥 Building my city in IGNIS CITY! Join the 3D city builder #IGNISCITY`;
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(postUrl)}`,'_blank');
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(gameUrl)}`,'_blank');
       await completeTask('share');
     }
     // ========================================
@@ -1716,7 +1808,7 @@
       if(rankEl){rankEl.textContent=getGachaStarSymbols(result.star);rankEl.style.color=color;}
       const floorsEl=document.getElementById('book-prize-floors');
       if(floorsEl){floorsEl.textContent='';floorsEl.classList.add('prize-floor-hidden');}
-      if(layer)layer.classList.add('prize-ready');
+      if(layer){layer.classList.remove('prize-ready');layer.style.visibility='hidden';}
     }
     function applyGameI18n(){
       const isJa=currentLang==='ja';
@@ -1758,6 +1850,8 @@
       if(xLabel)xLabel.innerHTML=isJa?'X（Twitter）アカウント名 <span style="color:#ff6a00;">*</span>':'X (Twitter) username <span style="color:#ff6a00;">*</span>';
       const xInput=document.getElementById('input-x-username');
       if(xInput)xInput.placeholder=isJa?xInput.dataset.placeholderJa:xInput.dataset.placeholderEn;
+      const pw2Input=document.getElementById('input-password-confirm');
+      if(pw2Input)pw2Input.placeholder=isJa?pw2Input.dataset.placeholderJa:pw2Input.dataset.placeholderEn;
       ['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>{
         const el=document.getElementById(id);
         if(!el)return;
@@ -1903,6 +1997,7 @@
     let loadProgress=0;
     const loadInterval=setInterval(()=>{loadProgress+=Math.random()*15;if(loadProgress>90)loadProgress=90;loadingBar.style.width=loadProgress+'%';},200);
     function finishLoading(){
+      maybeOpenSignupFromUrl();
       if(loadingFinished)return;
       loadingFinished=true;
       __ignisStatus('④ 起動完了');
@@ -1922,6 +2017,7 @@
       document.getElementById('tab-login').classList.toggle('active',mode==='login');
       document.getElementById('tab-signup').classList.toggle('active',mode==='signup');
       document.getElementById('x-username-field').style.display=mode==='signup'?'block':'none';
+      document.getElementById('password-confirm-field').style.display=mode==='signup'?'block':'none';
       document.getElementById('pw-checks').classList.toggle('visible',mode==='signup');
       const isJa=currentLang==='ja';
       document.getElementById('auth-submit').textContent=mode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Sign Up');
@@ -1932,26 +2028,31 @@
     function startBlinking(){stopBlinking();updateInputStates();blinkInterval=setInterval(updateInputStates,200);}
     function stopBlinking(){if(blinkInterval){clearInterval(blinkInterval);blinkInterval=null;}}
     function updateInputStates(){
-      const fields=authMode==='login'?['input-email','input-password']:['input-username','input-email','input-password'];
-      fields.forEach(id=>{const el=document.getElementById(id);if(!el)return;const val=el.value.trim(),focused=document.activeElement===el;el.classList.remove('blink','done');if(focused)return;if(!val){el.classList.add('blink');return;}if(id==='input-password'&&authMode==='signup')el.classList.add(checkPassword(val).every(v=>v)?'done':'blink');else if(id==='input-password')el.classList.add(val.length>=6?'done':'blink');else el.classList.add('done');});
+      const fields=authMode==='login'?['input-email','input-password']:['input-x-username','input-email','input-password','input-password-confirm'];
+      const pw=document.getElementById('input-password')?.value||'';
+      const pw2=document.getElementById('input-password-confirm')?.value||'';
+      fields.forEach(id=>{const el=document.getElementById(id);if(!el)return;const val=el.value.trim(),focused=document.activeElement===el;el.classList.remove('blink','done');if(focused)return;if(!val){el.classList.add('blink');return;}if(id==='input-password'&&authMode==='signup')el.classList.add(checkPassword(val).every(v=>v)?'done':'blink');else if(id==='input-password-confirm'&&authMode==='signup')el.classList.add(val&&val===pw&&checkPassword(pw).every(v=>v)?'done':'blink');else if(id==='input-password')el.classList.add(val.length>=6?'done':'blink');else el.classList.add('done');});
     }
     function checkPassword(pw){return[pw.length>=8,/[A-Z]/.test(pw),/[a-z]/.test(pw),/[0-9]/.test(pw)];}
     document.getElementById('input-password').addEventListener('input',function(){const results=checkPassword(this.value);['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>document.getElementById(id).classList.toggle('ok',results[i]));updateInputStates();});
-    ['input-email','input-username'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateInputStates);});
-    ['input-username','input-email','input-password'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}});
+    ['input-email','input-username','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateInputStates);});
+    ['input-username','input-email','input-password','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}});
     async function handleAuth(){
       const email=document.getElementById('input-email').value.trim();
       const password=document.getElementById('input-password').value;
+      const passwordConfirm=document.getElementById('input-password-confirm').value;
       const username=document.getElementById('input-username').value.trim();
       const xUsername=document.getElementById('input-x-username').value.trim().replace(/^@/,'');
       const btn=document.getElementById('auth-submit'),errEl=document.getElementById('auth-error');
+      const isJa=currentLang==='ja';
       errEl.textContent='';errEl.style.color='#ff4444';
-      if(!email||!password){errEl.textContent='メールアドレスとパスワードを入力してください';return;}
+      if(!email||!password){errEl.textContent=isJa?'メールアドレスとパスワードを入力してください':'Enter email and password';return;}
       if(authMode==='signup'&&!xUsername){
-        errEl.textContent=currentLang==='ja'?'Xアカウント名を入力してください':'Please enter your X username';
+        errEl.textContent=isJa?'Xアカウント名を入力してください':'Please enter your X username';
         return;
       }
-      if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent='パスワードの条件を全て満たしてください';return;}
+      if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent=isJa?'パスワードの条件を全て満たしてください':'Meet all password requirements';return;}
+      if(authMode==='signup'&&password!==passwordConfirm){errEl.textContent=isJa?'パスワードが一致しません':'Passwords do not match';return;}
       btn.disabled=true;btn.textContent='処理中...';
       try{
         if(authMode==='login'){
@@ -2290,10 +2391,12 @@
       hint.classList.remove('hide');
       book.classList.remove('open','opening','scratch-ready');
       const prizeLayer=document.getElementById('book-prize-layer');
+      const prizeCanvas=document.getElementById('book-prize-canvas');
       const shield=document.getElementById('book-scratch-shield');
       prizeLayer.style.animation='';
       prizeLayer.classList.remove('prize-ready');
       prizeLayer.style.visibility='hidden';
+      if(prizeCanvas){prizeCanvas.classList.remove('prize-emerge');const pc=prizeCanvas.getContext('2d');if(pc)pc.clearRect(0,0,prizeCanvas.width,prizeCanvas.height);}
       if(shield)shield.classList.remove('off');
       document.getElementById('book-prize-icon').textContent='';
       document.getElementById('book-prize-rank').textContent='';
@@ -2313,7 +2416,10 @@
         canvas.classList.add('done');
         hint.classList.add('hide');
         if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
+        prizeLayer.classList.add('prize-ready');
+        prizeLayer.style.visibility='visible';
         prizeLayer.style.animation='resultFadeIn 0.5s ease forwards';
+        pulsePrizeEmerge();
         if(result.star>=4){
           flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash');
           IgnisAudio.playSuccess();

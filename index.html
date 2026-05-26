@@ -242,6 +242,42 @@
     #book-result-build { background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;padding:12px 24px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;width:100%; }
     #book-result-city { background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:11px 24px;border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;width:100%; }
     #gacha-flash { position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:301;transition:opacity 0.1s; }
+    #hire-stamp-overlay {
+      display:none;position:fixed;inset:0;z-index:320;
+      background:rgba(8,8,18,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      align-items:center;justify-content:center;padding:20px;pointer-events:none;
+    }
+    #hire-stamp-overlay.show { display:flex; }
+    .hire-contract {
+      position:relative;width:min(92vw,340px);min-height:min(72vw,420px);
+      background:linear-gradient(165deg,#fffef8 0%,#f5ecd8 55%,#e8dcc4 100%);
+      border:1px solid rgba(120,90,50,0.35);border-radius:4px;
+      box-shadow:0 24px 60px rgba(0,0,0,0.45),inset 0 0 0 1px rgba(255,255,255,0.5);
+      padding:28px 24px 32px;color:#2a1a0a;
+      transform:scale(0.88) translateY(24px);opacity:0;
+      transition:transform 0.45s cubic-bezier(0.34,1.4,0.64,1),opacity 0.35s;
+    }
+    #hire-stamp-overlay.show .hire-contract { transform:scale(1) translateY(0);opacity:1; }
+    .hire-contract-header { font-size:11px;font-weight:900;letter-spacing:0.35em;text-align:center;color:rgba(80,50,20,0.55);margin-bottom:18px;border-bottom:2px double rgba(80,50,20,0.25);padding-bottom:12px; }
+    .hire-contract-title { font-size:22px;font-weight:900;text-align:center;margin-bottom:16px;letter-spacing:0.12em; }
+    .hire-contract-body { font-size:13px;line-height:1.85;color:rgba(40,25,10,0.82);margin-bottom:20px;min-height:120px; }
+    .hire-contract-sign { font-size:11px;text-align:right;color:rgba(60,40,20,0.55);margin-top:24px; }
+    .hire-stamp-seal {
+      position:absolute;right:18%;bottom:22%;width:88px;height:88px;border-radius:50%;
+      border:4px solid #c41e1e;color:#c41e1e;font-size:22px;font-weight:900;
+      display:flex;align-items:center;justify-content:center;letter-spacing:0.2em;
+      transform:scale(2.2) rotate(-12deg);opacity:0;
+      box-shadow:inset 0 0 0 2px rgba(196,30,30,0.35),0 4px 16px rgba(196,30,30,0.35);
+      background:rgba(255,240,240,0.35);
+    }
+    .hire-stamp-seal.stamped { animation:hireStampSlam 0.55s cubic-bezier(0.2,1.4,0.4,1) forwards; }
+    @keyframes hireStampSlam {
+      0%{transform:scale(2.4) rotate(-18deg);opacity:0;}
+      55%{transform:scale(0.92) rotate(-8deg);opacity:1;}
+      75%{transform:scale(1.06) rotate(-10deg);opacity:1;}
+      100%{transform:scale(1) rotate(-10deg);opacity:0.92;}
+    }
+    #hire-stamp-overlay.done .hire-contract { transform:scale(1.02);opacity:0;transition:opacity 0.35s,transform 0.35s; }
     #gacha-flash.flash { animation: flashAnim 0.6s ease-out forwards; }
     @keyframes flashAnim { 0%{opacity:0.9;} 100%{opacity:0;} }
     #gacha-particles { position:absolute;inset:0;pointer-events:none;overflow:visible; }
@@ -712,15 +748,15 @@
     <div id="land-panel-owner"></div>
     <div id="land-panel-building"></div>
     <button id="land-buy-btn" class="land-panel-btn" onclick="handleLandBuy()">🔥 この土地を取得（100コイン）</button>
-    <button id="land-gacha-btn" class="land-panel-btn" onclick="openGachaModal(false)" style="display:none;">🎰 ガチャでビルを建てる（50コイン）</button>
-    <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">🔄 ガチャで建て替える（50コイン）</button>
+    <button id="land-gacha-btn" class="land-panel-btn" onclick="openGachaModal(false)" style="display:none;">📖 スクラッチでビルを建てる（50コイン）</button>
+    <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">🔄 スクラッチで建て替える（50コイン）</button>
   </div>
   <div id="gacha-modal">
     <div id="gacha-box">
       <button id="gacha-modal-close" onclick="closeGachaModal()">×</button>
-      <div id="gacha-title">🎰 ビルガチャ</div>
+      <div id="gacha-title">📖 ビルスクラッチ</div>
       <div id="gacha-land-info"></div>
-      <div id="gacha-no-land-warning">⚠️ 土地が選択されていません。<br>ガチャ後に建設先の土地をタップしてください。</div>
+      <div id="gacha-no-land-warning">⚠️ 土地が選択されていません。<br>スクラッチ後に建設先の土地をタップしてください。</div>
       <div class="gacha-rates">
         <div class="rate-row"><span class="stars star5">★★★★★</span><span class="floors-range">48〜50階</span><span class="prob">0.8%</span></div>
         <div class="rate-row"><span class="stars star4">★★★★</span><span class="floors-range">40〜47階</span><span class="prob">2.2%</span></div>
@@ -729,15 +765,24 @@
         <div class="rate-row"><span class="stars star1">★</span><span class="floors-range">1〜19階</span><span class="prob">50%</span></div>
       </div>
       <div id="gacha-cost-info">消費コイン：<span>50</span>コイン</div>
-      <div id="gacha-prism-note" style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:10px;line-height:1.5;">当たるビルは <b>円柱・三角柱・正四角柱</b> のいずれか（階数はレア度で決定）</div>
-      <button id="gacha-spin-btn" onclick="handleGachaSpin()">🎰 ガチャを回す</button>
+      <div id="gacha-prism-note" style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:10px;line-height:1.5;">当たるビルは <b>円柱・三角柱・正四角柱</b>（最大50階）</div>
+      <button id="gacha-spin-btn" onclick="handleGachaSpin()">📖 スクラッチする</button>
       <div style="display:flex;align-items:center;gap:8px;margin:16px 0 10px;color:rgba(255,255,255,0.3);font-size:11px;font-weight:700;letter-spacing:0.12em;">
         <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
         <span id="gacha-or-label">OR</span>
         <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
       </div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;" id="hire-info">従業員を採用：<span>30</span>コイン → 休職中プールに +1人</div>
-      <button id="gacha-hire-btn" onclick="handleHireEmployee()" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👷 従業員を採用（30コイン）</button>
+      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;" id="hire-info">従業員を採用：<span>20</span>コイン → 休職中プールに +1人</div>
+      <button id="gacha-hire-btn" onclick="handleHireEmployee()" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👨‍💼 従業員を採用（20コイン）</button>
+    </div>
+  </div>
+  <div id="hire-stamp-overlay" aria-hidden="true">
+    <div class="hire-contract" role="dialog" aria-labelledby="hire-contract-title">
+      <div class="hire-contract-header" id="hire-contract-header">IGNIS CITY · 人事</div>
+      <div class="hire-contract-title" id="hire-contract-title">採用通知書</div>
+      <div class="hire-contract-body" id="hire-contract-body"></div>
+      <div class="hire-contract-sign" id="hire-contract-sign">印鑑で採用</div>
+      <div class="hire-stamp-seal" id="hire-stamp-seal">採用</div>
     </div>
   </div>
   <div id="gacha-overlay">
@@ -794,7 +839,7 @@
   <div id="build-modal">
     <div id="build-box">
       <button id="build-modal-close" onclick="closeBuildModal()">×</button>
-      <div id="build-modal-title">🏗 ガチャ結果を建設</div>
+      <div id="build-modal-title">🏗 スクラッチ結果を建設</div>
       <div id="build-prize-card">
         <div class="bpc-icon" id="build-prize-icon">🏢</div>
         <div class="bpc-title" id="build-modal-info">—</div>
@@ -837,7 +882,7 @@
         <div id="zukan-empty" style="display:none;">
           <div style="font-size:48px;margin-bottom:12px;">🏗</div>
           <div style="font-size:16px;font-weight:700;color:rgba(255,255,255,0.5);">まだビルがありません</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px;">土地を取得してガチャでビルを建てよう！</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px;">土地を取得してスクラッチでビルを建てよう！</div>
         </div>
       </div>
       <div id="zukan-rarity" style="display:none;">
@@ -945,7 +990,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-22-v22';
+    const IGNIS_BUILD='2026-05-22-v23';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -1270,6 +1315,7 @@
     let currentUser=null;
     const LAND_COST=100;
     const GACHA_COST=50;
+    const HIRE_COST=20;
     const OWNER_X_HANDLE='soultamash81989'; // @soultamash81989
     const DAILY_TASKS=[
       {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:3},
@@ -1772,14 +1818,14 @@
         }
       });
       document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
-      document.getElementById('land-gacha-btn').textContent=isJa?'🎰 ガチャでビルを建てる（50コイン）':'🎰 Build with Gacha (50 coins)';
-      document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 ガチャで建て替える（50コイン）':'🔄 Rebuild with Gacha (50 coins)';
+      document.getElementById('land-gacha-btn').textContent=isJa?'📖 スクラッチでビルを建てる（50コイン）':'📖 Build via Scratch (50 coins)';
+      document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 スクラッチで建て替える（50コイン）':'🔄 Rebuild via Scratch (50 coins)';
       const empTotal=document.querySelector('[data-i18n="emp-total"]');if(empTotal)empTotal.textContent=isJa?'自分の合計':'Your Total';
       const empBench=document.querySelector('[data-i18n="emp-bench"]');if(empBench)empBench.textContent=isJa?'休職中':'Bench';
       document.querySelectorAll('[data-i18n="emp-unit"],[data-i18n="emp-unit2"]').forEach(el=>el.textContent=isJa?'人':'');
       const orLabel=document.getElementById('gacha-or-label');if(orLabel)orLabel.textContent=isJa?'または':'OR';
-      const hireBtn=document.getElementById('gacha-hire-btn');if(hireBtn)hireBtn.textContent=isJa?'👷 従業員を採用（30コイン）':'👷 Hire Employee (30 coins)';
-      const hireInfo=document.getElementById('hire-info');if(hireInfo)hireInfo.innerHTML=isJa?'従業員を採用：<span>30</span>コイン → 休職中プールに +1人':'Hire employee: <span>30</span> coins → +1 to bench pool';
+      const hireBtn=document.getElementById('gacha-hire-btn');if(hireBtn)hireBtn.textContent=isJa?'👨‍💼 従業員を採用（20コイン）':'👨‍💼 Hire Employee (20 coins)';
+      const hireInfo=document.getElementById('hire-info');if(hireInfo)hireInfo.innerHTML=isJa?`従業員を採用：<span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire employee: <span>${HIRE_COST}</span> coins → +1 to bench pool`;
       document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;});
       document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
       document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
@@ -1813,25 +1859,25 @@
     function applyGameI18n(){
       const isJa=currentLang==='ja';
       const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=isJa?ja:en;};
-      set('gacha-title','🎰 ビルガチャ','🎰 Building Gacha');
+      set('gacha-title','📖 ビルスクラッチ','📖 Building Scratch');
       const costEl=document.getElementById('gacha-cost-info');
       if(costEl)costEl.innerHTML=isJa?`消費コイン：<span>${GACHA_COST}</span>コイン`:`Cost: <span>${GACHA_COST}</span> coins`;
       const warnEl=document.getElementById('gacha-no-land-warning');
-      if(warnEl)warnEl.innerHTML=isJa?'⚠️ 土地が選択されていません。<br>ガチャ後に建設先の土地をタップしてください。':'⚠️ No land selected.<br>Tap your land after gacha to build.';
-      set('gacha-spin-btn','🎰 ガチャを回す','🎰 Spin Gacha');
+      if(warnEl)warnEl.innerHTML=isJa?'⚠️ 土地が選択されていません。<br>スクラッチ後に建設先の土地をタップしてください。':'⚠️ No land selected.<br>Tap your land after scratching to build.';
+      set('gacha-spin-btn','📖 スクラッチする','📖 Scratch');
       const prismNote=document.getElementById('gacha-prism-note');
-      if(prismNote)prismNote.innerHTML=isJa?'当たるビルは <b>円柱・三角柱・正四角柱</b>（最大50階・51階以上は出ません）':'Prize: <b>cylinder / triangular / square prism</b> (max 50F, no 51F+)';
+      if(prismNote)prismNote.innerHTML=isJa?'当たるビルは <b>円柱・三角柱・正四角柱</b>（最大50階）':'Prize: <b>cylinder / triangular / square prism</b> (max 50F)';
       set('gacha-or-label','または','OR');
       const hireInfo=document.getElementById('hire-info');
-      if(hireInfo)hireInfo.innerHTML=isJa?'従業員を採用：<span>30</span>コイン → 休職中プールに +1人':'Hire: <span>30</span> coins → +1 to bench';
-      set('gacha-hire-btn','👷 従業員を採用（30コイン）','👷 Hire Employee (30 coins)');
+      if(hireInfo)hireInfo.innerHTML=isJa?`従業員を採用：<span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire: <span>${HIRE_COST}</span> coins → +1 to bench`;
+      set('gacha-hire-btn',`👨‍💼 従業員を採用（${HIRE_COST}コイン）`,`👨‍💼 Hire Employee (${HIRE_COST} coins)`);
       const bookRatesTitle=document.getElementById('book-rates-title');
       if(document.getElementById('gacha-overlay')?.classList.contains('show'))renderBookRates(isJa);
       if(bookRatesTitle)bookRatesTitle.textContent=isJa?'出現率':'Drop Rates';
       const bookHint=document.getElementById('book-scratch-hint');
       if(bookHint)bookHint.textContent=isJa?'右ページを削るとビル獲得！':'Scratch the right page — win a building!';
       syncGachaResultButtonsI18n();
-      set('build-modal-title',isJa?'🏗 ガチャ結果を建設':'🏗 Build Gacha Prize');
+      set('build-modal-title',isJa?'🏗 スクラッチ結果を建設':'🏗 Build Scratch Prize');
       set('build-confirm-btn',isJa?'🏢 このビルを建設する':'🏢 Build This Building');
       const rateRows=document.querySelectorAll('.gacha-rates .rate-row');
       const rateFloorsJa=['48〜50階','40〜47階','30〜39階','20〜29階','1〜19階'];
@@ -2374,7 +2420,7 @@
       const result=rollGacha();gachaState.result=result;
       closeGachaModal(true);
       playGachaAnimation(result);
-      btn.disabled=false;btn.textContent=currentLang==='ja'?'🎰 ガチャを回す':'🎰 Spin Gacha';
+      btn.disabled=false;btn.textContent=currentLang==='ja'?'📖 スクラッチする':'📖 Scratch';
     }
     async function playGachaAnimation(result){
       const isJa=currentLang==='ja';
@@ -2667,30 +2713,75 @@
     const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
     function getStarByFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
     // ========================================
-    // 従業員採用
+    // 従業員採用（印鑑演出）
     // ========================================
+    function playHireContractAnimation(){
+      return new Promise(resolve=>{
+        const isJa=currentLang==='ja';
+        const overlay=document.getElementById('hire-stamp-overlay');
+        const body=document.getElementById('hire-contract-body');
+        const header=document.getElementById('hire-contract-header');
+        const title=document.getElementById('hire-contract-title');
+        const sign=document.getElementById('hire-contract-sign');
+        const seal=document.getElementById('hire-stamp-seal');
+        if(!overlay){resolve();return;}
+        if(header)header.textContent=isJa?'IGNIS CITY · 人事':'IGNIS CITY · HR';
+        if(title)title.textContent=isJa?'採用通知書':'Employment Notice';
+        if(body)body.innerHTML=isJa
+          ?'下記の者を IGNIS CITY に採用します。<br><br>職種：都市建設スタッフ<br>配属：休職中プール（未配属）<br><br>本書による採用をもって正式に雇い入れとします。'
+          :'The following person is hereby hired into IGNIS CITY.<br><br>Role: City Builder Staff<br>Assignment: Bench pool (unassigned)<br><br>This document confirms official hiring.';
+        if(sign)sign.textContent=isJa?'印鑑で採用':'Stamp to hire';
+        if(seal){seal.textContent=isJa?'採用':'HIRED';seal.classList.remove('stamped');}
+        overlay.classList.remove('done');
+        overlay.classList.add('show');
+        overlay.setAttribute('aria-hidden','false');
+        IgnisAudio.playSuccess?.();
+        setTimeout(()=>{
+          if(seal)seal.classList.add('stamped');
+          setTimeout(()=>{
+            overlay.classList.add('done');
+            setTimeout(()=>{
+              overlay.classList.remove('show','done');
+              overlay.setAttribute('aria-hidden','true');
+              if(seal)seal.classList.remove('stamped');
+              resolve();
+            },380);
+          },720);
+        },520);
+      });
+    }
     async function handleHireEmployee(){
       if(!currentUser){showToast('ログインが必要です');return;}
       const btn=document.getElementById('gacha-hire-btn');
-      btn.disabled=true;const originalText=btn.textContent;btn.textContent='採用中...';
+      if(btn.disabled)return;
+      const isJa=currentLang==='ja';
+      const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      if(balance<HIRE_COST){
+        showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);
+        return;
+      }
+      btn.disabled=true;
+      const originalText=btn.textContent;
+      btn.textContent=isJa?'準備中...':'Preparing...';
       try{
+        await playHireContractAnimation();
+        btn.textContent=isJa?'採用中...':'Hiring...';
         const{data,error}=await db.rpc('hire_employee');
         if(error)throw error;
-        const isJa=currentLang==='ja';
         if(!data||!data.ok){
           if(data&&data.reason==='insufficient_coins'){
-            showToast(isJa?`⚠️ コインが不足しています（${data.coins}/30）`:`⚠️ Not enough coins (${data.coins}/30)`);
+            showToast(isJa?`⚠️ コインが不足しています（${data.coins}/${HIRE_COST}）`:`⚠️ Not enough coins (${data.coins}/${HIRE_COST})`);
           } else {
             showToast(isJa?'採用に失敗しました':'Hire failed');
           }
           return;
         }
         document.getElementById('coin-count').textContent=data.coins_remaining;
-        await recordCoin(-30,'hire_employee');
+        await recordCoin(-HIRE_COST,'hire_employee');
         await completeTask('hire');
         await refreshEmployeeHeader();
-        showToast(isJa?`👷 従業員を1人採用！休職中プールに加算`:`👷 Hired 1 employee! Added to bench`);
-      }catch(e){console.warn('hire error:',e.message);showToast('採用に失敗: '+e.message);}
+        showToast(isJa?`👨‍💼 従業員を1人採用！休職中プールに加算`:`👨‍💼 Hired 1 employee! Added to bench`);
+      }catch(e){console.warn('hire error:',e.message);showToast(isJa?'採用に失敗: '+e.message:'Hire failed: '+e.message);}
       finally{btn.disabled=false;btn.textContent=originalText;}
     }
     // ========================================

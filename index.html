@@ -237,29 +237,10 @@
     .book-scratch-label { position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:0.15em;color:rgba(80,80,100,0.5);pointer-events:none;z-index:3; }
     #book-scratch-hint { font-size:12px;font-weight:700;color:rgba(255,200,120,0.85);letter-spacing:0.08em;margin-bottom:12px;animation:audioHintPulse 2s ease-in-out infinite; }
     #book-scratch-hint.hide { display:none; }
-    #scratch-result-panel { display:none;flex-direction:column;align-items:center;width:min(94vw,380px);padding:8px 12px 20px; }
-    #scratch-result-panel.show { display:flex;animation:resultFadeIn 0.55s ease forwards; }
-    #gacha-book-phase.scratch-done { display:none !important; }
-    .srp-card {
-      width:100%;text-align:center;padding:28px 20px 24px;margin-bottom:20px;
-      background:linear-gradient(165deg,rgba(255,253,246,0.12),rgba(243,230,204,0.08));
-      border:1px solid rgba(255,200,120,0.35);border-radius:20px;
-      box-shadow:0 12px 40px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08);
-    }
-    .srp-get-label { font-size:13px;font-weight:900;letter-spacing:0.35em;color:rgba(255,200,120,0.85);margin-bottom:12px; }
-    .srp-icon { font-size:72px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.35)); }
-    .srp-stars { font-size:32px;font-weight:900;letter-spacing:0.1em;margin-bottom:10px; }
-    .srp-detail { font-size:18px;font-weight:800;color:#fff;line-height:1.45;padding:0 8px; }
-    .srp-sub { font-size:12px;color:rgba(255,255,255,0.45);margin-top:8px; }
-    #book-result-actions { display:none;flex-direction:column;gap:10px;width:100%;max-width:300px; }
+    #book-result-actions { display:none;flex-direction:column;gap:10px;width:100%;max-width:280px; }
     #book-result-actions.show { display:flex;animation:resultFadeIn 0.45s ease forwards; }
     #book-result-build { background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;padding:12px 24px;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;width:100%; }
-    #book-result-rescratch { background:linear-gradient(135deg,rgba(255,106,0,0.85),rgba(238,9,121,0.85));border:1px solid rgba(255,255,255,0.15);color:#fff;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:800;cursor:pointer;width:100%; }
     #book-result-city { background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:11px 24px;border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;width:100%; }
-    #staff-term-section { margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);text-align:left; }
-    #staff-term-info { font-size:11px;color:rgba(255,255,255,0.5);line-height:1.55;margin-bottom:8px; }
-    #staff-extend-btn { width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.82);padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer; }
-    #staff-extend-btn:disabled { opacity:0.35;cursor:not-allowed; }
     #gacha-flash { position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:301;transition:opacity 0.1s; }
     #hire-stamp-overlay {
       display:none;position:fixed;inset:0;z-index:320;
@@ -653,7 +634,7 @@
       #gacha-book-phase { width: 100%; }
       #book-scratch-hint { font-size: 11px; text-align: center; padding: 0 8px; }
       #book-result-actions { max-width: 100%; }
-      #book-result-build, #book-result-rescratch, #book-result-city { font-size: 13px; padding: 11px 18px; }
+      #book-result-build, #book-result-city { font-size: 13px; padding: 11px 18px; }
       #audio-unlock-btn { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; padding: 10px 18px; }
     }
     @media (max-width: 380px) {
@@ -801,10 +782,6 @@
       </div>
       <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;" id="hire-info">従業員を採用：<span>20</span>コイン → 休職中プールに +1人</div>
       <button id="gacha-hire-btn" onclick="handleHireEmployee()" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👨‍💼 従業員を採用（20コイン）</button>
-      <div id="staff-term-section">
-        <div id="staff-term-info">在籍 — 名 · 任期3か月</div>
-        <button id="staff-extend-btn" type="button" onclick="handleExtendStaffTerms()">任期を3か月延長（8コイン×人数）</button>
-      </div>
     </div>
   </div>
   <div id="hire-stamp-overlay" aria-hidden="true">
@@ -861,18 +838,8 @@
         </div>
       </div>
       <p id="book-scratch-hint">右ページを削るとビル獲得！</p>
-    </div>
-    <div id="scratch-result-panel">
-      <div class="srp-card">
-        <div class="srp-get-label" id="srp-get-label">GET!</div>
-        <div class="srp-icon" id="srp-icon">🏢</div>
-        <div class="srp-stars" id="srp-stars">★</div>
-        <div class="srp-detail" id="srp-detail">—</div>
-        <div class="srp-sub" id="srp-sub"></div>
-      </div>
       <div id="book-result-actions">
-        <button id="book-result-build" type="button" onclick="onGachaResultClose()">建設する</button>
-        <button id="book-result-rescratch" type="button" onclick="onGachaResultRescratch()">📖 もう一度スクラッチ</button>
+        <button id="book-result-build" type="button" onclick="onGachaResultClose()">建設する →</button>
         <button id="book-result-city" type="button" onclick="onGachaResultBackToCity()">🏙 IGNIS Cityへ戻る</button>
       </div>
     </div>
@@ -1110,14 +1077,42 @@
     });
     const SUPABASE_URL='https://xssjhgosxyhknonlrjrq.supabase.co';
     const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
+    const ignisAuthStorage={
+      getItem(key){try{return localStorage.getItem(key);}catch(e){try{return sessionStorage.getItem(key);}catch(e2){return null;}}},
+      setItem(key,val){try{localStorage.setItem(key,val);}catch(e){try{sessionStorage.setItem(key,val);}catch(e2){}}},
+      removeItem(key){try{localStorage.removeItem(key);}catch(e){}try{sessionStorage.removeItem(key);}catch(e2){}}
+    };
     let db=null;
+    let authListenerAttached=false;
     try{
       if(!window.supabase)throw new Error('Supabase未読込');
-      db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+      db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+        auth:{
+          persistSession:true,
+          autoRefreshToken:true,
+          detectSessionInUrl:true,
+          storage:ignisAuthStorage,
+          storageKey:'ignis-city-auth'
+        }
+      });
       __ignisStatus('③ DB準備OK');
     }catch(e){
       __ignisStatus('❌ DB初期化失敗 — タップでオフライン開始');
       console.error('[IGNIS] db init',e);
+    }
+    function setupAuthListener(){
+      if(!db||authListenerAttached)return;
+      authListenerAttached=true;
+      db.auth.onAuthStateChange((event,session)=>{
+        if((event==='INITIAL_SESSION'||event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session?.user){
+          onLoginSuccess(session.user,null,null,{restoring:true}).catch(e=>console.warn('[IGNIS] auth state login',e));
+        }
+        if(event==='SIGNED_OUT'){
+          currentUser=null;
+          document.getElementById('login-btn-header').style.display='block';
+          document.getElementById('logged-in-area').style.display='none';
+        }
+      });
     }
   // ========================================
   // サウンド（BGM・UIクリック・ガチャクリック）
@@ -1357,9 +1352,6 @@
     const LAND_COST=100;
     const GACHA_COST=50;
     const HIRE_COST=20;
-    const EXTEND_STAFF_COST=8;
-    const STAFF_TERM_MONTHS=3;
-    const SCRATCH_REVEAL_THRESHOLD=0.494;
     const OWNER_X_HANDLE='soultamash81989'; // @soultamash81989
     const DAILY_TASKS=[
       {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:3},
@@ -1573,7 +1565,7 @@
         let clear=0;
         const total=img.data.length/4;
         for(let i=3;i<img.data.length;i+=4){if(img.data[i]<48)clear++;}
-        if(clear/total>SCRATCH_REVEAL_THRESHOLD){
+        if(clear/total>0.38){
           revealed=true;
           drawing=false;
           onReveal();
@@ -1657,7 +1649,6 @@
       gacha_spin:    {ja:'ガチャ',               en:'Gacha',               icon:'🎰'},
       random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
       hire_employee: {ja:'従業員採用',           en:'Hire Employee',       icon:'👷'},
-      extend_staff:  {ja:'従業員任期延長',       en:'Staff Term Extension',icon:'📋'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
@@ -1916,8 +1907,6 @@
       const hireInfo=document.getElementById('hire-info');
       if(hireInfo)hireInfo.innerHTML=isJa?`従業員を採用：<span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire: <span>${HIRE_COST}</span> coins → +1 to bench`;
       set('gacha-hire-btn',`👨‍💼 従業員を採用（${HIRE_COST}コイン）`,`👨‍💼 Hire Employee (${HIRE_COST} coins)`);
-      loadStaffTermInfo();
-      syncGachaResultButtonsI18n();
       const bookRatesTitle=document.getElementById('book-rates-title');
       if(document.getElementById('gacha-overlay')?.classList.contains('show'))renderBookRates(isJa);
       if(bookRatesTitle)bookRatesTitle.textContent=isJa?'出現率':'Drop Rates';
@@ -2001,12 +1990,12 @@
     async function initDailyTasks(){
       if(!currentUser)return;
       const today=new Date().toISOString().slice(0,10);
-      for(const task of DAILY_TASKS){
-        await db.from('daily_tasks').upsert(
+      await Promise.all(DAILY_TASKS.map(task=>
+        db.from('daily_tasks').upsert(
           {user_id:currentUser.id,task_date:today,task_type:task.type,completed:false},
           {onConflict:'user_id,task_date,task_type',ignoreDuplicates:true}
-        );
-      }
+        )
+      ));
       renderTaskUI();
       await refreshTaskUI();
       await updateViewTaskProgressLabel();
@@ -2130,7 +2119,12 @@
     // 認証
     // ========================================
     let authMode='login';
-    function openAuthModal(){document.getElementById('auth-modal').classList.add('open');document.getElementById('auth-error').textContent='';startFire();startBlinking();}
+    function openAuthModal(){
+      if(typeof forceShowGame==='function')forceShowGame();
+      document.getElementById('auth-modal').classList.add('open');
+      document.getElementById('auth-error').textContent='';
+      startFire();startBlinking();
+    }
     function closeAuthModal(){document.getElementById('auth-modal').classList.remove('open');stopFire();stopBlinking();}
     function switchTab(mode){
       authMode=mode;
@@ -2175,17 +2169,22 @@
       if(authMode==='signup'&&password!==passwordConfirm){errEl.textContent=isJa?'パスワードが一致しません':'Passwords do not match';return;}
       btn.disabled=true;btn.textContent='処理中...';
       try{
+        if(!db)throw new Error('DB未接続');
         if(authMode==='login'){
-          const{data,error}=await db.auth.signInWithPassword({email,password});
+          const{data,error}=await withTimeout(db.auth.signInWithPassword({email,password}),15000,'signIn');
           if(error)throw error;
-          await onLoginSuccess(data.user);closeAuthModal();
+          closeAuthModal();
+          if(typeof forceShowGame==='function')forceShowGame();
+          await onLoginSuccess(data.user,null,null,{force:true});
         }else{
-          const{data,error}=await db.auth.signUp({email,password});
+          const{data,error}=await withTimeout(db.auth.signUp({email,password}),15000,'signUp');
           if(error)throw error;
           if(data.user){
             const displayUsername=username||xUsername;
-            await db.from('users').upsert({id:data.user.id,username:displayUsername,x_username:xUsername,rank:1,coin_column:0});
-            await onLoginSuccess(data.user,displayUsername,xUsername);closeAuthModal();
+            await withTimeout(db.from('users').upsert({id:data.user.id,username:displayUsername,x_username:xUsername,rank:1,coin_column:0}),8000,'signUpProfile');
+            closeAuthModal();
+            if(typeof forceShowGame==='function')forceShowGame();
+            await onLoginSuccess(data.user,displayUsername,xUsername,{force:true});
             showToast(currentLang==='ja'?'🎉 登録完了！IGNIS CITYへようこそ！':'🎉 Welcome to IGNIS CITY!');
           }else{errEl.style.color='#4caf50';errEl.textContent='確認メールを送信しました。';}
         }
@@ -2193,39 +2192,61 @@
       finally{btn.disabled=false;btn.textContent=authMode==='login'?(currentLang==='ja'?'ログイン':'Login'):(currentLang==='ja'?'登録する':'Sign Up');}
     }
     function translateError(msg){if(msg.includes('Invalid login credentials'))return'メールアドレスまたはパスワードが違います';if(msg.includes('Email not confirmed'))return'メールアドレスの確認が完了していません';if(msg.includes('already registered'))return'このメールアドレスはすでに登録されています';return msg;}
-    async function onLoginSuccess(user,usernameOverride=null,xUsernameOverride=null){
+    async function onLoginSuccess(user,usernameOverride=null,xUsernameOverride=null,opts={}){
+      if(!user||!db)return;
+      const restoring=!!opts.restoring;
+      if(currentUser?.id===user.id&&!opts.force)return;
       currentUser=user;
-      let displayName=usernameOverride,xName=xUsernameOverride||'';
-      if(!displayName){
-        const{data}=await db.from('users').select('username,x_username,coin_column,rank,bench_employees').eq('id',user.id).single();
-        if(data){
-          xName=data.x_username||'';
-          displayName=xName||data.username||user.email;
-          document.getElementById('coin-count').textContent=data.coin_column||0;
-          currentUser.rank=data.rank||1;
-          currentUser.benchEmployees=data.bench_employees||0;
-        } else displayName=user.email;
-      } else {
-        const{data:rd}=await db.from('users').select('rank,bench_employees').eq('id',user.id).single();
-        currentUser.rank=(rd&&rd.rank)||1;
-        currentUser.benchEmployees=(rd&&rd.bench_employees)||0;
-      }
-      currentUser.xUsername=xName;
-      document.getElementById('emp-stats').style.display='block';
-      await refreshEmployeeHeader();
-      document.getElementById('login-btn-header').style.display='none';
-      document.getElementById('logged-in-area').style.display='flex';
-      const nameEl=document.getElementById('user-name');
-      nameEl.textContent=xName?`@${xName}`:(currentLang==='ja'?'X未登録':'X not set');
-      nameEl.style.cursor=xName?'default':'pointer';
-      nameEl.title=xName?'':(currentLang==='ja'?'クリックしてX名を登録':'Click to set X username');
-      nameEl.onclick=xName?null:()=>openXSetupModal();
-      redrawAllTiles();
-      await initDailyTasks();
-      await completeTask('login');
       const isJa=currentLang==='ja';
-      showToast(xName?(isJa?`👋 おかえり、@${xName}！`:`👋 Welcome back, @${xName}!`):(isJa?'👋 おかえり！':'👋 Welcome back!'));
-      if(!xName)setTimeout(()=>openXSetupModal(),600);
+      let xName=xUsernameOverride||'';
+      try{
+        if(!usernameOverride){
+          const{data}=await withTimeout(
+            db.from('users').select('username,x_username,coin_column,rank,bench_employees').eq('id',user.id).single(),
+            8000,'loadUserProfile'
+          );
+          if(data){
+            xName=data.x_username||xName;
+            document.getElementById('coin-count').textContent=data.coin_column||0;
+            currentUser.rank=data.rank||1;
+            currentUser.benchEmployees=data.bench_employees||0;
+          }
+        }else{
+          const{data:rd}=await withTimeout(
+            db.from('users').select('rank,bench_employees,coin_column').eq('id',user.id).single(),
+            6000,'loadUserRank'
+          );
+          if(rd){
+            currentUser.rank=rd.rank||1;
+            currentUser.benchEmployees=rd.bench_employees||0;
+            if(rd.coin_column!=null)document.getElementById('coin-count').textContent=rd.coin_column;
+          }
+        }
+        currentUser.xUsername=xName;
+        document.getElementById('emp-stats').style.display='block';
+        document.getElementById('login-btn-header').style.display='none';
+        document.getElementById('logged-in-area').style.display='flex';
+        const nameEl=document.getElementById('user-name');
+        nameEl.textContent=xName?`@${xName}`:(isJa?'X未登録':'X not set');
+        nameEl.style.cursor=xName?'default':'pointer';
+        nameEl.title=xName?'':(isJa?'クリックしてX名を登録':'Click to set X username');
+        nameEl.onclick=xName?null:()=>openXSetupModal();
+        redrawAllTiles();
+        if(!restoring){
+          showToast(xName?(isJa?`👋 おかえり、@${xName}！`:`👋 Welcome back, @${xName}!`):(isJa?'👋 おかえり！':'👋 Welcome back!'));
+        }
+        if(!xName)setTimeout(()=>openXSetupModal(),restoring?1400:600);
+      }catch(e){
+        console.warn('[IGNIS] onLoginSuccess profile',e);
+        showToast(isJa?'プロフィール読込に失敗（再読込してください）':'Profile load failed — try refresh');
+      }
+      Promise.resolve().then(async()=>{
+        try{
+          await withTimeout(refreshEmployeeHeader(),8000,'refreshEmp');
+          await withTimeout(initDailyTasks(),10000,'initTasks');
+          if(!restoring)await withTimeout(completeTask('login'),6000,'taskLogin');
+        }catch(e){console.warn('[IGNIS] post-login',e);}
+      });
     }
     function openXSetupModal(){
       if(!currentUser)return;
@@ -2265,10 +2286,12 @@
       redrawAllTiles();showToast('ログアウトしました');
     }
     async function restoreSession(){
-      const{data:{session}}=await db.auth.getSession();
-      if(!session)return;
-      try{await onLoginSuccess(session.user);}
-      catch(e){console.warn('[IGNIS] restoreSession onLoginSuccess',e);}
+      if(!db)return;
+      try{
+        const{data:{session},error}=await withTimeout(db.auth.getSession(),8000,'getSession');
+        if(error||!session?.user)return;
+        await onLoginSuccess(session.user,null,null,{restoring:true});
+      }catch(e){console.warn('[IGNIS] restoreSession',e);}
     }
     // ========================================
     // Babylon.js
@@ -2471,7 +2494,6 @@
       else{infoEl.textContent='';noLandWarning.classList.add('show');}
       applyGameI18n();
       closeLandPanel();document.getElementById('gacha-modal').classList.add('open');
-      loadStaffTermInfo();
       IgnisAudio.playBgmTrack('opening').catch(()=>{});
     }
     function closeGachaModal(skipBgmRefresh){
@@ -2501,15 +2523,12 @@
       const isJa=currentLang==='ja';
       const overlay=document.getElementById('gacha-overlay');
       const bookPhase=document.getElementById('gacha-book-phase');
-      const resultPanel=document.getElementById('scratch-result-panel');
       const book=document.getElementById('gacha-book');
       const flash=document.getElementById('gacha-flash');
       const canvas=document.getElementById('book-scratch-canvas');
       const hint=document.getElementById('book-scratch-hint');
       const actions=document.getElementById('book-result-actions');
       if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
-      if(resultPanel)resultPanel.classList.remove('show');
-      if(bookPhase){bookPhase.style.display='flex';bookPhase.classList.remove('scratch-done');}
       canvas.classList.remove('done');
       actions.classList.remove('show');
       hint.classList.remove('hide');
@@ -2528,6 +2547,7 @@
       canvas.style.opacity='1';
       renderBookRates(isJa);
       applyGameI18n();
+      bookPhase.style.display='flex';
       overlay.classList.add('show');
       IgnisAudio.playBgmTrack('opening').catch(()=>{});
       await sleep(750);
@@ -2539,41 +2559,27 @@
         canvas.classList.add('done');
         hint.classList.add('hide');
         if(bookScratchCleanup){bookScratchCleanup();bookScratchCleanup=null;}
+        prizeLayer.classList.add('prize-ready');
+        prizeLayer.style.visibility='visible';
+        prizeLayer.style.animation='resultFadeIn 0.5s ease forwards';
+        pulsePrizeEmerge();
         if(result.star>=4){
           flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash');
           IgnisAudio.playSuccess();
         }
-        showScratchResultPanel(result);
+        const floorsEl=document.getElementById('book-prize-floors');
+        floorsEl.classList.remove('prize-floor-hidden');
+        const pLabel=getPrismLabel(result.prism,isJa);
+        floorsEl.textContent=isJa?`${result.floors}階の${pLabel}のビルをGET！`:`You got a ${result.floors}F ${pLabel} building!`;
+        actions.classList.add('show');
+        syncGachaResultButtonsI18n();
       },result);
-    }
-    function showScratchResultPanel(result){
-      const isJa=currentLang==='ja';
-      const bookPhase=document.getElementById('gacha-book-phase');
-      const panel=document.getElementById('scratch-result-panel');
-      const prism=normalizePrism(result.prism);
-      const pLabel=getPrismLabel(prism,isJa);
-      const iconEl=document.getElementById('srp-icon');
-      const starsEl=document.getElementById('srp-stars');
-      const detailEl=document.getElementById('srp-detail');
-      const subEl=document.getElementById('srp-sub');
-      const labelEl=document.getElementById('srp-get-label');
-      if(labelEl)labelEl.textContent=isJa?'獲得！':'YOU WON!';
-      if(iconEl)iconEl.textContent=PRISM_ICONS[prism]||'🏢';
-      if(starsEl){starsEl.textContent=getGachaStarSymbols(result.star);starsEl.style.color=BOOK_STAR_COLORS[result.star]||'#a855f7';}
-      if(detailEl)detailEl.textContent=isJa?`${result.floors}階の${pLabel}`:`${result.floors}F ${pLabel}`;
-      if(subEl)subEl.textContent=isJa?`${getStarLabel(result.star)}のビルを獲得しました`:`${getStarLabel(result.star)} building acquired`;
-      if(bookPhase){bookPhase.classList.add('scratch-done');bookPhase.style.display='none';}
-      if(panel)panel.classList.add('show');
-      document.getElementById('book-result-actions').classList.add('show');
-      syncGachaResultButtonsI18n();
     }
     function syncGachaResultButtonsI18n(){
       const isJa=currentLang==='ja';
       const bb=document.getElementById('book-result-build');
-      const br=document.getElementById('book-result-rescratch');
       const bc=document.getElementById('book-result-city');
-      if(bb)bb.textContent=isJa?'建設する':'Build';
-      if(br)br.textContent=isJa?`📖 もう一度スクラッチ（${GACHA_COST}コイン）`:`📖 Scratch Again (${GACHA_COST} coins)`;
+      if(bb)bb.textContent=isJa?'建設する →':'Build →';
       if(bc)bc.textContent=isJa?'🏙 IGNIS Cityへ戻る':'🏙 Return to IGNIS City';
     }
     function onGachaResultClose(){document.getElementById('gacha-overlay').classList.remove('show');openBuildModal();}
@@ -2581,21 +2587,6 @@
       document.getElementById('gacha-overlay').classList.remove('show');
       gachaState={result:null,isRebuild:false,landKey:selectedLandKey};
       refreshCityBgm();
-    }
-    async function onGachaResultRescratch(){
-      if(!currentUser){openAuthModal();return;}
-      const isJa=currentLang==='ja';
-      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
-      const balance=ud?ud.coin_column||0:0;
-      if(balance<GACHA_COST){showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);return;}
-      await IgnisAudio.ensure();
-      IgnisAudio.playGachaClick();
-      const newCoins=balance-GACHA_COST;
-      await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
-      document.getElementById('coin-count').textContent=newCoins;
-      await recordCoin(-GACHA_COST,'gacha_spin');
-      const result=rollGacha();gachaState.result=result;
-      playGachaAnimation(result);
     }
     // ========================================
     // 建設モーダル（ガチャ当選ビルのみ建設可）
@@ -2834,8 +2825,8 @@
         if(header)header.textContent=isJa?'IGNIS CITY · 人事':'IGNIS CITY · HR';
         if(title)title.textContent=isJa?'採用通知書':'Employment Notice';
         if(body)body.innerHTML=isJa
-          ?'下記の者を IGNIS CITY に採用します。<br><br>職種：会社員<br>任期：3か月間（満了時は解雇）<br>配属：休職中プール（未配属）<br><br>本書による採用をもって正式に雇い入れとします。'
-          :'The following person is hereby hired into IGNIS CITY.<br><br>Role: Office Staff<br>Term: 3 months (expires if not renewed)<br>Assignment: Bench pool (unassigned)<br><br>This document confirms official hiring.';
+          ?'下記の者を IGNIS CITY に採用します。<br><br>職種：都市建設スタッフ<br>配属：休職中プール（未配属）<br><br>本書による採用をもって正式に雇い入れとします。'
+          :'The following person is hereby hired into IGNIS CITY.<br><br>Role: City Builder Staff<br>Assignment: Bench pool (unassigned)<br><br>This document confirms official hiring.';
         if(sign)sign.textContent=isJa?'印鑑で採用':'Stamp to hire';
         if(seal){seal.textContent=isJa?'採用':'HIRED';seal.classList.remove('stamped');}
         overlay.classList.remove('done');
@@ -2886,112 +2877,9 @@
         await recordCoin(-HIRE_COST,'hire_employee');
         await completeTask('hire');
         await refreshEmployeeHeader();
-        await loadStaffTermInfo();
-        showToast(isJa?`👨‍💼 会社員を1人採用！任期3か月 · 休職中プールに加算`:`👨‍💼 Hired office staff! 3-month term · Added to bench`);
+        showToast(isJa?`👨‍💼 従業員を1人採用！休職中プールに加算`:`👨‍💼 Hired 1 employee! Added to bench`);
       }catch(e){console.warn('hire error:',e.message);showToast(isJa?'採用に失敗: '+e.message:'Hire failed: '+e.message);}
       finally{btn.disabled=false;btn.textContent=originalText;}
-    }
-    // ========================================
-    // 従業員任期
-    // ========================================
-    function formatStaffTermDate(d,isJa){
-      try{return new Date(d).toLocaleDateString(isJa?'ja-JP':'en-US',{year:'numeric',month:'short',day:'numeric'});}
-      catch(e){return '—';}
-    }
-    async function syncOwnBuildingEmployeesFromDb(){
-      if(!currentUser||!db)return;
-      try{
-        const{data}=await db.from('buildings').select('x,z,employees,floors').eq('owner_id',currentUser.id);
-        if(!data)return;
-        data.forEach(row=>{
-          const key=landKey(row.x,row.z);
-          const b=buildingMap[key];
-          if(!b)return;
-          const newEmp=row.employees||0;
-          if(b.employees===newEmp)return;
-          b.employees=newEmp;
-          const initH=calcTotalFloors(b.baseFloors,0)*0.5;
-          const newH=calcTotalFloors(b.baseFloors,newEmp)*0.5;
-          b.totalFloors=calcTotalFloors(b.baseFloors,newEmp);
-          if(b.mesh&&initH>0){
-            b.mesh.scaling.y=newH/initH;
-            b.mesh.position.y=newH/2;
-          }
-        });
-      }catch(e){console.warn('sync building employees',e.message);}
-    }
-    async function processExpiredStaff(){
-      if(!currentUser||!db)return 0;
-      try{
-        const{data,error}=await db.rpc('process_expired_staff');
-        if(error)throw error;
-        return(data&&data.fired)||0;
-      }catch(e){console.warn('process_expired_staff',e.message);return 0;}
-    }
-    async function loadStaffTermInfo(){
-      const infoEl=document.getElementById('staff-term-info');
-      const btn=document.getElementById('staff-extend-btn');
-      if(!infoEl)return;
-      const isJa=currentLang==='ja';
-      if(!currentUser){
-        infoEl.textContent=isJa?'ログイン後に任期を確認できます':'Log in to view staff terms';
-        if(btn)btn.disabled=true;
-        return;
-      }
-      try{
-        const{data,error}=await db.from('staff_employees').select('term_end').eq('user_id',currentUser.id).order('term_end',{ascending:true});
-        if(error)throw error;
-        if(!data||!data.length){
-          infoEl.innerHTML=isJa
-            ?`在籍 0 名 · 採用で任期${STAFF_TERM_MONTHS}か月の<b>会社員</b>を追加`
-            :`0 staff · Hire <b>office staff</b> for a ${STAFF_TERM_MONTHS}-month term`;
-          if(btn){btn.disabled=true;btn.textContent=isJa?'延長する従業員がいません':'No staff to extend';}
-          return;
-        }
-        const nearest=formatStaffTermDate(data[0].term_end,isJa);
-        const costTotal=data.length*EXTEND_STAFF_COST;
-        infoEl.innerHTML=isJa
-          ?`在籍 ${data.length} 名（休職・配属含む）· 任期${STAFF_TERM_MONTHS}か月 · 最短期限 ${nearest}<br><span style="font-size:10px;opacity:0.72">満了で解雇 · 延長 ${EXTEND_STAFF_COST}コイン/人（+${STAFF_TERM_MONTHS}か月）</span>`
-          :`${data.length} staff (bench + assigned) · ${STAFF_TERM_MONTHS}-mo term · Earliest ${nearest}<br><span style="font-size:10px;opacity:0.72">Expires if not renewed · ${EXTEND_STAFF_COST} coins/person (+${STAFF_TERM_MONTHS} mo)</span>`;
-        if(btn){
-          btn.disabled=false;
-          btn.textContent=isJa?`全員の任期を3か月延長（${EXTEND_STAFF_COST}×${data.length}=${costTotal}コイン）`:`Extend all +3 mo (${EXTEND_STAFF_COST}×${data.length}=${costTotal} coins)`;
-        }
-      }catch(e){
-        infoEl.textContent=isJa?'任期情報の取得に失敗しました':'Failed to load term info';
-        if(btn)btn.disabled=true;
-      }
-    }
-    async function handleExtendStaffTerms(){
-      if(!currentUser){showToast('ログインが必要です');return;}
-      const btn=document.getElementById('staff-extend-btn');
-      if(btn&&btn.disabled)return;
-      const isJa=currentLang==='ja';
-      try{
-        const{data:staff}=await db.from('staff_employees').select('id').eq('user_id',currentUser.id);
-        const count=(staff&&staff.length)||0;
-        if(!count){showToast(isJa?'延長する従業員がいません':'No staff to extend');return;}
-        const cost=count*EXTEND_STAFF_COST;
-        const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
-        if(balance<cost){showToast(isJa?`コインが足りません（必要：${cost}）`:`Not enough coins (need ${cost})`);return;}
-        const ok=confirm(isJa
-          ?`${count}人全員の任期を3か月延長します（${cost}コイン）。よろしいですか？`
-          :`Extend all ${count} staff by 3 months for ${cost} coins?`);
-        if(!ok)return;
-        if(btn)btn.disabled=true;
-        const{data,error}=await db.rpc('extend_staff_terms',{p_count:null});
-        if(error)throw error;
-        if(!data||!data.ok){
-          if(data&&data.reason==='insufficient_coins')showToast(isJa?`コインが不足しています（必要：${data.need}）`:`Not enough coins (need ${data.need})`);
-          else showToast(isJa?'任期延長に失敗しました':'Extension failed');
-          return;
-        }
-        document.getElementById('coin-count').textContent=data.coins_remaining;
-        await recordCoin(-(data.cost||0),'extend_staff');
-        await loadStaffTermInfo();
-        showToast(isJa?`📋 ${data.extended}人の任期を3か月延長しました`:`📋 Extended ${data.extended} staff by 3 months`);
-      }catch(e){console.warn('extend staff',e.message);showToast(isJa?'任期延長に失敗しました':'Extension failed');}
-      finally{if(btn)btn.disabled=false;loadStaffTermInfo();}
     }
     // ========================================
     // 従業員ヘッダー
@@ -3000,11 +2888,6 @@
       if(!currentUser){
         document.getElementById('emp-stats').style.display='none';
         return;
-      }
-      const fired=await processExpiredStaff();
-      if(fired>0){
-        await syncOwnBuildingEmployeesFromDb();
-        showToast(currentLang==='ja'?`⏱ 任期満了により${fired}人を解雇しました`:`⏱ ${fired} staff dismissed (term expired)`);
       }
       const isJa=currentLang==='ja';
       try{
@@ -3016,7 +2899,7 @@
         const total=assigned+bench;
         document.getElementById('emp-total-count').textContent=total.toLocaleString();
         document.getElementById('emp-bench-count').textContent=bench.toLocaleString();
-        document.getElementById('emp-stats').title=isJa?'合計=配属+休職中。会社員は任期3か月・満了で解雇。8コイン/人で+3か月延長':'Total = assigned + bench. 3-month term; extend +3 mo for 8 coins/person';
+        document.getElementById('emp-stats').title=isJa?'合計=自分の土地の配属+休職中。休職中=採用・売却・閲覧で貯まった未配属の人':'Total = assigned on your land + bench. Bench = unassigned pool';
         document.getElementById('emp-stats').style.display='block';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
@@ -3330,12 +3213,15 @@
     }
     async function loadBuildingsAndLands(){
       try{
-        await withTimeout(loadBuildings(),8000,'loadBuildings');
-        await loadLands();
-        buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
-        try{await withTimeout(loadApprovedProfiles(),5000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
-        drawMinimap();
-      }finally{finishLoading();}
+        await withTimeout((async()=>{
+          await loadBuildings();
+          await loadLands();
+          buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
+          try{await withTimeout(loadApprovedProfiles(),5000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
+          drawMinimap();
+        })(),12000,'bootstrapLoad');
+      }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}
+      finally{finishLoading();}
     }
     // ========================================
     // グリッドタップ
@@ -3516,11 +3402,20 @@
     window.addEventListener('resize',()=>engine.resize());
     applyGameI18n();
     switchTab('login');
+    setupAuthListener();
     __ignisStatus('⑤ データ読込中...');
     (async()=>{
-      try{await loadBuildingsAndLands();}
-      catch(e){console.warn('[IGNIS] bootstrap load',e);__ignisStatus('データ読込失敗 — 街だけ表示');finishLoading();}
-      if(db)withTimeout(restoreSession(),8000,'restoreSession').catch(e=>console.warn('[IGNIS]',e.message));
+      const sessionPromise=db?withTimeout(restoreSession(),10000,'restoreSession').catch(e=>console.warn('[IGNIS]',e.message)):Promise.resolve();
+      try{
+        await Promise.all([
+          loadBuildingsAndLands(),
+          sessionPromise
+        ]);
+      }catch(e){
+        console.warn('[IGNIS] bootstrap load',e);
+        __ignisStatus('データ読込失敗 — 街だけ表示');
+        finishLoading();
+      }
     })();
   </script>
 </body>

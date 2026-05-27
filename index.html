@@ -1045,7 +1045,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('❌ Supabase読込失敗（ネットワーク）')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('❌ Babylon読込失敗（ネットワーク）')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-27-v27';
+    const IGNIS_BUILD='2026-05-27-v27b';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -2032,7 +2032,7 @@
       syncGachaResultButtonsI18n();
       set('build-modal-title',isJa?'🏗 スクラッチ結果を建設':'🏗 Build Scratch Prize');
       set('build-confirm-btn',isJa?'🏢 このビルを建設する':'🏢 Build This Building');
-      set('build-scratch-again-btn',isJa?`🔁 もう一度スクラッチ（${GACHA_COST}コイン）`,`🔁 Scratch Again (${GACHA_COST} coins)`);
+      set('build-scratch-again-btn',`🔁 もう一度スクラッチ（${GACHA_COST}コイン）`,`🔁 Scratch Again (${GACHA_COST} coins)`);
       const rateRows=document.querySelectorAll('.gacha-rates .rate-row');
       const rateFloorsJa=['48〜50階','40〜47階','30〜39階','20〜29階','1〜19階'];
       const rateFloorsEn=['48–50F','40–47F','30–39F','20–29F','1–19F'];

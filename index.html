@@ -14,10 +14,12 @@
       padding: 16px 24px;
       background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
       gap: 12px;
+      flex-wrap: wrap;
     }
     #header-start {
-      display: flex; flex-direction: column; align-items: flex-start; gap: 8px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
     }
+    #ad-slot-wrap { width: 100%; display:flex; justify-content:flex-start; pointer-events:all; margin-top:4px; }
     #ad-slot {
       width: 180px; height: 132px; flex-shrink: 0;
       background: rgba(255,255,255,0.06);
@@ -507,8 +509,25 @@
     }
     #invite-btn { background:linear-gradient(135deg,rgba(14,165,233,0.85),rgba(59,130,246,0.9)); }
     #help-btn { background:linear-gradient(135deg,rgba(250,204,21,0.85),rgba(245,158,11,0.9)); color:#1f1300; }
-    #notify-btn { background:linear-gradient(135deg,rgba(34,197,94,0.78),rgba(16,185,129,0.88)); }
-    #notify-btn.off { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); }
+    #notice-btn { background:linear-gradient(135deg,rgba(34,197,94,0.78),rgba(16,185,129,0.88)); position:relative; }
+    #notice-badge {
+      position:absolute;right:8px;top:6px;min-width:16px;height:16px;padding:0 5px;border-radius:999px;
+      background:#ef4444;color:#fff;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center;
+    }
+    #notice-panel {
+      position:fixed;top:84px;right:24px;z-index:40;display:none;width:min(360px,92vw);
+      background:rgba(8,8,20,0.96);border:1px solid rgba(34,197,94,0.45);border-radius:14px;pointer-events:all;
+      box-shadow:0 8px 28px rgba(0,0,0,0.45);padding:12px 12px 10px;
+    }
+    #notice-panel.open { display:block; }
+    #notice-title { font-size:12px;font-weight:800;color:#34d399;letter-spacing:0.08em;margin-bottom:8px; }
+    #notice-list { max-height:52vh;overflow:auto;display:flex;flex-direction:column;gap:8px; }
+    .notice-item { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 10px; }
+    .notice-item-head { display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px; }
+    .notice-item-type { font-size:10px;font-weight:800;color:#86efac; }
+    .notice-item-time { font-size:10px;color:rgba(255,255,255,0.45); }
+    .notice-item-text { font-size:12px;line-height:1.45;color:rgba(255,255,255,0.9); }
+    #notice-empty { font-size:12px;color:rgba(255,255,255,0.55);padding:10px 4px; }
     #building-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:150;align-items:center;justify-content:center; }
     #building-modal.open { display: flex; }
     #building-box { background:#0a0a14;border:1px solid rgba(255,106,0,0.4);border-radius:22px;padding:28px 28px 24px;width:340px;max-width:94vw;position:relative;box-shadow:0 0 60px rgba(255,106,0,0.1),0 20px 60px rgba(0,0,0,0.8);animation:modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards; }
@@ -703,7 +722,7 @@
       #header {
         display: grid;
         grid-template-columns: 1fr auto;
-        grid-template-rows: auto auto;
+        grid-template-rows: auto auto auto;
         padding: 8px 10px;
         padding-top: max(8px, env(safe-area-inset-top, 0px));
         gap: 4px 6px;
@@ -714,6 +733,7 @@
       #ad-slot .ad-slot-label { font-size: 8px; }
       #logo { font-size: 14px; letter-spacing: 0.1em; min-width: 0; }
       #stats { font-size: 10px; grid-column: 1 / -1; grid-row: 2; line-height: 1.4; margin: 0; }
+      #ad-slot-wrap { grid-column: 1 / -1; grid-row: 3; margin-top:2px; }
       #emp-stats { font-size: 9px !important; }
       #user-area {
         grid-column: 2; grid-row: 1;
@@ -728,6 +748,7 @@
       #ranking-btn { padding: 4px 8px !important; font-size: 9px !important; }
       #coin-history-btn, #logout-btn { padding: 4px 8px; font-size: 9px; }
       #task-panel { top: 52px; right: 8px; min-width: 220px; padding: 12px 14px; }
+      #notice-panel { top: 52px; right: 8px; width: min(340px,94vw); }
       .fly-joystick { width: 106px; height: 106px; }
       .fly-stick-knob { width: 46px; height: 46px; }
       #bottom-btns {
@@ -809,7 +830,6 @@
     <div id="header">
       <div id="header-start">
         <div id="logo">IGNIS CITY</div>
-        <div id="ad-slot" aria-label="広告枠"><span class="ad-slot-label">広告</span></div>
       </div>
       <div id="stats">
         <div>
@@ -838,6 +858,9 @@
           <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
         </div>
       </div>
+      <div id="ad-slot-wrap">
+        <div id="ad-slot" aria-label="広告枠"><span class="ad-slot-label">広告</span></div>
+      </div>
     </div>
   </div>
   <div id="fly-hint">🕊 矢印で移動・Shift上昇・Ctrl下降</div>
@@ -860,8 +883,13 @@
     <div id="task-utility-actions">
       <button id="invite-btn" class="task-utility-btn" type="button" onclick="handleInviteGame()">🎮 ゲーム招待</button>
       <button id="help-btn" class="task-utility-btn" type="button" onclick="openHelpContact()">❓ ヘルプ / お問い合わせ</button>
-      <button id="notify-btn" class="task-utility-btn off" type="button" onclick="toggleNotifications()">🔔 通知OFF</button>
+      <button id="notice-btn" class="task-utility-btn" type="button" onclick="toggleNoticePanel()">🔔 通知<span id="notice-badge">0</span></button>
     </div>
+  </div>
+  <div id="notice-panel">
+    <div id="notice-title">🔔 お知らせ / 通知</div>
+    <div id="notice-list"></div>
+    <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
     <button id="minimap-toggle" onclick="toggleMinimap()" title="非表示">−</button>
@@ -1153,13 +1181,14 @@
         <div class="pw-check-item" id="check-number"><div class="check-icon">✓</div><span>数字（0-9）を含む</span></div>
       </div>
       <button id="auth-submit" onclick="handleAuth()">ログイン</button>
+      <button id="auth-reset-btn" type="button" onclick="handlePasswordReset()" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.9);padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">🔐 パスワードを忘れた</button>
       <div id="auth-error"></div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v31';
+    const IGNIS_BUILD='2026-05-28-v32';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -2093,59 +2122,72 @@
       const subject=encodeURIComponent('IGNIS CITY Inquiry');
       window.open(`mailto:mezase100000000@gmail.com?subject=${subject}&body=${body}`,'_blank');
     }
-    let notifyEnabled=localStorage.getItem('ignis_notify_staff')==='1';
-    function updateNotifyButton(soon=0){
-      const btn=document.getElementById('notify-btn');
-      if(!btn)return;
-      const isJa=currentLang==='ja';
-      const stateText=notifyEnabled
-        ?(isJa?'🔔 通知ON':'🔔 Notify ON')
-        :(isJa?'🔕 通知OFF':'🔕 Notify OFF');
-      const soonText=notifyEnabled&&soon>0?(isJa?`（${soon}件）`:`(${soon})`):'';
-      btn.textContent=stateText+soonText;
-      btn.classList.toggle('off',!notifyEnabled);
+    let noticeItems=[];
+    let noticeUnread=0;
+    function addNotice(type,text,timeIso){
+      const stamp=timeIso||new Date().toISOString();
+      const key=`${type}:${text}:${stamp.slice(0,16)}`;
+      if(noticeItems.some(n=>n.key===key))return;
+      noticeItems.unshift({key,type,text,time:stamp});
+      if(noticeItems.length>80)noticeItems=noticeItems.slice(0,80);
+      noticeUnread++;
+      renderNoticeList();
     }
-    async function toggleNotifications(){
-      const isJa=currentLang==='ja';
-      if(!('Notification' in window)){
-        showToast(isJa?'この端末は通知に未対応です':'Notifications are not supported');
-        return;
-      }
-      if(Notification.permission==='granted'){
-        notifyEnabled=!notifyEnabled;
-        localStorage.setItem('ignis_notify_staff',notifyEnabled?'1':'0');
-        updateNotifyButton();
-        showToast(notifyEnabled?(isJa?'通知を有効化しました':'Notifications enabled'):(isJa?'通知を無効化しました':'Notifications disabled'));
-        return;
-      }
-      const perm=await Notification.requestPermission();
-      notifyEnabled=perm==='granted';
-      localStorage.setItem('ignis_notify_staff',notifyEnabled?'1':'0');
-      updateNotifyButton();
-      if(notifyEnabled){
-        showToast(isJa?'通知を有効化しました':'Notifications enabled');
+    function renderNoticeList(){
+      const list=document.getElementById('notice-list');
+      const empty=document.getElementById('notice-empty');
+      const badge=document.getElementById('notice-badge');
+      if(!list||!empty||!badge)return;
+      if(noticeItems.length===0){
+        list.innerHTML='';
+        empty.style.display='block';
       }else{
-        showToast(isJa?'通知の許可が必要です':'Notification permission is required');
+        empty.style.display='none';
+        const isJa=currentLang==='ja';
+        list.innerHTML=noticeItems.map(n=>{
+          const d=new Date(n.time);
+          const t=d.toLocaleString(isJa?'ja-JP':'en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+          const typeLabel=n.type==='staff'
+            ?(isJa?'従業員':'Staff')
+            :(n.type==='maintenance'?(isJa?'運営':'Ops'):(isJa?'イベント':'Event'));
+          return `<div class="notice-item"><div class="notice-item-head"><span class="notice-item-type">${typeLabel}</span><span class="notice-item-time">${t}</span></div><div class="notice-item-text">${n.text}</div></div>`;
+        }).join('');
+      }
+      if(noticeUnread>0){
+        badge.style.display='inline-flex';
+        badge.textContent=noticeUnread>99?'99+':String(noticeUnread);
+      }else{
+        badge.style.display='none';
       }
     }
-    function maybeNotifyStaffExpiry(soon,total){
-      if(!notifyEnabled||!currentUser||soon<=0)return;
-      if(!('Notification' in window)||Notification.permission!=='granted')return;
+    function toggleNoticePanel(){
+      const panel=document.getElementById('notice-panel');
+      if(!panel)return;
+      panel.classList.toggle('open');
+      if(panel.classList.contains('open')){
+        noticeUnread=0;
+        renderNoticeList();
+      }
+    }
+    function maybeNotifyStaffNotice(soon,total){
+      if(!currentUser||soon<=0)return;
       const today=new Date().toISOString().slice(0,10);
-      const key=`${currentUser.id}:${today}:${soon}`;
-      if(localStorage.getItem('ignis_staff_notify_key')===key)return;
+      const key=`staff_notice_${currentUser.id}_${today}_${soon}`;
+      if(localStorage.getItem(key)==='1')return;
       const isJa=currentLang==='ja';
-      const title=isJa?'IGNIS CITY 通知':'IGNIS CITY Notification';
-      const body=isJa
-        ?`任期満了1週間以内の会社員が${soon}人います（全${total}人）`
-        :`${soon} staff expire within 1 week (total ${total})`;
-      try{
-        new Notification(title,{body,tag:'ignis-staff-term'});
-        localStorage.setItem('ignis_staff_notify_key',key);
-      }catch(e){
-        console.warn('notify staff',e);
-      }
+      addNotice('staff',isJa?`従業員${soon}人が満期まで1週間以内です（全${total}人）`:`${soon} staff expire within 1 week (total ${total})`);
+      localStorage.setItem(key,'1');
     }
+    addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。');
+    addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。');
+    document.addEventListener('pointerdown',(e)=>{
+      const panel=document.getElementById('notice-panel');
+      const btn=document.getElementById('notice-btn');
+      if(!panel||!btn||!panel.classList.contains('open'))return;
+      const target=e.target;
+      if(panel.contains(target)||btn.contains(target))return;
+      panel.classList.remove('open');
+    });
     // ========================================
     // 多言語
     // ========================================
@@ -2192,6 +2234,10 @@
       document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
+      const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'🔔 通知':'🔔 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
+      const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'🔔 お知らせ / 通知':'🔔 Notices';
+      const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'通知はまだありません':'No notices yet';
+      const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
       document.getElementById('fly-hint').textContent=isJa?'🕊 矢印で移動・Shift上昇・Ctrl下降':'🕊 Arrows move · Shift up · Ctrl down';
@@ -2228,7 +2274,7 @@
       IgnisAudio.updateToggleBtn();
       const audioBtn=document.getElementById('audio-unlock-btn');
       if(audioBtn)audioBtn.textContent=isJa?'🔊 BGMをオンにする':'🔊 Turn on BGM';
-      updateNotifyButton();
+      renderNoticeList();
       applyGameI18n();
       if(gachaState.result)renderBuildModalPrize();
       updateViewTaskProgressLabel();
@@ -2558,6 +2604,32 @@
     document.getElementById('input-password').addEventListener('input',function(){const results=checkPassword(this.value);['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>document.getElementById(id).classList.toggle('ok',results[i]));updateInputStates();});
     ['input-email','input-username','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateInputStates);});
     ['input-username','input-email','input-password','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}});
+    async function handlePasswordReset(){
+      const isJa=currentLang==='ja';
+      const email=(document.getElementById('input-email').value||'').trim();
+      const xUsername=(document.getElementById('input-x-username').value||'').trim().replace(/^@/,'');
+      const errEl=document.getElementById('auth-error');
+      if(!email||!xUsername){
+        errEl.textContent=isJa?'メールアドレスとXユーザー名を入力してください':'Enter both email and X username';
+        return;
+      }
+      try{
+        if(!db)throw new Error('DB未接続');
+        const {data:rows,error:selErr}=await db.from('users').select('id,x_username').eq('x_username',xUsername).limit(1);
+        if(selErr||!rows||rows.length===0){
+          errEl.textContent=isJa?'一致するXユーザー名が見つかりません':'X username was not found';
+          return;
+        }
+        const redirectTo=`${window.location.origin}${window.location.pathname}?open=signup`;
+        const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
+        if(error)throw error;
+        errEl.style.color='#4caf50';
+        errEl.textContent=isJa?'再設定メールを送信しました（メールをご確認ください）':'Password reset email sent. Check your inbox.';
+      }catch(e){
+        errEl.style.color='#ff4444';
+        errEl.textContent=isJa?('再設定に失敗: '+(e.message||'')):('Reset failed: '+(e.message||''));
+      }
+    }
     async function handleAuth(){
       const email=document.getElementById('input-email').value.trim();
       const password=document.getElementById('input-password').value;
@@ -2818,11 +2890,11 @@
       if(isTouchFly){
         const ls=touchFlyState.left;
         const rs=touchFlyState.right;
-        flyCamera.cameraRotation.y-=rs.x*2.2*dt;
-        flyCamera.cameraRotation.x+=rs.y*1.5*dt;
+        flyCamera.cameraRotation.y-=rs.x*0.55*dt;
+        flyCamera.cameraRotation.x+=rs.y*0.375*dt;
         const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
         const right=flyCamera.getDirection(BABYLON.Axis.X);
-        const moveScale=34*dt;
+        const moveScale=8.5*dt;
         flyCamera.cameraDirection.addInPlace(fwd.scale(-ls.y*moveScale));
         flyCamera.cameraDirection.addInPlace(right.scale(ls.x*moveScale*0.9));
         const lift=(touchFlyState.rise?1:0)-(touchFlyState.fall?1:0);
@@ -3523,7 +3595,6 @@
       if(!panel)return;
       if(!currentUser){
         panel.style.display='none';
-        updateNotifyButton(0);
         return;
       }
       const isJa=currentLang==='ja';
@@ -3550,13 +3621,11 @@
           btn.textContent=isJa?`任期を3か月延長（${STAFF_EXTEND_COST_PER}コイン/人）`:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
           btn.disabled=soon===0;
         }
-        updateNotifyButton(soon);
-        maybeNotifyStaffExpiry(soon,total);
+        maybeNotifyStaffNotice(soon,total);
       }catch(e){
         console.warn('refreshStaffTermPanel:',e.message);
         if(info)info.textContent=isJa?'任期情報を読み込めませんでした':'Could not load term info';
         if(btn)btn.disabled=true;
-        updateNotifyButton(0);
       }
     }
     async function handleExtendStaffTerms(){

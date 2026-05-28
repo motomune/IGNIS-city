@@ -21,18 +21,19 @@
     }
     #ad-slot-wrap { width: 100%; display:flex; justify-content:flex-start; pointer-events:all; margin-top:4px; }
     #ad-slot {
-      width: 180px; height: 132px; flex-shrink: 0;
+      width: 270px; height: 198px; flex-shrink: 0;
       background: rgba(255,255,255,0.06);
       border: 1px dashed rgba(255,255,255,0.22);
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       pointer-events: all; overflow: hidden;
     }
-    #ad-slot .ad-slot-label {
-      font-size: 9px; font-weight: 800; letter-spacing: 0.12em;
-      color: rgba(255,255,255,0.35); text-transform: uppercase;
+    #ad-slot .ad-carousel-viewport { width: 100%; height: 100%; overflow: hidden; }
+    #ad-slot .ad-carousel-track { display: flex; height: 100%; will-change: transform; }
+    #ad-slot .ad-carousel-slide {
+      flex: 0 0 100%; width: 100%; height: 100%; display: block;
     }
-    #ad-slot a, #ad-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #ad-slot .ad-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
     #logo {
       font-size: 20px; font-weight: 900; letter-spacing: 0.2em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
@@ -739,8 +740,7 @@
         align-items: center;
       }
       #header-start { grid-column: 1; grid-row: 1; gap: 5px; min-width: 0; }
-      #ad-slot { width: 120px; height: 96px; }
-      #ad-slot .ad-slot-label { font-size: 8px; }
+      #ad-slot { width: 180px; height: 144px; }
       #logo { font-size: 14px; letter-spacing: 0.1em; min-width: 0; }
       #stats { font-size: 10px; grid-column: 1 / -1; grid-row: 2; line-height: 1.4; margin: 0; }
       #ad-slot-wrap { grid-column: 1 / -1; grid-row: 3; margin-top:2px; }
@@ -873,12 +873,7 @@
         </div>
       </div>
       <div id="ad-slot-wrap">
-        <div id="ad-slot" aria-label="広告枠">
-          <a id="ad-slot-link" href="https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c" target="_blank" rel="noopener">
-            <img src="https://raw.githubusercontent.com/motomune/IGNIS-city/main/SOUL%E6%97%A5%E6%9C%AC%E8%AA%9E%E5%86%99%E7%9C%9F.png" alt="SOUL広告">
-            <span class="ad-slot-label" style="display:none;">広告</span>
-          </a>
-        </div>
+        <div id="ad-slot" aria-label="広告枠"></div>
       </div>
     </div>
   </div>
@@ -1211,7 +1206,63 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v38';
+    const IGNIS_BUILD='2026-05-28-v39';
+    const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
+    const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
+    const IGNIS_AD_SLIDES=[
+      {file:'SOUL日本語写真.png',alt:'SOUL'},
+      {file:'SOUL英語写真.png',alt:'SOUL'}
+    ];
+    const IGNIS_AD_INTERVAL_MS=5000;
+    const IGNIS_AD_SLIDE_MS=550;
+    function initAdCarousel(){
+      const slot=document.getElementById('ad-slot');
+      if(!slot)return;
+      const slides=IGNIS_AD_SLIDES.map(s=>({
+        src:IGNIS_AD_RAW+encodeURIComponent(s.file),
+        alt:s.alt
+      }));
+      const track=document.createElement('div');
+      track.className='ad-carousel-track';
+      [...slides,slides[0]].forEach(s=>{
+        const a=document.createElement('a');
+        a.className='ad-carousel-slide';
+        a.href=IGNIS_AD_LINK;
+        a.target='_blank';
+        a.rel='noopener';
+        const img=document.createElement('img');
+        img.src=s.src;
+        img.alt=s.alt;
+        img.decoding='async';
+        a.appendChild(img);
+        track.appendChild(a);
+      });
+      const viewport=document.createElement('div');
+      viewport.className='ad-carousel-viewport';
+      viewport.appendChild(track);
+      slot.appendChild(viewport);
+      let index=0;
+      let busy=false;
+      function goTo(i,animate){
+        track.style.transition=animate?'transform '+IGNIS_AD_SLIDE_MS+'ms ease':'none';
+        track.style.transform='translateX(-'+(i*100)+'%)';
+      }
+      track.addEventListener('transitionend',e=>{
+        if(e.target!==track||e.propertyName!=='transform')return;
+        busy=false;
+        if(index===slides.length){
+          index=0;
+          goTo(0,false);
+        }
+      });
+      goTo(0,false);
+      setInterval(()=>{
+        if(busy)return;
+        busy=true;
+        index++;
+        goTo(index,true);
+      },IGNIS_AD_INTERVAL_MS);
+    }
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -4298,6 +4349,7 @@
     engine.runRenderLoop(()=>scene.render());
     window.addEventListener('resize',()=>engine.resize());
     applyGameI18n();
+    initAdCarousel();
     switchTab('login');
     setupAuthListener();
     __ignisStatus('5) Loading data...');

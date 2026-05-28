@@ -28,14 +28,24 @@
       display: flex; align-items: center; justify-content: center;
       pointer-events: all; overflow: hidden;
     }
-    #ad-slot .ad-carousel-viewport { width: 100%; height: 100%; overflow: hidden; }
+    #ad-slot .ad-carousel-viewport { width: 100%; height: 100%; overflow: hidden; position: relative; }
     #ad-slot .ad-carousel-track { display: flex; height: 100%; will-change: transform; }
     #ad-slot .ad-carousel-slide {
-      flex: 0 0 100%; width: 100%; height: 100%; display: block;
-      border: none; padding: 0; margin: 0; background: none; cursor: pointer;
-      text-decoration: none; color: inherit;
+      flex: 0 0 auto; height: 100%; display: block; overflow: hidden;
+      border: none; padding: 0; margin: 0; background: rgba(0,0,0,0.25);
+      cursor: pointer; text-decoration: none; color: inherit;
     }
-    #ad-slot .ad-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    #ad-slot .ad-carousel-slide img {
+      width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
+    }
+    #ad-slot .ad-carousel-slide.ad-slide-motion img {
+      width: 118%; height: 118%; max-width: none;
+      animation: ignisAdKenBurns 5s ease-in-out infinite alternate;
+    }
+    @keyframes ignisAdKenBurns {
+      from { transform: scale(1.04) translate(-4%, -2%); }
+      to { transform: scale(1.16) translate(4%, 2%); }
+    }
     #logo {
       font-size: 20px; font-weight: 900; letter-spacing: 0.2em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
@@ -1208,12 +1218,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v40';
+    const IGNIS_BUILD='2026-05-28-v41';
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
     const IGNIS_AD_SLIDES=[
       {file:'SOUL日本語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK},
-      {file:'ignis-logo.jpeg',alt:'IGNIS CITY',action:'signup'},
+      {file:'ignis-logo.jpeg',alt:'IGNIS CITY',action:'signup',motion:true},
       {file:'SOUL英語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK}
     ];
     const IGNIS_AD_INTERVAL_MS=5000;
@@ -1229,7 +1239,7 @@
     function createAdSlideEl(s){
       const isSignup=s.action==='signup';
       const el=document.createElement(isSignup?'button':'a');
-      el.className='ad-carousel-slide';
+      el.className='ad-carousel-slide'+(s.motion?' ad-slide-motion':'');
       if(isSignup){
         el.type='button';
         el.setAttribute('aria-label',currentLang==='ja'?'ゲームに新規登録':'Sign up for the game');
@@ -1243,6 +1253,8 @@
       img.src=s.src;
       img.alt=s.alt;
       img.decoding='async';
+      img.loading='eager';
+      img.addEventListener('error',()=>{el.style.background='rgba(255,106,0,0.15)';});
       el.appendChild(img);
       return el;
     }
@@ -1253,35 +1265,51 @@
         src:IGNIS_AD_RAW+encodeURIComponent(s.file),
         alt:s.alt,
         action:s.action,
-        href:s.href
+        href:s.href,
+        motion:!!s.motion
       }));
+      const realCount=slides.length;
       const track=document.createElement('div');
       track.className='ad-carousel-track';
-      [...slides,slides[0]].forEach(s=>track.appendChild(createAdSlideEl(s)));
+      slides.forEach(s=>track.appendChild(createAdSlideEl(s)));
+      track.appendChild(createAdSlideEl(slides[0]));
       const viewport=document.createElement('div');
       viewport.className='ad-carousel-viewport';
       viewport.appendChild(track);
+      slot.innerHTML='';
       slot.appendChild(viewport);
       let index=0;
       let busy=false;
-      function goTo(i,animate){
-        track.style.transition=animate?'transform '+IGNIS_AD_SLIDE_MS+'ms ease':'none';
-        track.style.transform='translateX(-'+(i*100)+'%)';
+      let slideW=0;
+      function layoutAdCarousel(){
+        slideW=viewport.clientWidth||slot.clientWidth||270;
+        track.querySelectorAll('.ad-carousel-slide').forEach(el=>{el.style.width=slideW+'px';});
+        track.style.width=(slideW*track.children.length)+'px';
+        track.style.transition='none';
+        track.style.transform='translateX(-'+(index*slideW)+'px)';
       }
+      function goTo(i,animate){
+        if(!slideW)layoutAdCarousel();
+        track.style.transition=animate?'transform '+IGNIS_AD_SLIDE_MS+'ms ease':'none';
+        track.style.transform='translateX(-'+(i*slideW)+'px)';
+      }
+      function releaseBusy(){busy=false;}
       track.addEventListener('transitionend',e=>{
         if(e.target!==track||e.propertyName!=='transform')return;
-        busy=false;
-        if(index===slides.length){
+        if(index>=realCount){
           index=0;
           goTo(0,false);
         }
+        releaseBusy();
       });
-      goTo(0,false);
+      layoutAdCarousel();
+      window.addEventListener('resize',layoutAdCarousel);
       setInterval(()=>{
         if(busy)return;
         busy=true;
         index++;
         goTo(index,true);
+        setTimeout(()=>{if(busy)releaseBusy();},IGNIS_AD_SLIDE_MS+120);
       },IGNIS_AD_INTERVAL_MS);
     }
     const IGNIS_BGM={

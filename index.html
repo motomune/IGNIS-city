@@ -47,9 +47,9 @@
     }
     #lang-btn:hover { opacity: 0.85; }
     #sound-toggle {
-      background: linear-gradient(135deg, rgba(132,204,22,0.78), rgba(74,222,128,0.85));
-      border: 1px solid rgba(190,242,100,0.65);
-      color: #0b2f10; padding: 5px 12px; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(163,230,53,0.58), rgba(134,239,172,0.64));
+      border: 1px solid rgba(190,242,100,0.48);
+      color: #12411b; padding: 5px 12px; border-radius: 20px;
       font-size: 14px; cursor: pointer; line-height: 1;
     }
     #sound-toggle:hover { filter: brightness(1.06); }
@@ -483,7 +483,9 @@
     }
     #task-panel { position:fixed;top:80px;right:24px;background:rgba(6,6,16,0.95);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:16px 20px;min-width:240px;z-index:15;pointer-events:all;display:none;backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.6); }
     #task-panel.open { display: block; }
-    #task-panel-title { font-size:11px;font-weight:800;color:#ff6a00;letter-spacing:0.15em;margin-bottom:12px;text-transform:uppercase; }
+    #task-panel-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px; }
+    #task-panel-title { font-size:11px;font-weight:800;color:#ff6a00;letter-spacing:0.15em;text-transform:uppercase; }
+    #task-panel-close { background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);color:#fff;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer; }
     .task-row { display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px; }
     .task-row:last-child { border-bottom: none; }
     .task-status { font-size:16px;width:20px; }
@@ -713,6 +715,8 @@
     /* 承認済み格言・備考 */
     #building-sell-btn { width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:14px;transition:opacity 0.2s; }
     #building-sell-btn:hover { opacity:0.85; }
+    #building-assign-btn { width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
+    #building-assign-btn:hover { opacity:0.9; }
     #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em;background:rgba(255,255,255,0.04); }
     #building-modal-motto.rank-5 { color:#ee0979;border-left:4px solid #ee0979;background:rgba(238,9,121,0.1); }
     #building-modal-motto.rank-4 { color:#f59e0b;border-left:4px solid #f59e0b;background:rgba(245,158,11,0.1); }
@@ -788,6 +792,10 @@
       #book-result-actions { max-width: 100%; }
       #book-result-build, #book-result-city, #book-result-retry { font-size: 13px; padding: 11px 18px; }
       #audio-unlock-btn { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; padding: 10px 18px; }
+    }
+    #gacha-modal-close,#build-modal-close,#auth-close,#building-modal-close,#profile-modal-close,#land-panel-close {
+      background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);border-radius:10px;
+      color:#fff !important; width:34px;height:34px; display:flex;align-items:center;justify-content:center; line-height:1;
     }
     @media (max-width: 380px) {
       #logo { font-size: 13px; }
@@ -881,7 +889,10 @@
   </div>
   <!-- 右下フロートボタンは廃止（下部に統合） -->
   <div id="task-panel">
-    <div id="task-panel-title">📋 デイリータスク</div>
+    <div id="task-panel-head">
+      <div id="task-panel-title">📋 デイリータスク</div>
+      <button id="task-panel-close" type="button" onclick="toggleTaskPanel()">✕</button>
+    </div>
     <div id="task-progress-wrap">
       <div id="task-progress-header">
         <span id="task-progress-label">今日の進捗</span>
@@ -921,6 +932,7 @@
       <div id="building-modal-motto"></div>
       <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
+      <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
   </div>
@@ -1198,7 +1210,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v34';
+    const IGNIS_BUILD='2026-05-28-v35';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -2257,6 +2269,7 @@
       const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
+      const taskClose=document.getElementById('task-panel-close');if(taskClose)taskClose.textContent=isJa?'閉じる':'Close';
       document.getElementById('fly-hint').textContent=isJa?'🕊 矢印で移動・Shift上昇・Ctrl下降':'🕊 Arrows move · Shift up · Ctrl down';
       document.getElementById('legend-empty').textContent=isJa?'空き地（未取得）':'Empty land';
       document.getElementById('legend-mine').textContent=isJa?'自分の土地':'My land';
@@ -2802,7 +2815,7 @@
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
-    arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=200;arcCamera.upperBetaLimit=Math.PI/2.2;
+    arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=170;arcCamera.upperBetaLimit=Math.PI/2.2;
     if(isCoarseMobile()){
       arcCamera.upperRadiusLimit=420;
       arcCamera.lowerRadiusLimit=6;
@@ -2907,8 +2920,8 @@
       if(isTouchFly){
         const ls=touchFlyState.left;
         const rs=touchFlyState.right;
-        flyCamera.cameraRotation.y-=rs.x*0.183*dt;
-        flyCamera.cameraRotation.x+=rs.y*0.125*dt;
+        flyCamera.cameraRotation.y+=rs.x*0.183*dt;
+        flyCamera.cameraRotation.x-=rs.y*0.125*dt;
         const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
         const right=flyCamera.getDirection(BABYLON.Axis.X);
         const moveScale=8.5*dt;
@@ -3774,10 +3787,19 @@
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
+      const assignBtn=document.getElementById('building-assign-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
       if(isOwnLand){
         sellBtn.style.display='block';
         sellBtn.hidden=false;
+        if(assignBtn){
+          const bench=Math.max(0,Number(currentUser?.benchEmployees||0));
+          assignBtn.style.display='block';
+          assignBtn.hidden=false;
+          assignBtn.textContent=isJa?`👷 従業員を配属（休職中: ${bench}人）`:`👷 Assign Staff (bench: ${bench})`;
+          assignBtn.disabled=bench<=0;
+          assignBtn.style.opacity=bench<=0?'0.5':'1';
+        }
         const floors=buildingData.baseFloors||buildingData.totalFloors||0;
         const emp=buildingData.employees||0;
         const reward=calcSellReward(floors,emp);
@@ -3785,6 +3807,7 @@
       } else {
         sellBtn.style.display='none';
         sellBtn.hidden=true;
+        if(assignBtn){assignBtn.style.display='none';assignBtn.hidden=true;}
       }
       const land=landMap[key];const ownerEl=document.getElementById('building-modal-owner');
       if(land){
@@ -3813,6 +3836,62 @@
       recordBuildingView(buildingData);
     }
     function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
+    async function assignEmployeesToCurrentBuilding(){
+      if(!currentUser||!currentModalBuilding||!db)return;
+      const isJa=currentLang==='ja';
+      const b=currentModalBuilding;
+      if(!isOwnLandBuilding(b)){
+        showToast(isJa?'自分のビルのみ配属できます':'You can assign only to your own building');
+        return;
+      }
+      try{
+        const {data:uRow,error:uErr}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
+        if(uErr)throw uErr;
+        const bench=Math.max(0,Number(uRow?.bench_employees||0));
+        if(bench<=0){
+          showToast(isJa?'休職中の従業員がいません':'No bench staff available');
+          await refreshEmployeeHeader();
+          openBuildingModal(b);
+          return;
+        }
+        const input=prompt(isJa?`何人配属しますか？（1〜${bench}）`:`How many to assign? (1-${bench})`,String(Math.min(bench,5)));
+        if(input==null)return;
+        const count=Math.floor(Number(input));
+        if(!Number.isFinite(count)||count<=0||count>bench){
+          showToast(isJa?'配属人数が不正です':'Invalid assignment count');
+          return;
+        }
+        const key=b.landKey||landKey(b.x,b.z);
+        const {data:rows,error:bErr}=await db.from('buildings').select('employees,floors,style,owner_id,view_count').eq('x',b.x).eq('z',b.z).limit(1);
+        if(bErr)throw bErr;
+        const row=(rows&&rows[0])||null;
+        if(!row){showToast(isJa?'対象ビルが見つかりません':'Building not found');return;}
+        if(row.owner_id!==currentUser.id){showToast(isJa?'自分のビルではありません':'Not your building');return;}
+        const nextBench=bench-count;
+        const nextEmp=(Number(row.employees)||0)+count;
+        const {error:uuErr}=await db.from('users').update({bench_employees:nextBench}).eq('id',currentUser.id);
+        if(uuErr)throw uuErr;
+        const {error:bbErr}=await db.from('buildings').update({employees:nextEmp}).eq('x',b.x).eq('z',b.z).eq('owner_id',currentUser.id);
+        if(bbErr)throw bbErr;
+        currentUser.benchEmployees=nextBench;
+        b.employees=nextEmp;
+        b.totalFloors=calcTotalFloors(b.baseFloors||row.floors||1,nextEmp);
+        const shape=normalizePrism((row.style||b.shape||'square').split('_')[0]||b.shape||'square');
+        if(b.mesh)b.mesh.dispose();
+        const updated=addBuilding(b.x,b.z,b.baseFloors||row.floors||1,shape,nextEmp,true,key,row.view_count||b.viewCount||0,currentUser.id);
+        buildings=buildings.filter(x=>x!==b);
+        document.getElementById('building-count').textContent=buildings.length;
+        buildingMap[key]=updated;
+        currentModalBuilding=updated;
+        await refreshEmployeeHeader();
+        openBuildingModal(updated);
+        drawMinimap();
+        showToast(isJa?`👷 ${count}人を配属しました`:`👷 Assigned ${count} staff`);
+      }catch(e){
+        console.warn('assignEmployeesToCurrentBuilding',e);
+        showToast(isJa?`配属に失敗: ${e.message}`:`Assignment failed: ${e.message}`);
+      }
+    }
     async function recordBuildingView(buildingData){
       if(!currentUser||!buildingData)return;
       if(isOwnLandBuilding(buildingData))return;
@@ -4016,6 +4095,7 @@
       if(mesh){mesh.metadata={landKey:key,bx:x,bz:z};}
       buildings.push(buildingData);buildingMap[key]=buildingData;
       document.getElementById('building-count').textContent=buildings.length;
+      return buildingData;
     }
     async function loadBuildings(){
       if(!db){console.warn('[IGNIS] no db — demo buildings');[[0,0,20,'square',0],[10,5,35,'triangle',30]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));return;}

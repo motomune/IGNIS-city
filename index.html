@@ -1261,8 +1261,9 @@
     function initAdCarousel(){
       const slot=document.getElementById('ad-slot');
       if(!slot)return;
+      const adAssetV='41';
       const slides=IGNIS_AD_SLIDES.map(s=>({
-        src:IGNIS_AD_RAW+encodeURIComponent(s.file),
+        src:IGNIS_AD_RAW+encodeURIComponent(s.file)+'?v='+adAssetV,
         alt:s.alt,
         action:s.action,
         href:s.href,

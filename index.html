@@ -16,10 +16,10 @@
       gap: 12px;
     }
     #header-start {
-      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 8px; flex-shrink: 0;
     }
     #ad-slot {
-      width: 180px; height: 66px; flex-shrink: 0;
+      width: 180px; height: 132px; flex-shrink: 0;
       background: rgba(255,255,255,0.06);
       border: 1px dashed rgba(255,255,255,0.22);
       border-radius: 8px;
@@ -119,6 +119,32 @@
       pointer-events: none; backdrop-filter: blur(6px); white-space: nowrap;
     }
     #fly-hint.visible { display: block; }
+    #mobile-fly-ui {
+      position: fixed; inset: 0; z-index: 18; pointer-events: none; display: none;
+    }
+    #mobile-fly-ui.show { display: block; }
+    .fly-joystick {
+      position: absolute; bottom: max(88px, env(safe-area-inset-bottom, 0px) + 72px);
+      width: 112px; height: 112px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.24);
+      box-shadow: inset 0 0 22px rgba(255,255,255,0.08); pointer-events: all; touch-action: none;
+    }
+    #fly-stick-left { left: 16px; }
+    #fly-stick-right { right: 16px; }
+    .fly-stick-knob {
+      position: absolute; left: 50%; top: 50%; width: 50px; height: 50px; transform: translate(-50%,-50%);
+      border-radius: 50%; background: rgba(255,255,255,0.26); border: 1px solid rgba(255,255,255,0.38);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.28); pointer-events: none;
+    }
+    #fly-vertical-controls {
+      position: absolute; right: 20px; bottom: max(220px, env(safe-area-inset-bottom, 0px) + 194px);
+      display: flex; flex-direction: column; gap: 8px; pointer-events: all;
+    }
+    .fly-vertical-btn {
+      width: 52px; height: 44px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12); color: #fff; font-size: 19px; font-weight: 900;
+    }
+    .fly-vertical-btn:active { transform: scale(0.95); }
     #loading {
       position: fixed; inset: 0; background: #0a0a0f; display: flex;
       flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.8s;
@@ -683,8 +709,8 @@
         gap: 4px 6px;
         align-items: center;
       }
-      #header-start { grid-column: 1; grid-row: 1; gap: 6px; min-width: 0; }
-      #ad-slot { width: 120px; height: 48px; }
+      #header-start { grid-column: 1; grid-row: 1; gap: 5px; min-width: 0; }
+      #ad-slot { width: 120px; height: 96px; }
       #ad-slot .ad-slot-label { font-size: 8px; }
       #logo { font-size: 14px; letter-spacing: 0.1em; min-width: 0; }
       #stats { font-size: 10px; grid-column: 1 / -1; grid-row: 2; line-height: 1.4; margin: 0; }
@@ -702,6 +728,8 @@
       #ranking-btn { padding: 4px 8px !important; font-size: 9px !important; }
       #coin-history-btn, #logout-btn { padding: 4px 8px; font-size: 9px; }
       #task-panel { top: 52px; right: 8px; min-width: 220px; padding: 12px 14px; }
+      .fly-joystick { width: 106px; height: 106px; }
+      .fly-stick-knob { width: 46px; height: 46px; }
       #bottom-btns {
         bottom: max(14px, env(safe-area-inset-bottom, 14px));
         left: 50%; transform: translateX(-50%);
@@ -769,11 +797,19 @@
   </div>
   <canvas id="renderCanvas"></canvas>
   <canvas id="fire-canvas"></canvas>
+  <div id="mobile-fly-ui" aria-hidden="true">
+    <div id="fly-stick-left" class="fly-joystick"><div id="fly-knob-left" class="fly-stick-knob"></div></div>
+    <div id="fly-stick-right" class="fly-joystick"><div id="fly-knob-right" class="fly-stick-knob"></div></div>
+    <div id="fly-vertical-controls">
+      <button id="fly-up-btn" class="fly-vertical-btn" type="button">▲</button>
+      <button id="fly-down-btn" class="fly-vertical-btn" type="button">▼</button>
+    </div>
+  </div>
   <div id="ui">
     <div id="header">
       <div id="header-start">
-        <div id="ad-slot" aria-label="広告枠"><span class="ad-slot-label">広告</span></div>
         <div id="logo">IGNIS CITY</div>
+        <div id="ad-slot" aria-label="広告枠"><span class="ad-slot-label">広告</span></div>
       </div>
       <div id="stats">
         <div>
@@ -804,7 +840,7 @@
       </div>
     </div>
   </div>
-  <div id="fly-hint">🕊 WASD / スワイプで空中移動</div>
+  <div id="fly-hint">🕊 矢印で移動・Shift上昇・Ctrl下降</div>
   <div id="bottom-btns">
     <button id="build-btn" onclick="openGachaModal(false)"><span class="acq-icons" aria-hidden="true"><span class="acq-icon-building">🏢</span><span class="acq-sep">／</span><span class="acq-icon-worker">👨‍💼</span></span><span id="build-btn-text">獲得</span></button>
     <button id="mode-btn" onclick="toggleFlyMode()">🕊 飛行モード</button>
@@ -1123,7 +1159,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-27-v30';
+    const IGNIS_BUILD='2026-05-28-v31';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -1150,17 +1186,29 @@
           'https://cdn.jsdelivr.net/gh/motomune/IGNIS-GAME@main/audio%3Amyworld-bgm.mp3',
           'https://raw.githubusercontent.com/motomune/IGNIS-GAME/main/audio%3Amyworld-bgm.mp3'
         ]
+      },
+      collection:{
+        label:'Collection BGM',
+        volume:0.32,
+        sources:[
+          'J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3',
+          'https://motomune.github.io/IGNIS-city/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3',
+          'https://raw.githubusercontent.com/motomune/IGNIS-city/main/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3'
+        ]
       }
     };
+    function isCollectionScreenOpen(){
+      return document.getElementById('zukan-overlay').classList.contains('open');
+    }
     function isOpeningBgmScreenOpen(){
       return document.getElementById('gacha-modal').classList.contains('open')
         ||document.getElementById('gacha-overlay').classList.contains('show')
-        ||document.getElementById('build-modal').classList.contains('open')
-        ||document.getElementById('zukan-overlay').classList.contains('open');
+        ||document.getElementById('build-modal').classList.contains('open');
     }
     function refreshCityBgm(){
       if(IgnisAudio.muted)return;
-      if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
+      if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
+      else if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
       else IgnisAudio.playBgmTrack('city').catch(()=>{});
     }
     console.warn('[IGNIS CITY] build',IGNIS_BUILD);
@@ -2146,7 +2194,7 @@
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
-      document.getElementById('fly-hint').textContent=isJa?'🕊 WASD / スワイプで空中移動':'🕊 WASD / Swipe to fly';
+      document.getElementById('fly-hint').textContent=isJa?'🕊 矢印で移動・Shift上昇・Ctrl下降':'🕊 Arrows move · Shift up · Ctrl down';
       document.getElementById('legend-empty').textContent=isJa?'空き地（未取得）':'Empty land';
       document.getElementById('legend-mine').textContent=isJa?'自分の土地':'My land';
       document.getElementById('legend-others').textContent=isJa?'他ユーザーの土地':'Others\' land';
@@ -2677,13 +2725,125 @@
     flyCamera.setTarget(BABYLON.Vector3.Zero());
     flyCamera.speed=1.4;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
     flyCamera.bankedTurn=true;flyCamera.bankedTurnLimit=Math.PI/4;flyCamera.bankedTurnMultiplier=0.5;flyCamera.minZ=0.1;
-    flyCamera.keysUp=[87,38];flyCamera.keysDown=[83,40];flyCamera.keysLeft=[65,37];flyCamera.keysRight=[68,39];
+    flyCamera.keysUp=[];flyCamera.keysDown=[];flyCamera.keysLeft=[];flyCamera.keysRight=[];
     scene.activeCamera=arcCamera;
     let isFlying=false;
+    const flyKeyState={up:false,down:false,left:false,right:false,rise:false,fall:false};
+    const isTouchFly=isCoarseMobile();
+    const touchFlyState={
+      left:{active:false,x:0,y:0,pid:null},
+      right:{active:false,x:0,y:0,pid:null},
+      rise:false,
+      fall:false
+    };
+    function setStickVisual(side){
+      const data=touchFlyState[side];
+      const knob=document.getElementById(side==='left'?'fly-knob-left':'fly-knob-right');
+      if(!knob)return;
+      knob.style.transform=`translate(calc(-50% + ${Math.round(data.x*34)}px), calc(-50% + ${Math.round(data.y*34)}px))`;
+    }
+    function resetStick(side){
+      const data=touchFlyState[side];
+      data.active=false;data.x=0;data.y=0;data.pid=null;
+      setStickVisual(side);
+    }
+    function bindTouchStick(stickId,side){
+      const el=document.getElementById(stickId);
+      if(!el)return;
+      const onDown=(e)=>{
+        if(!isFlying||!isTouchFly)return;
+        if(touchFlyState[side].active)return;
+        touchFlyState[side].active=true;
+        touchFlyState[side].pid=e.pointerId;
+        el.setPointerCapture?.(e.pointerId);
+        if(e.cancelable)e.preventDefault();
+      };
+      const onMove=(e)=>{
+        const s=touchFlyState[side];
+        if(!s.active||s.pid!==e.pointerId)return;
+        const r=el.getBoundingClientRect();
+        const cx=r.left+r.width/2;
+        const cy=r.top+r.height/2;
+        let dx=(e.clientX-cx)/(r.width*0.5);
+        let dy=(e.clientY-cy)/(r.height*0.5);
+        const mag=Math.hypot(dx,dy);
+        if(mag>1){dx/=mag;dy/=mag;}
+        s.x=dx;s.y=dy;
+        setStickVisual(side);
+        if(e.cancelable)e.preventDefault();
+      };
+      const onUp=(e)=>{
+        const s=touchFlyState[side];
+        if(s.pid!==e.pointerId)return;
+        resetStick(side);
+        if(e.cancelable)e.preventDefault();
+      };
+      el.addEventListener('pointerdown',onDown,{passive:false});
+      el.addEventListener('pointermove',onMove,{passive:false});
+      el.addEventListener('pointerup',onUp,{passive:false});
+      el.addEventListener('pointercancel',onUp,{passive:false});
+    }
+    bindTouchStick('fly-stick-left','left');
+    bindTouchStick('fly-stick-right','right');
+    ['fly-up-btn','fly-down-btn'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el)return;
+      const isUp=id==='fly-up-btn';
+      const setPressed=(v)=>{ if(isUp)touchFlyState.rise=v; else touchFlyState.fall=v; };
+      el.addEventListener('pointerdown',(e)=>{ if(isFlying&&isTouchFly){setPressed(true); if(e.cancelable)e.preventDefault(); } },{passive:false});
+      el.addEventListener('pointerup',()=>setPressed(false),{passive:false});
+      el.addEventListener('pointercancel',()=>setPressed(false),{passive:false});
+      el.addEventListener('pointerleave',()=>setPressed(false),{passive:false});
+    });
+    window.addEventListener('keydown',(e)=>{
+      if(!isFlying||isTouchFly)return;
+      if(e.key==='ArrowUp')flyKeyState.up=true;
+      else if(e.key==='ArrowDown')flyKeyState.down=true;
+      else if(e.key==='ArrowLeft')flyKeyState.left=true;
+      else if(e.key==='ArrowRight')flyKeyState.right=true;
+      else if(e.key==='Shift')flyKeyState.rise=true;
+      else if(e.key==='Control')flyKeyState.fall=true;
+    });
+    window.addEventListener('keyup',(e)=>{
+      if(e.key==='ArrowUp')flyKeyState.up=false;
+      else if(e.key==='ArrowDown')flyKeyState.down=false;
+      else if(e.key==='ArrowLeft')flyKeyState.left=false;
+      else if(e.key==='ArrowRight')flyKeyState.right=false;
+      else if(e.key==='Shift')flyKeyState.rise=false;
+      else if(e.key==='Control')flyKeyState.fall=false;
+    });
+    scene.onBeforeRenderObservable.add(()=>{
+      if(!isFlying||scene.activeCamera!==flyCamera)return;
+      const dt=Math.min(0.05,engine.getDeltaTime()/1000);
+      if(isTouchFly){
+        const ls=touchFlyState.left;
+        const rs=touchFlyState.right;
+        flyCamera.cameraRotation.y-=rs.x*2.2*dt;
+        flyCamera.cameraRotation.x+=rs.y*1.5*dt;
+        const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
+        const right=flyCamera.getDirection(BABYLON.Axis.X);
+        const moveScale=34*dt;
+        flyCamera.cameraDirection.addInPlace(fwd.scale(-ls.y*moveScale));
+        flyCamera.cameraDirection.addInPlace(right.scale(ls.x*moveScale*0.9));
+        const lift=(touchFlyState.rise?1:0)-(touchFlyState.fall?1:0);
+        if(lift!==0)flyCamera.position.y+=lift*20*dt;
+      }else{
+        const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
+        const right=flyCamera.getDirection(BABYLON.Axis.X);
+        const moveScale=26*dt;
+        if(flyKeyState.up)flyCamera.cameraDirection.addInPlace(fwd.scale(moveScale));
+        if(flyKeyState.down)flyCamera.cameraDirection.addInPlace(fwd.scale(-moveScale));
+        if(flyKeyState.left)flyCamera.cameraDirection.addInPlace(right.scale(-moveScale*0.8));
+        if(flyKeyState.right)flyCamera.cameraDirection.addInPlace(right.scale(moveScale*0.8));
+        const lift=(flyKeyState.rise?1:0)-(flyKeyState.fall?1:0);
+        if(lift!==0)flyCamera.position.y+=lift*18*dt;
+      }
+    });
     function toggleFlyMode(){isFlying=!isFlying;setFlyMode(isFlying);}
     function setFlyMode(enabled){
       isFlying=enabled;
       const modeBtn=document.getElementById('mode-btn'),flyHint=document.getElementById('fly-hint');
+      const mobileFlyUi=document.getElementById('mobile-fly-ui');
       const isJa=currentLang==='ja';
       if(enabled){
         const p=arcCamera.position;
@@ -2691,39 +2851,20 @@
         flyCamera.setTarget(arcCamera.target||BABYLON.Vector3.Zero());
         scene.activeCamera=flyCamera;flyCamera.attachControl(canvas,true);arcCamera.detachControl();
         modeBtn.classList.add('fly-active');modeBtn.textContent=isJa?'🏙 街づくりモード':'🏙 City Mode';
-        flyHint.classList.add('visible');closeLandPanel();showToast(isCoarseMobile()?(isJa?'🕊 飛行モード ON — スワイプで移動':'🕊 Fly mode ON — swipe to move'):'🕊 飛行モード ON — WASD で移動');
+        flyHint.classList.add('visible');closeLandPanel();
+        if(mobileFlyUi)mobileFlyUi.classList.toggle('show',isTouchFly);
+        showToast(isTouchFly
+          ?(isJa?'🕹 左=移動 / 右=視点 / ▲▼=上昇下降':'🕹 Left move / Right look / ▲▼ vertical')
+          :(isJa?'🕊 矢印で移動 / Shift上昇 / Ctrl下降':'🕊 Arrows move / Shift up / Ctrl down'));
       }else{
         scene.activeCamera=arcCamera;arcCamera.attachControl(canvas,true);flyCamera.detachControl();
         modeBtn.classList.remove('fly-active');modeBtn.textContent=isJa?'🕊 飛行モード':'🕊 Fly Mode';
-        flyHint.classList.remove('visible');showToast('🏙 街づくりモード ON');
+        flyHint.classList.remove('visible');
+        if(mobileFlyUi)mobileFlyUi.classList.remove('show');
+        resetStick('left');resetStick('right');
+        touchFlyState.rise=false;touchFlyState.fall=false;
+        showToast('🏙 街づくりモード ON');
       }
-    }
-    if(isCoarseMobile()){
-      let flyTouchActive=false,flyLastX=0,flyLastY=0;
-      const onFlyDown=(e)=>{
-        if(!isFlying||!scene.activeCamera||scene.activeCamera!==flyCamera)return;
-        flyTouchActive=true;
-        flyLastX=e.clientX;flyLastY=e.clientY;
-        if(e.cancelable)e.preventDefault();
-      };
-      const onFlyMove=(e)=>{
-        if(!flyTouchActive||!isFlying||scene.activeCamera!==flyCamera)return;
-        if(e.cancelable)e.preventDefault();
-        const dx=e.clientX-flyLastX;
-        const dy=e.clientY-flyLastY;
-        flyLastX=e.clientX;flyLastY=e.clientY;
-        flyCamera.cameraRotation.y-=dx*0.0019;
-        flyCamera.cameraRotation.x-=dy*0.0012;
-        const forward=flyCamera.getDirection(BABYLON.Axis.Z);
-        const right=flyCamera.getDirection(BABYLON.Axis.X);
-        flyCamera.cameraDirection.addInPlace(forward.scale(-dy*0.006));
-        flyCamera.cameraDirection.addInPlace(right.scale(dx*0.002));
-      };
-      const onFlyEnd=()=>{flyTouchActive=false;};
-      canvas.addEventListener('pointerdown',onFlyDown,{passive:false});
-      canvas.addEventListener('pointermove',onFlyMove,{passive:false});
-      canvas.addEventListener('pointerup',onFlyEnd,{passive:false});
-      canvas.addEventListener('pointercancel',onFlyEnd,{passive:false});
     }
     const hemiLight=new BABYLON.HemisphericLight('hemi',new BABYLON.Vector3(0,1,0),scene);
     hemiLight.intensity=0.6;hemiLight.groundColor=new BABYLON.Color3(0.1,0.05,0.1);
@@ -3857,7 +3998,7 @@
     async function openZukan(){
       if(!currentUser){showToast('ログインが必要です');return;}
       document.getElementById('zukan-overlay').classList.add('open');
-      IgnisAudio.playBgmTrack('opening').catch(()=>{});
+      IgnisAudio.playBgmTrack('collection').catch(()=>{});
       await loadZukanBuildings();
     }
     function closeZukan(){

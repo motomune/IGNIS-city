@@ -32,8 +32,10 @@
     #ad-slot .ad-carousel-track { display: flex; height: 100%; will-change: transform; }
     #ad-slot .ad-carousel-slide {
       flex: 0 0 100%; width: 100%; height: 100%; display: block;
+      border: none; padding: 0; margin: 0; background: none; cursor: pointer;
+      text-decoration: none; color: inherit;
     }
-    #ad-slot .ad-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #ad-slot .ad-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
     #logo {
       font-size: 20px; font-weight: 900; letter-spacing: 0.2em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
@@ -1206,37 +1208,56 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v39';
+    const IGNIS_BUILD='2026-05-28-v40';
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
     const IGNIS_AD_SLIDES=[
-      {file:'SOUL日本語写真.png',alt:'SOUL'},
-      {file:'SOUL英語写真.png',alt:'SOUL'}
+      {file:'SOUL日本語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK},
+      {file:'ignis-logo.jpeg',alt:'IGNIS CITY',action:'signup'},
+      {file:'SOUL英語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK}
     ];
     const IGNIS_AD_INTERVAL_MS=5000;
     const IGNIS_AD_SLIDE_MS=550;
+    function openAdSignup(){
+      if(currentUser){
+        showToast(currentLang==='ja'?'すでにログイン済みです':'Already logged in');
+        return;
+      }
+      openAuthModal();
+      switchTab('signup');
+    }
+    function createAdSlideEl(s){
+      const isSignup=s.action==='signup';
+      const el=document.createElement(isSignup?'button':'a');
+      el.className='ad-carousel-slide';
+      if(isSignup){
+        el.type='button';
+        el.setAttribute('aria-label',currentLang==='ja'?'ゲームに新規登録':'Sign up for the game');
+        el.addEventListener('click',e=>{e.preventDefault();openAdSignup();});
+      }else{
+        el.href=s.href||IGNIS_AD_LINK;
+        el.target='_blank';
+        el.rel='noopener';
+      }
+      const img=document.createElement('img');
+      img.src=s.src;
+      img.alt=s.alt;
+      img.decoding='async';
+      el.appendChild(img);
+      return el;
+    }
     function initAdCarousel(){
       const slot=document.getElementById('ad-slot');
       if(!slot)return;
       const slides=IGNIS_AD_SLIDES.map(s=>({
         src:IGNIS_AD_RAW+encodeURIComponent(s.file),
-        alt:s.alt
+        alt:s.alt,
+        action:s.action,
+        href:s.href
       }));
       const track=document.createElement('div');
       track.className='ad-carousel-track';
-      [...slides,slides[0]].forEach(s=>{
-        const a=document.createElement('a');
-        a.className='ad-carousel-slide';
-        a.href=IGNIS_AD_LINK;
-        a.target='_blank';
-        a.rel='noopener';
-        const img=document.createElement('img');
-        img.src=s.src;
-        img.alt=s.alt;
-        img.decoding='async';
-        a.appendChild(img);
-        track.appendChild(a);
-      });
+      [...slides,slides[0]].forEach(s=>track.appendChild(createAdSlideEl(s)));
       const viewport=document.createElement('div');
       viewport.className='ad-carousel-viewport';
       viewport.appendChild(track);

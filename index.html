@@ -1188,7 +1188,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v32';
+    const IGNIS_BUILD='2026-05-28-v33';
     const IGNIS_BGM={
       city:{
         label:'Ending BGM',
@@ -2178,8 +2178,6 @@
       addNotice('staff',isJa?`従業員${soon}人が満期まで1週間以内です（全${total}人）`:`${soon} staff expire within 1 week (total ${total})`);
       localStorage.setItem(key,'1');
     }
-    addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。');
-    addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。');
     document.addEventListener('pointerdown',(e)=>{
       const panel=document.getElementById('notice-panel');
       const btn=document.getElementById('notice-btn');
@@ -2192,6 +2190,8 @@
     // 多言語
     // ========================================
     let currentLang='ja';
+    addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。');
+    addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。');
     function toggleLang(){
       currentLang=currentLang==='ja'?'en':'ja';
       const isJa=currentLang==='ja';

@@ -626,8 +626,8 @@
     #ranking-overlay.open { display: flex; }
     #ranking-header { display:flex;align-items:center;gap:16px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
     #ranking-title { font-size:18px;font-weight:900;letter-spacing:0.1em;background:linear-gradient(135deg,#f59e0b,#ee0979);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0; }
-    #ranking-tabs { display:flex;gap:8px;flex:1; }
-    .ranking-tab { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:7px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s; }
+      #ranking-tabs { display:flex;gap:6px;flex:1;flex-wrap:wrap; }
+      .ranking-tab { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s; }
     .ranking-tab:hover { background:rgba(255,255,255,0.12);color:#fff; }
     .ranking-tab.active { background:linear-gradient(135deg,#f59e0b,#ee0979);border-color:transparent;color:#fff; }
     #ranking-close { background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all 0.2s; }
@@ -654,6 +654,10 @@
     #ranking-loading-msg { text-align:center;padding:60px 20px;font-size:14px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.1em;display:none; }
     #ranking-loading-msg.show { display: block; }
     .ranking-updated { font-size:11px;color:rgba(255,255,255,0.25);text-align:right;margin-top:16px;padding-bottom:8px; }
+    .ranking-username.masked { letter-spacing:0.08em;font-family:monospace; }
+    .ranking-username .rank-x-link { color:#1d9bf0;text-decoration:none; }
+    .ranking-username .rank-x-link:hover { text-decoration:underline; }
+    #invite-stats { font-size:11px;color:rgba(255,255,255,0.55);margin-top:6px;line-height:1.45; }
     /* コイン獲得履歴 */
     #coin-history-btn {
       background: linear-gradient(135deg, rgba(255,106,0,0.55), rgba(238,9,121,0.55));
@@ -747,7 +751,7 @@
       #header {
         display: grid;
         grid-template-columns: 1fr auto;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto;
         padding: 8px 10px;
         padding-top: max(8px, env(safe-area-inset-top, 0px));
         gap: 4px 6px;
@@ -757,7 +761,14 @@
       #ad-slot { width: 180px; height: 144px; }
       #logo { font-size: 14px; letter-spacing: 0.1em; min-width: 0; }
       #stats { font-size: 10px; grid-column: 1 / -1; grid-row: 2; line-height: 1.4; margin: 0; }
-      #ad-slot-wrap { grid-column: 1 / -1; grid-row: 3; margin-top:2px; }
+      #ad-slot-wrap {
+        position: fixed;
+        left: max(8px, env(safe-area-inset-left, 0px));
+        bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+        z-index: 12;
+        margin: 0;
+        width: auto;
+      }
       #emp-stats { font-size: 9px !important; }
       #user-area {
         grid-column: 2; grid-row: 1;
@@ -913,6 +924,7 @@
     <div id="task-list"></div>
     <div id="task-utility-actions">
       <button id="invite-btn" class="task-utility-btn" type="button" onclick="handleInviteGame()">🎮 ゲーム招待</button>
+      <div id="invite-stats" aria-live="polite"></div>
       <button id="help-btn" class="task-utility-btn" type="button" onclick="openHelpContact()">❓ ヘルプ / お問い合わせ</button>
       <button id="notice-btn" class="task-utility-btn" type="button" onclick="toggleNoticePanel()">🔔 通知<span id="notice-badge">0</span></button>
     </div>
@@ -1083,15 +1095,17 @@
     <div id="ranking-header">
       <div id="ranking-title">🏆 ランキング</div>
       <div id="ranking-tabs">
-        <button class="ranking-tab active" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員数</button>
-        <button class="ranking-tab" id="rtab-buildings" onclick="switchRankingTab('buildings')">🏢 ビル棟数</button>
+        <button class="ranking-tab active" id="rtab-coins" onclick="switchRankingTab('coins')">💰 コイン</button>
+        <button class="ranking-tab" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員</button>
+        <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">🏢 階数</button>
       </div>
       <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
     </div>
     <div id="ranking-body">
       <div id="ranking-loading-msg">読み込み中...</div>
-      <div id="ranking-emp-list"></div>
-      <div id="ranking-buildings-list" style="display:none;"></div>
+      <div id="ranking-coins-list"></div>
+      <div id="ranking-emp-list" style="display:none;"></div>
+      <div id="ranking-floors-list" style="display:none;"></div>
     </div>
   </div>
   <!-- 図鑑 -->
@@ -1220,7 +1234,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v45';
+    const IGNIS_BUILD='2026-05-28-v46';
+    const MAX_BUILDING_FLOORS=300;
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
     const IGNIS_LOGO_VIDEO_FILES=[
@@ -1920,7 +1935,7 @@
       {min:0,   name:'default',r:0.2,g:0.25,b:0.65,label:'🔵 標準',labelEn:'🔵 Default'},
     ];
     function getColorByEmployees(emp){for(const c of EMP_COLORS){if(emp>=c.min)return c;}return EMP_COLORS[EMP_COLORS.length-1];}
-    function calcTotalFloors(baseFloors,employees){return Math.min(baseFloors+Math.floor(employees/5),200);}
+    function calcTotalFloors(baseFloors,employees){return Math.min(baseFloors+Math.floor(employees/5),MAX_BUILDING_FLOORS);}
     const GACHA_MAX_FLOOR=50;
     const GACHA_TABLE=[
       {star:5,label:'★★★★★',minF:48,maxF:50,prob:0.008,emoji:'🌟'},
@@ -2322,10 +2337,47 @@
           :GAME_PUBLIC_URL;
         const u=new URL(base,window.location.href);
         u.searchParams.set('open','signup');
+        if(currentUser?.id)u.searchParams.set('ref',currentUser.id);
         u.hash='';
         return u.toString();
       }catch(e){
-        return GAME_PUBLIC_URL+'?open=signup';
+        let url=GAME_PUBLIC_URL+'?open=signup';
+        if(currentUser?.id)url+=`&ref=${encodeURIComponent(currentUser.id)}`;
+        return url;
+      }
+    }
+    async function recordGameInvite(){
+      if(!currentUser||!db)return;
+      try{
+        await db.from('game_invites').insert({inviter_id:currentUser.id});
+      }catch(e){console.warn('[IGNIS] recordGameInvite',e.message);}
+    }
+    async function registerReferralFromUrl(){
+      if(!currentUser||!db)return;
+      try{
+        const ref=new URLSearchParams(window.location.search).get('ref');
+        if(!ref||ref===currentUser.id)return;
+        await db.rpc('register_referral',{p_inviter:ref});
+      }catch(e){console.warn('[IGNIS] registerReferral',e.message);}
+    }
+    async function refreshInviteStats(){
+      const el=document.getElementById('invite-stats');
+      if(!el)return;
+      const isJa=currentLang==='ja';
+      if(!currentUser||!db){
+        el.textContent='';
+        return;
+      }
+      try{
+        const[sentRes,regRes]=await Promise.all([
+          db.from('game_invites').select('id',{count:'exact',head:true}).eq('inviter_id',currentUser.id),
+          db.from('game_referrals').select('id',{count:'exact',head:true}).eq('inviter_id',currentUser.id)
+        ]);
+        const sent=sentRes.count||0;
+        const reg=regRes.count||0;
+        el.textContent=isJa?`招待送信: ${sent}回 / 登録: ${reg}人`:`Invites sent: ${sent} / Signups: ${reg}`;
+      }catch(e){
+        el.textContent=isJa?'招待統計を読み込めませんでした':'Could not load invite stats';
       }
     }
     function maybeOpenSignupFromUrl(){
@@ -2362,8 +2414,12 @@
         }else{
           window.open(inviteUrl,'_blank');
         }
+        await recordGameInvite();
+        await refreshInviteStats();
       }catch(e){
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(inviteUrl)}`,'_blank');
+        await recordGameInvite();
+        await refreshInviteStats();
       }
     }
     function openHelpContact(){
@@ -2473,8 +2529,9 @@
       if(document.getElementById('zukan-overlay').classList.contains('open')){renderZukanOwned();renderZukanRarity();}
       document.getElementById('ranking-btn').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
       document.getElementById('ranking-title').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
-      document.getElementById('rtab-emp').textContent=isJa?'👥 従業員数':'👥 Employees';
-      document.getElementById('rtab-buildings').textContent=isJa?'🏢 ビル棟数':'🏢 Buildings';
+      const rtabCoins=document.getElementById('rtab-coins');if(rtabCoins)rtabCoins.textContent=isJa?'💰 コイン':'💰 Coins';
+      const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'👥 従業員':'👥 Staff';
+      const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'🏢 階数':'🏢 Floors';
       document.getElementById('ranking-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('ranking-overlay').classList.contains('open')&&rankingCache.emp){
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
@@ -2986,6 +3043,8 @@
           await refreshStaffTermPanel();
           await withTimeout(initDailyTasks(),10000,'initTasks');
           await withTimeout(completeTask('login'),6000,'taskLogin');
+          await registerReferralFromUrl();
+          await refreshInviteStats();
         }catch(e){console.warn('[IGNIS] post-login',e);}
       });
     }
@@ -3963,21 +4022,21 @@
         document.getElementById('emp-stats').style.display='block';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
-    function calcSellRewardFloors(floors){
-      const f=Math.max(0,floors||0);
-      if(f<=0)return 0;
-      if(f<=50)return Math.round(f/10);
-      if(f<=100)return Math.round(f/9.2);
-      return Math.round(f/8);
+    function getSellCoinMultiplier(employees){
+      const emp=Math.max(0,employees||0);
+      if(emp>=1000)return 8.0;
+      if(emp>=300)return 6.6;
+      return 6.0;
     }
-    function calcSellReward(floors,assigned){
-      return calcSellRewardFloors(floors)+Math.max(0,assigned||0);
-    }
-    function sellRewardLabel(floors,isJa){
+    function calcSellCoinReward(floors,employees){
       const f=Math.max(0,floors||0);
-      if(f<=50)return isJa?`${f}階 ÷ 10`:`${f}F ÷ 10`;
-      if(f<=100)return isJa?`${f}階 ÷ 9.2`:`${f}F ÷ 9.2`;
-      return isJa?`${f}階 ÷ 8`:`${f}F ÷ 8`;
+      return Math.round(f*getSellCoinMultiplier(employees))+100;
+    }
+    function sellRewardLabel(floors,employees,isJa){
+      const mult=getSellCoinMultiplier(employees);
+      const f=Math.max(0,floors||0);
+      const tier=mult>=8? (isJa?'レインボー×8.0':'Rainbow ×8.0') : mult>=6.6? (isJa?'ゴールド×6.6':'Gold ×6.6') : (isJa?'標準×6.0':'Standard ×6.0');
+      return isJa?`${f}階×${mult}+100（${tier}）`:`${f}F×${mult}+100 (${tier})`;
     }
     function isOwnLandBuilding(buildingData){
       if(!currentUser||!buildingData)return false;
@@ -4032,8 +4091,8 @@
         }
         const floors=buildingData.baseFloors||buildingData.totalFloors||0;
         const emp=buildingData.employees||0;
-        const reward=calcSellReward(floors,emp);
-        sellBtn.textContent=isJa?`💰 ビルを売却（土地ごと） 報酬: ${reward}人`:`💰 Sell Building (with Land) Reward: ${reward}`;
+        const coinReward=calcSellCoinReward(floors,emp);
+        sellBtn.textContent=isJa?`💰 ビルを売却（土地ごと） +${coinReward}コイン`:`💰 Sell Building (with Land) +${coinReward} coins`;
       } else {
         sellBtn.style.display='none';
         sellBtn.hidden=true;
@@ -4140,7 +4199,7 @@
           buildingData.viewCount=data.view_count;
           document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
           if(buildingData.mesh&&buildingData.mesh.material){
-            applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh);
+            applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.employees||0);
           }
           await checkViewTaskProgress();
           if(data.employees_added>0){
@@ -4171,13 +4230,12 @@
       if(!isOwnLandBuilding(b))return;
       const floors=b.baseFloors||b.totalFloors||0;
       const emp=b.employees||0;
-      const floorReward=calcSellRewardFloors(floors);
-      const reward=calcSellReward(floors,emp);
+      const coinReward=calcSellCoinReward(floors,emp);
       const isJa=currentLang==='ja';
-      const formula=sellRewardLabel(floors,isJa);
+      const formula=sellRewardLabel(floors,emp,isJa);
       const msg=isJa
-        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得: ${reward}人\n（階数: ${floorReward}人 [${formula}] + 配属: ${emp}人）\n\n土地と建物は失われ、休職中プールに加算されます。`
-        :`Sell this building (${floors}F, ${emp} assigned)?\n\nReward: ${reward}\n(Floors: ${floorReward} [${formula}] + assigned: ${emp})\n\nLand and building will be lost.`;
+        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得コイン: ${coinReward}\n（${formula}）\n配属${emp}人は休職中プールへ戻ります。土地と建物は失われます。`
+        :`Sell this building (${floors}F, ${emp} assigned)?\n\nCoins: ${coinReward}\n(${formula})\nAssigned staff return to bench. Land and building will be lost.`;
       if(!confirm(msg))return;
       try{
         const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});
@@ -4197,7 +4255,12 @@
         if(data.bench_employees!==undefined){
           currentUser.benchEmployees=data.bench_employees;
         }
-        showToast(isJa?`💰 売却完了！${data.reward}人を休職中に獲得`:`💰 Sold! +${data.reward} to bench`);
+        const coins=data.coin_reward??data.coins_added??0;
+        if(data.coins_remaining!=null){
+          document.getElementById('coin-count').textContent=data.coins_remaining;
+        }
+        if(coins>0)await recordCoin(coins,'building_sell');
+        showToast(isJa?`💰 売却完了！+${coins}コイン（配属${emp}人は休職中へ）`:`💰 Sold! +${coins} coins (${emp} staff to bench)`);
         await refreshEmployeeHeader();
       }catch(e){console.warn('sell error:',e.message);showToast('売却失敗: '+e.message);}
     }
@@ -4285,23 +4348,24 @@
         });
       });
     }
-    function applyBuildingRankColor(mat,viewCount,mesh){
+    function applyBuildingRankColor(mat,viewCount,mesh,employees){
       mat.specularColor=new BABYLON.Color3(0.6,0.6,0.75);
       const key=mat.uniqueId;
       animatedBuildingMats.delete(key);
-      if(viewCount>=1000){
+      const emp=employees||0;
+      const tier=emp>=1000||viewCount>=1000?'rainbow':emp>=300||viewCount>=300?'gold':'default';
+      if(tier==='rainbow'){
         mat.diffuseColor=new BABYLON.Color3(1,0.2,0.5);
         mat.emissiveColor=new BABYLON.Color3(0.3,0.0,0.3);
         animatedBuildingMats.set(key,{mat,type:'rainbow'});
         ensureBuildingAnimation();
-      } else if(viewCount>=300){
+      } else if(tier==='gold'){
         mat.diffuseColor=new BABYLON.Color3(1.0,0.84,0.0);
         mat.emissiveColor=new BABYLON.Color3(0.4,0.28,0.0);
         mat.specularColor=new BABYLON.Color3(1,0.9,0.4);
         animatedBuildingMats.set(key,{mat,type:'gold'});
         ensureBuildingAnimation();
       } else {
-        // 全て濃いグレー（default）
         mat.diffuseColor=new BABYLON.Color3(0.32,0.35,0.40);
         mat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
       }
@@ -4318,7 +4382,7 @@
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:w},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
-      applyBuildingRankColor(mat,viewCount,mesh);
+      applyBuildingRankColor(mat,viewCount,mesh,employees);
       mesh.material=mat;
       const key=lKey||landKey(x,z);
       const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,ownerId};
@@ -4345,6 +4409,7 @@
           await loadLands();
           buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
           try{await withTimeout(loadApprovedProfiles(),5000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
+          patchOwnerCenterBuilding();
           drawMinimap();
         })(),isCoarseMobile()?9000:12000,'bootstrapLoad');
       }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}
@@ -4468,37 +4533,84 @@
     // ========================================
     // ランキング
     // ========================================
-    let rankingTab='emp',rankingCache={emp:null,buildings:null};
+    let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null};
+    function rankingNameHash(uid,dayKey){
+      let h=0;const s=`${uid}:${dayKey}`;
+      for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i)|0;
+      return Math.abs(h);
+    }
+    function maskRankingDisplayName(u,rank){
+      const raw=u.x_username?`@${u.x_username}`:(u.username||'?');
+      if(rank===1&&u.x_username){
+        const handle=encodeURIComponent(u.x_username.replace(/^@/,''));
+        return `<a class="rank-x-link" href="https://x.com/${handle}" target="_blank" rel="noopener">@${u.x_username.replace(/^@/,'')}</a>`;
+      }
+      if(rank===1)return raw;
+      const chars='█▓▒░▄▀■□';
+      const seed=rankingNameHash(u.uid,new Date().toISOString().slice(0,10));
+      let out='';
+      for(let i=0;i<raw.length;i++){
+        const ch=raw[i];
+        if(ch==='@'||ch===' '){out+=ch;continue;}
+        out+=chars[(seed+i*11)%chars.length];
+      }
+      return out||'████';
+    }
+    function patchOwnerCenterBuilding(){
+      const key=landKey(0,0);
+      const land=landMap[key];
+      const b=buildingMap[key];
+      if(!b||!land)return;
+      const handle=(land.owner_display||'').replace(/^@/,'').toLowerCase();
+      if(handle!==OWNER_X_HANDLE.toLowerCase())return;
+      b.employees=1000;
+      b.viewCount=Math.max(b.viewCount||0,1000);
+      if(b.mesh&&b.mesh.material){
+        applyBuildingRankColor(b.mesh.material,b.viewCount,b.mesh,1000);
+      }
+    }
     async function openRanking(){document.getElementById('ranking-overlay').classList.add('open');await loadRanking();}
     function closeRanking(){document.getElementById('ranking-overlay').classList.remove('open');}
     function switchRankingTab(tab){
       rankingTab=tab;
-      document.getElementById('rtab-emp').classList.toggle('active',tab==='emp');
-      document.getElementById('rtab-buildings').classList.toggle('active',tab==='buildings');
-      document.getElementById('ranking-emp-list').style.display=tab==='emp'?'block':'none';
-      document.getElementById('ranking-buildings-list').style.display=tab==='buildings'?'block':'none';
+      ['coins','emp','floors'].forEach(t=>{
+        const tabEl=document.getElementById('rtab-'+t);
+        if(tabEl)tabEl.classList.toggle('active',tab===t);
+        const listEl=document.getElementById('ranking-'+t+'-list');
+        if(listEl)listEl.style.display=tab===t?'block':'none';
+      });
     }
     async function loadRanking(){
       const loadingEl=document.getElementById('ranking-loading-msg');loadingEl.classList.add('show');
-      document.getElementById('ranking-emp-list').innerHTML='';document.getElementById('ranking-buildings-list').innerHTML='';
+      ['ranking-coins-list','ranking-emp-list','ranking-floors-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
       try{
-        const{data,error}=await db.from('buildings').select('owner_id,floors,employees,users(username,x_username)');
-        if(error)throw error;
+        const[{data:users,error:uErr},{data:buildings,error:bErr}]=await Promise.all([
+          db.from('users').select('id,username,x_username,coin_column,bench_employees'),
+          db.from('buildings').select('owner_id,floors,employees')
+        ]);
+        if(uErr)throw uErr;
+        if(bErr)throw bErr;
         const userMap={};
-        data.forEach(b=>{
-          const uid=b.owner_id;if(!uid)return;
-          if(!userMap[uid]){const u=b.users;userMap[uid]={uid,username:u?.username||'?',x_username:u?.x_username||'',totalEmp:0,buildingCount:0};}
-          userMap[uid].totalEmp+=(b.employees||0);userMap[uid].buildingCount+=1;
+        (users||[]).forEach(u=>{
+          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0};
         });
-        const users=Object.values(userMap);
-        const empRanking=[...users].sort((a,b)=>b.totalEmp-a.totalEmp).slice(0,50);
-        const buildingsRanking=[...users].sort((a,b)=>b.buildingCount-a.buildingCount).slice(0,50);
-        rankingCache.emp=empRanking;rankingCache.buildings=buildingsRanking;
-        renderRankingList('ranking-emp-list',empRanking,'emp');
-        renderRankingList('ranking-buildings-list',buildingsRanking,'buildings');
+        (buildings||[]).forEach(b=>{
+          const uid=b.owner_id;if(!uid||!userMap[uid])return;
+          userMap[uid].assigned+=(b.employees||0);
+          userMap[uid].totalFloors+=Math.min(b.floors||0,MAX_BUILDING_FLOORS);
+          userMap[uid].buildingCount+=1;
+        });
+        const list=Object.values(userMap).map(u=>({...u,totalEmp:u.assigned+u.bench}));
+        rankingCache.coins=[...list].sort((a,b)=>b.coins-a.coins).slice(0,50);
+        rankingCache.emp=[...list].sort((a,b)=>b.totalEmp-a.totalEmp).slice(0,50);
+        rankingCache.floors=[...list].sort((a,b)=>b.totalFloors-a.totalFloors).slice(0,50);
+        renderRankingList('ranking-coins-list',rankingCache.coins,'coins');
+        renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
+        renderRankingList('ranking-floors-list',rankingCache.floors,'floors');
+        switchRankingTab(rankingTab);
       }catch(e){
         console.warn('ranking load error:',e.message);
-        document.getElementById('ranking-emp-list').innerHTML='<div class="ranking-empty">読み込みに失敗しました</div>';
+        document.getElementById('ranking-coins-list').innerHTML='<div class="ranking-empty">読み込みに失敗しました</div>';
       }finally{loadingEl.classList.remove('show');}
     }
     function renderRankingList(containerId,rankData,type){
@@ -4511,17 +4623,19 @@
         const rank=i+1;const isMe=currentUser&&u.uid===currentUser.id;
         const topClass=rank<=3?`top${rank}`:'';const meClass=isMe?' me':'';
         const badgeHtml=rank<=3?`<div class="rank-medal">${medals[rank-1]}</div>`:`<div class="rank-badge" style="color:rgba(255,255,255,0.35);">${rank}</div>`;
-        const displayName=u.x_username?`<span class="x-handle">@${u.x_username}</span>`:u.username;
+        const masked=maskRankingDisplayName(u,rank);
+        const nameClass=rank===1?'ranking-username':'ranking-username masked';
         let value,unit,subText;
-        if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`🏢 ${u.buildingCount}棟`:`🏢 ${u.buildingCount} bldgs`;}
-        else{value=u.buildingCount;unit=isJa?'棟':'bldgs';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人`:`👥 ${u.totalEmp.toLocaleString()} emp`;}
+        if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
+        else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
+        else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';
         if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}
-        else{if(rank===1)valueColor='#f59e0b';else if(rank===2)valueColor='#94a3b8';else if(rank===3)valueColor='#b4783c';}
+        else if(type==='coins'){if(rank===1)valueColor='#f59e0b';else if(rank===2)valueColor='#94a3b8';else if(rank===3)valueColor='#b4783c';}
         const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
-        html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="ranking-username">${displayName}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
+        html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="${nameClass}">${masked}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
       });
-      html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}</div>`;
+      html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}<br><span style="font-size:10px;opacity:0.75;">${isJa?'※1位のみユーザー名公開（Xリンク）':'※Only #1 name is public (X link)'}</span></div>`;
       container.innerHTML=html;
     }
     engine.runRenderLoop(()=>scene.render());

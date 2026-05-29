@@ -572,8 +572,13 @@
     #minimap-wrap { position:fixed;bottom:90px;left:16px;z-index:10;pointer-events:all; }
     #minimap-canvas { width:140px;height:140px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(6,6,16,0.9);box-shadow:0 4px 20px rgba(0,0,0,0.5);cursor:pointer;display:block; }
     #minimap-label { font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:0.12em;margin-top:4px;text-transform:uppercase; }
-    #minimap-toggle { position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:rgba(40,40,60,0.95);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s; }
-    #minimap-toggle:hover { background:rgba(255,255,255,0.15);color:#fff; }
+    #minimap-toggle {
+      position:absolute;top:-10px;right:-10px;min-width:28px;height:28px;padding:0 8px;border-radius:999px;
+      background:rgba(239,68,68,0.95);border:2px solid rgba(255,255,255,0.85);color:#fff;
+      font-size:12px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:all 0.2s;box-shadow:0 2px 10px rgba(0,0,0,0.45);z-index:2;
+    }
+    #minimap-toggle:hover { background:#dc2626;color:#fff; }
     /* 図鑑 */
     #zukan-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
     #zukan-overlay.open { display: flex; }
@@ -758,7 +763,7 @@
         align-items: center;
       }
       #header-start { grid-column: 1; grid-row: 1; gap: 5px; min-width: 0; }
-      #ad-slot { width: 180px; height: 144px; }
+      #ad-slot { width: 144px; height: 116px; }
       #logo { font-size: 14px; letter-spacing: 0.1em; min-width: 0; }
       #stats { font-size: 10px; grid-column: 1 / -1; grid-row: 2; line-height: 1.4; margin: 0; }
       #ad-slot-wrap {
@@ -769,6 +774,12 @@
         margin: 0;
         width: auto;
       }
+      #minimap-wrap {
+        left: max(8px, env(safe-area-inset-left, 0px));
+        bottom: calc(108px + 116px + 14px + env(safe-area-inset-bottom, 0px));
+        z-index: 14;
+      }
+      #minimap-toggle { min-width: 34px; height: 34px; font-size: 13px; top: -12px; right: -12px; }
       #emp-stats { font-size: 9px !important; }
       #user-area {
         grid-column: 2; grid-row: 1;
@@ -797,7 +808,6 @@
       #build-btn #build-btn-text { font-size: 14px; font-weight: 800; }
       #mode-btn { width: 100%; padding: 12px 8px; font-size: 12px; border-radius: 22px; }
       #zukan-float-btn { width: 100%; padding: 12px 8px; font-size: 12px; border-radius: 22px; }
-      #minimap-wrap { bottom: calc(118px + env(safe-area-inset-bottom, 0px)); left: 10px; }
       #minimap-canvas { width: 100px; height: 100px; }
       #minimap-label { font-size: 8px; }
       #fly-hint { top: 68px; font-size: 11px; padding: 6px 14px; max-width: 92vw; white-space: normal; text-align: center; }
@@ -935,7 +945,7 @@
     <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
-    <button id="minimap-toggle" onclick="toggleMinimap()" title="非表示">−</button>
+    <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button">✕</button>
     <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
     <div id="minimap-label">MINIMAP</div>
   </div>
@@ -1234,8 +1244,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v46';
+    const IGNIS_BUILD='2026-05-28-v47';
     const MAX_BUILDING_FLOORS=300;
+    const SHOWCASE_BUILDING_X=0;
+    const SHOWCASE_BUILDING_Z=0;
+    const INVITE_COIN_SEND=10;
+    const INVITE_COIN_REGISTER=30;
+    function isShowcaseBuilding(x,z){return Number(x)===SHOWCASE_BUILDING_X&&Number(z)===SHOWCASE_BUILDING_Z;}
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
     const IGNIS_LOGO_VIDEO_FILES=[
@@ -2369,13 +2384,20 @@
         return;
       }
       try{
-        const[sentRes,regRes]=await Promise.all([
+        const[sentRes,regRes,sendBonusRes]=await Promise.all([
           db.from('game_invites').select('id',{count:'exact',head:true}).eq('inviter_id',currentUser.id),
-          db.from('game_referrals').select('id',{count:'exact',head:true}).eq('inviter_id',currentUser.id)
+          db.from('game_referrals').select('id',{count:'exact',head:true}).eq('inviter_id',currentUser.id),
+          db.from('game_invite_send_rewards').select('id',{count:'exact',head:true}).eq('inviter_id',currentUser.id)
         ]);
         const sent=sentRes.count||0;
         const reg=regRes.count||0;
-        el.textContent=isJa?`招待送信: ${sent}回 / 登録: ${reg}人`:`Invites sent: ${sent} / Signups: ${reg}`;
+        const sendBonus=sendBonusRes.count||0;
+        const coinSend=sendBonus*INVITE_COIN_SEND;
+        const coinReg=reg*INVITE_COIN_REGISTER;
+        const coinTotal=coinSend+coinReg;
+        el.innerHTML=isJa
+          ?`送信: <b>${sent}</b>回 / 登録: <b>${reg}</b>人<br>コイン: 招待<b>+${coinSend}</b> + 登録<b>+${coinReg}</b> = <b>+${coinTotal}</b><br><span style="font-size:10px;opacity:0.8;">（登録1人あたり+${INVITE_COIN_SEND}+${INVITE_COIN_REGISTER}=+${INVITE_COIN_SEND+INVITE_COIN_REGISTER}）</span>`
+          :`Sent: <b>${sent}</b> / Signups: <b>${reg}</b><br>Coins: invite <b>+${coinSend}</b> + signup <b>+${coinReg}</b> = <b>+${coinTotal}</b><br><span style="font-size:10px;opacity:0.8;">(+${INVITE_COIN_SEND+INVITE_COIN_REGISTER} per signup)</span>`;
       }catch(e){
         el.textContent=isJa?'招待統計を読み込めませんでした':'Could not load invite stats';
       }
@@ -4029,8 +4051,13 @@
       return 6.0;
     }
     function calcSellCoinReward(floors,employees){
-      const f=Math.max(0,floors||0);
+      const f=Math.max(0,Number(floors)||0);
       return Math.round(f*getSellCoinMultiplier(employees))+100;
+    }
+    function getBuildingSellQuote(building){
+      const floors=Math.max(0,Number(building?.baseFloors??0));
+      const emp=Math.max(0,Number(building?.employees??0));
+      return{floors,emp,coins:calcSellCoinReward(floors,emp)};
     }
     function sellRewardLabel(floors,employees,isJa){
       const mult=getSellCoinMultiplier(employees);
@@ -4089,10 +4116,10 @@
           assignBtn.disabled=bench<=0;
           assignBtn.style.opacity=bench<=0?'0.5':'1';
         }
-        const floors=buildingData.baseFloors||buildingData.totalFloors||0;
-        const emp=buildingData.employees||0;
-        const coinReward=calcSellCoinReward(floors,emp);
-        sellBtn.textContent=isJa?`💰 ビルを売却（土地ごと） +${coinReward}コイン`:`💰 Sell Building (with Land) +${coinReward} coins`;
+        const quote=getBuildingSellQuote(buildingData);
+        sellBtn.textContent=isJa
+          ?`💰 売却 +${quote.coins}コイン（${quote.floors}階×${getSellCoinMultiplier(quote.emp)}+100）`
+          :`💰 Sell +${quote.coins} coins (${quote.floors}F×${getSellCoinMultiplier(quote.emp)}+100)`;
       } else {
         sellBtn.style.display='none';
         sellBtn.hidden=true;
@@ -4199,7 +4226,7 @@
           buildingData.viewCount=data.view_count;
           document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
           if(buildingData.mesh&&buildingData.mesh.material){
-            applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.employees||0);
+            applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5);
           }
           await checkViewTaskProgress();
           if(data.employees_added>0){
@@ -4228,14 +4255,12 @@
       if(!currentModalBuilding||!currentUser)return;
       const b=currentModalBuilding;
       if(!isOwnLandBuilding(b))return;
-      const floors=b.baseFloors||b.totalFloors||0;
-      const emp=b.employees||0;
-      const coinReward=calcSellCoinReward(floors,emp);
+      const quote=getBuildingSellQuote(b);
       const isJa=currentLang==='ja';
-      const formula=sellRewardLabel(floors,emp,isJa);
+      const formula=sellRewardLabel(quote.floors,quote.emp,isJa);
       const msg=isJa
-        ?`このビル（${floors}階・配属${emp}人）を売却しますか？\n\n獲得コイン: ${coinReward}\n（${formula}）\n配属${emp}人は休職中プールへ戻ります。土地と建物は失われます。`
-        :`Sell this building (${floors}F, ${emp} assigned)?\n\nCoins: ${coinReward}\n(${formula})\nAssigned staff return to bench. Land and building will be lost.`;
+        ?`このビル（基礎${quote.floors}階・配属${quote.emp}人）を売却しますか？\n\n獲得コイン: ${quote.coins}\n（${formula}）\n※このビルの階数・配属のみで計算。配属${quote.emp}人は休職中へ戻ります。`
+        :`Sell this building (base ${quote.floors}F, ${quote.emp} assigned)?\n\nCoins: ${quote.coins}\n(${formula})\nBased on this building only. Staff return to bench.`;
       if(!confirm(msg))return;
       try{
         const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});
@@ -4260,7 +4285,7 @@
           document.getElementById('coin-count').textContent=data.coins_remaining;
         }
         if(coins>0)await recordCoin(coins,'building_sell');
-        showToast(isJa?`💰 売却完了！+${coins}コイン（配属${emp}人は休職中へ）`:`💰 Sold! +${coins} coins (${emp} staff to bench)`);
+        showToast(isJa?`💰 売却完了！+${coins}コイン（${quote.floors}階ビル・配属${emp}人は休職中へ）`:`💰 Sold! +${coins} coins (${quote.floors}F bldg, ${emp} staff to bench)`);
         await refreshEmployeeHeader();
       }catch(e){console.warn('sell error:',e.message);showToast('売却失敗: '+e.message);}
     }
@@ -4277,7 +4302,8 @@
       minimapVisible=!minimapVisible;
       minimapCanvas.style.display=minimapVisible?'block':'none';
       document.getElementById('minimap-label').style.display=minimapVisible?'block':'none';
-      document.getElementById('minimap-toggle').textContent=minimapVisible?'−':'+';
+      document.getElementById('minimap-toggle').textContent=minimapVisible?'✕':'🗺';
+      document.getElementById('minimap-toggle').title=minimapVisible?(currentLang==='ja'?'地図を閉じる':'Hide map'):(currentLang==='ja'?'地図を表示':'Show map');
       if(minimapVisible)drawMinimap();
     }
     function worldToMM(wx,wz){return{px:(wx+MM_RANGE/2)/MM_RANGE*MM_SIZE,py:(wz+MM_RANGE/2)/MM_RANGE*MM_SIZE};}
@@ -4327,13 +4353,16 @@
         animatedBuildingMats.forEach((entry)=>{
           const{mat,type}=entry;
           if(type==='rainbow'){
-            // 速い色変化レインボー
-            const hue=((t/12)%360)/360;
-            const c=hslToRgb(hue,1.0,0.55);
-            mat.diffuseColor.r=c.r;mat.diffuseColor.g=c.g;mat.diffuseColor.b=c.b;
-            const eh=((t/12+60)%360)/360;
-            const e=hslToRgb(eh,1.0,0.35);
-            mat.emissiveColor.r=e.r;mat.emissiveColor.g=e.g;mat.emissiveColor.b=e.b;
+            const sweep=((t%2200)/2200);
+            const hue=((t/20)%360)/360;
+            const c=hslToRgb(hue,0.92,0.28+sweep*0.38);
+            const e=hslToRgb((hue+0.07)%1,1,0.08+sweep*0.62);
+            mat.diffuseColor.r=c.r*(0.55+sweep*0.45);
+            mat.diffuseColor.g=c.g*(0.55+sweep*0.45);
+            mat.diffuseColor.b=c.b*(0.55+sweep*0.45);
+            mat.emissiveColor.r=e.r*sweep;
+            mat.emissiveColor.g=e.g*sweep;
+            mat.emissiveColor.b=e.b*sweep;
           } else if(type==='gold'){
             // インゴット風シマー：高速で明暗が走る金色
             const shimmer=0.5+0.5*Math.sin(t/420);
@@ -4348,22 +4377,24 @@
         });
       });
     }
-    function applyBuildingRankColor(mat,viewCount,mesh,employees){
+    function applyBuildingRankColor(mat,viewCount,mesh,x,z,buildingHeight){
       mat.specularColor=new BABYLON.Color3(0.6,0.6,0.75);
       const key=mat.uniqueId;
       animatedBuildingMats.delete(key);
-      const emp=employees||0;
-      const tier=emp>=1000||viewCount>=1000?'rainbow':emp>=300||viewCount>=300?'gold':'default';
+      let tier='default';
+      if(isShowcaseBuilding(x,z))tier='rainbow';
+      else if(viewCount>=300)tier='gold';
       if(tier==='rainbow'){
         mat.diffuseColor=new BABYLON.Color3(1,0.2,0.5);
         mat.emissiveColor=new BABYLON.Color3(0.3,0.0,0.3);
-        animatedBuildingMats.set(key,{mat,type:'rainbow'});
+        const baseY=mesh?(mesh.position.y-(buildingHeight||0)/2):0;
+        animatedBuildingMats.set(key,{mat,type:'rainbow',mesh,baseY,height:buildingHeight||10});
         ensureBuildingAnimation();
       } else if(tier==='gold'){
         mat.diffuseColor=new BABYLON.Color3(1.0,0.84,0.0);
         mat.emissiveColor=new BABYLON.Color3(0.4,0.28,0.0);
         mat.specularColor=new BABYLON.Color3(1,0.9,0.4);
-        animatedBuildingMats.set(key,{mat,type:'gold'});
+        animatedBuildingMats.set(key,{mat,type:'gold',mesh});
         ensureBuildingAnimation();
       } else {
         mat.diffuseColor=new BABYLON.Color3(0.32,0.35,0.40);
@@ -4382,7 +4413,7 @@
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:w},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
-      applyBuildingRankColor(mat,viewCount,mesh,employees);
+      applyBuildingRankColor(mat,viewCount,mesh,x,z,height);
       mesh.material=mat;
       const key=lKey||landKey(x,z);
       const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,ownerId};
@@ -4399,7 +4430,7 @@
         data.forEach(b=>{let shape='square';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true,null,b.view_count||0,b.owner_id||null);});
       }catch(e){
         console.warn('Supabase error:',e.message);
-        [[0,0,20,'square',0],[10,5,35,'triangle',30],[-8,12,15,'square',100],[15,-10,50,'cylinder',300],[-15,-5,28,'square',1000]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
+        [[0,0,20,'square',0],[10,5,35,'triangle',30],[-8,12,15,'square',100],[15,-10,50,'cylinder',300]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
       }
     }
     async function loadBuildingsAndLands(){
@@ -4557,16 +4588,15 @@
       return out||'████';
     }
     function patchOwnerCenterBuilding(){
-      const key=landKey(0,0);
+      const key=landKey(SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z);
       const land=landMap[key];
       const b=buildingMap[key];
       if(!b||!land)return;
       const handle=(land.owner_display||'').replace(/^@/,'').toLowerCase();
       if(handle!==OWNER_X_HANDLE.toLowerCase())return;
       b.employees=1000;
-      b.viewCount=Math.max(b.viewCount||0,1000);
       if(b.mesh&&b.mesh.material){
-        applyBuildingRankColor(b.mesh.material,b.viewCount,b.mesh,1000);
+        applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }
     }
     async function openRanking(){document.getElementById('ranking-overlay').classList.add('open');await loadRanking();}

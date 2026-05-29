@@ -1211,7 +1211,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v43';
+    const IGNIS_BUILD='2026-05-28-v44';
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
     const IGNIS_AD_VIDEO_EXTS=[
@@ -1236,16 +1236,18 @@
       switchTab('signup');
     }
     async function resolveIgnisAdVideoSrc(assetV){
-      const bases=['ignis-logo','IGNIS-logo','Ignis-logo'];
-      for(const base of bases){
-        for(const item of IGNIS_AD_VIDEO_EXTS){
-          const url=IGNIS_AD_RAW+encodeURIComponent(base+'.'+item.ext)+'?v='+assetV;
-          try{
-            const res=await fetch(url,{method:'HEAD',cache:'no-store'});
-            const len=parseInt(res.headers.get('content-length')||'0',10);
-            if(res.ok&&len>1024)return{url,type:item.type};
-          }catch(e){}
-        }
+      const candidates=[];
+      ['ignis-logo','IGNIS-logo','Ignis-logo'].forEach(base=>{
+        IGNIS_AD_VIDEO_EXTS.forEach(item=>candidates.push({file:base+'.'+item.ext,type:item.type}));
+      });
+      candidates.push({file:'IGNIS-logo.mov.MOV',type:'video/quicktime'});
+      for(const item of candidates){
+        const url=IGNIS_AD_RAW+encodeURIComponent(item.file)+'?v='+assetV;
+        try{
+          const res=await fetch(url,{method:'HEAD',cache:'no-store'});
+          const len=parseInt(res.headers.get('content-length')||'0',10);
+          if(res.ok&&len>1024)return{url,type:item.type};
+        }catch(e){}
       }
       return null;
     }
@@ -1309,7 +1311,7 @@
     async function initAdCarousel(){
       const slot=document.getElementById('ad-slot');
       if(!slot)return;
-      const adAssetV='43';
+      const adAssetV='44';
       const logoVideo=await resolveIgnisAdVideoSrc(adAssetV);
       const slides=IGNIS_AD_SLIDES.map(s=>{
         if(s.type==='video'){

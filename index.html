@@ -35,10 +35,19 @@
       border: none; padding: 0; margin: 0; background: rgba(0,0,0,0.25);
       cursor: pointer; text-decoration: none; color: inherit;
     }
+    #ad-slot .ad-carousel-slide { position: relative; }
     #ad-slot .ad-carousel-slide img,
     #ad-slot .ad-carousel-slide video {
       width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
     }
+    #ad-slot .ad-video-placeholder {
+      position: absolute; inset: 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(255,106,0,0.4), rgba(238,9,121,0.35));
+      font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.85); pointer-events: none;
+    }
+    #ad-slot .ad-carousel-slide.is-video-playing .ad-video-placeholder { display: none; }
     #logo {
       font-size: 20px; font-weight: 900; letter-spacing: 0.2em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
@@ -1211,9 +1220,37 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v44';
+    const IGNIS_BUILD='2026-05-28-v45';
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
+    const IGNIS_LOGO_VIDEO_FILES=[
+      {file:'IGNIS-logo.mov.MOV',type:'video/quicktime'},
+      {file:'IGNIS-logo.mov',type:'video/quicktime'},
+      {file:'ignis-logo.mp4',type:'video/mp4'}
+    ];
+    function getIgnisAdAssetBase(){
+      try{
+        const path=window.location.pathname||'/';
+        const dir=path.endsWith('/')?path:path.replace(/\/[^/]*$/,'/');
+        return window.location.origin+dir;
+      }catch(e){
+        return 'https://motomune.github.io/IGNIS-city/';
+      }
+    }
+    function buildLogoVideoSources(assetV){
+      const bases=[getIgnisAdAssetBase(),IGNIS_AD_RAW];
+      const out=[];
+      const seen=new Set();
+      IGNIS_LOGO_VIDEO_FILES.forEach(v=>{
+        bases.forEach(base=>{
+          const url=base+encodeURIComponent(v.file)+'?v='+assetV;
+          if(seen.has(url))return;
+          seen.add(url);
+          out.push({url,type:v.type});
+        });
+      });
+      return out;
+    }
     const IGNIS_AD_VIDEO_EXTS=[
       {ext:'mp4',type:'video/mp4'},
       {ext:'webm',type:'video/webm'},
@@ -1235,22 +1272,6 @@
       openAuthModal();
       switchTab('signup');
     }
-    async function resolveIgnisAdVideoSrc(assetV){
-      const candidates=[];
-      ['ignis-logo','IGNIS-logo','Ignis-logo'].forEach(base=>{
-        IGNIS_AD_VIDEO_EXTS.forEach(item=>candidates.push({file:base+'.'+item.ext,type:item.type}));
-      });
-      candidates.push({file:'IGNIS-logo.mov.MOV',type:'video/quicktime'});
-      for(const item of candidates){
-        const url=IGNIS_AD_RAW+encodeURIComponent(item.file)+'?v='+assetV;
-        try{
-          const res=await fetch(url,{method:'HEAD',cache:'no-store'});
-          const len=parseInt(res.headers.get('content-length')||'0',10);
-          if(res.ok&&len>1024)return{url,type:item.type};
-        }catch(e){}
-      }
-      return null;
-    }
     function createAdSlideEl(s){
       const isSignup=s.action==='signup';
       const el=document.createElement(isSignup?'button':'a');
@@ -1266,6 +1287,9 @@
       }
       if(s.type==='video'){
         el.dataset.adKind='video';
+        const placeholder=document.createElement('div');
+        placeholder.className='ad-video-placeholder';
+        placeholder.textContent=s.alt||'IGNIS CITY';
         const video=document.createElement('video');
         video.className='ad-carousel-video';
         video.muted=true;
@@ -1275,28 +1299,24 @@
         video.setAttribute('webkit-playsinline','');
         video.preload='auto';
         video.disablePictureInPicture=true;
-        if(s.posterSrc){
-          video.poster=s.posterSrc;
-        }
-        if(s.videoSrc){
+        const sources=s.videoSources||[];
+        sources.forEach(src=>{
           const source=document.createElement('source');
-          source.src=s.videoSrc.url;
-          source.type=s.videoSrc.type;
+          source.src=src.url;
+          source.type=src.type;
           video.appendChild(source);
-        }
-        const fallback=document.createElement('img');
-        fallback.src=s.posterSrc||'';
-        fallback.alt=s.alt||'';
-        fallback.decoding='async';
-        fallback.loading='eager';
-        fallback.hidden=true;
-        video.addEventListener('error',()=>{
-          fallback.hidden=false;
-          video.style.display='none';
         });
-        video.addEventListener('loadeddata',()=>{fallback.hidden=true;video.style.display='block';});
+        if(sources[0]){
+          video.src=sources[0].url;
+        }
+        video.addEventListener('playing',()=>{el.classList.add('is-video-playing');});
+        video.addEventListener('pause',()=>{if(video.currentTime<0.05)el.classList.remove('is-video-playing');});
+        video.addEventListener('error',()=>{
+          el.classList.remove('is-video-playing');
+          console.warn('[IGNIS] logo video error',video.error);
+        });
+        el.appendChild(placeholder);
         el.appendChild(video);
-        el.appendChild(fallback);
       }else{
         const img=document.createElement('img');
         img.src=s.src;
@@ -1308,17 +1328,16 @@
       }
       return el;
     }
-    async function initAdCarousel(){
+    function initAdCarousel(){
       const slot=document.getElementById('ad-slot');
       if(!slot)return;
-      const adAssetV='44';
-      const logoVideo=await resolveIgnisAdVideoSrc(adAssetV);
+      const adAssetV='45';
+      const logoVideoSources=buildLogoVideoSources(adAssetV);
       const slides=IGNIS_AD_SLIDES.map(s=>{
         if(s.type==='video'){
           return{
             type:'video',
-            videoSrc:logoVideo,
-            posterSrc:IGNIS_AD_RAW+encodeURIComponent(s.poster)+'?v='+adAssetV,
+            videoSources:logoVideoSources,
             alt:s.alt,
             action:s.action
           };
@@ -1357,12 +1376,19 @@
           if(!vid)return;
           const onSlide=parseInt(el.dataset.adIndex||'-1',10)===activeIdx;
           if(onSlide){
-            vid.style.display='block';
-            const play=()=>{vid.play().catch(()=>{});};
+            if(!vid.dataset.loaded){
+              vid.load();
+              vid.dataset.loaded='1';
+            }
+            const play=()=>{vid.play().catch(err=>console.warn('[IGNIS] logo video play',err));};
             if(vid.readyState>=2)play();
-            else vid.addEventListener('loadeddata',play,{once:true});
+            else{
+              vid.addEventListener('loadeddata',play,{once:true});
+              vid.addEventListener('canplay',play,{once:true});
+            }
           }else{
             vid.pause();
+            el.classList.remove('is-video-playing');
             try{vid.currentTime=0;}catch(e){}
           }
         });
@@ -1414,9 +1440,6 @@
       layoutAdCarousel();
       window.addEventListener('resize',layoutAdCarousel);
       scheduleNextSlide();
-      if(!logoVideo){
-        console.warn('[IGNIS] logo video missing or empty — upload ignis-logo.mp4 or IGNIS-logo.mov (>1MB) to repo root');
-      }
     }
     const IGNIS_BGM={
       city:{

@@ -573,12 +573,12 @@
     #minimap-canvas { width:140px;height:140px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(6,6,16,0.9);box-shadow:0 4px 20px rgba(0,0,0,0.5);cursor:pointer;display:block; }
     #minimap-label { font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:0.12em;margin-top:4px;text-transform:uppercase; }
     #minimap-toggle {
-      position:absolute;top:-10px;right:-10px;min-width:28px;height:28px;padding:0 8px;border-radius:999px;
-      background:rgba(239,68,68,0.95);border:2px solid rgba(255,255,255,0.85);color:#fff;
-      font-size:12px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      position:absolute;top:-10px;right:-10px;width:34px;height:34px;padding:0;border-radius:10px;
+      background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);color:#fff;
+      font-size:22px;font-weight:400;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
       transition:all 0.2s;box-shadow:0 2px 10px rgba(0,0,0,0.45);z-index:2;
     }
-    #minimap-toggle:hover { background:#dc2626;color:#fff; }
+    #minimap-toggle:hover { background:rgba(255,255,255,0.2);color:#fff; }
     /* 図鑑 */
     #zukan-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
     #zukan-overlay.open { display: flex; }
@@ -922,7 +922,7 @@
   <div id="task-panel">
     <div id="task-panel-head">
       <div id="task-panel-title">📋 デイリータスク</div>
-      <button id="task-panel-close" type="button" onclick="toggleTaskPanel()">✕</button>
+      <button id="task-panel-close" type="button" onclick="toggleTaskPanel()" title="閉じる">×</button>
     </div>
     <div id="task-progress-wrap">
       <div id="task-progress-header">
@@ -945,7 +945,7 @@
     <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
-    <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button">✕</button>
+    <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button" aria-label="Close minimap">×</button>
     <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
     <div id="minimap-label">MINIMAP</div>
   </div>
@@ -1244,7 +1244,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v48';
+    const IGNIS_BUILD='2026-05-28-v49';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -1253,14 +1253,7 @@
     function isShowcaseBuilding(x,z){return Number(x)===SHOWCASE_BUILDING_X&&Number(z)===SHOWCASE_BUILDING_Z;}
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
-    const IGNIS_LOGO_VIDEO_FILES=[
-      {file:'IGNIS-logo.mov.MOV',type:'video/mp4'},
-      {file:'IGNIS-logo.mov.MOV',type:'video/quicktime'},
-      {file:'IGNIS-logo.mov',type:'video/mp4'},
-      {file:'IGNIS-logo.mov',type:'video/quicktime'},
-      {file:'ignis-logo.mp4',type:'video/mp4'},
-      {file:'IGNIS-city.mov',type:'video/mp4'}
-    ];
+    const IGNIS_AD_VIDEO_FILE='IGNIS-city.mov';
     function getIgnisAdAssetBase(){
       try{
         const path=window.location.pathname||'/';
@@ -1270,17 +1263,17 @@
         return 'https://motomune.github.io/IGNIS-city/';
       }
     }
-    function buildLogoVideoSources(assetV){
+    function buildAdVideoSources(assetV){
+      const file=IGNIS_AD_VIDEO_FILE;
       const bases=[getIgnisAdAssetBase(),IGNIS_AD_RAW];
       const out=[];
       const seen=new Set();
-      IGNIS_LOGO_VIDEO_FILES.forEach(v=>{
-        bases.forEach(base=>{
-          const url=base+encodeURIComponent(v.file)+'?v='+assetV;
-          if(seen.has(url))return;
-          seen.add(url);
-          out.push({url,type:v.type});
-        });
+      bases.forEach(base=>{
+        const url=base+encodeURIComponent(file)+'?v='+assetV;
+        if(seen.has(url))return;
+        seen.add(url);
+        out.push({url,type:'video/mp4'});
+        out.push({url,type:'video/quicktime'});
       });
       return out;
     }
@@ -1376,8 +1369,8 @@
     function initAdCarousel(){
       const slot=document.getElementById('ad-slot');
       if(!slot)return;
-      const adAssetV='48';
-      const logoVideoSources=buildLogoVideoSources(adAssetV);
+      const adAssetV='49';
+      const logoVideoSources=buildAdVideoSources(adAssetV);
       const slides=IGNIS_AD_SLIDES.map(s=>{
         if(s.type==='video'){
           return{
@@ -1479,6 +1472,9 @@
       });
       layoutAdCarousel();
       window.addEventListener('resize',layoutAdCarousel);
+      const unlockAdVideo=()=>{syncAdVideos();};
+      document.addEventListener('pointerdown',unlockAdVideo,{once:true,passive:true});
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncAdVideos();});
       scheduleNextSlide();
     }
     const IGNIS_BGM={
@@ -2462,15 +2458,33 @@
       const subject=encodeURIComponent('IGNIS CITY Inquiry');
       window.open(`mailto:mezase100000000@gmail.com?subject=${subject}&body=${body}`,'_blank');
     }
+    const NOTICE_READ_STORAGE_KEY='ignis_notice_read_keys_v1';
     let noticeItems=[];
     let noticeUnread=0;
-    function addNotice(type,text,timeIso){
+    let noticeReadKeys=new Set();
+    function loadNoticeReadKeys(){
+      try{
+        const raw=JSON.parse(localStorage.getItem(NOTICE_READ_STORAGE_KEY)||'[]');
+        noticeReadKeys=new Set(Array.isArray(raw)?raw:[]);
+      }catch(e){noticeReadKeys=new Set();}
+    }
+    function saveNoticeReadKeys(){
+      try{
+        localStorage.setItem(NOTICE_READ_STORAGE_KEY,JSON.stringify([...noticeReadKeys].slice(0,120)));
+      }catch(e){}
+    }
+    function markAllNoticesRead(){
+      noticeItems.forEach(n=>noticeReadKeys.add(n.key));
+      saveNoticeReadKeys();
+      noticeUnread=0;
+    }
+    function addNotice(type,textJa,textEn,timeIso,fixedKey){
       const stamp=timeIso||new Date().toISOString();
-      const key=`${type}:${text}:${stamp.slice(0,16)}`;
+      const key=fixedKey||`${type}:${textJa}:${stamp.slice(0,16)}`;
       if(noticeItems.some(n=>n.key===key))return;
-      noticeItems.unshift({key,type,text,time:stamp});
+      noticeItems.unshift({key,type,textJa,textEn:textEn||textJa,time:stamp});
       if(noticeItems.length>80)noticeItems=noticeItems.slice(0,80);
-      noticeUnread++;
+      if(!noticeReadKeys.has(key))noticeUnread++;
       renderNoticeList();
     }
     function renderNoticeList(){
@@ -2491,7 +2505,8 @@
           const typeLabel=n.type==='staff'
             ?(isJa?'従業員':'Staff')
             :(n.type==='maintenance'?(isJa?'運営':'Ops'):(isJa?'イベント':'Event'));
-          return `<div class="notice-item"><div class="notice-item-head"><span class="notice-item-type">${typeLabel}</span><span class="notice-item-time">${t}</span></div><div class="notice-item-text">${n.text}</div></div>`;
+          const text=isJa?n.textJa:n.textEn;
+          return `<div class="notice-item"><div class="notice-item-head"><span class="notice-item-type">${typeLabel}</span><span class="notice-item-time">${t}</span></div><div class="notice-item-text">${text}</div></div>`;
         }).join('');
       }
       if(noticeUnread>0){
@@ -2511,7 +2526,7 @@
       if(!panel)return;
       panel.classList.toggle('open');
       if(panel.classList.contains('open')){
-        noticeUnread=0;
+        markAllNoticesRead();
         renderNoticeList();
       }
     }
@@ -2521,7 +2536,11 @@
       const key=`staff_notice_${currentUser.id}_${today}_${soon}`;
       if(localStorage.getItem(key)==='1')return;
       const isJa=currentLang==='ja';
-      addNotice('staff',isJa?`従業員${soon}人が満期まで1週間以内です（全${total}人）`:`${soon} staff expire within 1 week (total ${total})`);
+      addNotice('staff',
+        `従業員${soon}人が満期まで1週間以内です（全${total}人）`,
+        `${soon} staff expire within 1 week (total ${total})`,
+        null,
+        key);
       localStorage.setItem(key,'1');
     }
     document.addEventListener('pointerdown',(e)=>{
@@ -2536,8 +2555,9 @@
     // 多言語
     // ========================================
     let currentLang='ja';
-    addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。');
-    addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。');
+    loadNoticeReadKeys();
+    addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。','Event: New fly mode controls are available.','2026-05-01T00:00:00.000Z','notice_boot_event');
+    addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。','Notice: Maintenance updates will appear here when needed.','2026-05-01T00:00:00.000Z','notice_boot_maintenance');
     function toggleLang(){
       currentLang=currentLang==='ja'?'en':'ja';
       const isJa=currentLang==='ja';
@@ -2588,7 +2608,10 @@
       const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
-      const taskClose=document.getElementById('task-panel-close');if(taskClose)taskClose.textContent=isJa?'閉じる':'Close';
+      const taskClose=document.getElementById('task-panel-close');if(taskClose){taskClose.textContent='×';taskClose.title=isJa?'閉じる':'Close';}
+      const miniClose=document.getElementById('minimap-toggle');if(miniClose)miniClose.title=isJa?'地図を閉じる':'Close minimap';
+      renderTaskUI();
+      refreshInviteStats();
       document.getElementById('fly-hint').textContent=isJa?'🕊 矢印で移動・Shift上昇・Ctrl下降':'🕊 Arrows move · Shift up · Ctrl down';
       document.getElementById('legend-empty').textContent=isJa?'空き地（未取得）':'Empty land';
       document.getElementById('legend-mine').textContent=isJa?'自分の土地':'My land';
@@ -4064,8 +4087,17 @@
       const f=Math.max(0,Number(floors)||0);
       return Math.round(f*getSellCoinMultiplier(employees))+100;
     }
+    function getBuildingSellFloors(building){
+      if(!building)return 0;
+      const base=Math.max(0,Number(building.baseFloors??0));
+      const emp=Math.max(0,Number(building.employees??0));
+      if(building.totalFloors!=null&&!Number.isNaN(Number(building.totalFloors))){
+        return Math.max(0,Number(building.totalFloors));
+      }
+      return calcTotalFloors(base,emp);
+    }
     function getBuildingSellQuote(building){
-      const floors=Math.max(0,Number(building?.baseFloors??0));
+      const floors=getBuildingSellFloors(building);
       const emp=Math.max(0,Number(building?.employees??0));
       return{floors,emp,coins:calcSellCoinReward(floors,emp)};
     }
@@ -4270,8 +4302,8 @@
       const isJa=currentLang==='ja';
       const formula=sellRewardLabel(quote.floors,quote.emp,isJa);
       const msg=isJa
-        ?`このビル（基礎${quote.floors}階・配属${quote.emp}人）を売却しますか？\n\n獲得コイン: ${quote.coins}\n（${formula}）\n※このビルの階数・配属のみで計算。配属${quote.emp}人は休職中へ戻ります。`
-        :`Sell this building (base ${quote.floors}F, ${quote.emp} assigned)?\n\nCoins: ${quote.coins}\n(${formula})\nBased on this building only. Staff return to bench.`;
+        ?`このビル（総${quote.floors}階・配属${quote.emp}人）を売却しますか？\n\n獲得コイン: ${quote.coins}\n（${formula}）\n※表示階数×倍率+100。配属${quote.emp}人は休職中へ戻ります。`
+        :`Sell this building (${quote.floors}F total, ${quote.emp} assigned)?\n\nCoins: ${quote.coins}\n(${formula})\nUses displayed floors × multiplier + 100. Staff return to bench.`;
       if(!confirm(msg))return;
       try{
         const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});

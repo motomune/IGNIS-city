@@ -1244,7 +1244,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v49';
+    const IGNIS_BUILD='2026-05-30-v50';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -2240,6 +2240,9 @@
       random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
       hire_employee: {ja:'会社員採用',           en:'Hire Office Worker',       icon:'👷'},
       extend_staff_terms: {ja:'任期延長',        en:'Term Extension',          icon:'📋'},
+      building_sell:      {ja:'ビル売却',         en:'Building Sale',           icon:'💰'},
+      invite_send:        {ja:'招待送信ボーナス',  en:'Invite Send Bonus',       icon:'📨'},
+      invite_register:    {ja:'招待登録ボーナス',  en:'Invite Signup Bonus',     icon:'🎁'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
@@ -2809,13 +2812,19 @@
       await db.from('daily_tasks').update({completed:true,completed_at:new Date().toISOString(),reward_given:true}).eq('id',data.id);
       const task=DAILY_TASKS.find(t=>t.type===taskType);
       if(!task)return;
-      // コイン付与
-      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
-      if(ud){
-        const newCoins=(ud.coin_column||0)+task.reward;
-        await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
-        document.getElementById('coin-count').textContent=newCoins;
-        await recordCoin(task.reward,'task_'+taskType);
+      // アトミックなコイン加算（read-then-write競合を防ぐ）
+      const{data:ud,error:coinErr}=await db.rpc('add_coins_and_record',{p_amount:task.reward,p_reason:'task_'+taskType});
+      if(!coinErr&&ud!=null){
+        document.getElementById('coin-count').textContent=ud;
+      } else {
+        // フォールバック: RPCが未適用の場合は従来方式
+        const{data:uRow}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
+        if(uRow){
+          const newCoins=(uRow.coin_column||0)+task.reward;
+          await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
+          document.getElementById('coin-count').textContent=newCoins;
+          await recordCoin(task.reward,'task_'+taskType);
+        }
       }
       const isJa=currentLang==='ja';
       showToast(`✅ ${isJa?'タスク完了':'Task done'}！「${isJa?task.label:task.labelEn}」+${task.reward}コイン`);
@@ -3435,32 +3444,38 @@
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
       const buyBtn=document.getElementById('land-buy-btn');
-      buyBtn.disabled=true;buyBtn.textContent='処理中...';
+      const isJa=currentLang==='ja';
+      buyBtn.disabled=true;buyBtn.textContent=isJa?'処理中...':'Processing...';
       try{
-        const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
-        const balance=ud?ud.coin_column||0:0;
-        if(LAND_COST>0&&balance<LAND_COST){
-          showToast(`コインが足りません（必要：${LAND_COST}コイン、残高：${balance}コイン）`);
+        const{data,error}=await db.rpc('buy_land',{gx,gz});
+        if(error)throw error;
+        if(!data||!data.ok){
+          if(data&&data.reason==='insufficient_coins'){
+            showToast(isJa?`コインが足りません（必要：${LAND_COST}コイン、残高：${data.coins}コイン）`:`Not enough coins (need ${LAND_COST}, have ${data.coins})`);
+          } else if(data&&data.reason==='already_owned'){
+            showToast(isJa?'この土地はすでに取得済みです':'This land is already owned');
+            closeLandPanel();
+          } else {
+            showToast(isJa?'取得に失敗しました':'Failed to acquire land');
+          }
           buyBtn.disabled=false;
-          buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;return;
+          buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+          return;
         }
-        const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
-        if(landErr)throw landErr;
-        if(LAND_COST>0){
-          const newCoins=balance-LAND_COST;
-          await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
-          document.getElementById('coin-count').textContent=newCoins;
-          await recordCoin(-LAND_COST,'land_buy');
-        }
+        document.getElementById('coin-count').textContent=data.coins_remaining;
+        await recordCoin(-LAND_COST,'land_buy');
+        const{data:ud}=await db.from('users').select('username,x_username').eq('id',currentUser.id).single();
         const xName=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:'?';
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile:null};
         landMap[selectedLandKey].tile=drawOwnedTile(gx,gz,selectedLandKey,currentUser.id);
         await completeTask('get_land');
-        showToast(`🏡 土地を取得！（-${LAND_COST}コイン）`);openLandPanel(gx,gz);
+        showToast(isJa?`🏡 土地を取得！（-${LAND_COST}コイン）`:`🏡 Land acquired! (-${LAND_COST} coins)`);
+        openLandPanel(gx,gz);
       }catch(e){
-        console.warn('land buy error:',e.message);showToast('取得に失敗しました: '+e.message);
+        console.warn('land buy error:',e.message);
+        showToast(isJa?'取得に失敗しました: '+e.message:'Failed: '+e.message);
         buyBtn.disabled=false;
-        buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+        buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       }
     }
     // ========================================
@@ -3601,9 +3616,15 @@
     async function onGachaResultRetry(){
       if(!currentUser){openAuthModal();return;}
       const isJa=currentLang==='ja';
-      const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      // DOMではなくDBから最新残高を確認（古いキャッシュを避ける）
+      let balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      try{
+        const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
+        if(ud!=null)balance=ud.coin_column||0;
+        document.getElementById('coin-count').textContent=balance;
+      }catch(e){console.warn('[IGNIS] retry balance check',e.message);}
       if(balance<GACHA_COST){
-        showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);
+        showToast(isJa?`コインが足りません（必要：${GACHA_COST}、残高：${balance}）`:`Not enough coins (need ${GACHA_COST}, have ${balance})`);
         return;
       }
       const retryBtn=document.getElementById('book-result-retry');
@@ -4140,8 +4161,15 @@
       empVal.textContent=isJa?`${buildingData.employees||0}人`:`${buildingData.employees||0}`;
       empVal.className='bm-stat-value';
       if(ci.name==='rainbow')empVal.classList.add('emp-rainbow');else if(ci.name==='gold')empVal.classList.add('emp-gold');else if(ci.name==='red')empVal.classList.add('emp-red');
-      document.getElementById('bm-views-val').textContent=(buildingData.viewCount||0).toLocaleString();
-      document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
+      const vCount=buildingData.viewCount||0;
+      document.getElementById('bm-views-val').textContent=vCount.toLocaleString();
+      if(vCount>=300){
+        document.getElementById('bml-views').textContent=isJa?'閲覧 🥇':'Views 🥇';
+      } else if(vCount>=100){
+        document.getElementById('bml-views').textContent=isJa?`閲覧（ゴールドまで${300-vCount}）`:`Views (${300-vCount} to gold)`;
+      } else {
+        document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
+      }
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
@@ -4204,7 +4232,7 @@
         return;
       }
       try{
-        const {data:uRow,error:uErr}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
+        const{data:uRow,error:uErr}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
         if(uErr)throw uErr;
         const bench=Math.max(0,Number(uRow?.bench_employees||0));
         if(bench<=0){
@@ -4221,17 +4249,23 @@
           return;
         }
         const key=b.landKey||landKey(b.x,b.z);
-        const {data:rows,error:bErr}=await db.from('buildings').select('employees,floors,style,owner_id,view_count').eq('x',b.x).eq('z',b.z).limit(1);
+        const{data:rows,error:bErr}=await db.from('buildings').select('employees,floors,style,owner_id,view_count').eq('x',b.x).eq('z',b.z).limit(1);
         if(bErr)throw bErr;
         const row=(rows&&rows[0])||null;
         if(!row){showToast(isJa?'対象ビルが見つかりません':'Building not found');return;}
-        if(row.owner_id!==currentUser.id){showToast(isJa?'自分のビルではありません':'Not your building');return;}
-        const nextBench=bench-count;
-        const nextEmp=(Number(row.employees)||0)+count;
-        const {error:uuErr}=await db.from('users').update({bench_employees:nextBench}).eq('id',currentUser.id);
-        if(uuErr)throw uuErr;
-        const {error:bbErr}=await db.from('buildings').update({employees:nextEmp}).eq('x',b.x).eq('z',b.z).eq('owner_id',currentUser.id);
-        if(bbErr)throw bbErr;
+        // Atomic assignment via RPC
+        const{data,error}=await db.rpc('assign_employees',{bx:b.x,bz:b.z,p_count:count});
+        if(error)throw error;
+        if(!data||!data.ok){
+          if(data?.reason==='insufficient_bench'){
+            showToast(isJa?`休職中の人数が足りません（残:${data.bench}人）`:`Not enough bench staff (have ${data.bench})`);
+          } else {
+            showToast(isJa?'配属に失敗しました':'Assignment failed');
+          }
+          return;
+        }
+        const nextBench=data.bench_employees;
+        const nextEmp=data.building_employees;
         currentUser.benchEmployees=nextBench;
         b.employees=nextEmp;
         b.totalFloors=calcTotalFloors(b.baseFloors||row.floors||1,nextEmp);
@@ -4267,13 +4301,16 @@
         if(data&&data.counted){
           addLocalView(buildingData.x,buildingData.z);
           buildingData.viewCount=data.view_count;
-          document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
+          const vc=data.view_count||0;
+          document.getElementById('bm-views-val').textContent=vc.toLocaleString();
+          const isJa=currentLang==='ja';
+          if(vc>=300)document.getElementById('bml-views').textContent=isJa?'閲覧 🥇':'Views 🥇';
+          else if(vc>=100)document.getElementById('bml-views').textContent=isJa?`閲覧（ゴールドまで${300-vc}）`:`Views (${300-vc} to gold)`;
           if(buildingData.mesh&&buildingData.mesh.material){
             applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5);
           }
           await checkViewTaskProgress();
           if(data.employees_added>0){
-            const isJa=currentLang==='ja';
             showToast(isJa?`🎉 30閲覧達成！従業員+${data.employees_added}人を獲得`:`🎉 30 views! +${data.employees_added} employee(s)`);
           }
           if(data.bench_employees!==undefined){
@@ -4343,11 +4380,12 @@
     const buildingMap={};
     function toggleMinimap(){
       minimapVisible=!minimapVisible;
+      if(!minimapVisible&&minimapAnimId){cancelAnimationFrame(minimapAnimId);minimapAnimId=null;}
       minimapCanvas.style.display=minimapVisible?'block':'none';
       document.getElementById('minimap-label').style.display=minimapVisible?'block':'none';
       document.getElementById('minimap-toggle').textContent=minimapVisible?'✕':'🗺';
       document.getElementById('minimap-toggle').title=minimapVisible?(currentLang==='ja'?'地図を閉じる':'Hide map'):(currentLang==='ja'?'地図を表示':'Show map');
-      if(minimapVisible)drawMinimap();
+      if(minimapVisible&&!minimapAnimId)drawMinimap();
     }
     function worldToMM(wx,wz){return{px:(wx+MM_RANGE/2)/MM_RANGE*MM_SIZE,py:(wz+MM_RANGE/2)/MM_RANGE*MM_SIZE};}
     function minimapClick(e){
@@ -4357,7 +4395,7 @@
       arcCamera.target=new BABYLON.Vector3((e.clientX-rect.left)*scaleX/MM_SIZE*MM_RANGE-MM_RANGE/2,0,(e.clientY-rect.top)*scaleY/MM_SIZE*MM_RANGE-MM_RANGE/2);
     }
     function drawMinimap(){
-      if(!minimapVisible)return;
+      if(!minimapVisible){minimapAnimId=null;return;}
       mmCtx.clearRect(0,0,MM_SIZE,MM_SIZE);
       mmCtx.fillStyle='rgba(6,6,16,0.95)';mmCtx.fillRect(0,0,MM_SIZE,MM_SIZE);
       mmCtx.strokeStyle='rgba(255,255,255,0.04)';mmCtx.lineWidth=0.5;
@@ -4563,14 +4601,15 @@
       grid.innerHTML='';statsEl.innerHTML='';
       if(zukanBuildings.length===0){emptyEl.style.display='block';grid.style.display='none';return;}
       emptyEl.style.display='none';grid.style.display='grid';
-      const totalFloors=zukanBuildings.reduce((s,b)=>s+b.floors,0);
+      const totalFloors=zukanBuildings.reduce((s,b)=>s+Math.min(b.floors+Math.floor((b.employees||0)/5),MAX_BUILDING_FLOORS),0);
       const totalEmp=zukanBuildings.reduce((s,b)=>s+(b.employees||0),0);
       const best=zukanBuildings[0];
+      const bestTotal=Math.min(best.floors+Math.floor((best.employees||0)/5),MAX_BUILDING_FLOORS);
       const star5count=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===5).length;
       [{label:isJa?'所有ビル':'Buildings',val:isJa?zukanBuildings.length+'棟':zukanBuildings.length+''},
-       {label:isJa?'総階数':'Total Floors',val:totalFloors+'F'},
+       {label:isJa?'総階数（表示）':'Total Floors',val:totalFloors.toLocaleString()+'F'},
        {label:isJa?'総従業員':'Employees',val:isJa?totalEmp.toLocaleString()+'人':totalEmp.toLocaleString()},
-       {label:isJa?'最高層':'Tallest',val:best.floors+'F'},
+       {label:isJa?'最高層（表示）':'Tallest',val:bestTotal+'F'},
        {label:'★×5',val:isJa?star5count+'棟':star5count+'',highlight:star5count>0}
       ].forEach(c=>{
         const el=document.createElement('div');el.className='zukan-stat-chip';
@@ -4638,6 +4677,7 @@
       const handle=(land.owner_display||'').replace(/^@/,'').toLowerCase();
       if(handle!==OWNER_X_HANDLE.toLowerCase())return;
       b.employees=1000;
+      b.totalFloors=calcTotalFloors(b.baseFloors,1000);
       if(b.mesh&&b.mesh.material){
         applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }
@@ -4658,8 +4698,8 @@
       ['ranking-coins-list','ranking-emp-list','ranking-floors-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
       try{
         const[{data:users,error:uErr},{data:buildings,error:bErr}]=await Promise.all([
-          db.from('users').select('id,username,x_username,coin_column,bench_employees'),
-          db.from('buildings').select('owner_id,floors,employees')
+          db.from('users').select('id,username,x_username,coin_column,bench_employees').limit(2000),
+          db.from('buildings').select('owner_id,floors,employees').limit(5000)
         ]);
         if(uErr)throw uErr;
         if(bErr)throw bErr;
@@ -4670,7 +4710,7 @@
         (buildings||[]).forEach(b=>{
           const uid=b.owner_id;if(!uid||!userMap[uid])return;
           userMap[uid].assigned+=(b.employees||0);
-          userMap[uid].totalFloors+=Math.min(b.floors||0,MAX_BUILDING_FLOORS);
+          userMap[uid].totalFloors+=Math.min((b.floors||0)+Math.floor((b.employees||0)/5),MAX_BUILDING_FLOORS);
           userMap[uid].buildingCount+=1;
         });
         const list=Object.values(userMap).map(u=>({...u,totalEmp:u.assigned+u.bench}));

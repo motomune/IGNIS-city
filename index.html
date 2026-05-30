@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0f'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18'%3E櫨%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0f'/%3E%3Cpath fill='%23ff6a00' d='M16 5c-3 9-7 11-7 17a7 7 0 0 0 14 0c0-6-4-8-7-17z'/%3E%3C/svg%3E">
   <title>IGNIS CITY</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -80,7 +80,7 @@
       background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
       padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; pointer-events: all;
     }
-    /* 蝗ｳ髑代・繧ｿ繝ｳ・井ｸ矩Κ縺ｫ邨ｱ蜷茨ｼ・*/
+    /* 図鑑ボタン（下部に統合） */
     #zukan-float-btn {
       background: linear-gradient(135deg, rgba(6,182,212,0.55), rgba(59,130,246,0.55));
       color: #fff; border: 1px solid rgba(255,255,255,0.16); padding: 12px 20px;
@@ -119,7 +119,7 @@
     #build-btn .acq-sep { font-size: 0.72em; font-weight: 800; opacity: 0.82; margin: 0 1px; }
     #build-btn #build-btn-text { font-size: 1em; white-space: nowrap; }
     #build-btn:hover { transform: scale(1.05); box-shadow: 0 8px 28px rgba(0,0,0,0.34); filter: brightness(1.06); }
-    /* (蜿ｳ荳九ヵ繝ｭ繝ｼ繝育佐蠕励・繧ｿ繝ｳ縺ｯ蟒・ｭ｢) */
+    /* (右下フロート獲得ボタンは廃止) */
     #mode-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;
       padding: 12px 22px; font-size: 13px; font-weight: 700; border-radius: 30px;
@@ -179,7 +179,7 @@
     #loading-tap-hint { margin-top:10px;font-size:14px;color:#ff6a00;font-weight:700;display:none;animation:audioHintPulse 2s ease-in-out infinite;pointer-events:none; }
     #loading.tap-ready #loading-tap-hint { display:block; }
     #loading.tap-ready { cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent; }
-    /* 蟄占ｦ∫ｴ縺ｮ pointer-events:none 縺ｯ繧ｿ繝・・繧､繝吶Φ繝医′ loading 隕∫ｴ縺ｫ螻翫°縺ｪ縺上↑繧九◆繧・勁蜴ｻ */
+    /* 子要素の pointer-events:none はタップイベントが loading 要素に届かなくなるため除去 */
     #toast {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(255,106,0,0.9); color: #fff; padding: 10px 24px;
@@ -580,7 +580,7 @@
       transition:all 0.2s;box-shadow:0 2px 10px rgba(0,0,0,0.45);z-index:2;
     }
     #minimap-toggle:hover { background:rgba(255,255,255,0.2);color:#fff; }
-    /* 蝗ｳ髑・*/
+    /* 図鑑 */
     #zukan-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
     #zukan-overlay.open { display: flex; }
     #zukan-header { display:flex;align-items:center;gap:16px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
@@ -627,7 +627,7 @@
     .zukan-empty-rarity { font-size:12px;color:rgba(255,255,255,0.2);padding:4px 0; }
     #zukan-loading { display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;background:rgba(4,4,12,0.8);font-size:14px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.1em; }
     #zukan-loading.show { display: flex; }
-    /* 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ */
+    /* ランキング */
     #ranking-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
     #ranking-overlay.open { display: flex; }
     #ranking-header { display:flex;align-items:center;gap:16px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
@@ -664,7 +664,7 @@
     .ranking-username .rank-x-link { color:#1d9bf0;text-decoration:none; }
     .ranking-username .rank-x-link:hover { text-decoration:underline; }
     #invite-stats { font-size:11px;color:rgba(255,255,255,0.55);margin-top:6px;line-height:1.45; }
-    /* 繧ｳ繧､繝ｳ迯ｲ蠕怜ｱ･豁ｴ */
+    /* コイン獲得履歴 */
     #coin-history-btn {
       background: linear-gradient(135deg, rgba(255,106,0,0.55), rgba(238,9,121,0.55));
       border: 1px solid rgba(255,255,255,0.16); color: #fff;
@@ -716,7 +716,7 @@
     #coin-history-loading { text-align:center;padding:60px 20px;font-size:14px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.1em;display:none; }
     #coin-history-loading.show { display: block; }
     #coin-history-updated { font-size:11px;color:rgba(255,255,255,0.25);text-align:right;margin-top:16px;padding-bottom:8px; }
-    /* 繝薙Ν繝励Ο繝輔ぅ繝ｼ繝ｫ蜈･蜉帙Δ繝ｼ繝繝ｫ */
+    /* ビルプロフィール入力モーダル */
     #profile-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:350;align-items:center;justify-content:center; }
     #profile-modal.open { display: flex; }
     #profile-box { background:#0a0a14;border:1px solid rgba(255,106,0,0.4);border-radius:22px;padding:28px 28px 24px;width:400px;max-width:94vw;position:relative;box-shadow:0 0 60px rgba(255,106,0,0.15),0 20px 60px rgba(0,0,0,0.8); }
@@ -734,10 +734,10 @@
     #profile-skip-btn { width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:10px;border-radius:10px;font-size:13px;cursor:pointer;transition:background 0.2s; }
     #profile-skip-btn:hover { background:rgba(255,255,255,0.12); }
     #profile-approval-note { font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-top:10px; }
-    /* 繝薙Ν隧ｳ邏ｰ X 繝ｪ繝ｳ繧ｯ */
+    /* ビル詳細 X リンク */
     .owner-x-link { color:#1d9bf0;font-weight:800;text-decoration:none; }
     .owner-x-link:hover { text-decoration:underline; }
-    /* 謇ｿ隱肴ｸ医∩譬ｼ險繝ｻ蛯呵・*/
+    /* 承認済み格言・備考 */
     #building-sell-btn { width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:14px;transition:opacity 0.2s; }
     #building-sell-btn:hover { opacity:0.85; }
     #building-assign-btn { width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
@@ -750,9 +750,9 @@
     #building-modal-motto.rank-1 { color:#94a3b8;border-left:4px solid #94a3b8;background:rgba(148,163,184,0.1); }
     #building-modal-notes { font-size:12px;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;display:none; }
     #building-modal-notes-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
-    /* 3D譬ｼ險繝ｩ繝吶Ν */
+    /* 3D格言ラベル */
     .motto-pending-badge { display:inline-block;font-size:10px;background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);color:rgba(255,165,0,0.8);padding:2px 8px;border-radius:6px;margin-left:6px; }
-    /* 繧ｹ繝槭・繝ｻ繧ｿ繝悶Ξ繝・ヨ */
+    /* スマホ・タブレット */
     @media (max-width: 768px) {
       #header {
         display: grid;
@@ -837,7 +837,7 @@
       #logo { font-size: 13px; }
       #stats { font-size: 10px; }
       #ranking-btn { padding: 6px 9px !important; font-size: 0 !important; line-height: 1; }
-      #ranking-btn::after { content: '醇'; font-size: 14px; }
+      #ranking-btn::after { content: '🏆'; font-size: 14px; }
       #build-btn .acq-icons { font-size: 18px; }
       #build-btn #build-btn-text { font-size: 13px; }
     }
@@ -856,15 +856,15 @@
         var ld=document.getElementById('loading');
         if(ld){ld.style.opacity='0';ld.style.pointerEvents='none';setTimeout(function(){ld.style.display='none';},500);}
       }
-      console.warn('[IGNIS BOOT] 謇句虚/蠑ｷ蛻ｶ縺ｧ繝ｭ繝ｼ繝臥判髱｢繧帝哩縺倥∪縺励◆');
+      console.warn('[IGNIS BOOT] 手動/強制でロード画面を閉じました');
     };
     __ignisStatus('1) HTML loaded');
   </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
     <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
-    <div id="loading-status">竭｡ 繝ｩ繧､繝悶Λ繝ｪ隱ｭ霎ｼ荳ｭ...</div>
-    <div id="loading-tap-hint">逕ｻ髱｢繧偵ち繝・・縺励※髢句ｧ・/div>
+    <div id="loading-status">② ライブラリ読込中...</div>
+    <div id="loading-tap-hint">画面をタップして開始</div>
   </div>
   <canvas id="renderCanvas"></canvas>
   <canvas id="fire-canvas"></canvas>
@@ -872,8 +872,8 @@
     <div id="fly-stick-left" class="fly-joystick"><div id="fly-knob-left" class="fly-stick-knob"></div></div>
     <div id="fly-stick-right" class="fly-joystick"><div id="fly-knob-right" class="fly-stick-knob"></div></div>
     <div id="fly-vertical-controls">
-      <button id="fly-up-btn" class="fly-vertical-btn" type="button">笆ｲ</button>
-      <button id="fly-down-btn" class="fly-vertical-btn" type="button">笆ｼ</button>
+      <button id="fly-up-btn" class="fly-vertical-btn" type="button">▲</button>
+      <button id="fly-down-btn" class="fly-vertical-btn" type="button">▼</button>
     </div>
   </div>
   <div id="ui">
@@ -883,143 +883,143 @@
       </div>
       <div id="stats">
         <div>
-          <span data-i18n="buildings">繝薙Ν謨ｰ</span>&nbsp;<span id="building-count">0</span><span data-i18n="buildings-unit">譽・/span>
+          <span data-i18n="buildings">ビル数</span>&nbsp;<span id="building-count">0</span><span data-i18n="buildings-unit">棟</span>
           &nbsp;|&nbsp;
-          <span data-i18n="coins">繧ｳ繧､繝ｳ</span>&nbsp;<span id="coin-count" onclick="openCoinHistory()" title="繧ｯ繝ｪ繝・け縺ｧ繧ｳ繧､繝ｳ螻･豁ｴ繧定｡ｨ遉ｺ">0</span>
+          <span data-i18n="coins">コイン</span>&nbsp;<span id="coin-count" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
         </div>
-        <div id="emp-stats" style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;display:none;" title="蜷郁ｨ・閾ｪ蛻・・蝨溷慍縺ｮ驟榊ｱ・莨題・荳ｭ">
-          <span data-i18n="emp-total">螂醍ｴ・､ｾ蜩｡邱乗焚</span>&nbsp;<span id="emp-total-count">0</span><span data-i18n="emp-unit">莠ｺ</span>
+        <div id="emp-stats" style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;display:none;" title="合計=自分の土地の配属+休職中">
+          <span data-i18n="emp-total">契約社員総数</span>&nbsp;<span id="emp-total-count">0</span><span data-i18n="emp-unit">人</span>
           &nbsp;|&nbsp;
-          <span data-i18n="emp-bench">莨題・荳ｭ</span>&nbsp;<span id="emp-bench-count">0</span><span data-i18n="emp-unit2">莠ｺ</span>
+          <span data-i18n="emp-bench">休職中</span>&nbsp;<span id="emp-bench-count">0</span><span data-i18n="emp-unit2">人</span>
         </div>
       </div>
       <div id="user-area">
-        <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM繝ｻ蜉ｹ譫憺浹縺ｮ繧ｪ繝ｳ/繧ｪ繝・>矧</button>
+        <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
         <button id="lang-btn" onclick="toggleLang()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span id="lang-label">EN</span>
         </button>
-        <button id="login-btn-header" onclick="openAuthModal()">繝ｭ繧ｰ繧､繝ｳ / 逋ｻ骭ｲ</button>
+        <button id="login-btn-header" onclick="openAuthModal()">ログイン / 登録</button>
         <div id="logged-in-area" style="display:none; align-items:center; gap:12px;">
-          <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">搭 繧ｿ繧ｹ繧ｯ<span id="task-notice-badge">0</span></button>
+          <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク<span id="task-notice-badge">0</span></button>
           <span id="user-name" style="display:none;" aria-hidden="true"></span>
-          <button id="ranking-btn" onclick="openRanking()" style="background:linear-gradient(135deg,rgba(245,158,11,0.55),rgba(238,9,121,0.55));border:1px solid rgba(255,255,255,0.16);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">醇 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ</button>
-          <button id="coin-history-btn" onclick="openCoinHistory()">腸 螻･豁ｴ</button>
-          <button id="logout-btn" onclick="handleLogout()">繝ｭ繧ｰ繧｢繧ｦ繝・/button>
+          <button id="ranking-btn" onclick="openRanking()" style="background:linear-gradient(135deg,rgba(245,158,11,0.55),rgba(238,9,121,0.55));border:1px solid rgba(255,255,255,0.16);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">🏆 ランキング</button>
+          <button id="coin-history-btn" onclick="openCoinHistory()">💰 履歴</button>
+          <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
         </div>
       </div>
       <div id="ad-slot-wrap">
-        <div id="ad-slot" aria-label="蠎・相譫"></div>
+        <div id="ad-slot" aria-label="広告枠"></div>
       </div>
     </div>
   </div>
-  <div id="fly-hint">賦 遏｢蜊ｰ縺ｧ遘ｻ蜍輔・Shift荳頑・繝ｻCtrl荳矩剄</div>
+  <div id="fly-hint">🕊 矢印で移動・Shift上昇・Ctrl下降</div>
   <div id="bottom-btns">
-    <button id="build-btn" onclick="openGachaModal(false)"><span class="acq-icons" aria-hidden="true"><span class="acq-icon-building">召</span><span class="acq-sep">・・/span><span class="acq-icon-worker">捉窶昨汳ｼ</span></span><span id="build-btn-text">迯ｲ蠕・/span></button>
-    <button id="mode-btn" onclick="toggleFlyMode()">賦 鬟幄｡後Δ繝ｼ繝・/button>
-    <button id="zukan-float-btn" onclick="openZukan()">当 蝗ｳ髑・/button>
+    <button id="build-btn" onclick="openGachaModal(false)"><span class="acq-icons" aria-hidden="true"><span class="acq-icon-building">🏢</span><span class="acq-sep">／</span><span class="acq-icon-worker">👨‍💼</span></span><span id="build-btn-text">獲得</span></button>
+    <button id="mode-btn" onclick="toggleFlyMode()">🕊 飛行モード</button>
+    <button id="zukan-float-btn" onclick="openZukan()">📖 図鑑</button>
   </div>
-  <!-- 蜿ｳ荳九ヵ繝ｭ繝ｼ繝医・繧ｿ繝ｳ縺ｯ蟒・ｭ｢・井ｸ矩Κ縺ｫ邨ｱ蜷茨ｼ・-->
+  <!-- 右下フロートボタンは廃止（下部に統合） -->
   <div id="task-panel">
     <div id="task-panel-head">
-      <div id="task-panel-title">搭 繝・う繝ｪ繝ｼ繧ｿ繧ｹ繧ｯ</div>
-      <button id="task-panel-close" type="button" onclick="toggleTaskPanel()" title="髢峨§繧・>ﾃ・/button>
+      <div id="task-panel-title">📋 デイリータスク</div>
+      <button id="task-panel-close" type="button" onclick="toggleTaskPanel()" title="閉じる">×</button>
     </div>
     <div id="task-progress-wrap">
       <div id="task-progress-header">
-        <span id="task-progress-label">莉頑律縺ｮ騾ｲ謐・/span>
+        <span id="task-progress-label">今日の進捗</span>
         <span id="task-progress-pct">0%</span>
       </div>
       <div id="task-progress-bar-bg"><div id="task-progress-bar"></div></div>
     </div>
     <div id="task-list"></div>
     <div id="task-utility-actions">
-      <button id="invite-btn" class="task-utility-btn" type="button" onclick="handleInviteGame()">式 繧ｲ繝ｼ繝諡帛ｾ・/button>
+      <button id="invite-btn" class="task-utility-btn" type="button" onclick="handleInviteGame()">🎮 ゲーム招待</button>
       <div id="invite-stats" aria-live="polite"></div>
-      <button id="help-btn" class="task-utility-btn" type="button" onclick="openHelpContact()">笶・繝倥Ν繝・/ 縺雁撫縺・粋繧上○</button>
-      <button id="notice-btn" class="task-utility-btn" type="button" onclick="toggleNoticePanel()">粕 騾夂衍<span id="notice-badge">0</span></button>
+      <button id="help-btn" class="task-utility-btn" type="button" onclick="openHelpContact()">❓ ヘルプ / お問い合わせ</button>
+      <button id="notice-btn" class="task-utility-btn" type="button" onclick="toggleNoticePanel()">🔔 通知<span id="notice-badge">0</span></button>
     </div>
   </div>
   <div id="notice-panel">
-    <div id="notice-title">粕 縺顔衍繧峨○ / 騾夂衍</div>
+    <div id="notice-title">🔔 お知らせ / 通知</div>
     <div id="notice-list"></div>
-    <div id="notice-empty">騾夂衍縺ｯ縺ｾ縺縺ゅｊ縺ｾ縺帙ｓ</div>
+    <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
-    <button id="minimap-toggle" onclick="toggleMinimap()" title="蝨ｰ蝗ｳ繧帝哩縺倥ｋ" type="button" aria-label="Close minimap">ﾃ・/button>
+    <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button" aria-label="Close minimap">×</button>
     <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
     <div id="minimap-label">MINIMAP</div>
   </div>
   <div id="building-modal">
     <div id="building-box">
-      <button id="building-modal-close" onclick="closeBuildingModal()">ﾃ・/button>
-      <div id="building-modal-icon">召</div>
+      <button id="building-modal-close" onclick="closeBuildingModal()">×</button>
+      <div id="building-modal-icon">🏢</div>
       <div id="building-modal-rank"></div>
       <div id="building-modal-floors"></div>
       <div class="bm-stat-grid">
-        <div class="bm-stat"><div class="bm-stat-label" id="bml-floors">邱城嚴謨ｰ</div><div class="bm-stat-value" id="bm-floors-val">-</div></div>
-        <div class="bm-stat"><div class="bm-stat-label" id="bml-emp">蠕捺･ｭ蜩｡</div><div class="bm-stat-value" id="bm-emp-val">-</div></div>
-        <div class="bm-stat"><div class="bm-stat-label" id="bml-views">髢ｲ隕ｧ蝗樊焚</div><div class="bm-stat-value" id="bm-views-val">-</div></div>
-        <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">蠎ｧ讓・/div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-floors">総階数</div><div class="bm-stat-value" id="bm-floors-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-emp">従業員</div><div class="bm-stat-value" id="bm-emp-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-views">閲覧回数</div><div class="bm-stat-value" id="bm-views-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
       <div id="building-modal-motto"></div>
-      <div id="building-modal-notes"><div id="building-modal-notes-label">統 蛯呵・/div><div id="building-modal-notes-text"></div></div>
+      <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
-      <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">孫 蠕捺･ｭ蜩｡繧帝・螻・/button>
-      <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">腸 繝薙Ν繧貞｣ｲ蜊ｴ・亥悄蝨ｰ縺斐→・・/button>
+      <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
+      <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
   </div>
   <div id="grid-legend">
-    <div class="legend-row"><div class="legend-dot" style="background:rgba(100,220,100,0.7);"></div><span id="legend-empty">遨ｺ縺榊慍・域悴蜿門ｾ暦ｼ・/span></div>
-    <div class="legend-row"><div class="legend-dot" style="background:rgba(255,140,0,0.8);"></div><span id="legend-mine">閾ｪ蛻・・蝨溷慍</span></div>
-    <div class="legend-row"><div class="legend-dot" style="background:rgba(80,140,255,0.7);"></div><span id="legend-others">莉悶Θ繝ｼ繧ｶ繝ｼ縺ｮ蝨溷慍</span></div>
-    <div class="legend-row"><div class="legend-dot" style="background:rgba(255,80,80,0.7);"></div><span id="legend-building">繝薙Ν縺ゅｊ</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(100,220,100,0.7);"></div><span id="legend-empty">空き地（未取得）</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(255,140,0,0.8);"></div><span id="legend-mine">自分の土地</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(80,140,255,0.7);"></div><span id="legend-others">他ユーザーの土地</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:rgba(255,80,80,0.7);"></div><span id="legend-building">ビルあり</span></div>
   </div>
   <div id="land-panel">
-    <button id="land-panel-close" onclick="closeLandPanel()">ﾃ・/button>
-    <div id="land-panel-title">桃 LAND</div>
+    <button id="land-panel-close" onclick="closeLandPanel()">×</button>
+    <div id="land-panel-title">📍 LAND</div>
     <div id="land-panel-coord">-</div>
     <div id="land-panel-owner"></div>
     <div id="land-panel-building"></div>
-    <button id="land-buy-btn" class="land-panel-btn" onclick="handleLandBuy()">櫨 縺薙・蝨溷慍繧貞叙蠕暦ｼ・00繧ｳ繧､繝ｳ・・/button>
-    <button id="land-gacha-btn" class="land-panel-btn" onclick="openGachaModal(false)" style="display:none;">当 繧ｹ繧ｯ繝ｩ繝・メ縺ｧ繝薙Ν繧貞ｻｺ縺ｦ繧具ｼ・0繧ｳ繧､繝ｳ・・/button>
-    <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">売 繧ｹ繧ｯ繝ｩ繝・メ縺ｧ蟒ｺ縺ｦ譖ｿ縺医ｋ・・0繧ｳ繧､繝ｳ・・/button>
+    <button id="land-buy-btn" class="land-panel-btn" onclick="handleLandBuy()">🔥 この土地を取得（100コイン）</button>
+    <button id="land-gacha-btn" class="land-panel-btn" onclick="openGachaModal(false)" style="display:none;">📖 スクラッチでビルを建てる（50コイン）</button>
+    <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">🔄 スクラッチで建て替える（50コイン）</button>
   </div>
   <div id="gacha-modal">
     <div id="gacha-box">
-      <button id="gacha-modal-close" onclick="closeGachaModal()">ﾃ・/button>
-      <div id="gacha-title">当 繝薙Ν繧ｹ繧ｯ繝ｩ繝・メ</div>
+      <button id="gacha-modal-close" onclick="closeGachaModal()">×</button>
+      <div id="gacha-title">📖 ビルスクラッチ</div>
       <div id="gacha-land-info"></div>
       <div class="gacha-rates">
-        <div class="rate-row"><span class="stars star5">笘・・笘・・笘・/span><span class="floors-range">48縲・0髫・/span><span class="prob">0.8%</span></div>
-        <div class="rate-row"><span class="stars star4">笘・・笘・・</span><span class="floors-range">40縲・7髫・/span><span class="prob">2.2%</span></div>
-        <div class="rate-row"><span class="stars star3">笘・・笘・/span><span class="floors-range">30縲・9髫・/span><span class="prob">17%</span></div>
-        <div class="rate-row"><span class="stars star2">笘・・</span><span class="floors-range">20縲・9髫・/span><span class="prob">30%</span></div>
-        <div class="rate-row"><span class="stars star1">笘・/span><span class="floors-range">1縲・9髫・/span><span class="prob">50%</span></div>
+        <div class="rate-row"><span class="stars star5">★★★★★</span><span class="floors-range">48〜50階</span><span class="prob">0.8%</span></div>
+        <div class="rate-row"><span class="stars star4">★★★★</span><span class="floors-range">40〜47階</span><span class="prob">2.2%</span></div>
+        <div class="rate-row"><span class="stars star3">★★★</span><span class="floors-range">30〜39階</span><span class="prob">17%</span></div>
+        <div class="rate-row"><span class="stars star2">★★</span><span class="floors-range">20〜29階</span><span class="prob">30%</span></div>
+        <div class="rate-row"><span class="stars star1">★</span><span class="floors-range">1〜19階</span><span class="prob">50%</span></div>
       </div>
-      <div id="gacha-cost-info">豸郁ｲｻ繧ｳ繧､繝ｳ・・span>50</span>繧ｳ繧､繝ｳ</div>
-      <div id="gacha-prism-note" style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:10px;line-height:1.5;">蠖薙◆繧九ン繝ｫ縺ｯ <b>蜀・浤繝ｻ荳芽ｧ呈浤繝ｻ豁｣蝗幄ｧ呈浤</b>・域怙螟ｧ50髫趣ｼ・/div>
-      <button id="gacha-spin-btn" onclick="handleGachaSpin()">当 繧ｹ繧ｯ繝ｩ繝・メ縺吶ｋ</button>
+      <div id="gacha-cost-info">消費コイン：<span>50</span>コイン</div>
+      <div id="gacha-prism-note" style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:10px;line-height:1.5;">当たるビルは <b>円柱・三角柱・正四角柱</b>（最大50階）</div>
+      <button id="gacha-spin-btn" onclick="handleGachaSpin()">📖 スクラッチする</button>
       <div style="display:flex;align-items:center;gap:8px;margin:16px 0 10px;color:rgba(255,255,255,0.3);font-size:11px;font-weight:700;letter-spacing:0.12em;">
         <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
         <span id="gacha-or-label">OR</span>
         <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
       </div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;" id="hire-info">莨夂､ｾ蜩｡繧呈治逕ｨ・・span>25</span>繧ｳ繧､繝ｳ 竊・莨題・荳ｭ繝励・繝ｫ縺ｫ +1莠ｺ</div>
-      <button id="gacha-hire-btn" onclick="handleHireEmployee()" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">捉窶昨汳ｼ 莨夂､ｾ蜩｡繧呈治逕ｨ・・5繧ｳ繧､繝ｳ・・/button>
+      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;" id="hire-info">会社員を採用：<span>25</span>コイン → 休職中プールに +1人</div>
+      <button id="gacha-hire-btn" onclick="handleHireEmployee()" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👨‍💼 会社員を採用（25コイン）</button>
       <div id="staff-term-panel" style="display:none;">
-        <div id="staff-term-info">窶・/div>
-        <button id="staff-extend-btn" type="button" onclick="handleExtendStaffTerms()">莉ｻ譛溘ｒ3縺区怦蟒ｶ髟ｷ・・繧ｳ繧､繝ｳ/莠ｺ・・/button>
+        <div id="staff-term-info">—</div>
+        <button id="staff-extend-btn" type="button" onclick="handleExtendStaffTerms()">任期を3か月延長（5コイン/人）</button>
       </div>
     </div>
   </div>
   <div id="hire-stamp-overlay" aria-hidden="true">
     <div class="hire-contract" role="dialog" aria-labelledby="hire-contract-title">
-      <div class="hire-contract-header" id="hire-contract-header">IGNIS CITY ﾂｷ 莠ｺ莠・/div>
-      <div class="hire-contract-title" id="hire-contract-title">謗｡逕ｨ騾夂衍譖ｸ</div>
+      <div class="hire-contract-header" id="hire-contract-header">IGNIS CITY · 人事</div>
+      <div class="hire-contract-title" id="hire-contract-title">採用通知書</div>
       <div class="hire-contract-body" id="hire-contract-body"></div>
-      <div class="hire-contract-sign" id="hire-contract-sign">蜊ｰ髑代〒謗｡逕ｨ</div>
-      <div class="hire-stamp-seal" id="hire-stamp-seal">謗｡逕ｨ</div>
+      <div class="hire-contract-sign" id="hire-contract-sign">印鑑で採用</div>
+      <div class="hire-stamp-seal" id="hire-stamp-seal">採用</div>
       <div id="hire-contract-signature"></div>
     </div>
   </div>
@@ -1034,9 +1034,9 @@
             <div class="book-cover-front">
               <div class="book-ribbon" aria-hidden="true"></div>
               <div class="book-cover-frame">
-                <span class="book-emblem">櫨</span>
+                <span class="book-emblem">🔥</span>
                 <h2 class="book-cover-title">IGNIS CITY</h2>
-                <p class="book-cover-sub">蟒ｺ遽蛾鹸 ﾂｷ 隨ｬ I 蟾ｻ</p>
+                <p class="book-cover-sub">建築録 · 第 I 巻</p>
               </div>
             </div>
             <div class="book-page-edges"></div>
@@ -1045,7 +1045,7 @@
           <div class="book-spread-shell" id="gacha-book-spread">
             <div class="book-half book-half-left">
               <div class="book-page book-page-left">
-                <div class="book-page-title" id="book-rates-title">蜃ｺ迴ｾ邇・/div>
+                <div class="book-page-title" id="book-rates-title">出現率</div>
                 <div id="book-rates-list"></div>
               </div>
             </div>
@@ -1056,14 +1056,14 @@
                 <div class="book-scratch-shield" id="book-scratch-shield"></div>
                 <canvas id="book-prize-canvas" aria-hidden="true"></canvas>
                 <div id="book-prize-layer">
-                  <div id="book-prize-icon">召</div>
-                  <div id="book-prize-rank">笘・/div>
+                  <div id="book-prize-icon">🏢</div>
+                  <div id="book-prize-rank">★</div>
                   <div id="book-prize-floors" class="prize-floor-hidden"></div>
                 </div>
                 <canvas id="book-scratch-canvas"></canvas>
                 <div id="book-scratch-reveal-pop" aria-hidden="true">
-                  <div class="bsrp-icon" id="book-scratch-reveal-icon">召</div>
-                  <div class="bsrp-rank" id="book-scratch-reveal-rank">笘・/div>
+                  <div class="bsrp-icon" id="book-scratch-reveal-icon">🏢</div>
+                  <div class="bsrp-rank" id="book-scratch-reveal-rank">★</div>
                   <div class="bsrp-floors" id="book-scratch-reveal-floors"></div>
                 </div>
                 <span class="book-scratch-label">SCRATCH</span>
@@ -1072,180 +1072,180 @@
           </div>
         </div>
       </div>
-      <p id="book-scratch-hint">蜿ｳ繝壹・繧ｸ繧貞炎繧九→繝薙Ν迯ｲ蠕暦ｼ・/p>
+      <p id="book-scratch-hint">右ページを削るとビル獲得！</p>
       <div id="book-result-detail">
-        <div id="book-result-get-banner">脂 迯ｲ蠕暦ｼ・/div>
-        <div id="book-result-detail-title">迯ｲ蠕励ン繝ｫ隧ｳ邏ｰ</div>
-        <div id="book-result-detail-icon">召</div>
-        <div id="book-result-detail-rank">笘・/div>
-        <div id="book-result-detail-main">窶・/div>
+        <div id="book-result-get-banner">🎉 獲得！</div>
+        <div id="book-result-detail-title">獲得ビル詳細</div>
+        <div id="book-result-detail-icon">🏢</div>
+        <div id="book-result-detail-rank">★</div>
+        <div id="book-result-detail-main">—</div>
       </div>
       <div id="book-result-actions">
-        <button id="book-result-build" type="button" onclick="onGachaResultClose()">蟒ｺ險ｭ縺吶ｋ 竊・/button>
-        <button id="book-result-city" type="button" onclick="onGachaResultBackToCity()">徐 IGNIS City縺ｸ謌ｻ繧・/button>
-        <button id="book-result-retry" type="button" onclick="onGachaResultRetry()">煤 繧ゅ≧荳蠎ｦ繧ｹ繧ｯ繝ｩ繝・メ</button>
+        <button id="book-result-build" type="button" onclick="onGachaResultClose()">建設する →</button>
+        <button id="book-result-city" type="button" onclick="onGachaResultBackToCity()">🏙 IGNIS Cityへ戻る</button>
+        <button id="book-result-retry" type="button" onclick="onGachaResultRetry()">🔁 もう一度スクラッチ</button>
       </div>
     </div>
   </div>
   <div id="build-modal">
     <div id="build-box">
-      <button id="build-modal-close" onclick="closeBuildModal()">ﾃ・/button>
-      <div id="build-modal-title">女 繧ｹ繧ｯ繝ｩ繝・メ邨先棡繧貞ｻｺ險ｭ</div>
+      <button id="build-modal-close" onclick="closeBuildModal()">×</button>
+      <div id="build-modal-title">🏗 スクラッチ結果を建設</div>
       <div id="build-prize-card">
-        <div class="bpc-icon" id="build-prize-icon">召</div>
-        <div class="bpc-title" id="build-modal-info">窶・/div>
-        <div class="bpc-sub" id="build-prize-stars">笘・/div>
+        <div class="bpc-icon" id="build-prize-icon">🏢</div>
+        <div class="bpc-title" id="build-modal-info">—</div>
+        <div class="bpc-sub" id="build-prize-stars">★</div>
       </div>
-      <div id="build-land-select">桃 蝨溷慍譛ｪ驕ｸ謚・窶・蟒ｺ險ｭ蠕後↓蝨溷慍繧偵ち繝・・縺励※驟咲ｽｮ蜈医ｒ驕ｸ繧薙〒縺上□縺輔＞</div>
-      <button id="build-confirm-btn" onclick="handleBuildConfirm()">召 縺薙・繝薙Ν繧貞ｻｺ險ｭ縺吶ｋ</button>
-      <button id="build-scratch-again-btn" type="button" onclick="onBuildModalScratchAgain()">煤 繧ゅ≧荳蠎ｦ繧ｹ繧ｯ繝ｩ繝・メ・・0繧ｳ繧､繝ｳ・・/button>
+      <div id="build-land-select">📍 土地未選択 — 建設後に土地をタップして配置先を選んでください</div>
+      <button id="build-confirm-btn" onclick="handleBuildConfirm()">🏢 このビルを建設する</button>
+      <button id="build-scratch-again-btn" type="button" onclick="onBuildModalScratchAgain()">🔁 もう一度スクラッチ（50コイン）</button>
     </div>
   </div>
-  <!-- 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ -->
+  <!-- ランキング -->
   <div id="ranking-overlay">
     <div id="ranking-header">
-      <div id="ranking-title">醇 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ</div>
+      <div id="ranking-title">🏆 ランキング</div>
       <div id="ranking-tabs">
-        <button class="ranking-tab active" id="rtab-coins" onclick="switchRankingTab('coins')">腸 繧ｳ繧､繝ｳ</button>
-        <button class="ranking-tab" id="rtab-emp" onclick="switchRankingTab('emp')">則 蠕捺･ｭ蜩｡</button>
-        <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">召 髫取焚</button>
+        <button class="ranking-tab active" id="rtab-coins" onclick="switchRankingTab('coins')">💰 コイン</button>
+        <button class="ranking-tab" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員</button>
+        <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">🏢 階数</button>
       </div>
-      <button id="ranking-close" onclick="closeRanking()">笨・髢峨§繧・/button>
+      <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
     </div>
     <div id="ranking-body">
-      <div id="ranking-loading-msg">隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ...</div>
+      <div id="ranking-loading-msg">読み込み中...</div>
       <div id="ranking-coins-list"></div>
       <div id="ranking-emp-list" style="display:none;"></div>
       <div id="ranking-floors-list" style="display:none;"></div>
     </div>
   </div>
-  <!-- 蝗ｳ髑・-->
+  <!-- 図鑑 -->
   <div id="zukan-overlay">
     <div id="zukan-header">
-      <div id="zukan-title">当 繝薙Ν蝗ｳ髑・/div>
+      <div id="zukan-title">📖 ビル図鑑</div>
       <div id="zukan-tabs">
-        <button class="zukan-tab active" id="ztab-owned" onclick="switchZukanTab('owned')">召 謇譛峨ン繝ｫ</button>
-        <button class="zukan-tab" id="ztab-rarity" onclick="switchZukanTab('rarity')">箝・繝ｬ繧｢繝ｪ繝・ぅ</button>
+        <button class="zukan-tab active" id="ztab-owned" onclick="switchZukanTab('owned')">🏢 所有ビル</button>
+        <button class="zukan-tab" id="ztab-rarity" onclick="switchZukanTab('rarity')">⭐ レアリティ</button>
       </div>
-      <button id="zukan-close" onclick="closeZukan()">笨・髢峨§繧・/button>
+      <button id="zukan-close" onclick="closeZukan()">✕ 閉じる</button>
     </div>
     <div id="zukan-body">
       <div id="zukan-owned">
         <div id="zukan-owned-stats"></div>
         <div id="zukan-owned-grid"></div>
         <div id="zukan-empty" style="display:none;">
-          <div style="font-size:48px;margin-bottom:12px;">女</div>
-          <div style="font-size:16px;font-weight:700;color:rgba(255,255,255,0.5);">縺ｾ縺繝薙Ν縺後≠繧翫∪縺帙ｓ</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px;">蝨溷慍繧貞叙蠕励＠縺ｦ繧ｹ繧ｯ繝ｩ繝・メ縺ｧ繝薙Ν繧貞ｻｺ縺ｦ繧医≧・・/div>
+          <div style="font-size:48px;margin-bottom:12px;">🏗</div>
+          <div style="font-size:16px;font-weight:700;color:rgba(255,255,255,0.5);">まだビルがありません</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px;">土地を取得してスクラッチでビルを建てよう！</div>
         </div>
       </div>
       <div id="zukan-rarity" style="display:none;">
         <div id="zukan-rarity-grid"></div>
       </div>
     </div>
-    <div id="zukan-loading">隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ...</div>
+    <div id="zukan-loading">読み込み中...</div>
   </div>
-  <!-- 繝薙Ν繝励Ο繝輔ぅ繝ｼ繝ｫ蜈･蜉帙Δ繝ｼ繝繝ｫ -->
+  <!-- ビルプロフィール入力モーダル -->
   <div id="profile-modal">
     <div id="profile-box">
-      <button id="profile-modal-close" onclick="closeProfileModal()">ﾃ・/button>
-      <div id="profile-title">召 繝薙Ν繝励Ο繝輔ぅ繝ｼ繝ｫ逕ｳ隲・/div>
-      <div id="profile-subtitle">蟒ｺ險ｭ縺翫ａ縺ｧ縺ｨ縺・＃縺悶＞縺ｾ縺呻ｼ∵ｼ險縺ｨ蛯呵・ｒ逕ｳ隲九〒縺阪∪縺呻ｼ・GNIS Rank 2 莉･荳奇ｼ・/div>
-      <div class="custom-label">町 譬ｼ險</div>
-      <div id="profile-motto-limit">譛螟ｧ <span id="profile-motto-max">3</span> 譁・ｭ暦ｼ磯嚴謨ｰ縺ｫ蠢懊§縺ｦ譛螟ｧ謨ｰ縺悟｢励∴縺ｾ縺呻ｼ・/div>
-      <textarea class="profile-textarea" id="profile-motto-input" rows="2" placeholder="逧・＆繧薙↓莨昴∴縺溘＞荳險..."></textarea>
+      <button id="profile-modal-close" onclick="closeProfileModal()">×</button>
+      <div id="profile-title">🏢 ビルプロフィール申請</div>
+      <div id="profile-subtitle">建設おめでとうございます！格言と備考を申請できます（IGNIS Rank 2 以上）</div>
+      <div class="custom-label">💬 格言</div>
+      <div id="profile-motto-limit">最大 <span id="profile-motto-max">3</span> 文字（階数に応じて最大数が増えます）</div>
+      <textarea class="profile-textarea" id="profile-motto-input" rows="2" placeholder="皆さんに伝えたい一言..."></textarea>
       <div class="profile-counter"><span id="profile-motto-counter">0</span>/<span id="profile-motto-max2">3</span></div>
-      <div class="custom-label">統 蛯呵・ｼ郁協蜉ｴ隧ｱ繝ｻ縺ｩ縺・ｹ励ｊ雜翫∴縺溘°・・/div>
-      <textarea class="profile-textarea" id="profile-notes-input" rows="6" maxlength="500" placeholder="驕主悉縺ｮ闍ｦ蜉ｴ繧・◎縺ｮ譎ゅ←縺・ｹ励ｊ雜翫∴縺溘・縺・.."></textarea>
+      <div class="custom-label">📝 備考（苦労話・どう乗り越えたか）</div>
+      <textarea class="profile-textarea" id="profile-notes-input" rows="6" maxlength="500" placeholder="過去の苦労やその時どう乗り越えたのか..."></textarea>
       <div class="profile-counter"><span id="profile-notes-counter">0</span>/500</div>
-      <button id="profile-submit-btn" onclick="submitBuildingProfile()">逕ｳ隲九☆繧・/button>
-      <button id="profile-skip-btn" onclick="closeProfileModal()">繧ｹ繧ｭ繝・・</button>
-      <div id="profile-approval-note">窶ｻ 邂｡逅・・・謇ｿ隱榊ｾ後↓繝薙Ν縺ｫ蜈ｬ髢九＆繧後∪縺・/div>
+      <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
+      <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
+      <div id="profile-approval-note">※ 管理者の承認後にビルに公開されます</div>
     </div>
   </div>
-  <!-- 繧ｳ繧､繝ｳ迯ｲ蠕怜ｱ･豁ｴ -->
+  <!-- コイン獲得履歴 -->
   <div id="coin-history-overlay">
     <div id="coin-history-header">
-      <div id="coin-history-title">腸 繧ｳ繧､繝ｳ螻･豁ｴ</div>
+      <div id="coin-history-title">💰 コイン履歴</div>
       <div id="coin-history-tabs">
-        <button class="ch-tab active" id="ch-tab-all" onclick="switchCoinHistoryTab('all')">糖 蜈ｨ縺ｦ</button>
-        <button class="ch-tab" id="ch-tab-gain" onclick="switchCoinHistoryTab('gain')">嶋 迯ｲ蠕・/button>
-        <button class="ch-tab" id="ch-tab-spend" onclick="switchCoinHistoryTab('spend')">悼 豸郁ｲｻ</button>
+        <button class="ch-tab active" id="ch-tab-all" onclick="switchCoinHistoryTab('all')">📜 全て</button>
+        <button class="ch-tab" id="ch-tab-gain" onclick="switchCoinHistoryTab('gain')">📈 獲得</button>
+        <button class="ch-tab" id="ch-tab-spend" onclick="switchCoinHistoryTab('spend')">📉 消費</button>
       </div>
-      <button id="coin-history-close" onclick="closeCoinHistory()">笨・髢峨§繧・/button>
+      <button id="coin-history-close" onclick="closeCoinHistory()">✕ 閉じる</button>
     </div>
     <div id="coin-history-body">
       <div id="coin-history-summary"></div>
-      <div id="coin-history-loading">隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ...</div>
+      <div id="coin-history-loading">読み込み中...</div>
       <div id="coin-history-list"></div>
       <div id="coin-history-empty">
-        <div id="coin-history-empty-icon">頂</div>
-        <div id="coin-history-empty-text">螻･豁ｴ縺後∪縺縺ゅｊ縺ｾ縺帙ｓ</div>
-        <div id="coin-history-empty-sub">繧ｿ繧ｹ繧ｯ繧・ｻｺ險ｭ縺ｧ繧ｳ繧､繝ｳ繧堤佐蠕励＠繧医≧・・/div>
+        <div id="coin-history-empty-icon">💸</div>
+        <div id="coin-history-empty-text">履歴がまだありません</div>
+        <div id="coin-history-empty-sub">タスクや建設でコインを獲得しよう！</div>
       </div>
     </div>
   </div>
   <div id="toast"></div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
-  <button type="button" id="audio-unlock-btn" onclick="tryUnlockBgm()">矧 BGM繧偵が繝ｳ縺ｫ縺吶ｋ</button>
+  <button type="button" id="audio-unlock-btn" onclick="tryUnlockBgm()">🔊 BGMをオンにする</button>
   <div id="x-setup-modal">
     <div id="x-setup-box">
-      <div id="x-setup-title">X繧｢繧ｫ繧ｦ繝ｳ繝亥錐繧堤匳骭ｲ</div>
-      <p id="x-setup-desc">繝倥ャ繝繝ｼ縺ｫ陦ｨ遉ｺ縺吶ｋ @繝ｦ繝ｼ繧ｶ繝ｼ蜷・繧定ｨｭ螳壹＠縺ｦ縺上□縺輔＞</p>
+      <div id="x-setup-title">Xアカウント名を登録</div>
+      <p id="x-setup-desc">ヘッダーに表示する @ユーザー名 を設定してください</p>
       <div class="auth-input-prefix">
         <span class="auth-prefix-at">@</span>
-        <input id="input-x-setup" type="text" data-placeholder-ja="萓・ soultamash81989" data-placeholder-en="e.g. soultamash81989" placeholder="萓・ soultamash81989" autocomplete="off">
+        <input id="input-x-setup" type="text" data-placeholder-ja="例: soultamash81989" data-placeholder-en="e.g. soultamash81989" placeholder="例: soultamash81989" autocomplete="off">
       </div>
-      <button id="x-setup-save" type="button" onclick="saveXUsername()">菫晏ｭ・/button>
+      <button id="x-setup-save" type="button" onclick="saveXUsername()">保存</button>
       <div id="x-setup-error"></div>
     </div>
   </div>
   <div id="auth-modal">
     <div id="auth-box">
-      <button id="auth-close" type="button" onclick="closeAuthModal()" aria-label="髢峨§繧・>ﾃ・/button>
-      <button id="auth-lang-btn" type="button" onclick="toggleLang()" aria-label="險隱槫・譖ｿ">
+      <button id="auth-close" type="button" onclick="closeAuthModal()" aria-label="閉じる">×</button>
+      <button id="auth-lang-btn" type="button" onclick="toggleLang()" aria-label="言語切替">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         <span id="auth-lang-label">EN</span>
       </button>
-      <div id="auth-header-fire">櫨</div>
+      <div id="auth-header-fire">🔥</div>
       <div id="auth-title">IGNIS CITY</div>
-      <div id="auth-subtitle">陦励▼縺上ｊ縺ｫ蜿ょ刈縺励ｈ縺・/div>
+      <div id="auth-subtitle">街づくりに参加しよう</div>
       <div class="auth-tab-wrap">
-        <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">繝ｭ繧ｰ繧､繝ｳ</div>
-        <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">譁ｰ隕冗匳骭ｲ</div>
+        <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">ログイン</div>
+        <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">新規登録</div>
       </div>
       <div id="x-username-field">
-        <div class="custom-label" id="x-username-label" style="margin-bottom:6px;font-size:11px;color:rgba(255,255,255,0.5);">X・・witter・峨い繧ｫ繧ｦ繝ｳ繝亥錐 <span style="color:#ff6a00;">*</span></div>
+        <div class="custom-label" id="x-username-label" style="margin-bottom:6px;font-size:11px;color:rgba(255,255,255,0.5);">X（Twitter）アカウント名 <span style="color:#ff6a00;">*</span></div>
         <div class="auth-input-prefix">
           <span class="auth-prefix-at">@</span>
-          <input id="input-x-username" type="text" data-placeholder-ja="繝ｦ繝ｼ繧ｶ繝ｼID・井ｾ・ soultamash81989・・ data-placeholder-en="Username (e.g. soultamash81989)" placeholder="繝ｦ繝ｼ繧ｶ繝ｼID・井ｾ・ soultamash81989・・ autocomplete="off">
+          <input id="input-x-username" type="text" data-placeholder-ja="ユーザーID（例: soultamash81989）" data-placeholder-en="Username (e.g. soultamash81989)" placeholder="ユーザーID（例: soultamash81989）" autocomplete="off">
         </div>
       </div>
       <div id="username-field" style="display:none;">
         <div class="auth-input-wrap">
-          <input class="auth-input" id="input-username" type="text" data-placeholder-ja="陦ｨ遉ｺ蜷搾ｼ井ｻｻ諢擾ｼ・ data-placeholder-en="Display name (optional)" placeholder="陦ｨ遉ｺ蜷搾ｼ井ｻｻ諢擾ｼ・ autocomplete="off">
+          <input class="auth-input" id="input-username" type="text" data-placeholder-ja="表示名（任意）" data-placeholder-en="Display name (optional)" placeholder="表示名（任意）" autocomplete="off">
         </div>
       </div>
-      <div class="auth-input-wrap"><input class="auth-input" id="input-email" type="email" data-placeholder-ja="繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ" data-placeholder-en="Email address" placeholder="繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ" autocomplete="email"></div>
-      <div class="auth-input-wrap"><input class="auth-input" id="input-password" type="password" data-placeholder-ja="繝代せ繝ｯ繝ｼ繝会ｼ・譁・ｭ嶺ｻ･荳奇ｼ・ data-placeholder-en="Password (8+ characters)" placeholder="繝代せ繝ｯ繝ｼ繝会ｼ・譁・ｭ嶺ｻ･荳奇ｼ・ autocomplete="new-password"></div>
+      <div class="auth-input-wrap"><input class="auth-input" id="input-email" type="email" data-placeholder-ja="メールアドレス" data-placeholder-en="Email address" placeholder="メールアドレス" autocomplete="email"></div>
+      <div class="auth-input-wrap"><input class="auth-input" id="input-password" type="password" data-placeholder-ja="パスワード（8文字以上）" data-placeholder-en="Password (8+ characters)" placeholder="パスワード（8文字以上）" autocomplete="new-password"></div>
       <div class="auth-input-wrap" id="password-confirm-field" style="display:none;">
-        <input class="auth-input" id="input-password-confirm" type="password" data-placeholder-ja="繝代せ繝ｯ繝ｼ繝会ｼ育｢ｺ隱搾ｼ・ data-placeholder-en="Confirm password" placeholder="繝代せ繝ｯ繝ｼ繝会ｼ育｢ｺ隱搾ｼ・ autocomplete="new-password">
+        <input class="auth-input" id="input-password-confirm" type="password" data-placeholder-ja="パスワード（確認）" data-placeholder-en="Confirm password" placeholder="パスワード（確認）" autocomplete="new-password">
       </div>
       <div id="pw-checks">
-        <div class="pw-check-item" id="check-length"><div class="check-icon">笨・/div><span>8譁・ｭ嶺ｻ･荳・/span></div>
-        <div class="pw-check-item" id="check-upper"><div class="check-icon">笨・/div><span>螟ｧ譁・ｭ暦ｼ・-Z・峨ｒ蜷ｫ繧</span></div>
-        <div class="pw-check-item" id="check-lower"><div class="check-icon">笨・/div><span>蟆乗枚蟄暦ｼ・-z・峨ｒ蜷ｫ繧</span></div>
-        <div class="pw-check-item" id="check-number"><div class="check-icon">笨・/div><span>謨ｰ蟄暦ｼ・-9・峨ｒ蜷ｫ繧</span></div>
+        <div class="pw-check-item" id="check-length"><div class="check-icon">✓</div><span>8文字以上</span></div>
+        <div class="pw-check-item" id="check-upper"><div class="check-icon">✓</div><span>大文字（A-Z）を含む</span></div>
+        <div class="pw-check-item" id="check-lower"><div class="check-icon">✓</div><span>小文字（a-z）を含む</span></div>
+        <div class="pw-check-item" id="check-number"><div class="check-icon">✓</div><span>数字（0-9）を含む</span></div>
       </div>
-      <button id="auth-submit" onclick="handleAuth()">繝ｭ繧ｰ繧､繝ｳ</button>
-      <button id="auth-reset-btn" type="button" onclick="handlePasswordReset()" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.9);padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">柏 繝代せ繝ｯ繝ｼ繝峨ｒ蠢倥ｌ縺・/button>
+      <button id="auth-submit" onclick="handleAuth()">ログイン</button>
+      <button id="auth-reset-btn" type="button" onclick="handlePasswordReset()" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.9);padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">🔐 パスワードを忘れた</button>
       <div id="auth-error"></div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v51';
+    const IGNIS_BUILD='2026-05-28-v49';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -1285,15 +1285,15 @@
       {ext:'m4v',type:'video/mp4'}
     ];
     const IGNIS_AD_SLIDES=[
-      {file:'SOUL譌･譛ｬ隱槫・逵・png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK},
+      {file:'SOUL日本語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK},
       {type:'video',base:'ignis-logo',poster:'ignis-logo.jpeg',alt:'IGNIS CITY',action:'signup'},
-      {file:'SOUL闍ｱ隱槫・逵・png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK}
+      {file:'SOUL英語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK}
     ];
     const IGNIS_AD_INTERVAL_MS=5000;
     const IGNIS_AD_SLIDE_MS=550;
     function openAdSignup(){
       if(currentUser){
-        showToast(currentLang==='ja'?'縺吶〒縺ｫ繝ｭ繧ｰ繧､繝ｳ貂医∩縺ｧ縺・:'Already logged in');
+        showToast(currentLang==='ja'?'すでにログイン済みです':'Already logged in');
         return;
       }
       openAuthModal();
@@ -1305,7 +1305,7 @@
       el.className='ad-carousel-slide';
       if(isSignup){
         el.type='button';
-        el.setAttribute('aria-label',currentLang==='ja'?'繧ｲ繝ｼ繝縺ｫ譁ｰ隕冗匳骭ｲ':'Sign up for the game');
+        el.setAttribute('aria-label',currentLang==='ja'?'ゲームに新規登録':'Sign up for the game');
         el.addEventListener('click',e=>{e.preventDefault();openAdSignup();});
       }else{
         el.href=s.href||IGNIS_AD_LINK;
@@ -1586,12 +1586,14 @@
       const onTap=function(e){
         if(loadingFinished||tapped)return;
         tapped=true;
-        // 繧ｹ繝槭・縺ｧ preventDefault 縺吶ｋ縺ｨ繧ｯ繝ｪ繝・け繧､繝吶Φ繝医′鬟帙・縺ｪ縺・こ繝ｼ繧ｹ縺後≠繧九◆繧・        // cancelable 縺九▽ touchstart/pointerdown 縺ｮ縺ｿ preventDefault
+        // スマホで preventDefault するとクリックイベントが飛ばないケースがあるため
+        // cancelable かつ touchstart/pointerdown のみ preventDefault
         if(e&&e.cancelable&&(e.type==='touchstart'||e.type==='pointerdown'))e.preventDefault();
         tryUnlockBgm();
         forceShowGame();
       };
-      // 隍・焚繧､繝吶Φ繝医〒遒ｺ螳溘↓蜿励￠蜿悶ｋ・・ouchend 縺ｧ繧・click 縺ｧ繧ょ虚縺上ｈ縺・↓・・      ld.addEventListener('touchstart',onTap,{passive:false});
+      // 複数イベントで確実に受け取る（touchend でも click でも動くように）
+      ld.addEventListener('touchstart',onTap,{passive:false});
       ld.addEventListener('pointerdown',onTap,{passive:false});
       ld.addEventListener('touchend',onTap,{passive:false});
       ld.addEventListener('click',onTap);
@@ -1616,7 +1618,7 @@
     let db=null;
     let authListenerAttached=false;
     try{
-      if(!window.supabase)throw new Error('Supabase譛ｪ隱ｭ霎ｼ');
+      if(!window.supabase)throw new Error('Supabase未読込');
       db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
         auth:{
           persistSession:true,
@@ -1646,7 +1648,8 @@
       });
     }
   // ========================================
-  // 繧ｵ繧ｦ繝ｳ繝会ｼ・GM繝ｻUI繧ｯ繝ｪ繝・け繝ｻ繧ｬ繝√Ε繧ｯ繝ｪ繝・け・・  // ========================================
+  // サウンド（BGM・UIクリック・ガチャクリック）
+  // ========================================
   const IgnisAudio={
     ctx:null,master:null,sfxGain:null,bgmEl:null,bgmStarted:false,muted:false,_inited:false,currentTrack:'city',
     _ensureBgmElement(){
@@ -1733,9 +1736,9 @@
     updateToggleBtn(){
       const btn=document.getElementById('sound-toggle');
       if(!btn)return;
-      btn.textContent=this.muted?'這':'矧';
+      btn.textContent=this.muted?'🔇':'🔊';
       btn.classList.toggle('muted',this.muted);
-      btn.title=this.muted?(currentLang==='ja'?'髻ｳ繧偵が繝ｳ':'Sound on'):(currentLang==='ja'?'髻ｳ繧偵が繝・:'Sound off');
+      btn.title=this.muted?(currentLang==='ja'?'音をオン':'Sound on'):(currentLang==='ja'?'音をオフ':'Sound off');
     },
     toggleMute(){
       this.init();
@@ -1933,38 +1936,39 @@
     const HIRE_COST=25;
     const STAFF_EXTEND_COST_PER=5;
     const SCRATCH_REVEAL_BASE=0.38;
-    // 縺輔ｉ縺ｫ遏ｭ繧・ｼ育ｴｯ遨阪〒邏・.56蛟搾ｼ・    const SCRATCH_DURATION_FACTOR=1.3*1.5*1.5*0.75*0.75;
+    // さらに短め（累積で約0.56倍）
+    const SCRATCH_DURATION_FACTOR=1.3*1.5*1.5*0.75*0.75;
     const SCRATCH_REVEAL_RATIO=Math.min(SCRATCH_REVEAL_BASE*SCRATCH_DURATION_FACTOR,0.88);
     const SCRATCH_BRUSH_FACTOR=0.9;
     const TASK_FULL_CLEAR_BONUS=10;
     const OWNER_X_HANDLE='soultamash81989'; // @soultamash81989
     const DAILY_TASKS=[
-      {type:'login', label:'繝ｭ繧ｰ繧､繝ｳ繝懊・繝翫せ',           labelEn:'Login Bonus',                 reward:1},
-      {type:'hire',  label:'莨夂､ｾ蜩｡繧・莠ｺ謗｡逕ｨ縺吶ｋ',         labelEn:'Hire 1 office worker',             reward:3},
-      {type:'view',  label:'莉悶・繝薙Ν繧・譽滄夢隕ｧ', labelEn:'View 5 other buildings', reward:3, goal:5},
-      {type:'share', label:'IGNIS繧湛縺ｧ繧ｷ繧ｧ繧｢縺吶ｋ',        labelEn:'Share IGNIS on X',            reward:6},
+      {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:1},
+      {type:'hire',  label:'会社員を1人採用する',         labelEn:'Hire 1 office worker',             reward:3},
+      {type:'view',  label:'他のビルを5棟閲覧', labelEn:'View 5 other buildings', reward:3, goal:5},
+      {type:'share', label:'IGNISをXでシェアする',        labelEn:'Share IGNIS on X',            reward:6},
     ];
     const CELL=10, GRID_HALF=100;
     const EMP_COLORS=[
-      {min:1000,name:'rainbow',r:1.0,g:0.0,b:1.0,label:'決 陌ｹ',labelEn:'決 Rainbow'},
-      {min:300, name:'gold',   r:0.98,g:0.75,b:0.1,label:'･・驥・,labelEn:'･・Gold'},
-      {min:100, name:'red',    r:0.94,g:0.18,b:0.18,label:'閥 襍､',labelEn:'閥 Red'},
-      {min:30,  name:'white',  r:0.95,g:0.95,b:0.97,label:'笞ｪ 逋ｽ',labelEn:'笞ｪ White'},
-      {min:0,   name:'default',r:0.2,g:0.25,b:0.65,label:'鳩 讓呎ｺ・,labelEn:'鳩 Default'},
+      {min:1000,name:'rainbow',r:1.0,g:0.0,b:1.0,label:'🌈 虹',labelEn:'🌈 Rainbow'},
+      {min:300, name:'gold',   r:0.98,g:0.75,b:0.1,label:'🥇 金',labelEn:'🥇 Gold'},
+      {min:100, name:'red',    r:0.94,g:0.18,b:0.18,label:'🔴 赤',labelEn:'🔴 Red'},
+      {min:30,  name:'white',  r:0.95,g:0.95,b:0.97,label:'⚪ 白',labelEn:'⚪ White'},
+      {min:0,   name:'default',r:0.2,g:0.25,b:0.65,label:'🔵 標準',labelEn:'🔵 Default'},
     ];
     function getColorByEmployees(emp){for(const c of EMP_COLORS){if(emp>=c.min)return c;}return EMP_COLORS[EMP_COLORS.length-1];}
     function calcTotalFloors(baseFloors,employees){return Math.min(baseFloors+Math.floor(employees/5),MAX_BUILDING_FLOORS);}
     const GACHA_MAX_FLOOR=50;
     const GACHA_TABLE=[
-      {star:5,label:'笘・・笘・・笘・,minF:48,maxF:50,prob:0.008,emoji:'検'},
-      {star:4,label:'笘・・笘・・', minF:40,maxF:47,prob:0.022,emoji:'牒'},
-      {star:3,label:'笘・・笘・,  minF:30,maxF:39,prob:0.17, emoji:'箝・},
-      {star:2,label:'笘・・',   minF:20,maxF:29,prob:0.30, emoji:'笨ｨ'},
-      {star:1,label:'笘・,    minF:1, maxF:19,prob:0.50, emoji:'笘・},
+      {star:5,label:'★★★★★',minF:48,maxF:50,prob:0.008,emoji:'🌟'},
+      {star:4,label:'★★★★', minF:40,maxF:47,prob:0.022,emoji:'💫'},
+      {star:3,label:'★★★',  minF:30,maxF:39,prob:0.17, emoji:'⭐'},
+      {star:2,label:'★★',   minF:20,maxF:29,prob:0.30, emoji:'✨'},
+      {star:1,label:'★',    minF:1, maxF:19,prob:0.50, emoji:'☆'},
     ];
     const GACHA_PRISMS=['cylinder','triangle','square'];
-    const PRISM_ICONS={cylinder:'屬',triangle:'伴',square:'洫'};
-    const PRISM_LABELS_JA={cylinder:'蜀・浤',triangle:'荳芽ｧ呈浤',square:'豁｣蝗幄ｧ呈浤'};
+    const PRISM_ICONS={cylinder:'🛢',triangle:'🔺',square:'🟧'};
+    const PRISM_LABELS_JA={cylinder:'円柱',triangle:'三角柱',square:'正四角柱'};
     const PRISM_LABELS_EN={cylinder:'cylinder',triangle:'triangular prism',square:'square prism'};
     const PRISMS={cylinder:{w:5.0},triangle:{w:5.0},square:{w:5.5}};
     function normalizePrism(shape){
@@ -1975,7 +1979,7 @@
     function getPrismLabel(prism,isJa){const p=normalizePrism(prism);return isJa?(PRISM_LABELS_JA[p]||p):(PRISM_LABELS_EN[p]||p);}
     function formatGachaBuildingLine(result,isJa){
       const p=getPrismLabel(result.prism,isJa);
-      return isJa?`${result.floors}髫弱・${p}`:`${result.floors}F ${p}`;
+      return isJa?`${result.floors}階の${p}`:`${result.floors}F ${p}`;
     }
     function rollGachaFloors(g){
       const f=Math.floor(Math.random()*(g.maxF-g.minF+1))+g.minF;
@@ -1998,14 +2002,14 @@
         row.className='book-rate-row';
         const prob=(g.prob*100);
         const probStr=prob<1?prob.toFixed(1):prob.toFixed(0);
-        const floors=isJa?`${g.minF}縲・{g.maxF}髫餐:`${g.minF}窶・{g.maxF}F`;
+        const floors=isJa?`${g.minF}〜${g.maxF}階`:`${g.minF}–${g.maxF}F`;
         row.innerHTML=`<span class="br-stars star${g.star}" style="color:${BOOK_STAR_COLORS[g.star]}">${g.label}</span><span class="br-floors">${floors}</span><span class="br-prob">${probStr}%</span>`;
         list.appendChild(row);
       });
       const note=document.createElement('div');
       note.className='book-rates-note';
       note.style.cssText='font-size:9px;color:rgba(80,50,20,0.5);margin-top:8px;line-height:1.45;text-align:center;';
-      note.textContent=isJa?'窶ｻ 譟ｱ: 蜀・浤/荳芽ｧ呈浤/豁｣蝗幄ｧ呈浤 ﾂｷ 譛螟ｧ50髫・:'窶ｻ Prism types ﾂｷ max 50F';
+      note.textContent=isJa?'※ 柱: 円柱/三角柱/正四角柱 · 最大50階':'※ Prism types · max 50F';
       list.appendChild(note);
     }
     function drawBookPrizeCanvas(canvas,result){
@@ -2028,7 +2032,7 @@
       ctx.fillStyle=bg;
       ctx.fillRect(0,0,w,h);
       const prism=normalizePrism(result.prism);
-      const icon=PRISM_ICONS[prism]||'召';
+      const icon=PRISM_ICONS[prism]||'🏢';
       const stars=getGachaStarSymbols(result.star);
       const color=BOOK_STAR_COLORS[result.star]||'#a855f7';
       const cx=w/2,cy=h/2;
@@ -2210,12 +2214,12 @@
       };
     }
     // ========================================
-    // 繧ｳ繧､繝ｳ螻･豁ｴ
-    // 蠢・ｦ√↑繝・・繝悶Ν・・upabase・・
+    // コイン履歴
+    // 必要なテーブル（Supabase）:
     //   CREATE TABLE coins (
     //     id         bigserial PRIMARY KEY,
     //     user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    //     amount     integer NOT NULL,   -- +迯ｲ蠕・/ -豸郁ｲｻ
+    //     amount     integer NOT NULL,   -- +獲得 / -消費
     //     reason     text NOT NULL,      -- 'task_login' | 'land_buy' | 'gacha_spin' ...
     //     created_at timestamptz NOT NULL DEFAULT now()
     //   );
@@ -2225,22 +2229,22 @@
     //   CREATE POLICY "own insert" ON coins FOR INSERT WITH CHECK (auth.uid() = user_id);
     // ========================================
     const COIN_REASONS={
-      task_login:    {ja:'繝ｭ繧ｰ繧､繝ｳ繝懊・繝翫せ',     en:'Login Bonus',         icon:'桁'},
-      task_build:    {ja:'繝・う繝ｪ繝ｼ・壹ン繝ｫ蟒ｺ險ｭ',    en:'Daily: Build',        icon:'女'},
-      task_hire:     {ja:'繝・う繝ｪ繝ｼ・壼ｾ捺･ｭ蜩｡謗｡逕ｨ',  en:'Daily: Hire',         icon:'孫'},
-      task_get_land: {ja:'繝・う繝ｪ繝ｼ・壼悄蝨ｰ蜿門ｾ・,    en:'Daily: Get Land',     icon:'升'},
-      task_view:     {ja:'繝・う繝ｪ繝ｼ・壹ン繝ｫ髢ｲ隕ｧ',    en:'Daily: View Building',icon:'操'},
-      task_share:    {ja:'繝・う繝ｪ繝ｼ・唸縺ｧ繧ｷ繧ｧ繧｢',   en:'Daily: Share on X',   icon:'凄'},
-      task_full_clear:{ja:'繝・う繝ｪ繝ｼ蜈ｨ驕疲・繝懊・繝翫せ',en:'Daily 100% Bonus',   icon:'識'},
-      land_buy:      {ja:'蝨溷慍雉ｼ蜈･',             en:'Land Purchase',       icon:'償'},
-      gacha_spin:    {ja:'繧ｬ繝√Ε',               en:'Gacha',               icon:'鴫'},
-      random_build:  {ja:'繝薙Ν蟒ｺ險ｭ繝懊・繝翫せ',      en:'Build Bonus',         icon:'召'},
-      hire_employee: {ja:'莨夂､ｾ蜩｡謗｡逕ｨ',           en:'Hire Office Worker',       icon:'孫'},
-      extend_staff_terms: {ja:'莉ｻ譛溷ｻｶ髟ｷ',        en:'Term Extension',          icon:'搭'},
+      task_login:    {ja:'ログインボーナス',     en:'Login Bonus',         icon:'🌅'},
+      task_build:    {ja:'デイリー：ビル建設',    en:'Daily: Build',        icon:'🏗'},
+      task_hire:     {ja:'デイリー：従業員採用',  en:'Daily: Hire',         icon:'👷'},
+      task_get_land: {ja:'デイリー：土地取得',    en:'Daily: Get Land',     icon:'🏡'},
+      task_view:     {ja:'デイリー：ビル閲覧',    en:'Daily: View Building',icon:'👀'},
+      task_share:    {ja:'デイリー：Xでシェア',   en:'Daily: Share on X',   icon:'🐦'},
+      task_full_clear:{ja:'デイリー全達成ボーナス',en:'Daily 100% Bonus',   icon:'🎯'},
+      land_buy:      {ja:'土地購入',             en:'Land Purchase',       icon:'🏞'},
+      gacha_spin:    {ja:'ガチャ',               en:'Gacha',               icon:'🎰'},
+      random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
+      hire_employee: {ja:'会社員採用',           en:'Hire Office Worker',       icon:'👷'},
+      extend_staff_terms: {ja:'任期延長',        en:'Term Extension',          icon:'📋'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
-      return{ja:reason||'縺昴・莉・,en:reason||'Other',icon:'蝶'};
+      return{ja:reason||'その他',en:reason||'Other',icon:'💱'};
     }
     async function recordCoin(amount,reason){
       if(!currentUser||!amount)return;
@@ -2251,7 +2255,7 @@
           reason,
           created_at:new Date().toISOString()
         });
-        // 螻･豁ｴ繧ｪ繝ｼ繝舌・繝ｬ繧､縺碁幕縺・※縺・ｌ縺ｰ閾ｪ蜍墓峩譁ｰ
+        // 履歴オーバーレイが開いていれば自動更新
         if(document.getElementById('coin-history-overlay').classList.contains('open')){
           loadCoinHistory();
         }
@@ -2259,7 +2263,7 @@
     }
     let coinHistoryTab='all',coinHistoryData=[];
     async function openCoinHistory(){
-      if(!currentUser){openAuthModal();showToast('繝ｭ繧ｰ繧､繝ｳ縺悟ｿ・ｦ√〒縺・);return;}
+      if(!currentUser){openAuthModal();showToast('ログインが必要です');return;}
       document.getElementById('coin-history-overlay').classList.add('open');
       await loadCoinHistory();
     }
@@ -2289,7 +2293,7 @@
       }catch(e){
         console.warn('coin history load error:',e.message);
         const isJa=currentLang==='ja';
-        listEl.innerHTML=`<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.4);font-size:13px;">${isJa?'隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆':'Failed to load'}<br><span style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:6px;display:inline-block;">${e.message||''}</span></div>`;
+        listEl.innerHTML=`<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.4);font-size:13px;">${isJa?'読み込みに失敗しました':'Failed to load'}<br><span style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:6px;display:inline-block;">${e.message||''}</span></div>`;
         coinHistoryData=[];
       }finally{loadingEl.classList.remove('show');}
     }
@@ -2298,7 +2302,8 @@
       const listEl=document.getElementById('coin-history-list');
       const emptyEl=document.getElementById('coin-history-empty');
       const summaryEl=document.getElementById('coin-history-summary');
-      // 繧ｵ繝槭Μ繝ｼ・井ｻ頑律 / 蜈ｨ譛滄俣・・      const now=new Date(),todayStr=now.toISOString().slice(0,10);
+      // サマリー（今日 / 全期間）
+      const now=new Date(),todayStr=now.toISOString().slice(0,10);
       let todayGain=0,todaySpend=0,totalGain=0,totalSpend=0;
       coinHistoryData.forEach(r=>{
         const isToday=(r.created_at||'').slice(0,10)===todayStr;
@@ -2308,20 +2313,20 @@
       const balanceEl=document.getElementById('coin-count');
       const balance=parseInt(balanceEl?balanceEl.textContent:'0',10)||0;
       summaryEl.innerHTML=`
-        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'迴ｾ蝨ｨ縺ｮ谿矩ｫ・:'Balance'}</div><div class="ch-summary-value balance">${balance.toLocaleString()}</div></div>
-        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'莉頑律縺ｮ迯ｲ蠕・:'Today Gain'}</div><div class="ch-summary-value gain">+${todayGain.toLocaleString()}</div></div>
-        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'莉頑律縺ｮ豸郁ｲｻ':'Today Spend'}</div><div class="ch-summary-value spend">-${todaySpend.toLocaleString()}</div></div>
-        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'邏ｯ險育佐蠕・:'Total Gain'}</div><div class="ch-summary-value gain">+${totalGain.toLocaleString()}</div></div>
-        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'邏ｯ險域ｶ郁ｲｻ':'Total Spend'}</div><div class="ch-summary-value spend">-${totalSpend.toLocaleString()}</div></div>
+        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'現在の残高':'Balance'}</div><div class="ch-summary-value balance">${balance.toLocaleString()}</div></div>
+        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'今日の獲得':'Today Gain'}</div><div class="ch-summary-value gain">+${todayGain.toLocaleString()}</div></div>
+        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'今日の消費':'Today Spend'}</div><div class="ch-summary-value spend">-${todaySpend.toLocaleString()}</div></div>
+        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'累計獲得':'Total Gain'}</div><div class="ch-summary-value gain">+${totalGain.toLocaleString()}</div></div>
+        <div class="ch-summary-card"><div class="ch-summary-label">${isJa?'累計消費':'Total Spend'}</div><div class="ch-summary-value spend">-${totalSpend.toLocaleString()}</div></div>
       `;
-      // 繝輔ぅ繝ｫ繧ｿ
+      // フィルタ
       let filtered=coinHistoryData;
       if(coinHistoryTab==='gain')filtered=coinHistoryData.filter(r=>r.amount>0);
       else if(coinHistoryTab==='spend')filtered=coinHistoryData.filter(r=>r.amount<0);
       if(filtered.length===0){
         listEl.innerHTML='';emptyEl.style.display='block';
-        document.getElementById('coin-history-empty-text').textContent=isJa?'螻･豁ｴ縺後∪縺縺ゅｊ縺ｾ縺帙ｓ':'No history yet';
-        document.getElementById('coin-history-empty-sub').textContent=isJa?'繧ｿ繧ｹ繧ｯ繧・ｻｺ險ｭ縺ｧ繧ｳ繧､繝ｳ繧堤佐蠕励＠繧医≧・・:'Earn coins from tasks and building!';
+        document.getElementById('coin-history-empty-text').textContent=isJa?'履歴がまだありません':'No history yet';
+        document.getElementById('coin-history-empty-sub').textContent=isJa?'タスクや建設でコインを獲得しよう！':'Earn coins from tasks and building!';
         return;
       }
       emptyEl.style.display='none';
@@ -2337,14 +2342,15 @@
           const d=new Date(r.created_at);
           timeStr=d.toLocaleString(locale,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
         }
-        html+=`<div class="ch-row ${isGain?'gain':'spend'}"><div class="ch-icon">${info.icon}</div><div class="ch-info"><div class="ch-reason">${reasonLabel}</div><div class="ch-time">${timeStr}</div></div><div class="ch-amount ${isGain?'gain':'spend'}">${sign}${r.amount.toLocaleString()}<span class="ch-amount-unit">${isJa?'繧ｳ繧､繝ｳ':'coin'}</span></div></div>`;
+        html+=`<div class="ch-row ${isGain?'gain':'spend'}"><div class="ch-icon">${info.icon}</div><div class="ch-info"><div class="ch-reason">${reasonLabel}</div><div class="ch-time">${timeStr}</div></div><div class="ch-amount ${isGain?'gain':'spend'}">${sign}${r.amount.toLocaleString()}<span class="ch-amount-unit">${isJa?'コイン':'coin'}</span></div></div>`;
       });
       const updatedNow=now.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'});
-      html+=`<div id="coin-history-updated">${isJa?'譛邨よ峩譁ｰ':'Updated'}: ${updatedNow}</div>`;
+      html+=`<div id="coin-history-updated">${isJa?'最終更新':'Updated'}: ${updatedNow}</div>`;
       listEl.innerHTML=html;
     }
     // ========================================
-    // X繧ｷ繧ｧ繧｢・医ご繝ｼ繝URL 竊・譁ｰ隕上・逋ｻ骭ｲ逕ｻ髱｢縺ｸ・・    // ========================================
+    // Xシェア（ゲームURL → 新規は登録画面へ）
+    // ========================================
     const GAME_PUBLIC_URL='https://motomune.github.io/IGNIS-city/';
     function getShareGameUrl(){
       try{
@@ -2397,10 +2403,10 @@
         const coinReg=reg*INVITE_COIN_REGISTER;
         const coinTotal=coinSend+coinReg;
         el.innerHTML=isJa
-          ?`騾∽ｿ｡: <b>${sent}</b>蝗・/ 逋ｻ骭ｲ: <b>${reg}</b>莠ｺ<br>繧ｳ繧､繝ｳ: 諡帛ｾ・b>+${coinSend}</b> + 逋ｻ骭ｲ<b>+${coinReg}</b> = <b>+${coinTotal}</b><br><span style="font-size:10px;opacity:0.8;">・育匳骭ｲ1莠ｺ縺ゅ◆繧・${INVITE_COIN_SEND}+${INVITE_COIN_REGISTER}=+${INVITE_COIN_SEND+INVITE_COIN_REGISTER}・・/span>`
+          ?`送信: <b>${sent}</b>回 / 登録: <b>${reg}</b>人<br>コイン: 招待<b>+${coinSend}</b> + 登録<b>+${coinReg}</b> = <b>+${coinTotal}</b><br><span style="font-size:10px;opacity:0.8;">（登録1人あたり+${INVITE_COIN_SEND}+${INVITE_COIN_REGISTER}=+${INVITE_COIN_SEND+INVITE_COIN_REGISTER}）</span>`
           :`Sent: <b>${sent}</b> / Signups: <b>${reg}</b><br>Coins: invite <b>+${coinSend}</b> + signup <b>+${coinReg}</b> = <b>+${coinTotal}</b><br><span style="font-size:10px;opacity:0.8;">(+${INVITE_COIN_SEND+INVITE_COIN_REGISTER} per signup)</span>`;
       }catch(e){
-        el.textContent=isJa?'諡帛ｾ・ｵｱ險医ｒ隱ｭ縺ｿ霎ｼ繧√∪縺帙ｓ縺ｧ縺励◆':'Could not load invite stats';
+        el.textContent=isJa?'招待統計を読み込めませんでした':'Could not load invite stats';
       }
     }
     function maybeOpenSignupFromUrl(){
@@ -2413,12 +2419,12 @@
       }catch(e){}
     }
     async function handleShare(){
-      if(!currentUser){openAuthModal();showToast('繝ｭ繧ｰ繧､繝ｳ縺悟ｿ・ｦ√〒縺・);return;}
+      if(!currentUser){openAuthModal();showToast('ログインが必要です');return;}
       const isJa=currentLang==='ja';
       const gameUrl=getShareGameUrl();
       const shareText=isJa
-        ?`櫨 IGNIS CITY縺ｧ陦励ｒ蟒ｺ險ｭ荳ｭ・・D驛ｽ蟶ょｻｺ險ｭ繧ｲ繝ｼ繝縺ｫ蜿ょ刈縺励ｈ縺・#IGNISCITY`
-        :`櫨 Building my city in IGNIS CITY! Join the 3D city builder #IGNISCITY`;
+        ?`🔥 IGNIS CITYで街を建設中！3D都市建設ゲームに参加しよう #IGNISCITY`
+        :`🔥 Building my city in IGNIS CITY! Join the 3D city builder #IGNISCITY`;
       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(gameUrl)}`,'_blank');
       await completeTask('share');
     }
@@ -2426,14 +2432,14 @@
       const isJa=currentLang==='ja';
       const inviteUrl=getShareGameUrl();
       const text=isJa
-        ?`IGNIS CITY縺ｫ諡帛ｾ・＠縺ｾ縺呻ｼ∽ｸ邱偵↓陦励ｒ菴懊ｍ縺・櫨`
-        :`Join me in IGNIS CITY! Let's build a city together 櫨`;
+        ?`IGNIS CITYに招待します！一緒に街を作ろう 🔥`
+        :`Join me in IGNIS CITY! Let's build a city together 🔥`;
       try{
         if(navigator.share){
           await navigator.share({title:'IGNIS CITY',text,url:inviteUrl});
         }else if(navigator.clipboard?.writeText){
           await navigator.clipboard.writeText(inviteUrl);
-          showToast(isJa?'諡帛ｾ・RL繧偵さ繝斐・縺励∪縺励◆':'Invite URL copied');
+          showToast(isJa?'招待URLをコピーしました':'Invite URL copied');
         }else{
           window.open(inviteUrl,'_blank');
         }
@@ -2448,7 +2454,7 @@
     function openHelpContact(){
       const isJa=currentLang==='ja';
       const body=isJa
-        ?encodeURIComponent('IGNIS CITY縺ｸ縺ｮ縺雁撫縺・粋繧上○蜀・ｮｹ繧貞・蜉帙＠縺ｦ縺上□縺輔＞縲・)
+        ?encodeURIComponent('IGNIS CITYへのお問い合わせ内容を入力してください。')
         :encodeURIComponent('Please describe your inquiry about IGNIS CITY.');
       const subject=encodeURIComponent('IGNIS CITY Inquiry');
       window.open(`mailto:mezase100000000@gmail.com?subject=${subject}&body=${body}`,'_blank');
@@ -2498,8 +2504,8 @@
           const d=new Date(n.time);
           const t=d.toLocaleString(isJa?'ja-JP':'en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
           const typeLabel=n.type==='staff'
-            ?(isJa?'蠕捺･ｭ蜩｡':'Staff')
-            :(n.type==='maintenance'?(isJa?'驕句霧':'Ops'):(isJa?'繧､繝吶Φ繝・:'Event'));
+            ?(isJa?'従業員':'Staff')
+            :(n.type==='maintenance'?(isJa?'運営':'Ops'):(isJa?'イベント':'Event'));
           const text=isJa?n.textJa:n.textEn;
           return `<div class="notice-item"><div class="notice-item-head"><span class="notice-item-type">${typeLabel}</span><span class="notice-item-time">${t}</span></div><div class="notice-item-text">${text}</div></div>`;
         }).join('');
@@ -2532,7 +2538,7 @@
       if(localStorage.getItem(key)==='1')return;
       const isJa=currentLang==='ja';
       addNotice('staff',
-        `蠕捺･ｭ蜩｡${soon}莠ｺ縺梧ｺ譛溘∪縺ｧ1騾ｱ髢謎ｻ･蜀・〒縺呻ｼ亥・${total}莠ｺ・荏,
+        `従業員${soon}人が満期まで1週間以内です（全${total}人）`,
         `${soon} staff expire within 1 week (total ${total})`,
         null,
         key);
@@ -2547,70 +2553,71 @@
       panel.classList.remove('open');
     });
     // ========================================
-    // 螟夊ｨ隱・    // ========================================
+    // 多言語
+    // ========================================
     let currentLang='ja';
     loadNoticeReadKeys();
-    addNotice('event','繧､繝吶Φ繝域ュ蝣ｱ: 譁ｰ縺励＞鬟幄｡後Δ繝ｼ繝画桃菴懊ｒ霑ｽ蜉縺励∪縺励◆縲・,'Event: New fly mode controls are available.','2026-05-01T00:00:00.000Z','notice_boot_event');
-    addNotice('maintenance','縺顔衍繧峨○: 荳榊・蜷井ｿｮ豁｣縺ｫ莨ｴ縺・Γ繝ｳ繝・リ繝ｳ繧ｹ譎ゅ・縺薙％縺ｫ譯亥・繧定｡ｨ遉ｺ縺励∪縺吶・,'Notice: Maintenance updates will appear here when needed.','2026-05-01T00:00:00.000Z','notice_boot_maintenance');
+    addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。','Event: New fly mode controls are available.','2026-05-01T00:00:00.000Z','notice_boot_event');
+    addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。','Notice: Maintenance updates will appear here when needed.','2026-05-01T00:00:00.000Z','notice_boot_maintenance');
     function toggleLang(){
       currentLang=currentLang==='ja'?'en':'ja';
       const isJa=currentLang==='ja';
       document.getElementById('lang-label').textContent=isJa?'EN':'JP';
       document.getElementById('auth-lang-label').textContent=isJa?'EN':'JP';
-      document.querySelector('[data-i18n="buildings"]').textContent=isJa?'繝薙Ν謨ｰ':'Buildings';
-      document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'譽・:'';
-      document.querySelector('[data-i18n="coins"]').textContent=isJa?'繧ｳ繧､繝ｳ':'Coins';
-      document.getElementById('coin-count').title=isJa?'繧ｯ繝ｪ繝・け縺ｧ繧ｳ繧､繝ｳ螻･豁ｴ繧定｡ｨ遉ｺ':'Click to view coin history';
+      document.querySelector('[data-i18n="buildings"]').textContent=isJa?'ビル数':'Buildings';
+      document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
+      document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
+      document.getElementById('coin-count').title=isJa?'クリックでコイン履歴を表示':'Click to view coin history';
       const buildBtnText=document.getElementById('build-btn-text');
-      if(buildBtnText)buildBtnText.textContent=isJa?'迯ｲ蠕・:'Get';
+      if(buildBtnText)buildBtnText.textContent=isJa?'獲得':'Get';
       const buildBtn=document.getElementById('build-btn');
-      if(buildBtn)buildBtn.setAttribute('title',isJa?'繝薙Ν・丞ｾ捺･ｭ蜩｡繧堤佐蠕・:'Get building / employee');
-      document.getElementById('mode-btn').textContent=isFlying?(isJa?'徐 陦励▼縺上ｊ繝｢繝ｼ繝・:'徐 City Mode'):(isJa?'賦 鬟幄｡後Δ繝ｼ繝・:'賦 Fly Mode');
-      // 蝗ｳ髑代ヵ繝ｭ繝ｼ繝医・繧ｿ繝ｳ・夊恭隱槭・ Collection
-      document.getElementById('zukan-float-btn').textContent=isJa?'当 蝗ｳ髑・:'当 Collection';
-      document.getElementById('zukan-title').textContent=isJa?'当 繝薙Ν蝗ｳ髑・:'当 Building Collection';
-      document.getElementById('ztab-owned').textContent=isJa?'召 謇譛峨ン繝ｫ':'召 My Buildings';
-      document.getElementById('ztab-rarity').textContent=isJa?'箝・繝ｬ繧｢繝ｪ繝・ぅ':'箝・Rarity';
-      document.getElementById('zukan-close').textContent=isJa?'笨・髢峨§繧・:'笨・Close';
+      if(buildBtn)buildBtn.setAttribute('title',isJa?'ビル／従業員を獲得':'Get building / employee');
+      document.getElementById('mode-btn').textContent=isFlying?(isJa?'🏙 街づくりモード':'🏙 City Mode'):(isJa?'🕊 飛行モード':'🕊 Fly Mode');
+      // 図鑑フロートボタン：英語は Collection
+      document.getElementById('zukan-float-btn').textContent=isJa?'📖 図鑑':'📖 Collection';
+      document.getElementById('zukan-title').textContent=isJa?'📖 ビル図鑑':'📖 Building Collection';
+      document.getElementById('ztab-owned').textContent=isJa?'🏢 所有ビル':'🏢 My Buildings';
+      document.getElementById('ztab-rarity').textContent=isJa?'⭐ レアリティ':'⭐ Rarity';
+      document.getElementById('zukan-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('zukan-overlay').classList.contains('open')){renderZukanOwned();renderZukanRarity();}
-      document.getElementById('ranking-btn').textContent=isJa?'醇 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ':'醇 Ranking';
-      document.getElementById('ranking-title').textContent=isJa?'醇 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ':'醇 Ranking';
-      const rtabCoins=document.getElementById('rtab-coins');if(rtabCoins)rtabCoins.textContent=isJa?'腸 繧ｳ繧､繝ｳ':'腸 Coins';
-      const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'則 蠕捺･ｭ蜩｡':'則 Staff';
-      const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'召 髫取焚':'召 Floors';
-      document.getElementById('ranking-close').textContent=isJa?'笨・髢峨§繧・:'笨・Close';
+      document.getElementById('ranking-btn').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
+      document.getElementById('ranking-title').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
+      const rtabCoins=document.getElementById('rtab-coins');if(rtabCoins)rtabCoins.textContent=isJa?'💰 コイン':'💰 Coins';
+      const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'👥 従業員':'👥 Staff';
+      const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'🏢 階数':'🏢 Floors';
+      document.getElementById('ranking-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('ranking-overlay').classList.contains('open')&&rankingCache.emp){
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
         renderRankingList('ranking-buildings-list',rankingCache.buildings,'buildings');
       }
-      // 繧ｳ繧､繝ｳ螻･豁ｴ
-      document.getElementById('coin-history-btn').textContent=isJa?'腸 螻･豁ｴ':'腸 History';
-      document.getElementById('coin-history-title').textContent=isJa?'腸 繧ｳ繧､繝ｳ螻･豁ｴ':'腸 Coin History';
-      document.getElementById('ch-tab-all').textContent=isJa?'糖 蜈ｨ縺ｦ':'糖 All';
-      document.getElementById('ch-tab-gain').textContent=isJa?'嶋 迯ｲ蠕・:'嶋 Gain';
-      document.getElementById('ch-tab-spend').textContent=isJa?'悼 豸郁ｲｻ':'悼 Spend';
-      document.getElementById('coin-history-close').textContent=isJa?'笨・髢峨§繧・:'笨・Close';
+      // コイン履歴
+      document.getElementById('coin-history-btn').textContent=isJa?'💰 履歴':'💰 History';
+      document.getElementById('coin-history-title').textContent=isJa?'💰 コイン履歴':'💰 Coin History';
+      document.getElementById('ch-tab-all').textContent=isJa?'📜 全て':'📜 All';
+      document.getElementById('ch-tab-gain').textContent=isJa?'📈 獲得':'📈 Gain';
+      document.getElementById('ch-tab-spend').textContent=isJa?'📉 消費':'📉 Spend';
+      document.getElementById('coin-history-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
-      document.getElementById('logout-btn').textContent=isJa?'繝ｭ繧ｰ繧｢繧ｦ繝・:'Logout';
-      document.getElementById('task-toggle-btn').textContent=isJa?'搭 繧ｿ繧ｹ繧ｯ':'搭 Tasks';
-      const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'式 繧ｲ繝ｼ繝諡帛ｾ・:'式 Invite Players';
-      const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'笶・繝倥Ν繝・/ 縺雁撫縺・粋繧上○':'笶・Help / Contact';
-      const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'粕 騾夂衍':'粕 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
-      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML=(isJa?'搭 繧ｿ繧ｹ繧ｯ':'搭 Tasks')+'<span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
-      const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'粕 縺顔衍繧峨○ / 騾夂衍':'粕 Notices';
-      const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'騾夂衍縺ｯ縺ｾ縺縺ゅｊ縺ｾ縺帙ｓ':'No notices yet';
-      const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'柏 繝代せ繝ｯ繝ｼ繝峨ｒ蠢倥ｌ縺・:'柏 Forgot Password';
-      document.getElementById('login-btn-header').textContent=isJa?'繝ｭ繧ｰ繧､繝ｳ / 逋ｻ骭ｲ':'Login / Register';
-      document.getElementById('task-panel-title').textContent=isJa?'搭 繝・う繝ｪ繝ｼ繧ｿ繧ｹ繧ｯ':'搭 Daily Tasks';
-      const taskClose=document.getElementById('task-panel-close');if(taskClose){taskClose.textContent='ﾃ・;taskClose.title=isJa?'髢峨§繧・:'Close';}
-      const miniClose=document.getElementById('minimap-toggle');if(miniClose)miniClose.title=isJa?'蝨ｰ蝗ｳ繧帝哩縺倥ｋ':'Close minimap';
+      document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
+      document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
+      const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
+      const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
+      const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'🔔 通知':'🔔 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
+      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML=(isJa?'📋 タスク':'📋 Tasks')+'<span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
+      const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'🔔 お知らせ / 通知':'🔔 Notices';
+      const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'通知はまだありません':'No notices yet';
+      const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
+      document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
+      document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
+      const taskClose=document.getElementById('task-panel-close');if(taskClose){taskClose.textContent='×';taskClose.title=isJa?'閉じる':'Close';}
+      const miniClose=document.getElementById('minimap-toggle');if(miniClose)miniClose.title=isJa?'地図を閉じる':'Close minimap';
       renderTaskUI();
       refreshInviteStats();
-      document.getElementById('fly-hint').textContent=isJa?'賦 遏｢蜊ｰ縺ｧ遘ｻ蜍輔・Shift荳頑・繝ｻCtrl荳矩剄':'賦 Arrows move ﾂｷ Shift up ﾂｷ Ctrl down';
-      document.getElementById('legend-empty').textContent=isJa?'遨ｺ縺榊慍・域悴蜿門ｾ暦ｼ・:'Empty land';
-      document.getElementById('legend-mine').textContent=isJa?'閾ｪ蛻・・蝨溷慍':'My land';
-      document.getElementById('legend-others').textContent=isJa?'莉悶Θ繝ｼ繧ｶ繝ｼ縺ｮ蝨溷慍':'Others\' land';
-      document.getElementById('legend-building').textContent=isJa?'繝薙Ν縺ゅｊ':'Has building';
+      document.getElementById('fly-hint').textContent=isJa?'🕊 矢印で移動・Shift上昇・Ctrl下降':'🕊 Arrows move · Shift up · Ctrl down';
+      document.getElementById('legend-empty').textContent=isJa?'空き地（未取得）':'Empty land';
+      document.getElementById('legend-mine').textContent=isJa?'自分の土地':'My land';
+      document.getElementById('legend-others').textContent=isJa?'他ユーザーの土地':'Others\' land';
+      document.getElementById('legend-building').textContent=isJa?'ビルあり':'Has building';
       DAILY_TASKS.forEach(t=>{
         const row=document.getElementById('task-row-'+t.type);
         if(!row)return;
@@ -2621,41 +2628,41 @@
           labelEl.textContent=isJa?t.label:t.labelEn;
         }
       });
-      document.getElementById('land-buy-btn').textContent=isJa?`櫨 縺薙・蝨溷慍繧貞叙蠕暦ｼ・{LAND_COST}繧ｳ繧､繝ｳ・荏:`櫨 Get this land (${LAND_COST} coins)`;
-      document.getElementById('land-gacha-btn').textContent=isJa?'当 繧ｹ繧ｯ繝ｩ繝・メ縺ｧ繝薙Ν繧貞ｻｺ縺ｦ繧具ｼ・0繧ｳ繧､繝ｳ・・:'当 Build via Scratch (50 coins)';
-      document.getElementById('land-rebuild-btn').textContent=isJa?'売 繧ｹ繧ｯ繝ｩ繝・メ縺ｧ蟒ｺ縺ｦ譖ｿ縺医ｋ・・0繧ｳ繧､繝ｳ・・:'売 Rebuild via Scratch (50 coins)';
-      const empTotal=document.querySelector('[data-i18n="emp-total"]');if(empTotal)empTotal.textContent=isJa?'螂醍ｴ・､ｾ蜩｡邱乗焚':'Total Contract Staff';
-      const empBench=document.querySelector('[data-i18n="emp-bench"]');if(empBench)empBench.textContent=isJa?'莨題・荳ｭ':'Bench';
-      document.querySelectorAll('[data-i18n="emp-unit"],[data-i18n="emp-unit2"]').forEach(el=>el.textContent=isJa?'莠ｺ':'');
-      const orLabel=document.getElementById('gacha-or-label');if(orLabel)orLabel.textContent=isJa?'縺ｾ縺溘・':'OR';
-      const hireBtn=document.getElementById('gacha-hire-btn');if(hireBtn)hireBtn.textContent=isJa?`捉窶昨汳ｼ 莨夂､ｾ蜩｡繧呈治逕ｨ・・{HIRE_COST}繧ｳ繧､繝ｳ・荏:`捉窶昨汳ｼ Hire Office Worker (${HIRE_COST} coins)`;
-      const hireInfo=document.getElementById('hire-info');if(hireInfo)hireInfo.innerHTML=isJa?`莨夂､ｾ蜩｡繧呈治逕ｨ・・span>${HIRE_COST}</span>繧ｳ繧､繝ｳ 竊・莨題・荳ｭ繝励・繝ｫ縺ｫ +1莠ｺ`:`Hire office worker: <span>${HIRE_COST}</span> coins 竊・+1 to bench pool`;
+      document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+      document.getElementById('land-gacha-btn').textContent=isJa?'📖 スクラッチでビルを建てる（50コイン）':'📖 Build via Scratch (50 coins)';
+      document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 スクラッチで建て替える（50コイン）':'🔄 Rebuild via Scratch (50 coins)';
+      const empTotal=document.querySelector('[data-i18n="emp-total"]');if(empTotal)empTotal.textContent=isJa?'契約社員総数':'Total Contract Staff';
+      const empBench=document.querySelector('[data-i18n="emp-bench"]');if(empBench)empBench.textContent=isJa?'休職中':'Bench';
+      document.querySelectorAll('[data-i18n="emp-unit"],[data-i18n="emp-unit2"]').forEach(el=>el.textContent=isJa?'人':'');
+      const orLabel=document.getElementById('gacha-or-label');if(orLabel)orLabel.textContent=isJa?'または':'OR';
+      const hireBtn=document.getElementById('gacha-hire-btn');if(hireBtn)hireBtn.textContent=isJa?`👨‍💼 会社員を採用（${HIRE_COST}コイン）`:`👨‍💼 Hire Office Worker (${HIRE_COST} coins)`;
+      const hireInfo=document.getElementById('hire-info');if(hireInfo)hireInfo.innerHTML=isJa?`会社員を採用：<span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire office worker: <span>${HIRE_COST}</span> coins → +1 to bench pool`;
       document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;});
-      document.getElementById('auth-subtitle').textContent=isJa?'陦励▼縺上ｊ縺ｫ蜿ょ刈縺励ｈ縺・:'Join the city building';
-      document.getElementById('tab-login').textContent=isJa?'繝ｭ繧ｰ繧､繝ｳ':'Login';
-      document.getElementById('tab-signup').textContent=isJa?'譁ｰ隕冗匳骭ｲ':'Sign Up';
-      document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'繝ｭ繧ｰ繧､繝ｳ':'Login'):(isJa?'逋ｻ骭ｲ縺吶ｋ':'Register');
-      document.getElementById('task-progress-label').textContent=isJa?'莉頑律縺ｮ騾ｲ謐・:'Today\'s Progress';
+      document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
+      document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
+      document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
+      document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
+      document.getElementById('task-progress-label').textContent=isJa?'今日の進捗':'Today\'s Progress';
       document.getElementById('minimap-label').textContent='MINIMAP';
       IgnisAudio.updateToggleBtn();
       const audioBtn=document.getElementById('audio-unlock-btn');
-      if(audioBtn)audioBtn.textContent=isJa?'矧 BGM繧偵が繝ｳ縺ｫ縺吶ｋ':'矧 Turn on BGM';
+      if(audioBtn)audioBtn.textContent=isJa?'🔊 BGMをオンにする':'🔊 Turn on BGM';
       renderNoticeList();
       applyGameI18n();
       if(gachaState.result)renderBuildModalPrize();
       updateViewTaskProgressLabel();
     }
-    const STAR_LABELS_GACHA={5:'笘・・笘・・笘・莨晁ｪｬ',4:'笘・・笘・・ 繧ｨ繝斐ャ繧ｯ',3:'笘・・笘・繝ｬ繧｢',2:'笘・・ 繧｢繝ｳ繧ｳ繝｢繝ｳ',1:'笘・繧ｳ繝｢繝ｳ'};
-    const STAR_LABELS_GACHA_EN={5:'笘・・笘・・笘・Legendary',4:'笘・・笘・・ Epic',3:'笘・・ Rare',2:'笘・・ Uncommon',1:'笘・Common'};
+    const STAR_LABELS_GACHA={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
+    const STAR_LABELS_GACHA_EN={5:'★★★★★ Legendary',4:'★★★★ Epic',3:'★★ Rare',2:'★★ Uncommon',1:'★ Common'};
     function getStarLabel(star){return currentLang==='ja'?STAR_LABELS_GACHA[star]:STAR_LABELS_GACHA_EN[star];}
-    function getGachaStarSymbols(star){const g=GACHA_TABLE.find(x=>x.star===star);return g?g.label:'笘・;}
+    function getGachaStarSymbols(star){const g=GACHA_TABLE.find(x=>x.star===star);return g?g.label:'★';}
     function setBookPrizeUnderScratch(result){
       const color=BOOK_STAR_COLORS[result.star]||'#a855f7';
       const prism=normalizePrism(result.prism);
       const iconEl=document.getElementById('book-prize-icon');
       const rankEl=document.getElementById('book-prize-rank');
       const layer=document.getElementById('book-prize-layer');
-      if(iconEl)iconEl.textContent=PRISM_ICONS[prism]||'召';
+      if(iconEl)iconEl.textContent=PRISM_ICONS[prism]||'🏢';
       if(rankEl){rankEl.textContent=getGachaStarSymbols(result.star);rankEl.style.color=color;}
       const floorsEl=document.getElementById('book-prize-floors');
       if(floorsEl){floorsEl.textContent='';floorsEl.classList.add('prize-floor-hidden');}
@@ -2672,55 +2679,55 @@
       const prism=normalizePrism(result.prism);
       const color=BOOK_STAR_COLORS[result.star]||'#a855f7';
       const pLabel=getPrismLabel(result.prism,isJa);
-      if(detailBanner)detailBanner.textContent=isJa?'脂 迯ｲ蠕暦ｼ・:'脂 You got it!';
-      if(detailTitle)detailTitle.textContent=isJa?'迯ｲ蠕励ン繝ｫ隧ｳ邏ｰ':'Prize Building Details';
-      if(detailIcon)detailIcon.textContent=PRISM_ICONS[prism]||'召';
+      if(detailBanner)detailBanner.textContent=isJa?'🎉 獲得！':'🎉 You got it!';
+      if(detailTitle)detailTitle.textContent=isJa?'獲得ビル詳細':'Prize Building Details';
+      if(detailIcon)detailIcon.textContent=PRISM_ICONS[prism]||'🏢';
       if(detailRank){detailRank.textContent=getGachaStarSymbols(result.star);detailRank.style.color=color;}
-      if(detailMain)detailMain.textContent=isJa?`${result.floors}髫弱・${pLabel}`:`${result.floors}F ${pLabel}`;
+      if(detailMain)detailMain.textContent=isJa?`${result.floors}階の${pLabel}`:`${result.floors}F ${pLabel}`;
       const popIcon=document.getElementById('book-scratch-reveal-icon');
       const popRank=document.getElementById('book-scratch-reveal-rank');
       const popFloors=document.getElementById('book-scratch-reveal-floors');
-      if(popIcon)popIcon.textContent=PRISM_ICONS[prism]||'召';
+      if(popIcon)popIcon.textContent=PRISM_ICONS[prism]||'🏢';
       if(popRank){popRank.textContent=getGachaStarSymbols(result.star);popRank.style.color=color;}
-      if(popFloors)popFloors.textContent=isJa?`${result.floors}髫弱・${pLabel}縺ｮ繝薙Ν繧竪ET・～:`You got a ${result.floors}F ${pLabel} building!`;
+      if(popFloors)popFloors.textContent=isJa?`${result.floors}階の${pLabel}のビルをGET！`:`You got a ${result.floors}F ${pLabel} building!`;
     }
     function applyGameI18n(){
       const isJa=currentLang==='ja';
       const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=isJa?ja:en;};
-      set('gacha-title','当 繝薙Ν繧ｹ繧ｯ繝ｩ繝・メ','当 Building Scratch');
+      set('gacha-title','📖 ビルスクラッチ','📖 Building Scratch');
       const costEl=document.getElementById('gacha-cost-info');
-      if(costEl)costEl.innerHTML=isJa?`豸郁ｲｻ繧ｳ繧､繝ｳ・・span>${GACHA_COST}</span>繧ｳ繧､繝ｳ`:`Cost: <span>${GACHA_COST}</span> coins`;
-      set('gacha-spin-btn','当 繧ｹ繧ｯ繝ｩ繝・メ縺吶ｋ','当 Scratch');
+      if(costEl)costEl.innerHTML=isJa?`消費コイン：<span>${GACHA_COST}</span>コイン`:`Cost: <span>${GACHA_COST}</span> coins`;
+      set('gacha-spin-btn','📖 スクラッチする','📖 Scratch');
       const prismNote=document.getElementById('gacha-prism-note');
-      if(prismNote)prismNote.innerHTML=isJa?'蠖薙◆繧九ン繝ｫ縺ｯ <b>蜀・浤繝ｻ荳芽ｧ呈浤繝ｻ豁｣蝗幄ｧ呈浤</b>・域怙螟ｧ50髫趣ｼ・:'Prize: <b>cylinder / triangular / square prism</b> (max 50F)';
-      set('gacha-or-label','縺ｾ縺溘・','OR');
+      if(prismNote)prismNote.innerHTML=isJa?'当たるビルは <b>円柱・三角柱・正四角柱</b>（最大50階）':'Prize: <b>cylinder / triangular / square prism</b> (max 50F)';
+      set('gacha-or-label','または','OR');
       const hireInfo=document.getElementById('hire-info');
-      if(hireInfo)hireInfo.innerHTML=isJa?`莨夂､ｾ蜩｡繧呈治逕ｨ・・span>${HIRE_COST}</span>繧ｳ繧､繝ｳ 竊・莨題・荳ｭ繝励・繝ｫ縺ｫ +1莠ｺ`:`Hire: <span>${HIRE_COST}</span> coins 竊・+1 to bench`;
-      set('gacha-hire-btn',`捉窶昨汳ｼ 莨夂､ｾ蜩｡繧呈治逕ｨ・・{HIRE_COST}繧ｳ繧､繝ｳ・荏,`捉窶昨汳ｼ Hire Office Worker (${HIRE_COST} coins)`);
+      if(hireInfo)hireInfo.innerHTML=isJa?`会社員を採用：<span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire: <span>${HIRE_COST}</span> coins → +1 to bench`;
+      set('gacha-hire-btn',`👨‍💼 会社員を採用（${HIRE_COST}コイン）`,`👨‍💼 Hire Office Worker (${HIRE_COST} coins)`);
       const bookRatesTitle=document.getElementById('book-rates-title');
       if(document.getElementById('gacha-overlay')?.classList.contains('show'))renderBookRates(isJa);
-      if(bookRatesTitle)bookRatesTitle.textContent=isJa?'蜃ｺ迴ｾ邇・:'Drop Rates';
+      if(bookRatesTitle)bookRatesTitle.textContent=isJa?'出現率':'Drop Rates';
       const bookHint=document.getElementById('book-scratch-hint');
-      if(bookHint)bookHint.textContent=isJa?'蜿ｳ繝壹・繧ｸ繧貞炎繧九→繝薙Ν迯ｲ蠕暦ｼ・:'Scratch the right page 窶・win a building!';
+      if(bookHint)bookHint.textContent=isJa?'右ページを削るとビル獲得！':'Scratch the right page — win a building!';
       syncGachaResultButtonsI18n();
-      set('build-modal-title',isJa?'女 繧ｹ繧ｯ繝ｩ繝・メ邨先棡繧貞ｻｺ險ｭ':'女 Build Scratch Prize');
-      set('build-confirm-btn',isJa?'召 縺薙・繝薙Ν繧貞ｻｺ險ｭ縺吶ｋ':'召 Build This Building');
-      set('build-scratch-again-btn',`煤 繧ゅ≧荳蠎ｦ繧ｹ繧ｯ繝ｩ繝・メ・・{GACHA_COST}繧ｳ繧､繝ｳ・荏,`煤 Scratch Again (${GACHA_COST} coins)`);
+      set('build-modal-title',isJa?'🏗 スクラッチ結果を建設':'🏗 Build Scratch Prize');
+      set('build-confirm-btn',isJa?'🏢 このビルを建設する':'🏢 Build This Building');
+      set('build-scratch-again-btn',`🔁 もう一度スクラッチ（${GACHA_COST}コイン）`,`🔁 Scratch Again (${GACHA_COST} coins)`);
       const rateRows=document.querySelectorAll('.gacha-rates .rate-row');
-      const rateFloorsJa=['48縲・0髫・,'40縲・7髫・,'30縲・9髫・,'20縲・9髫・,'1縲・9髫・];
-      const rateFloorsEn=['48窶・0F','40窶・7F','30窶・9F','20窶・9F','1窶・9F'];
+      const rateFloorsJa=['48〜50階','40〜47階','30〜39階','20〜29階','1〜19階'];
+      const rateFloorsEn=['48–50F','40–47F','30–39F','20–29F','1–19F'];
       rateRows.forEach((row,i)=>{
         const fr=row.querySelector('.floors-range');
         if(fr)fr.textContent=isJa?rateFloorsJa[i]:rateFloorsEn[i];
       });
-      set('x-setup-title',isJa?'X繧｢繧ｫ繧ｦ繝ｳ繝亥錐繧堤匳骭ｲ':'Register X username');
+      set('x-setup-title',isJa?'Xアカウント名を登録':'Register X username');
       const xDesc=document.getElementById('x-setup-desc');
-      if(xDesc)xDesc.textContent=isJa?'繝倥ャ繝繝ｼ縺ｫ陦ｨ遉ｺ縺吶ｋ @繝ｦ繝ｼ繧ｶ繝ｼ蜷・繧定ｨｭ螳壹＠縺ｦ縺上□縺輔＞':'Set your @handle shown in the header';
-      set('x-setup-save',isJa?'菫晏ｭ・:'Save');
-      set('bml-views',isJa?'髢ｲ隕ｧ蝗樊焚':'Views');
-      set('building-modal-notes-label',isJa?'統 蛯呵・:'統 Notes');
+      if(xDesc)xDesc.textContent=isJa?'ヘッダーに表示する @ユーザー名 を設定してください':'Set your @handle shown in the header';
+      set('x-setup-save',isJa?'保存':'Save');
+      set('bml-views',isJa?'閲覧回数':'Views');
+      set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');
       const xLabel=document.getElementById('x-username-label');
-      if(xLabel)xLabel.innerHTML=isJa?'X・・witter・峨い繧ｫ繧ｦ繝ｳ繝亥錐 <span style="color:#ff6a00;">*</span>':'X (Twitter) username <span style="color:#ff6a00;">*</span>';
+      if(xLabel)xLabel.innerHTML=isJa?'X（Twitter）アカウント名 <span style="color:#ff6a00;">*</span>':'X (Twitter) username <span style="color:#ff6a00;">*</span>';
       const xInput=document.getElementById('input-x-username');
       if(xInput)xInput.placeholder=isJa?xInput.dataset.placeholderJa:xInput.dataset.placeholderEn;
       const pw2Input=document.getElementById('input-password-confirm');
@@ -2728,13 +2735,13 @@
       ['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>{
         const el=document.getElementById(id);
         if(!el)return;
-        const spans=[['8譁・ｭ嶺ｻ･荳・,'8+ characters'],['螟ｧ譁・ｭ暦ｼ・-Z・・,'Uppercase (A-Z)'],['蟆乗枚蟄暦ｼ・-z・・,'Lowercase (a-z)'],['謨ｰ蟄暦ｼ・-9・・,'Number (0-9)']];
+        const spans=[['8文字以上','8+ characters'],['大文字（A-Z）','Uppercase (A-Z)'],['小文字（a-z）','Lowercase (a-z)'],['数字（0-9）','Number (0-9)']];
         const sp=el.querySelector('span');
         if(sp)sp.textContent=isJa?spans[i][0]:spans[i][1];
       });
       if(gachaState.result)syncBookResultDetail(gachaState.result);
       const extendBtn=document.getElementById('staff-extend-btn');
-      if(extendBtn)extendBtn.textContent=isJa?`莉ｻ譛溘ｒ3縺区怦蟒ｶ髟ｷ・・{STAFF_EXTEND_COST_PER}繧ｳ繧､繝ｳ/莠ｺ・荏:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
+      if(extendBtn)extendBtn.textContent=isJa?`任期を3か月延長（${STAFF_EXTEND_COST_PER}コイン/人）`:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
     }
     function localViewStorageKey(){
       if(!currentUser)return null;
@@ -2779,7 +2786,7 @@
       if(task&&n>=task.goal)await completeTask('view');
     }
     // ========================================
-    // 繝・う繝ｪ繝ｼ繧ｿ繧ｹ繧ｯ
+    // デイリータスク
     // ========================================
     async function initDailyTasks(){
       if(!currentUser)return;
@@ -2803,7 +2810,8 @@
       await db.from('daily_tasks').update({completed:true,completed_at:new Date().toISOString(),reward_given:true}).eq('id',data.id);
       const task=DAILY_TASKS.find(t=>t.type===taskType);
       if(!task)return;
-      // 繧ｳ繧､繝ｳ莉倅ｸ・      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
+      // コイン付与
+      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
       if(ud){
         const newCoins=(ud.coin_column||0)+task.reward;
         await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
@@ -2811,7 +2819,7 @@
         await recordCoin(task.reward,'task_'+taskType);
       }
       const isJa=currentLang==='ja';
-      showToast(`笨・${isJa?'繧ｿ繧ｹ繧ｯ螳御ｺ・:'Task done'}・√・{isJa?task.label:task.labelEn}縲・${task.reward}繧ｳ繧､繝ｳ`);
+      showToast(`✅ ${isJa?'タスク完了':'Task done'}！「${isJa?task.label:task.labelEn}」+${task.reward}コイン`);
       await refreshTaskUI();
     }
     async function maybeGrantFullClearBonus(doneCount){
@@ -2840,7 +2848,7 @@
       await recordCoin(TASK_FULL_CLEAR_BONUS,'task_full_clear');
       localStorage.setItem(localKey,'1');
       const isJa=currentLang==='ja';
-      showToast(isJa?`識 繝・う繝ｪ繝ｼ100%驕疲・繝懊・繝翫せ +${TASK_FULL_CLEAR_BONUS}繧ｳ繧､繝ｳ`:`識 Daily 100% bonus +${TASK_FULL_CLEAR_BONUS} coins`);
+      showToast(isJa?`🎯 デイリー100%達成ボーナス +${TASK_FULL_CLEAR_BONUS}コイン`:`🎯 Daily 100% bonus +${TASK_FULL_CLEAR_BONUS} coins`);
     }
     function renderTaskUI(){
       const list=document.getElementById('task-list');
@@ -2851,10 +2859,10 @@
         row.className='task-row';
         row.id='task-row-'+task.type;
         if(task.type==='share'){
-          // 繧ｷ繧ｧ繧｢繧ｿ繧ｹ繧ｯ縺ｯ繧ｿ繝・・縺ｧ handleShare() 繧貞他縺ｶ
-          row.innerHTML=`<span class="task-status">筮・/span><span class="task-label" style="cursor:pointer;color:#1d9bf0;text-decoration:underline;" onclick="handleShare()">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
+          // シェアタスクはタップで handleShare() を呼ぶ
+          row.innerHTML=`<span class="task-status">⬜</span><span class="task-label" style="cursor:pointer;color:#1d9bf0;text-decoration:underline;" onclick="handleShare()">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
         }else{
-          row.innerHTML=`<span class="task-status">筮・/span><span class="task-label">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
+          row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
         }
         list.appendChild(row);
       });
@@ -2870,7 +2878,7 @@
         if(!row)return;
         const done=data.find(d=>d.task_type===task.type)?.completed;
         row.classList.toggle('task-done',!!done);
-        row.querySelector('.task-status').textContent=done?'笨・:'筮・;
+        row.querySelector('.task-status').textContent=done?'✅':'⬜';
         if(done)doneCount++;
       });
       const pct=Math.round(doneCount/DAILY_TASKS.length*100);
@@ -2883,7 +2891,8 @@
     }
     function toggleTaskPanel(){document.getElementById('task-panel').classList.toggle('open');}
     // ========================================
-    // 轣ｫ縺ｮ邊・    // ========================================
+    // 火の粉
+    // ========================================
     const fireCanvas=document.getElementById('fire-canvas');
     const fCtx=fireCanvas.getContext('2d');
     let fireParticles=[],fireAnimId=null;
@@ -2921,7 +2930,7 @@
     function startFire(){fireCanvas.style.display='block';if(!fireAnimId)drawFire();}
     function stopFire(){fireCanvas.style.display='none';if(fireAnimId){cancelAnimationFrame(fireAnimId);fireAnimId=null;}fireParticles=[];fCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);}
     // ========================================
-    // 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ
+    // ローディング
     // ========================================
     const loadingBar=document.getElementById('loading-bar'),loadingEl=document.getElementById('loading');
     let loadProgress=0;
@@ -2932,7 +2941,7 @@
     },220);
     function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2800);}
     // ========================================
-    // 隱崎ｨｼ
+    // 認証
     // ========================================
     let authMode='login';
     function openAuthModal(){
@@ -2951,7 +2960,7 @@
       const showPwChecks=mode==='signup'||(mode==='login'&&isCoarseMobile());
       document.getElementById('pw-checks').classList.toggle('visible',showPwChecks);
       const isJa=currentLang==='ja';
-      document.getElementById('auth-submit').textContent=mode==='login'?(isJa?'繝ｭ繧ｰ繧､繝ｳ':'Login'):(isJa?'逋ｻ骭ｲ縺吶ｋ':'Sign Up');
+      document.getElementById('auth-submit').textContent=mode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Sign Up');
       document.getElementById('auth-error').textContent='';
       startBlinking();
     }
@@ -2974,24 +2983,24 @@
       const xUsername=(document.getElementById('input-x-username').value||'').trim().replace(/^@/,'');
       const errEl=document.getElementById('auth-error');
       if(!email||!xUsername){
-        errEl.textContent=isJa?'繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ縺ｨX繝ｦ繝ｼ繧ｶ繝ｼ蜷阪ｒ蜈･蜉帙＠縺ｦ縺上□縺輔＞':'Enter both email and X username';
+        errEl.textContent=isJa?'メールアドレスとXユーザー名を入力してください':'Enter both email and X username';
         return;
       }
       try{
-        if(!db)throw new Error('DB譛ｪ謗･邯・);
+        if(!db)throw new Error('DB未接続');
         const {data:rows,error:selErr}=await db.from('users').select('id,x_username').eq('x_username',xUsername).limit(1);
         if(selErr||!rows||rows.length===0){
-          errEl.textContent=isJa?'荳閾ｴ縺吶ｋX繝ｦ繝ｼ繧ｶ繝ｼ蜷阪′隕九▽縺九ｊ縺ｾ縺帙ｓ':'X username was not found';
+          errEl.textContent=isJa?'一致するXユーザー名が見つかりません':'X username was not found';
           return;
         }
         const redirectTo=`${window.location.origin}${window.location.pathname}?open=signup`;
         const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
         if(error)throw error;
         errEl.style.color='#4caf50';
-        errEl.textContent=isJa?'蜀崎ｨｭ螳壹Γ繝ｼ繝ｫ繧帝∽ｿ｡縺励∪縺励◆・医Γ繝ｼ繝ｫ繧偵＃遒ｺ隱阪￥縺縺輔＞・・:'Password reset email sent. Check your inbox.';
+        errEl.textContent=isJa?'再設定メールを送信しました（メールをご確認ください）':'Password reset email sent. Check your inbox.';
       }catch(e){
         errEl.style.color='#ff4444';
-        errEl.textContent=isJa?('蜀崎ｨｭ螳壹↓螟ｱ謨・ '+(e.message||'')):('Reset failed: '+(e.message||''));
+        errEl.textContent=isJa?('再設定に失敗: '+(e.message||'')):('Reset failed: '+(e.message||''));
       }
     }
     async function handleAuth(){
@@ -3003,16 +3012,16 @@
       const btn=document.getElementById('auth-submit'),errEl=document.getElementById('auth-error');
       const isJa=currentLang==='ja';
       errEl.textContent='';errEl.style.color='#ff4444';
-      if(!email||!password){errEl.textContent=isJa?'繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ縺ｨ繝代せ繝ｯ繝ｼ繝峨ｒ蜈･蜉帙＠縺ｦ縺上□縺輔＞':'Enter email and password';return;}
+      if(!email||!password){errEl.textContent=isJa?'メールアドレスとパスワードを入力してください':'Enter email and password';return;}
       if(authMode==='signup'&&!xUsername){
-        errEl.textContent=isJa?'X繧｢繧ｫ繧ｦ繝ｳ繝亥錐繧貞・蜉帙＠縺ｦ縺上□縺輔＞':'Please enter your X username';
+        errEl.textContent=isJa?'Xアカウント名を入力してください':'Please enter your X username';
         return;
       }
-      if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent=isJa?'繝代せ繝ｯ繝ｼ繝峨・譚｡莉ｶ繧貞・縺ｦ貅縺溘＠縺ｦ縺上□縺輔＞':'Meet all password requirements';return;}
-      if(authMode==='signup'&&password!==passwordConfirm){errEl.textContent=isJa?'繝代せ繝ｯ繝ｼ繝峨′荳閾ｴ縺励∪縺帙ｓ':'Passwords do not match';return;}
-      btn.disabled=true;btn.textContent='蜃ｦ逅・ｸｭ...';
+      if(authMode==='signup'&&!checkPassword(password).every(v=>v)){errEl.textContent=isJa?'パスワードの条件を全て満たしてください':'Meet all password requirements';return;}
+      if(authMode==='signup'&&password!==passwordConfirm){errEl.textContent=isJa?'パスワードが一致しません':'Passwords do not match';return;}
+      btn.disabled=true;btn.textContent='処理中...';
       try{
-        if(!db)throw new Error('DB譛ｪ謗･邯・);
+        if(!db)throw new Error('DB未接続');
         if(authMode==='login'){
           const{data,error}=await withTimeout(db.auth.signInWithPassword({email,password}),15000,'signIn');
           if(error)throw error;
@@ -3028,13 +3037,13 @@
             closeAuthModal();
             if(typeof forceShowGame==='function')forceShowGame();
             await onLoginSuccess(data.user,displayUsername,xUsername,{force:true});
-            showToast(currentLang==='ja'?'脂 逋ｻ骭ｲ螳御ｺ・ｼ！GNIS CITY縺ｸ繧医≧縺薙◎・・:'脂 Welcome to IGNIS CITY!');
-          }else{errEl.style.color='#4caf50';errEl.textContent='遒ｺ隱阪Γ繝ｼ繝ｫ繧帝∽ｿ｡縺励∪縺励◆縲・;}
+            showToast(currentLang==='ja'?'🎉 登録完了！IGNIS CITYへようこそ！':'🎉 Welcome to IGNIS CITY!');
+          }else{errEl.style.color='#4caf50';errEl.textContent='確認メールを送信しました。';}
         }
       }catch(e){errEl.style.color='#ff4444';errEl.textContent=translateError(e.message);}
-      finally{btn.disabled=false;btn.textContent=authMode==='login'?(currentLang==='ja'?'繝ｭ繧ｰ繧､繝ｳ':'Login'):(currentLang==='ja'?'逋ｻ骭ｲ縺吶ｋ':'Sign Up');}
+      finally{btn.disabled=false;btn.textContent=authMode==='login'?(currentLang==='ja'?'ログイン':'Login'):(currentLang==='ja'?'登録する':'Sign Up');}
     }
-    function translateError(msg){if(msg.includes('Invalid login credentials'))return'繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ縺ｾ縺溘・繝代せ繝ｯ繝ｼ繝峨′驕輔＞縺ｾ縺・;if(msg.includes('Email not confirmed'))return'繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ縺ｮ遒ｺ隱阪′螳御ｺ・＠縺ｦ縺・∪縺帙ｓ';if(msg.includes('already registered'))return'縺薙・繝｡繝ｼ繝ｫ繧｢繝峨Ξ繧ｹ縺ｯ縺吶〒縺ｫ逋ｻ骭ｲ縺輔ｌ縺ｦ縺・∪縺・;return msg;}
+    function translateError(msg){if(msg.includes('Invalid login credentials'))return'メールアドレスまたはパスワードが違います';if(msg.includes('Email not confirmed'))return'メールアドレスの確認が完了していません';if(msg.includes('already registered'))return'このメールアドレスはすでに登録されています';return msg;}
     async function onLoginSuccess(user,usernameOverride=null,xUsernameOverride=null,opts={}){
       if(!user||!db)return;
       const restoring=!!opts.restoring;
@@ -3070,18 +3079,18 @@
         document.getElementById('login-btn-header').style.display='none';
         document.getElementById('logged-in-area').style.display='flex';
         const nameEl=document.getElementById('user-name');
-        nameEl.textContent=xName?`@${xName}`:(isJa?'X譛ｪ逋ｻ骭ｲ':'X not set');
+        nameEl.textContent=xName?`@${xName}`:(isJa?'X未登録':'X not set');
         nameEl.style.cursor=xName?'default':'pointer';
-        nameEl.title=xName?'':(isJa?'繧ｯ繝ｪ繝・け縺励※X蜷阪ｒ逋ｻ骭ｲ':'Click to set X username');
+        nameEl.title=xName?'':(isJa?'クリックしてX名を登録':'Click to set X username');
         nameEl.onclick=xName?null:()=>openXSetupModal();
         redrawAllTiles();
         if(!restoring){
-          showToast(xName?(isJa?`窓 縺翫°縺医ｊ縲　${xName}・～:`窓 Welcome back, @${xName}!`):(isJa?'窓 縺翫°縺医ｊ・・:'窓 Welcome back!'));
+          showToast(xName?(isJa?`👋 おかえり、@${xName}！`:`👋 Welcome back, @${xName}!`):(isJa?'👋 おかえり！':'👋 Welcome back!'));
         }
         if(!xName)setTimeout(()=>openXSetupModal(),restoring?1400:600);
       }catch(e){
         console.warn('[IGNIS] onLoginSuccess profile',e);
-        showToast(isJa?'繝励Ο繝輔ぅ繝ｼ繝ｫ隱ｭ霎ｼ縺ｫ螟ｱ謨暦ｼ亥・隱ｭ霎ｼ縺励※縺上□縺輔＞・・:'Profile load failed 窶・try refresh');
+        showToast(isJa?'プロフィール読込に失敗（再読込してください）':'Profile load failed — try refresh');
       }
       Promise.resolve().then(async()=>{
         try{
@@ -3108,14 +3117,14 @@
       const raw=document.getElementById('input-x-setup').value.trim().replace(/^@/,'');
       const errEl=document.getElementById('x-setup-error');
       const isJa=currentLang==='ja';
-      if(!raw){errEl.textContent=isJa?'X繧｢繧ｫ繧ｦ繝ｳ繝亥錐繧貞・蜉帙＠縺ｦ縺上□縺輔＞':'Enter your X username';return;}
-      if(!/^[A-Za-z0-9_]{1,15}$/.test(raw)){errEl.textContent=isJa?'闍ｱ謨ｰ蟄励→繧｢繝ｳ繝繝ｼ繧ｹ繧ｳ繧｢縺ｮ縺ｿ・域怙螟ｧ15譁・ｭ暦ｼ・:'Letters, numbers, underscore only (max 15)';return;}
+      if(!raw){errEl.textContent=isJa?'Xアカウント名を入力してください':'Enter your X username';return;}
+      if(!/^[A-Za-z0-9_]{1,15}$/.test(raw)){errEl.textContent=isJa?'英数字とアンダースコアのみ（最大15文字）':'Letters, numbers, underscore only (max 15)';return;}
       const{error}=await db.from('users').update({x_username:raw}).eq('id',currentUser.id);
       if(error){errEl.textContent=error.message;return;}
       currentUser.xUsername=raw;
       document.getElementById('user-name').textContent='@'+raw;
       closeXSetupModal();
-      showToast(isJa?`笨・@${raw} 繧堤匳骭ｲ縺励∪縺励◆`:`笨・Registered @${raw}`);
+      showToast(isJa?`✅ @${raw} を登録しました`:`✅ Registered @${raw}`);
     }
     async function handleLogout(){
       await db.auth.signOut();currentUser=null;
@@ -3130,7 +3139,7 @@
       document.getElementById('task-panel').classList.remove('open');
       document.getElementById('coin-history-overlay').classList.remove('open');
       coinHistoryData=[];
-      redrawAllTiles();showToast('繝ｭ繧ｰ繧｢繧ｦ繝医＠縺ｾ縺励◆');
+      redrawAllTiles();showToast('ログアウトしました');
     }
     async function restoreSession(){
       if(!db)return;
@@ -3288,20 +3297,20 @@
         flyCamera.position=new BABYLON.Vector3(p.x,p.y,p.z);
         flyCamera.setTarget(arcCamera.target||BABYLON.Vector3.Zero());
         scene.activeCamera=flyCamera;flyCamera.attachControl(canvas,true);arcCamera.detachControl();
-        modeBtn.classList.add('fly-active');modeBtn.textContent=isJa?'徐 陦励▼縺上ｊ繝｢繝ｼ繝・:'徐 City Mode';
+        modeBtn.classList.add('fly-active');modeBtn.textContent=isJa?'🏙 街づくりモード':'🏙 City Mode';
         flyHint.classList.add('visible');closeLandPanel();
         if(mobileFlyUi)mobileFlyUi.classList.toggle('show',isTouchFly);
         showToast(isTouchFly
-          ?(isJa?'併 蟾ｦ=遘ｻ蜍・/ 蜿ｳ=隕也せ / 笆ｲ笆ｼ=荳頑・荳矩剄':'併 Left move / Right look / 笆ｲ笆ｼ vertical')
-          :(isJa?'賦 遏｢蜊ｰ縺ｧ遘ｻ蜍・/ Shift荳頑・ / Ctrl荳矩剄':'賦 Arrows move / Shift up / Ctrl down'));
+          ?(isJa?'🕹 左=移動 / 右=視点 / ▲▼=上昇下降':'🕹 Left move / Right look / ▲▼ vertical')
+          :(isJa?'🕊 矢印で移動 / Shift上昇 / Ctrl下降':'🕊 Arrows move / Shift up / Ctrl down'));
       }else{
         scene.activeCamera=arcCamera;arcCamera.attachControl(canvas,true);flyCamera.detachControl();
-        modeBtn.classList.remove('fly-active');modeBtn.textContent=isJa?'賦 鬟幄｡後Δ繝ｼ繝・:'賦 Fly Mode';
+        modeBtn.classList.remove('fly-active');modeBtn.textContent=isJa?'🕊 飛行モード':'🕊 Fly Mode';
         flyHint.classList.remove('visible');
         if(mobileFlyUi)mobileFlyUi.classList.remove('show');
         resetStick('left');resetStick('right');
         touchFlyState.rise=false;touchFlyState.fall=false;
-        showToast('徐 陦励▼縺上ｊ繝｢繝ｼ繝・ON');
+        showToast('🏙 街づくりモード ON');
       }
     }
     const hemiLight=new BABYLON.HemisphericLight('hemi',new BABYLON.Vector3(0,1,0),scene);
@@ -3319,7 +3328,8 @@
       const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;
     }
     // ========================================
-    // 蝨溷慍邂｡逅・    // ========================================
+    // 土地管理
+    // ========================================
     const landMap={};
     let selectedLandKey=null;
     function worldToGrid(wx,wz){return{gx:Math.round(wx/CELL)*CELL,gz:Math.round(wz/CELL)*CELL};}
@@ -3400,40 +3410,40 @@
       const isJa=currentLang==='ja';
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
-        ownerEl.innerHTML=`${isJa?'X繝ｦ繝ｼ繧ｶ繝ｼ':'X User'}・・span class="owner-name">${land.owner_display}</span>`;
+        ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">${land.owner_display}</span>`;
         if(building){
           const ci=getColorByEmployees(building.employees||0);
-          buildingEl.textContent=`${building.totalFloors}${isJa?'髫・:'F'} ・・${isJa?'蠕捺･ｭ蜩｡':'Emp'} ${building.employees||0}${isJa?'莠ｺ':''} ${isJa?ci.label:ci.labelEn}`;
-        }else{buildingEl.textContent=isJa?'繝薙Ν縺ｪ縺・:'No building';}
+          buildingEl.textContent=`${building.totalFloors}${isJa?'階':'F'} ｜ ${isJa?'従業員':'Emp'} ${building.employees||0}${isJa?'人':''} ${isJa?ci.label:ci.labelEn}`;
+        }else{buildingEl.textContent=isJa?'ビルなし':'No building';}
         if(isMe){
           buyBtn.style.display='none';
           if(building){gachaBtn.style.display='none';rebuildBtn.style.display='block';}
           else{gachaBtn.style.display='block';rebuildBtn.style.display='none';}
         }else{
-          buyBtn.style.display='block';buyBtn.textContent=isJa?'白 雉ｼ蜈･貂医∩縺ｮ蝨溷慍縺ｧ縺・:'白 Already owned';buyBtn.disabled=true;
+          buyBtn.style.display='block';buyBtn.textContent=isJa?'🔒 購入済みの土地です':'🔒 Already owned';buyBtn.disabled=true;
           gachaBtn.style.display='none';rebuildBtn.style.display='none';
         }
       }else{
-        ownerEl.textContent=isJa?'遨ｺ縺榊慍・域悴蜿門ｾ暦ｼ・:'Empty land';buildingEl.textContent='';
+        ownerEl.textContent=isJa?'空き地（未取得）':'Empty land';buildingEl.textContent='';
         buyBtn.style.display='block';
-        buyBtn.textContent=isJa?`櫨 縺薙・蝨溷慍繧貞叙蠕暦ｼ・{LAND_COST}繧ｳ繧､繝ｳ・荏:`櫨 Get this land (${LAND_COST} coins)`;
+        buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
         buyBtn.disabled=false;gachaBtn.style.display='none';rebuildBtn.style.display='none';
       }
       showHighlight(gx,gz);document.getElementById('land-panel').classList.add('open');
     }
     function closeLandPanel(){document.getElementById('land-panel').classList.remove('open');hideHighlight();selectedLandKey=null;}
     async function handleLandBuy(){
-      if(!currentUser){closeLandPanel();openAuthModal();showToast('繝ｭ繧ｰ繧､繝ｳ縺悟ｿ・ｦ√〒縺・);return;}
+      if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
       const buyBtn=document.getElementById('land-buy-btn');
-      buyBtn.disabled=true;buyBtn.textContent='蜃ｦ逅・ｸｭ...';
+      buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
         const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
         const balance=ud?ud.coin_column||0:0;
         if(LAND_COST>0&&balance<LAND_COST){
-          showToast(`繧ｳ繧､繝ｳ縺瑚ｶｳ繧翫∪縺帙ｓ・亥ｿ・ｦ・ｼ・{LAND_COST}繧ｳ繧､繝ｳ縲∵ｮ矩ｫ假ｼ・{balance}繧ｳ繧､繝ｳ・荏);
+          showToast(`コインが足りません（必要：${LAND_COST}コイン、残高：${balance}コイン）`);
           buyBtn.disabled=false;
-          buyBtn.textContent=currentLang==='ja'?`櫨 縺薙・蝨溷慍繧貞叙蠕暦ｼ・{LAND_COST}繧ｳ繧､繝ｳ・荏:`櫨 Get this land (${LAND_COST} coins)`;return;
+          buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;return;
         }
         const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
         if(landErr)throw landErr;
@@ -3447,22 +3457,22 @@
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile:null};
         landMap[selectedLandKey].tile=drawOwnedTile(gx,gz,selectedLandKey,currentUser.id);
         await completeTask('get_land');
-        showToast(`升 蝨溷慍繧貞叙蠕暦ｼ・ｼ・${LAND_COST}繧ｳ繧､繝ｳ・荏);openLandPanel(gx,gz);
+        showToast(`🏡 土地を取得！（-${LAND_COST}コイン）`);openLandPanel(gx,gz);
       }catch(e){
-        console.warn('land buy error:',e.message);showToast('蜿門ｾ励↓螟ｱ謨励＠縺ｾ縺励◆: '+e.message);
+        console.warn('land buy error:',e.message);showToast('取得に失敗しました: '+e.message);
         buyBtn.disabled=false;
-        buyBtn.textContent=currentLang==='ja'?`櫨 縺薙・蝨溷慍繧貞叙蠕暦ｼ・{LAND_COST}繧ｳ繧､繝ｳ・荏:`櫨 Get this land (${LAND_COST} coins)`;
+        buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       }
     }
     // ========================================
-    // 繧ｬ繝√Ε
+    // ガチャ
     // ========================================
     let gachaState={result:null,isRebuild:false,landKey:null};
     function openGachaModal(isRebuild=false){
       gachaState.isRebuild=isRebuild;gachaState.landKey=selectedLandKey;
       const isJa=currentLang==='ja';
       const infoEl=document.getElementById('gacha-land-info');
-      if(selectedLandKey){const{gx,gz}=keyToCoord(selectedLandKey);infoEl.textContent=isJa?`蟇ｾ雎｡・唸:${gx} / Z:${gz}`:`Target: X:${gx} / Z:${gz}`;}
+      if(selectedLandKey){const{gx,gz}=keyToCoord(selectedLandKey);infoEl.textContent=isJa?`対象：X:${gx} / Z:${gz}`:`Target: X:${gx} / Z:${gz}`;}
       else{infoEl.textContent='';}
       applyGameI18n();
       closeLandPanel();document.getElementById('gacha-modal').classList.add('open');
@@ -3481,8 +3491,8 @@
       const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
       const balance=ud?ud.coin_column||0:0;
       const isJa=currentLang==='ja';
-      if(balance<GACHA_COST){showToast(isJa?`繧ｳ繧､繝ｳ縺瑚ｶｳ繧翫∪縺帙ｓ・亥ｿ・ｦ・ｼ・{GACHA_COST}・荏:`Not enough coins (need ${GACHA_COST})`);return;}
-      btn.disabled=true;btn.textContent=isJa?'謚ｽ驕ｸ荳ｭ...':'Spinning...';
+      if(balance<GACHA_COST){showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);return;}
+      btn.disabled=true;btn.textContent=isJa?'抽選中...':'Spinning...';
       const newCoins=balance-GACHA_COST;
       await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
       document.getElementById('coin-count').textContent=newCoins;
@@ -3490,7 +3500,7 @@
       const result=rollGacha();gachaState.result=result;
       closeGachaModal(true);
       playGachaAnimation(result);
-      btn.disabled=false;btn.textContent=currentLang==='ja'?'当 繧ｹ繧ｯ繝ｩ繝・メ縺吶ｋ':'当 Scratch';
+      btn.disabled=false;btn.textContent=currentLang==='ja'?'📖 スクラッチする':'📖 Scratch';
     }
     async function playGachaAnimation(result){
       const isJa=currentLang==='ja';
@@ -3551,7 +3561,7 @@
         const floorsEl=document.getElementById('book-prize-floors');
         floorsEl.classList.remove('prize-floor-hidden');
         const pLabel=getPrismLabel(result.prism,isJa);
-        floorsEl.textContent=isJa?`${result.floors}髫弱・${pLabel}縺ｮ繝薙Ν繧竪ET・～:`You got a ${result.floors}F ${pLabel} building!`;
+        floorsEl.textContent=isJa?`${result.floors}階の${pLabel}のビルをGET！`:`You got a ${result.floors}F ${pLabel} building!`;
         setTimeout(()=>{
           book.classList.add('result-mode');
           bookPhase.classList.add('result-phase');
@@ -3566,9 +3576,9 @@
       const bb=document.getElementById('book-result-build');
       const bc=document.getElementById('book-result-city');
       const br=document.getElementById('book-result-retry');
-      if(bb)bb.textContent=isJa?'蟒ｺ險ｭ縺吶ｋ 竊・:'Build 竊・;
-      if(bc)bc.textContent=isJa?'徐 IGNIS City縺ｸ謌ｻ繧・:'徐 Return to IGNIS City';
-      if(br)br.textContent=isJa?'煤 繧ゅ≧荳蠎ｦ繧ｹ繧ｯ繝ｩ繝・メ':'煤 Scratch Again';
+      if(bb)bb.textContent=isJa?'建設する →':'Build →';
+      if(bc)bc.textContent=isJa?'🏙 IGNIS Cityへ戻る':'🏙 Return to IGNIS City';
+      if(br)br.textContent=isJa?'🔁 もう一度スクラッチ':'🔁 Scratch Again';
     }
     function resetGachaResultScreen(){
       const book=document.getElementById('gacha-book');
@@ -3594,7 +3604,7 @@
       const isJa=currentLang==='ja';
       const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
       if(balance<GACHA_COST){
-        showToast(isJa?`繧ｳ繧､繝ｳ縺瑚ｶｳ繧翫∪縺帙ｓ・亥ｿ・ｦ・ｼ・{GACHA_COST}・荏:`Not enough coins (need ${GACHA_COST})`);
+        showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);
         return;
       }
       const retryBtn=document.getElementById('book-result-retry');
@@ -3603,13 +3613,14 @@
         await handleGachaSpin();
       }catch(e){
         console.warn('gacha retry error:',e.message);
-        showToast(isJa?'蜀阪せ繧ｯ繝ｩ繝・メ縺ｫ螟ｱ謨励＠縺ｾ縺励◆':'Scratch again failed');
+        showToast(isJa?'再スクラッチに失敗しました':'Scratch again failed');
       }finally{
         if(retryBtn)retryBtn.disabled=false;
       }
     }
     // ========================================
-    // 蟒ｺ險ｭ繝｢繝ｼ繝繝ｫ・医ぎ繝√Ε蠖馴∈繝薙Ν縺ｮ縺ｿ蟒ｺ險ｭ蜿ｯ・・    // ========================================
+    // 建設モーダル（ガチャ当選ビルのみ建設可）
+    // ========================================
     async function onBuildModalScratchAgain(){
       closeBuildModal();
       await onGachaResultRetry();
@@ -3622,7 +3633,7 @@
       const iconEl=document.getElementById('build-prize-icon');
       const infoEl=document.getElementById('build-modal-info');
       const starsEl=document.getElementById('build-prize-stars');
-      if(iconEl)iconEl.textContent=PRISM_ICONS[prism]||'召';
+      if(iconEl)iconEl.textContent=PRISM_ICONS[prism]||'🏢';
       if(infoEl)infoEl.textContent=formatGachaBuildingLine(r,isJa);
       if(starsEl){starsEl.textContent=getGachaStarSymbols(r.star);starsEl.style.color=BOOK_STAR_COLORS[r.star]||'#fff';}
     }
@@ -3631,8 +3642,8 @@
       const isJa=currentLang==='ja';
       renderBuildModalPrize();
       const landSelectEl=document.getElementById('build-land-select');
-      if(gachaState.landKey){const{gx,gz}=keyToCoord(gachaState.landKey);landSelectEl.textContent=isJa?`桃 蟒ｺ險ｭ蜈茨ｼ唸:${gx} / Z:${gz}`:`桃 Build at: X:${gx} / Z:${gz}`;landSelectEl.classList.add('has-land');}
-      else{landSelectEl.textContent=isJa?'桃 蝨溷慍譛ｪ驕ｸ謚・窶・蟒ｺ險ｭ蠕後↓蝨溷慍繧偵ち繝・・縺励※驟咲ｽｮ蜈医ｒ驕ｸ繧薙〒縺上□縺輔＞':'桃 No land 窶・tap your land after closing to place';landSelectEl.classList.remove('has-land');}
+      if(gachaState.landKey){const{gx,gz}=keyToCoord(gachaState.landKey);landSelectEl.textContent=isJa?`📍 建設先：X:${gx} / Z:${gz}`:`📍 Build at: X:${gx} / Z:${gz}`;landSelectEl.classList.add('has-land');}
+      else{landSelectEl.textContent=isJa?'📍 土地未選択 — 建設後に土地をタップして配置先を選んでください':'📍 No land — tap your land after closing to place';landSelectEl.classList.remove('has-land');}
       applyGameI18n();
       document.getElementById('build-modal').classList.add('open');
       IgnisAudio.playBgmTrack('opening').catch(()=>{});
@@ -3644,17 +3655,17 @@
     async function handleBuildConfirm(){
       if(!gachaState.result||!currentUser)return;
       const isJa=currentLang==='ja';
-      if(!gachaState.landKey){closeBuildModal();showToast(isJa?'女 谺｡縺ｫ蟒ｺ險ｭ蜈医・蝨溷慍繧偵ち繝・・縺励※縺上□縺輔＞':'女 Tap your land to choose build location');pendingBuildMode=true;return;}
+      if(!gachaState.landKey){closeBuildModal();showToast(isJa?'🏗 次に建設先の土地をタップしてください':'🏗 Tap your land to choose build location');pendingBuildMode=true;return;}
       const{gx,gz}=keyToCoord(gachaState.landKey);
       const targetLand=landMap[gachaState.landKey];
       if(!targetLand||targetLand.owner_id!==currentUser.id){
-        showToast(isJa?'笞・・閾ｪ蛻・・蝨溷慍縺ｫ縺ｮ縺ｿ蟒ｺ險ｭ縺ｧ縺阪∪縺・:'笞・・You can only build on your own land');
+        showToast(isJa?'⚠️ 自分の土地にのみ建設できます':'⚠️ You can only build on your own land');
         return;
       }
       const{floors,prism}=gachaState.result;
       const buildPrism=normalizePrism(prism);
       const btn=document.getElementById('build-confirm-btn');
-      btn.disabled=true;btn.textContent=isJa?'蟒ｺ險ｭ荳ｭ...':'Building...';
+      btn.disabled=true;btn.textContent=isJa?'建設中...':'Building...';
       try{
         let employees=0;
         const existingBuilding=buildingMap[gachaState.landKey];
@@ -3675,14 +3686,15 @@
         const savedFloors=floors;
         closeBuildModal();
         const ci=getColorByEmployees(employees);
-        showToast(`召 ${floors}${isJa?'髫主ｻｺ縺ｦ螳梧・':'F building done'}・・{isJa?ci.label:ci.labelEn}`);
+        showToast(`🏢 ${floors}${isJa?'階建て完成':'F building done'}！${isJa?ci.label:ci.labelEn}`);
         gachaState={result:null,isRebuild:false,landKey:null};pendingBuildMode=false;
         openProfileModal(gx,gz,savedFloors);
-      }catch(e){console.warn('build error:',e.message);showToast(isJa?'蟒ｺ險ｭ縺ｫ螟ｱ謨励＠縺ｾ縺励◆':'Build failed');btn.disabled=false;btn.textContent=isJa?'召 蟒ｺ險ｭ縺吶ｋ':'召 Build';}
+      }catch(e){console.warn('build error:',e.message);showToast(isJa?'建設に失敗しました':'Build failed');btn.disabled=false;btn.textContent=isJa?'🏢 建設する':'🏢 Build';}
     }
     let pendingBuildMode=false;
     // ========================================
-    // 繝薙Ν繝励Ο繝輔ぅ繝ｼ繝ｫ・域ｼ險繝ｻ蛯呵・ｼ・    // ========================================
+    // ビルプロフィール（格言・備考）
+    // ========================================
     let profileState={gx:0,gz:0,maxMottoChars:3};
     function openProfileModal(gx,gz,floors){
       profileState.gx=gx;profileState.gz=gz;
@@ -3702,13 +3714,13 @@
       if(rank<2){
         mottoInput.disabled=true;notesInput.disabled=true;
         submitBtn.disabled=true;submitBtn.style.opacity='0.35';
-        submitBtn.textContent='白 Rank 2 莉･荳翫〒逕ｳ隲句庄閭ｽ';
-        noteEl.innerHTML=`迴ｾ蝨ｨ縺ｮRank: <b style="color:#ff6a00">${rank}</b> ・・Rank 2縺ｫ荳翫￡繧九→逕ｳ隲九〒縺阪∪縺兪;
+        submitBtn.textContent='🔒 Rank 2 以上で申請可能';
+        noteEl.innerHTML=`現在のRank: <b style="color:#ff6a00">${rank}</b> ／ Rank 2に上げると申請できます`;
       } else {
         mottoInput.disabled=false;notesInput.disabled=false;
         submitBtn.disabled=false;submitBtn.style.opacity='1';
-        submitBtn.textContent='逕ｳ隲九☆繧・;
-        noteEl.textContent='窶ｻ 邂｡逅・・・謇ｿ隱榊ｾ後↓繝薙Ν縺ｫ蜈ｬ髢九＆繧後∪縺・;
+        submitBtn.textContent='申請する';
+        noteEl.textContent='※ 管理者の承認後にビルに公開されます';
       }
       document.getElementById('profile-modal').classList.add('open');
     }
@@ -3732,7 +3744,7 @@
       const notes=document.getElementById('profile-notes-input').value.trim();
       if(!motto&&!notes){closeProfileModal();return;}
       const btn=document.getElementById('profile-submit-btn');
-      btn.disabled=true;btn.textContent='逕ｳ隲倶ｸｭ...';
+      btn.disabled=true;btn.textContent='申請中...';
       try{
         const{error}=await db.from('building_profiles').upsert({
           user_id:currentUser.id,building_x:profileState.gx,building_z:profileState.gz,
@@ -3741,14 +3753,14 @@
         },{onConflict:'building_x,building_z'});
         if(error)throw error;
         closeProfileModal();
-        showToast('鐙 譬ｼ險繧堤筏隲九＠縺ｾ縺励◆縲よ価隱榊ｾ後↓蜈ｬ髢九＆繧後∪縺・);
+        showToast('📨 格言を申請しました。承認後に公開されます');
       }catch(e){
         console.warn('profile submit error:',e.message);
-        showToast('逕ｳ隲九↓螟ｱ謨励＠縺ｾ縺励◆');
-        btn.disabled=false;btn.textContent='逕ｳ隲九☆繧・;
+        showToast('申請に失敗しました');
+        btn.disabled=false;btn.textContent='申請する';
       }
     }
-    // 謇ｿ隱肴ｸ医∩繝励Ο繝輔ぅ繝ｼ繝ｫ縺ｮ繧ｭ繝｣繝・す繝･
+    // 承認済みプロフィールのキャッシュ
     let approvedProfiles={};
     async function loadApprovedProfiles(){
       if(!db)return;
@@ -3768,7 +3780,7 @@
         addMottoMesh(b.x,b.z,p.motto_text,b.floors);
       });
     }
-    // 莨壼藤險ｼ繝ｩ繝ｳ繧ｯ莉墓ｧ假ｼ・=莨晁ｪｬ(繝ｬ繧､繝ｳ繝懊・貍泌・)縲・=繧ｨ繝斐ャ繧ｯ(驥第ｼ泌・)縲・-1=繧ｰ繝ｬ繝ｼ邨ｱ荳
+    // 会員証ランク仕様：5=伝説(レインボー演出)、4=エピック(金演出)、3-1=グレー統一
     function hexToRgba(hex,a){const h=hex.replace('#','');const r=parseInt(h.substring(0,2),16),g=parseInt(h.substring(2,4),16),b=parseInt(h.substring(4,6),16);return `rgba(${r},${g},${b},${a})`;}
     const animatedMottos=new Map();
     let mottoAnimObserver=null;
@@ -3827,12 +3839,13 @@
       plane.onDisposeObservable.add(()=>{animatedMottos.delete(meshId);});
     }
     // ========================================
-    // 繝薙Ν隧ｳ邏ｰ繝｢繝ｼ繝繝ｫ
+    // ビル詳細モーダル
     // ========================================
-    const BUILDING_ICONS={5:'徐',4:'召',3:'小',2:'宵',1:'匠'};
+    const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
     function getStarByFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
     // ========================================
-    // 蠕捺･ｭ蜩｡謗｡逕ｨ・亥魂髑第ｼ泌・・・    // ========================================
+    // 従業員採用（印鑑演出）
+    // ========================================
     function playHireContractAnimation(){
       return new Promise(resolve=>{
         const isJa=currentLang==='ja';
@@ -3844,13 +3857,13 @@
         const seal=document.getElementById('hire-stamp-seal');
         const signature=document.getElementById('hire-contract-signature');
         if(!overlay){resolve();return;}
-        if(header)header.textContent=isJa?'IGNIS CITY ﾂｷ 莠ｺ莠・:'IGNIS CITY ﾂｷ HR';
-        if(title)title.textContent=isJa?'謗｡逕ｨ騾夂衍譖ｸ':'Employment Notice';
+        if(header)header.textContent=isJa?'IGNIS CITY · 人事':'IGNIS CITY · HR';
+        if(title)title.textContent=isJa?'採用通知書':'Employment Notice';
         if(body)body.innerHTML=isJa
-          ?'荳玖ｨ倥・閠・ｒ IGNIS CITY 縺ｫ謗｡逕ｨ縺励∪縺吶・br><br>閨ｷ遞ｮ・壻ｼ夂､ｾ蜩｡<br>莉ｻ譛滂ｼ・縺区怦<br>驟榊ｱ橸ｼ壻ｼ題・荳ｭ繝励・繝ｫ・域悴驟榊ｱ橸ｼ・br><br>譛ｬ譖ｸ縺ｫ繧医ｋ謗｡逕ｨ繧偵ｂ縺｣縺ｦ豁｣蠑上↓髮・＞蜈･繧後→縺励∪縺吶・
+          ?'下記の者を IGNIS CITY に採用します。<br><br>職種：会社員<br>任期：3か月<br>配属：休職中プール（未配属）<br><br>本書による採用をもって正式に雇い入れとします。'
           :'The following person is hereby hired into IGNIS CITY.<br><br>Role: Office Worker<br>Term: 3 months<br>Assignment: Bench pool (unassigned)<br><br>This document confirms official hiring.';
-        if(sign)sign.textContent=isJa?'逕ｻ髱｢繧偵ち繝・・縺励※謚ｼ蜊ｰ':'Tap to stamp';
-        if(seal){seal.textContent=isJa?'謗｡逕ｨ':'HIRED';seal.classList.remove('stamped');}
+        if(sign)sign.textContent=isJa?'画面をタップして押印':'Tap to stamp';
+        if(seal){seal.textContent=isJa?'採用':'HIRED';seal.classList.remove('stamped');}
         if(signature){
           const xName=(currentUser&&currentUser.xUsername)||'';
           signature.textContent=xName?('@'+xName):'';
@@ -3896,28 +3909,28 @@
       });
     }
     async function handleHireEmployee(){
-      if(!currentUser){showToast('繝ｭ繧ｰ繧､繝ｳ縺悟ｿ・ｦ√〒縺・);return;}
+      if(!currentUser){showToast('ログインが必要です');return;}
       const btn=document.getElementById('gacha-hire-btn');
       if(btn.disabled)return;
       const isJa=currentLang==='ja';
       const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
       if(balance<HIRE_COST){
-        showToast(isJa?`笞・・繧ｳ繧､繝ｳ縺御ｸ崎ｶｳ縺励※縺・∪縺呻ｼ亥ｿ・ｦ・ｼ・{HIRE_COST}・荏:`笞・・Not enough coins (need ${HIRE_COST})`);
+        showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);
         return;
       }
       btn.disabled=true;
       const originalText=btn.textContent;
-      btn.textContent=isJa?'貅門ｙ荳ｭ...':'Preparing...';
+      btn.textContent=isJa?'準備中...':'Preparing...';
       try{
         await playHireContractAnimation();
-        btn.textContent=isJa?'謗｡逕ｨ荳ｭ...':'Hiring...';
+        btn.textContent=isJa?'採用中...':'Hiring...';
         const{data,error}=await db.rpc('hire_employee');
         if(error)throw error;
         if(!data||!data.ok){
           if(data&&data.reason==='insufficient_coins'){
-            showToast(isJa?`笞・・繧ｳ繧､繝ｳ縺御ｸ崎ｶｳ縺励※縺・∪縺呻ｼ・{data.coins}/${HIRE_COST}・荏:`笞・・Not enough coins (${data.coins}/${HIRE_COST})`);
+            showToast(isJa?`⚠️ コインが不足しています（${data.coins}/${HIRE_COST}）`:`⚠️ Not enough coins (${data.coins}/${HIRE_COST})`);
           } else {
-            showToast(isJa?'謗｡逕ｨ縺ｫ螟ｱ謨励＠縺ｾ縺励◆':'Hire failed');
+            showToast(isJa?'採用に失敗しました':'Hire failed');
           }
           return;
         }
@@ -3926,12 +3939,13 @@
         await completeTask('hire');
         await refreshEmployeeHeader();
         await refreshStaffTermPanel();
-        showToast(isJa?`捉窶昨汳ｼ 莨夂､ｾ蜩｡繧・莠ｺ謗｡逕ｨ・∽ｼ題・荳ｭ繝励・繝ｫ縺ｫ蜉邂輿:`捉窶昨汳ｼ Hired 1 office worker! Added to bench`);
-      }catch(e){console.warn('hire error:',e.message);showToast(isJa?'謗｡逕ｨ縺ｫ螟ｱ謨・ '+e.message:'Hire failed: '+e.message);}
+        showToast(isJa?`👨‍💼 会社員を1人採用！休職中プールに加算`:`👨‍💼 Hired 1 office worker! Added to bench`);
+      }catch(e){console.warn('hire error:',e.message);showToast(isJa?'採用に失敗: '+e.message:'Hire failed: '+e.message);}
       finally{btn.disabled=false;btn.textContent=originalText;}
     }
     // ========================================
-    // 蠕捺･ｭ蜩｡莉ｻ譛滂ｼ郁ｧ｣髮・・蟒ｶ髟ｷ・・    // ========================================
+    // 従業員任期（解雇・延長）
+    // ========================================
     async function processExpiredStaff(){
       if(!currentUser||!db)return null;
       try{
@@ -3939,7 +3953,7 @@
         if(error)throw error;
         if(data?.ok&&data.fired>0){
           const isJa=currentLang==='ja';
-          showToast(isJa?`莉ｻ譛滓ｺ莠・↓繧医ｊ${data.fired}莠ｺ縺瑚ｧ｣髮・＆繧後∪縺励◆`:`${data.fired} staff term(s) ended`);
+          showToast(isJa?`任期満了により${data.fired}人が解雇されました`:`${data.fired} staff term(s) ended`);
           await refreshEmployeeHeader();
           await refreshStaffTermPanel();
         }
@@ -3975,22 +3989,22 @@
         const cost=soon*STAFF_EXTEND_COST_PER;
         if(info){
           info.innerHTML=isJa
-            ?`莉ｻ譛溽ｮ｡逅・ｸｭ縺ｮ莨夂､ｾ蜩｡・・b>${total}</b>莠ｺ<br>7譌･莉･蜀・↓貅莠・ｼ・b>${soon}</b>莠ｺ ﾂｷ 蟒ｶ髟ｷ繧ｳ繧ｹ繝茨ｼ・b>${cost}</b>繧ｳ繧､繝ｳ`
-            :`Staff on term: <b>${total}</b> ﾂｷ expiring within 7d: <b>${soon}</b> ﾂｷ cost: <b>${cost}</b> coins`;
+            ?`任期管理中の会社員：<b>${total}</b>人<br>7日以内に満了：<b>${soon}</b>人 · 延長コスト：<b>${cost}</b>コイン`
+            :`Staff on term: <b>${total}</b> · expiring within 7d: <b>${soon}</b> · cost: <b>${cost}</b> coins`;
         }
         if(btn){
-          btn.textContent=isJa?`莉ｻ譛溘ｒ3縺区怦蟒ｶ髟ｷ・・{STAFF_EXTEND_COST_PER}繧ｳ繧､繝ｳ/莠ｺ・荏:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
+          btn.textContent=isJa?`任期を3か月延長（${STAFF_EXTEND_COST_PER}コイン/人）`:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
           btn.disabled=soon===0;
         }
         maybeNotifyStaffNotice(soon,total);
       }catch(e){
         console.warn('refreshStaffTermPanel:',e.message);
-        if(info)info.textContent=isJa?'莉ｻ譛滓ュ蝣ｱ繧定ｪｭ縺ｿ霎ｼ繧√∪縺帙ｓ縺ｧ縺励◆':'Could not load term info';
+        if(info)info.textContent=isJa?'任期情報を読み込めませんでした':'Could not load term info';
         if(btn)btn.disabled=true;
       }
     }
     async function handleExtendStaffTerms(){
-      if(!currentUser){openAuthModal();showToast('繝ｭ繧ｰ繧､繝ｳ縺悟ｿ・ｦ√〒縺・);return;}
+      if(!currentUser){openAuthModal();showToast('ログインが必要です');return;}
       const btn=document.getElementById('staff-extend-btn');
       const isJa=currentLang==='ja';
       if(btn?.disabled)return;
@@ -4006,25 +4020,25 @@
         });
         const count=soonList.length;
         if(count===0){
-          showToast(isJa?'蟒ｶ髟ｷ蟇ｾ雎｡・域ｺ譛・譌･莉･蜀・ｼ峨・莨夂､ｾ蜩｡縺後＞縺ｾ縺帙ｓ':'No staff expiring within 7 days');
+          showToast(isJa?'延長対象（満期7日以内）の会社員がいません':'No staff expiring within 7 days');
           await refreshStaffTermPanel();
           return;
         }
         const cost=count*STAFF_EXTEND_COST_PER;
         const ok=confirm(isJa
-          ?`貅譛・譌･莉･蜀・・莨夂､ｾ蜩｡・・{count}莠ｺ・峨・莉ｻ譛溘ｒ3縺区怦蟒ｶ髟ｷ縺励∪縺吶°・歃n・・{cost}繧ｳ繧､繝ｳ・荏
+          ?`満期7日以内の会社員（${count}人）の任期を3か月延長しますか？\n（${cost}コイン）`
           :`Extend staff expiring within 7 days (${count}) by 3 months?\n(${cost} coins)`);
         if(!ok)return;
-        if(btn){btn.disabled=true;btn.textContent=isJa?'蟒ｶ髟ｷ荳ｭ...':'Extending...';}
+        if(btn){btn.disabled=true;btn.textContent=isJa?'延長中...':'Extending...';}
         const{data,error}=await db.rpc('extend_staff_terms',{p_count:count});
         if(error)throw error;
         if(!data?.ok){
           if(data?.reason==='insufficient_coins'){
-            showToast(isJa?`笞・・繧ｳ繧､繝ｳ縺御ｸ崎ｶｳ縺励※縺・∪縺呻ｼ・{data.coins}/${data.need}・荏:`笞・・Not enough coins (${data.coins}/${data.need})`);
+            showToast(isJa?`⚠️ コインが不足しています（${data.coins}/${data.need}）`:`⚠️ Not enough coins (${data.coins}/${data.need})`);
           }else if(data?.reason==='no_staff'){
-            showToast(isJa?'蟒ｶ髟ｷ縺ｧ縺阪ｋ莨夂､ｾ蜩｡縺後＞縺ｾ縺帙ｓ':'No staff to extend');
+            showToast(isJa?'延長できる会社員がいません':'No staff to extend');
           }else{
-            showToast(isJa?'莉ｻ譛溷ｻｶ髟ｷ縺ｫ螟ｱ謨励＠縺ｾ縺励◆':'Term extension failed');
+            showToast(isJa?'任期延長に失敗しました':'Term extension failed');
           }
           return;
         }
@@ -4033,17 +4047,17 @@
         await refreshEmployeeHeader();
         await refreshStaffTermPanel();
         showToast(isJa
-          ?`搭 莉ｻ譛溘ｒ蟒ｶ髟ｷ縺励∪縺励◆・・{data.extended}莠ｺ / ${data.cost}繧ｳ繧､繝ｳ・荏
-          :`搭 Extended ${data.extended} staff (-${data.cost} coins)`);
+          ?`📋 任期を延長しました（${data.extended}人 / ${data.cost}コイン）`
+          :`📋 Extended ${data.extended} staff (-${data.cost} coins)`);
       }catch(e){
         console.warn('extend_staff_terms:',e.message);
-        showToast(isJa?'莉ｻ譛溷ｻｶ髟ｷ縺ｫ螟ｱ謨・ '+e.message:'Term extension failed: '+e.message);
+        showToast(isJa?'任期延長に失敗: '+e.message:'Term extension failed: '+e.message);
       }finally{
         await refreshStaffTermPanel();
       }
     }
     // ========================================
-    // 蠕捺･ｭ蜩｡繝倥ャ繝繝ｼ
+    // 従業員ヘッダー
     // ========================================
     async function refreshEmployeeHeader(){
       if(!currentUser){
@@ -4060,7 +4074,7 @@
         const total=assigned+bench;
         document.getElementById('emp-total-count').textContent=total.toLocaleString();
         document.getElementById('emp-bench-count').textContent=bench.toLocaleString();
-        document.getElementById('emp-stats').title=isJa?'螂醍ｴ・､ｾ蜩｡邱乗焚=閾ｪ蛻・・蝨溷慍縺ｮ驟榊ｱ・莨題・荳ｭ縲ゆｼ題・荳ｭ=謗｡逕ｨ繝ｻ螢ｲ蜊ｴ繝ｻ髢ｲ隕ｧ縺ｧ雋ｯ縺ｾ縺｣縺滓悴驟榊ｱ槭・莠ｺ':'Total contract staff = assigned on your land + bench. Bench = unassigned pool';
+        document.getElementById('emp-stats').title=isJa?'契約社員総数=自分の土地の配属+休職中。休職中=採用・売却・閲覧で貯まった未配属の人':'Total contract staff = assigned on your land + bench. Bench = unassigned pool';
         document.getElementById('emp-stats').style.display='block';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
@@ -4091,8 +4105,8 @@
     function sellRewardLabel(floors,employees,isJa){
       const mult=getSellCoinMultiplier(employees);
       const f=Math.max(0,floors||0);
-      const tier=mult>=8? (isJa?'繝ｬ繧､繝ｳ繝懊・ﾃ・.0':'Rainbow ﾃ・.0') : mult>=6.6? (isJa?'繧ｴ繝ｼ繝ｫ繝嘉・.6':'Gold ﾃ・.6') : (isJa?'讓呎ｺ姪・.0':'Standard ﾃ・.0');
-      return isJa?`${f}髫偲・{mult}+100・・{tier}・荏:`${f}Fﾃ・{mult}+100 (${tier})`;
+      const tier=mult>=8? (isJa?'レインボー×8.0':'Rainbow ×8.0') : mult>=6.6? (isJa?'ゴールド×6.6':'Gold ×6.6') : (isJa?'標準×6.0':'Standard ×6.0');
+      return isJa?`${f}階×${mult}+100（${tier}）`:`${f}F×${mult}+100 (${tier})`;
     }
     function isOwnLandBuilding(buildingData){
       if(!currentUser||!buildingData)return false;
@@ -4114,21 +4128,21 @@
       if(ownerId&&!buildingData.ownerId)buildingData.ownerId=ownerId;
       const star=getStarByFloors(buildingData.totalFloors);
       const capsuleColors={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
-      const starLabels={5:'笘・・笘・・笘・,4:'笘・・笘・・',3:'笘・・笘・,2:'笘・・',1:'笘・};
+      const starLabels={5:'★★★★★',4:'★★★★',3:'★★★',2:'★★',1:'★'};
       const isJa=currentLang==='ja';
       const prism=normalizePrism(buildingData.shape);
-      document.getElementById('building-modal-icon').textContent=PRISM_ICONS[prism]||'召';
+      document.getElementById('building-modal-icon').textContent=PRISM_ICONS[prism]||'🏢';
       const rankEl=document.getElementById('building-modal-rank');rankEl.textContent=starLabels[star];rankEl.style.color=capsuleColors[star];
       const pLabel=getPrismLabel(prism,isJa);
-      document.getElementById('building-modal-floors').textContent=isJa?`${buildingData.baseFloors}髫弱・${pLabel}`:`${buildingData.baseFloors}F ${pLabel}`;
+      document.getElementById('building-modal-floors').textContent=isJa?`${buildingData.baseFloors}階の${pLabel}`:`${buildingData.baseFloors}F ${pLabel}`;
       document.getElementById('bm-floors-val').textContent=buildingData.totalFloors+'F';
       const empVal=document.getElementById('bm-emp-val');
       const ci=getColorByEmployees(buildingData.employees||0);
-      empVal.textContent=isJa?`${buildingData.employees||0}莠ｺ`:`${buildingData.employees||0}`;
+      empVal.textContent=isJa?`${buildingData.employees||0}人`:`${buildingData.employees||0}`;
       empVal.className='bm-stat-value';
       if(ci.name==='rainbow')empVal.classList.add('emp-rainbow');else if(ci.name==='gold')empVal.classList.add('emp-gold');else if(ci.name==='red')empVal.classList.add('emp-red');
       document.getElementById('bm-views-val').textContent=(buildingData.viewCount||0).toLocaleString();
-      document.getElementById('bml-views').textContent=isJa?'髢ｲ隕ｧ蝗樊焚':'Views';
+      document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
@@ -4141,15 +4155,15 @@
           const bench=Math.max(0,Number(currentUser?.benchEmployees||0));
           assignBtn.style.display='block';
           assignBtn.hidden=false;
-          assignBtn.textContent=isJa?`孫 蠕捺･ｭ蜩｡繧帝・螻橸ｼ井ｼ題・荳ｭ: ${bench}莠ｺ・荏:`孫 Assign Staff (bench: ${bench})`;
+          assignBtn.textContent=isJa?`👷 従業員を配属（休職中: ${bench}人）`:`👷 Assign Staff (bench: ${bench})`;
           assignBtn.disabled=bench<=0;
           assignBtn.style.opacity=bench<=0?'0.5':'1';
         }
         const quote=getBuildingSellQuote(buildingData);
         const benchBack=quote.emp;
         sellBtn.textContent=isJa
-          ?`腸 螢ｲ蜊ｴ +${quote.coins}繧ｳ繧､繝ｳ繝ｻ莨題・縺ｸ${benchBack}莠ｺ・・{quote.floors}髫偲・{getSellCoinMultiplier(quote.emp)}+100・荏
-          :`腸 Sell +${quote.coins} coins ﾂｷ ${benchBack} to bench (${quote.floors}Fﾃ・{getSellCoinMultiplier(quote.emp)}+100)`;
+          ?`💰 売却 +${quote.coins}コイン・休職へ${benchBack}人（${quote.floors}階×${getSellCoinMultiplier(quote.emp)}+100）`
+          :`💰 Sell +${quote.coins} coins · ${benchBack} to bench (${quote.floors}F×${getSellCoinMultiplier(quote.emp)}+100)`;
       } else {
         sellBtn.style.display='none';
         sellBtn.hidden=true;
@@ -4159,25 +4173,25 @@
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
         const ownerName=land.owner_display||'';
-        if(isMe){ownerEl.innerHTML=`側 <span class="owner-name">${isJa?'縺ゅ↑縺溘・繝薙Ν':'Your building'}</span>`;}
-        else if(ownerName){const xHandle=ownerName.replace(/^@/,'');ownerEl.innerHTML=`側 <a class="owner-x-link" href="https://x.com/${encodeURIComponent(xHandle)}" target="_blank" rel="noopener">@${xHandle}</a>`;}
-        else{ownerEl.textContent=isJa?'繧ｪ繝ｼ繝翫・荳肴・':'Unknown owner';}
-      } else{ownerEl.textContent=isJa?'繧ｪ繝ｼ繝翫・荳肴・':'Unknown owner';}
+        if(isMe){ownerEl.innerHTML=`👤 <span class="owner-name">${isJa?'あなたのビル':'Your building'}</span>`;}
+        else if(ownerName){const xHandle=ownerName.replace(/^@/,'');ownerEl.innerHTML=`👤 <a class="owner-x-link" href="https://x.com/${encodeURIComponent(xHandle)}" target="_blank" rel="noopener">@${xHandle}</a>`;}
+        else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
+      } else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
       const profile=approvedProfiles[key];
       const mottoEl=document.getElementById('building-modal-motto');
       const notesEl=document.getElementById('building-modal-notes');
       const notesTextEl=document.getElementById('building-modal-notes-text');
       if(profile&&profile.motto_text){
-        mottoEl.textContent='町 '+profile.motto_text;
+        mottoEl.textContent='💬 '+profile.motto_text;
         mottoEl.classList.remove('rank-1','rank-2','rank-3','rank-4','rank-5');
         mottoEl.classList.add('rank-'+star);
         mottoEl.style.display='block';
       } else{mottoEl.style.display='none';}
       if(profile&&profile.notes_text){notesTextEl.textContent=profile.notes_text;notesEl.style.display='block';}
       else{notesEl.style.display='none';}
-      document.getElementById('bml-floors').textContent=isJa?'邱城嚴謨ｰ':'Floors';
-      document.getElementById('bml-emp').textContent=isJa?'蠕捺･ｭ蜩｡':'Employees';
-      document.getElementById('bml-coord').textContent=isJa?'蠎ｧ讓・:'Coords';
+      document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
+      document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
+      document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
       document.getElementById('building-modal').classList.add('open');
       recordBuildingView(buildingData);
     }
@@ -4187,7 +4201,7 @@
       const isJa=currentLang==='ja';
       const b=currentModalBuilding;
       if(!isOwnLandBuilding(b)){
-        showToast(isJa?'閾ｪ蛻・・繝薙Ν縺ｮ縺ｿ驟榊ｱ槭〒縺阪∪縺・:'You can assign only to your own building');
+        showToast(isJa?'自分のビルのみ配属できます':'You can assign only to your own building');
         return;
       }
       try{
@@ -4195,24 +4209,24 @@
         if(uErr)throw uErr;
         const bench=Math.max(0,Number(uRow?.bench_employees||0));
         if(bench<=0){
-          showToast(isJa?'莨題・荳ｭ縺ｮ蠕捺･ｭ蜩｡縺後＞縺ｾ縺帙ｓ':'No bench staff available');
+          showToast(isJa?'休職中の従業員がいません':'No bench staff available');
           await refreshEmployeeHeader();
           openBuildingModal(b);
           return;
         }
-        const input=prompt(isJa?`菴穂ｺｺ驟榊ｱ槭＠縺ｾ縺吶°・滂ｼ・縲・{bench}・荏:`How many to assign? (1-${bench})`,String(Math.min(bench,5)));
+        const input=prompt(isJa?`何人配属しますか？（1〜${bench}）`:`How many to assign? (1-${bench})`,String(Math.min(bench,5)));
         if(input==null)return;
         const count=Math.floor(Number(input));
         if(!Number.isFinite(count)||count<=0||count>bench){
-          showToast(isJa?'驟榊ｱ樔ｺｺ謨ｰ縺御ｸ肴ｭ｣縺ｧ縺・:'Invalid assignment count');
+          showToast(isJa?'配属人数が不正です':'Invalid assignment count');
           return;
         }
         const key=b.landKey||landKey(b.x,b.z);
         const {data:rows,error:bErr}=await db.from('buildings').select('employees,floors,style,owner_id,view_count').eq('x',b.x).eq('z',b.z).limit(1);
         if(bErr)throw bErr;
         const row=(rows&&rows[0])||null;
-        if(!row){showToast(isJa?'蟇ｾ雎｡繝薙Ν縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ':'Building not found');return;}
-        if(row.owner_id!==currentUser.id){showToast(isJa?'閾ｪ蛻・・繝薙Ν縺ｧ縺ｯ縺ゅｊ縺ｾ縺帙ｓ':'Not your building');return;}
+        if(!row){showToast(isJa?'対象ビルが見つかりません':'Building not found');return;}
+        if(row.owner_id!==currentUser.id){showToast(isJa?'自分のビルではありません':'Not your building');return;}
         const nextBench=bench-count;
         const nextEmp=(Number(row.employees)||0)+count;
         const {error:uuErr}=await db.from('users').update({bench_employees:nextBench}).eq('id',currentUser.id);
@@ -4232,10 +4246,10 @@
         await refreshEmployeeHeader();
         openBuildingModal(updated);
         drawMinimap();
-        showToast(isJa?`孫 ${count}莠ｺ繧帝・螻槭＠縺ｾ縺励◆`:`孫 Assigned ${count} staff`);
+        showToast(isJa?`👷 ${count}人を配属しました`:`👷 Assigned ${count} staff`);
       }catch(e){
         console.warn('assignEmployeesToCurrentBuilding',e);
-        showToast(isJa?`驟榊ｱ槭↓螟ｱ謨・ ${e.message}`:`Assignment failed: ${e.message}`);
+        showToast(isJa?`配属に失敗: ${e.message}`:`Assignment failed: ${e.message}`);
       }
     }
     async function recordBuildingView(buildingData){
@@ -4247,7 +4261,7 @@
         if(!data||!data.ok){
           if(data&&data.reason==='building_not_found'){
             const isJa=currentLang==='ja';
-            showToast(isJa?'縺薙・繝薙Ν縺ｯ髢ｲ隕ｧ險倬鹸縺ｮ蟇ｾ雎｡螟悶〒縺・:'This building cannot be tracked');
+            showToast(isJa?'このビルは閲覧記録の対象外です':'This building cannot be tracked');
           }
           return;
         }
@@ -4261,7 +4275,7 @@
           await checkViewTaskProgress();
           if(data.employees_added>0){
             const isJa=currentLang==='ja';
-            showToast(isJa?`脂 30髢ｲ隕ｧ驕疲・・∝ｾ捺･ｭ蜩｡+${data.employees_added}莠ｺ繧堤佐蠕輿:`脂 30 views! +${data.employees_added} employee(s)`);
+            showToast(isJa?`🎉 30閲覧達成！従業員+${data.employees_added}人を獲得`:`🎉 30 views! +${data.employees_added} employee(s)`);
           }
           if(data.bench_employees!==undefined){
             currentUser.benchEmployees=data.bench_employees;
@@ -4272,13 +4286,13 @@
           document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
           if(data.reason==='already_today'){
             const isJa=currentLang==='ja';
-            showToast(isJa?'操 縺薙・繝薙Ν縺ｯ譛ｬ譌･縺吶〒縺ｫ髢ｲ隕ｧ貂医∩縺ｧ縺・:'操 Already viewed this building today');
+            showToast(isJa?'👀 このビルは本日すでに閲覧済みです':'👀 Already viewed this building today');
           }
         }
       }catch(e){
         console.warn('view record error:',e.message);
         const isJa=currentLang==='ja';
-        showToast(isJa?'髢ｲ隕ｧ險倬鹸繧ｨ繝ｩ繝ｼ: '+e.message:'View record error: '+e.message);
+        showToast(isJa?'閲覧記録エラー: '+e.message:'View record error: '+e.message);
       }
     }
     async function confirmSellBuilding(){
@@ -4289,14 +4303,14 @@
       const isJa=currentLang==='ja';
       const formula=sellRewardLabel(quote.floors,quote.emp,isJa);
       const msg=isJa
-        ?`縺薙・繝薙Ν・育ｷ・{quote.floors}髫弱・驟榊ｱ・{quote.emp}莠ｺ・峨ｒ螢ｲ蜊ｴ縺励∪縺吶°・歃n\n迯ｲ蠕励さ繧､繝ｳ: ${quote.coins}\n・・{formula}・噂n窶ｻ陦ｨ遉ｺ髫取焚ﾃ怜咲紫+100縲る・螻・{quote.emp}莠ｺ縺ｯ莨題・荳ｭ縺ｸ謌ｻ繧翫∪縺吶Ａ
-        :`Sell this building (${quote.floors}F total, ${quote.emp} assigned)?\n\nCoins: ${quote.coins}\n(${formula})\nUses displayed floors ﾃ・multiplier + 100. Staff return to bench.`;
+        ?`このビル（総${quote.floors}階・配属${quote.emp}人）を売却しますか？\n\n獲得コイン: ${quote.coins}\n（${formula}）\n※表示階数×倍率+100。配属${quote.emp}人は休職中へ戻ります。`
+        :`Sell this building (${quote.floors}F total, ${quote.emp} assigned)?\n\nCoins: ${quote.coins}\n(${formula})\nUses displayed floors × multiplier + 100. Staff return to bench.`;
       if(!confirm(msg))return;
       try{
         const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});
         if(error)throw error;
-        if(!data||!data.ok){showToast(isJa?'螢ｲ蜊ｴ縺ｫ螟ｱ謨・:'Sell failed: '+(data?data.reason:'unknown'));return;}
-        // 3D mesh, motto蜑企勁
+        if(!data||!data.ok){showToast(isJa?'売却に失敗':'Sell failed: '+(data?data.reason:'unknown'));return;}
+        // 3D mesh, motto削除
         if(b.mesh)b.mesh.dispose();
         const mottoMesh=scene.getMeshByName('motto_'+b.x+'_'+b.z);if(mottoMesh)mottoMesh.dispose();
         buildings=buildings.filter(x=>!(x.x===b.x&&x.z===b.z));
@@ -4315,12 +4329,13 @@
           document.getElementById('coin-count').textContent=data.coins_remaining;
         }
         if(coins>0)await recordCoin(coins,'building_sell');
-        showToast(isJa?`腸 螢ｲ蜊ｴ螳御ｺ・ｼ・${coins}繧ｳ繧､繝ｳ・・{quote.floors}髫弱ン繝ｫ繝ｻ莨題・縺ｸ${quote.emp}莠ｺ・荏:`腸 Sold! +${coins} coins (${quote.floors}F, ${quote.emp} staff to bench)`);
+        showToast(isJa?`💰 売却完了！+${coins}コイン（${quote.floors}階ビル・休職へ${quote.emp}人）`:`💰 Sold! +${coins} coins (${quote.floors}F, ${quote.emp} staff to bench)`);
         await refreshEmployeeHeader();
-      }catch(e){console.warn('sell error:',e.message);showToast('螢ｲ蜊ｴ螟ｱ謨・ '+e.message);}
+      }catch(e){console.warn('sell error:',e.message);showToast('売却失敗: '+e.message);}
     }
     // ========================================
-    // 繝溘ル繝槭ャ繝・    // ========================================
+    // ミニマップ
+    // ========================================
     const minimapCanvas=document.getElementById('minimap-canvas');
     const mmCtx=minimapCanvas.getContext('2d');
     const MM_SIZE=280,MM_RANGE=200;
@@ -4331,8 +4346,8 @@
       minimapVisible=!minimapVisible;
       minimapCanvas.style.display=minimapVisible?'block':'none';
       document.getElementById('minimap-label').style.display=minimapVisible?'block':'none';
-      document.getElementById('minimap-toggle').textContent=minimapVisible?'笨・:'亮';
-      document.getElementById('minimap-toggle').title=minimapVisible?(currentLang==='ja'?'蝨ｰ蝗ｳ繧帝哩縺倥ｋ':'Hide map'):(currentLang==='ja'?'蝨ｰ蝗ｳ繧定｡ｨ遉ｺ':'Show map');
+      document.getElementById('minimap-toggle').textContent=minimapVisible?'✕':'🗺';
+      document.getElementById('minimap-toggle').title=minimapVisible?(currentLang==='ja'?'地図を閉じる':'Hide map'):(currentLang==='ja'?'地図を表示':'Show map');
       if(minimapVisible)drawMinimap();
     }
     function worldToMM(wx,wz){return{px:(wx+MM_RANGE/2)/MM_RANGE*MM_SIZE,py:(wz+MM_RANGE/2)/MM_RANGE*MM_SIZE};}
@@ -4393,7 +4408,7 @@
             mat.emissiveColor.g=e.g*sweep;
             mat.emissiveColor.b=e.b*sweep;
           } else if(type==='gold'){
-            // 繧､繝ｳ繧ｴ繝・ヨ鬚ｨ繧ｷ繝槭・・夐ｫ倬溘〒譏取囓縺瑚ｵｰ繧矩≡濶ｲ
+            // インゴット風シマー：高速で明暗が走る金色
             const shimmer=0.5+0.5*Math.sin(t/420);
             const shimmer2=0.5+0.5*Math.sin(t/300+1.5);
             mat.diffuseColor.r=0.95+shimmer*0.05;
@@ -4452,7 +4467,7 @@
       return buildingData;
     }
     async function loadBuildings(){
-      if(!db){console.warn('[IGNIS] no db 窶・demo buildings');[[0,0,20,'square',0],[10,5,35,'triangle',30]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));return;}
+      if(!db){console.warn('[IGNIS] no db — demo buildings');[[0,0,20,'square',0],[10,5,35,'triangle',30]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));return;}
       try{
         const{data,error}=await withTimeout(db.from('buildings').select('*'),8000,'buildings');
         if(error)throw error;
@@ -4475,7 +4490,7 @@
       }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}
     }
     // ========================================
-    // 繧ｰ繝ｪ繝・ラ繧ｿ繝・・
+    // グリッドタップ
     // ========================================
     scene.onPointerObservable.add((pointerInfo)=>{
       if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
@@ -4501,21 +4516,23 @@
         if(Math.abs(gx)>GRID_HALF||Math.abs(gz)>GRID_HALF)return;
         if(pendingBuildMode&&gachaState.result){
           const key=landKey(gx,gz);const land=landMap[key];
-          if(!land||land.owner_id!==currentUser?.id){showToast('閾ｪ蛻・・蝨溷慍繧帝∈謚槭＠縺ｦ縺上□縺輔＞');return;}
+          if(!land||land.owner_id!==currentUser?.id){showToast('自分の土地を選択してください');return;}
           gachaState.landKey=key;openBuildModal();return;
         }
         openLandPanel(gx,gz);
       }
     });
-    // build-btn 縺ｯ onclick="openGachaModal(false)" 縺ｫ螟画峩貂医∩・・ddEventListener荳崎ｦ・ｼ・    // ========================================
-    // 蝗ｳ髑・    // ========================================
+    // build-btn は onclick="openGachaModal(false)" に変更済み（addEventListener不要）
+    // ========================================
+    // 図鑑
+    // ========================================
     const STAR_COLORS_ZUKAN={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
-    const STAR_LABELS_ZUKAN={5:'笘・・笘・・笘・,4:'笘・・笘・・',3:'笘・・笘・,2:'笘・・',1:'笘・};
-    const RARITY_NAMES_JA={5:'莨晁ｪｬ',4:'繧ｨ繝斐ャ繧ｯ',3:'繝ｬ繧｢',2:'繧｢繝ｳ繧ｳ繝｢繝ｳ',1:'繧ｳ繝｢繝ｳ'};
+    const STAR_LABELS_ZUKAN={5:'★★★★★',4:'★★★★',3:'★★★',2:'★★',1:'★'};
+    const RARITY_NAMES_JA={5:'伝説',4:'エピック',3:'レア',2:'アンコモン',1:'コモン'};
     const RARITY_NAMES_EN={5:'Legendary',4:'Epic',3:'Rare',2:'Uncommon',1:'Common'};
     let zukanTab='owned',zukanBuildings=[];
     async function openZukan(){
-      if(!currentUser){showToast('繝ｭ繧ｰ繧､繝ｳ縺悟ｿ・ｦ√〒縺・);return;}
+      if(!currentUser){showToast('ログインが必要です');return;}
       document.getElementById('zukan-overlay').classList.add('open');
       IgnisAudio.playBgmTrack('collection').catch(()=>{});
       await loadZukanBuildings();
@@ -4537,7 +4554,7 @@
         const{data,error}=await db.from('buildings').select('*').eq('owner_id',currentUser.id).order('floors',{ascending:false});
         if(error)throw error;
         zukanBuildings=data||[];renderZukanOwned();renderZukanRarity();
-      }catch(e){console.warn('zukan load error:',e.message);showToast('蝗ｳ髑代・隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆');}
+      }catch(e){console.warn('zukan load error:',e.message);showToast('図鑑の読み込みに失敗しました');}
       finally{loadingEl.classList.remove('show');}
     }
     function getStarByBaseFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
@@ -4551,11 +4568,11 @@
       const totalEmp=zukanBuildings.reduce((s,b)=>s+(b.employees||0),0);
       const best=zukanBuildings[0];
       const star5count=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===5).length;
-      [{label:isJa?'謇譛峨ン繝ｫ':'Buildings',val:isJa?zukanBuildings.length+'譽・:zukanBuildings.length+''},
-       {label:isJa?'邱城嚴謨ｰ':'Total Floors',val:totalFloors+'F'},
-       {label:isJa?'邱丞ｾ捺･ｭ蜩｡':'Employees',val:isJa?totalEmp.toLocaleString()+'莠ｺ':totalEmp.toLocaleString()},
-       {label:isJa?'譛鬮伜ｱ､':'Tallest',val:best.floors+'F'},
-       {label:'笘・・',val:isJa?star5count+'譽・:star5count+'',highlight:star5count>0}
+      [{label:isJa?'所有ビル':'Buildings',val:isJa?zukanBuildings.length+'棟':zukanBuildings.length+''},
+       {label:isJa?'総階数':'Total Floors',val:totalFloors+'F'},
+       {label:isJa?'総従業員':'Employees',val:isJa?totalEmp.toLocaleString()+'人':totalEmp.toLocaleString()},
+       {label:isJa?'最高層':'Tallest',val:best.floors+'F'},
+       {label:'★×5',val:isJa?star5count+'棟':star5count+'',highlight:star5count>0}
       ].forEach(c=>{
         const el=document.createElement('div');el.className='zukan-stat-chip';
         el.innerHTML=`<span class="chip-label">${c.label}</span><span class="chip-val" style="${c.highlight?'color:#ee0979':''}">${c.val}</span>`;
@@ -4565,11 +4582,11 @@
         const star=getStarByBaseFloors(b.floors);const ci=getColorByEmployees(b.employees||0);
         const prism=normalizePrism(b.style?b.style.split('_')[0]:'square');
         const prismLabel=getPrismLabel(prism,isJa);
-        const prismIcon=PRISM_ICONS[prism]||'召';
-        const empDisplay=isJa?`${(b.employees||0).toLocaleString()}莠ｺ`:`${(b.employees||0).toLocaleString()}`;
+        const prismIcon=PRISM_ICONS[prism]||'🏢';
+        const empDisplay=isJa?`${(b.employees||0).toLocaleString()}人`:`${(b.employees||0).toLocaleString()}`;
         const card=document.createElement('div');card.className=`zukan-card star${star}`;
-        card.innerHTML=`<div class="zcard-icon">${prismIcon}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${isJa?`${b.floors}髫餐:`${b.floors}F`}</div><div class="zcard-floors-label">${prismLabel}</div><div class="zcard-meta"><span class="zcard-emp" style="color:${ci.name==='gold'?'#f59e0b':ci.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">則 ${empDisplay}</span><br><span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span></div>`;
-        card.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;showToast(`桃 X:${b.x} / Z:${b.z} 縺ｫ繝輔か繝ｼ繧ｫ繧ｹ`);});
+        card.innerHTML=`<div class="zcard-icon">${prismIcon}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${isJa?`${b.floors}階`:`${b.floors}F`}</div><div class="zcard-floors-label">${prismLabel}</div><div class="zcard-meta"><span class="zcard-emp" style="color:${ci.name==='gold'?'#f59e0b':ci.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">👥 ${empDisplay}</span><br><span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span></div>`;
+        card.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;showToast(`📍 X:${b.x} / Z:${b.z} にフォーカス`);});
         grid.appendChild(card);
       });
     }
@@ -4579,17 +4596,17 @@
       [5,4,3,2,1].forEach(star=>{
         const myBuildings=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===star);
         const section=document.createElement('div');section.className='zukan-rarity-section';
-        const countLabel=isJa?myBuildings.length+'譽・:myBuildings.length+'';
+        const countLabel=isJa?myBuildings.length+'棟':myBuildings.length+'';
         const countClass=myBuildings.length>0?'zukan-rarity-count has-count':'zukan-rarity-count';
         section.innerHTML=`<div class="zukan-rarity-header"><span class="zukan-rarity-stars" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</span><span class="zukan-rarity-label">${rarityNames[star]}</span><span class="${countClass}">${countLabel}</span></div><div class="zukan-rarity-buildings" id="zukan-rarity-${star}"></div>`;
         container.appendChild(section);
         const buildingsEl=section.querySelector(`#zukan-rarity-${star}`);
-        if(myBuildings.length===0){buildingsEl.innerHTML=`<span class="zukan-empty-rarity">${isJa?'譛ｪ謇譛・:'Not owned'}</span>`;}
-        else{myBuildings.forEach(b=>{const prism=normalizePrism(b.style?b.style.split('_')[0]:'square');const mini=document.createElement('div');mini.className='zukan-mini-card';mini.innerHTML=`${PRISM_ICONS[prism]||'召'} ${isJa?`${b.floors}髫餐:`${b.floors}F`} ${getPrismLabel(prism,isJa)}`;mini.style.cursor='pointer';mini.title=`X:${b.x} Z:${b.z}`;mini.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;});buildingsEl.appendChild(mini);});}
+        if(myBuildings.length===0){buildingsEl.innerHTML=`<span class="zukan-empty-rarity">${isJa?'未所有':'Not owned'}</span>`;}
+        else{myBuildings.forEach(b=>{const prism=normalizePrism(b.style?b.style.split('_')[0]:'square');const mini=document.createElement('div');mini.className='zukan-mini-card';mini.innerHTML=`${PRISM_ICONS[prism]||'🏢'} ${isJa?`${b.floors}階`:`${b.floors}F`} ${getPrismLabel(prism,isJa)}`;mini.style.cursor='pointer';mini.title=`X:${b.x} Z:${b.z}`;mini.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;});buildingsEl.appendChild(mini);});}
       });
     }
     // ========================================
-    // 繝ｩ繝ｳ繧ｭ繝ｳ繧ｰ
+    // ランキング
     // ========================================
     let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null};
     function rankingNameHash(uid,dayKey){
@@ -4604,7 +4621,7 @@
         return `<a class="rank-x-link" href="https://x.com/${handle}" target="_blank" rel="noopener">@${u.x_username.replace(/^@/,'')}</a>`;
       }
       if(rank===1)return raw;
-      const chars='笆遺俣笆停桝笆・摩笆笆｡';
+      const chars='█▓▒░▄▀■□';
       const seed=rankingNameHash(u.uid,new Date().toISOString().slice(0,10));
       let out='';
       for(let i=0;i<raw.length;i++){
@@ -4612,7 +4629,7 @@
         if(ch==='@'||ch===' '){out+=ch;continue;}
         out+=chars[(seed+i*11)%chars.length];
       }
-      return out||'笆遺毎笆遺毎';
+      return out||'████';
     }
     function patchOwnerCenterBuilding(){
       const key=landKey(SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z);
@@ -4667,13 +4684,13 @@
         switchRankingTab(rankingTab);
       }catch(e){
         console.warn('ranking load error:',e.message);
-        document.getElementById('ranking-coins-list').innerHTML='<div class="ranking-empty">隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆</div>';
+        document.getElementById('ranking-coins-list').innerHTML='<div class="ranking-empty">読み込みに失敗しました</div>';
       }finally{loadingEl.classList.remove('show');}
     }
     function renderRankingList(containerId,rankData,type){
       const container=document.getElementById(containerId);
-      if(!rankData||rankData.length===0){container.innerHTML='<div class="ranking-empty">女 縺ｾ縺繝・・繧ｿ縺後≠繧翫∪縺帙ｓ</div>';return;}
-      const medals=['･・,'･・,'･・];const isJa=currentLang==='ja';
+      if(!rankData||rankData.length===0){container.innerHTML='<div class="ranking-empty">🏗 まだデータがありません</div>';return;}
+      const medals=['🥇','🥈','🥉'];const isJa=currentLang==='ja';
       const now=new Date().toLocaleTimeString(isJa?'ja-JP':'en-US',{hour:'2-digit',minute:'2-digit'});
       let html='';
       rankData.forEach((u,i)=>{
@@ -4683,16 +4700,16 @@
         const masked=maskRankingDisplayName(u,rank);
         const nameClass=rank===1?'ranking-username':'ranking-username masked';
         let value,unit,subText;
-        if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'繧ｳ繧､繝ｳ':'coins';subText=isJa?`則 ${u.totalEmp.toLocaleString()}莠ｺ ﾂｷ 召 ${u.totalFloors.toLocaleString()}髫餐:`則 ${u.totalEmp} ﾂｷ 召 ${u.totalFloors}F`;}
-        else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'莠ｺ':'emp';subText=isJa?`莨題・荳ｭ蜷ｫ繧 ﾂｷ 召 ${u.totalFloors.toLocaleString()}髫餐:`incl. bench ﾂｷ 召 ${u.totalFloors}F`;}
-        else{value=u.totalFloors.toLocaleString();unit=isJa?'髫・:'F';subText=isJa?`譛螟ｧ${MAX_BUILDING_FLOORS}髫・譽・ﾂｷ 則 ${u.totalEmp.toLocaleString()}莠ｺ`:`max ${MAX_BUILDING_FLOORS}F/bldg ﾂｷ 則 ${u.totalEmp}`;}
+        if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
+        else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
+        else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';
         if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}
         else if(type==='coins'){if(rank===1)valueColor='#f59e0b';else if(rank===2)valueColor='#94a3b8';else if(rank===3)valueColor='#b4783c';}
-        const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'・医≠縺ｪ縺滂ｼ・:'(you)'}</span>`:'';
+        const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
         html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="${nameClass}">${masked}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
       });
-      html+=`<div class="ranking-updated">${isJa?'譛邨よ峩譁ｰ':'Updated'}: ${now}<br><span style="font-size:10px;opacity:0.75;">${isJa?'窶ｻ1菴阪・縺ｿ繝ｦ繝ｼ繧ｶ繝ｼ蜷榊・髢具ｼ・繝ｪ繝ｳ繧ｯ・・:'窶ｻOnly #1 name is public (X link)'}</span></div>`;
+      html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}<br><span style="font-size:10px;opacity:0.75;">${isJa?'※1位のみユーザー名公開（Xリンク）':'※Only #1 name is public (X link)'}</span></div>`;
       container.innerHTML=html;
     }
     engine.runRenderLoop(()=>scene.render());

@@ -1244,7 +1244,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-28-v47';
+    const IGNIS_BUILD='2026-05-28-v48';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -1254,9 +1254,12 @@
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
     const IGNIS_LOGO_VIDEO_FILES=[
+      {file:'IGNIS-logo.mov.MOV',type:'video/mp4'},
       {file:'IGNIS-logo.mov.MOV',type:'video/quicktime'},
+      {file:'IGNIS-logo.mov',type:'video/mp4'},
       {file:'IGNIS-logo.mov',type:'video/quicktime'},
-      {file:'ignis-logo.mp4',type:'video/mp4'}
+      {file:'ignis-logo.mp4',type:'video/mp4'},
+      {file:'IGNIS-city.mov',type:'video/mp4'}
     ];
     function getIgnisAdAssetBase(){
       try{
@@ -1330,20 +1333,32 @@
         video.preload='auto';
         video.disablePictureInPicture=true;
         const sources=s.videoSources||[];
-        sources.forEach(src=>{
+        let sourceIdx=0;
+        function setVideoSource(idx){
+          if(idx<0||idx>=sources.length)return false;
+          sourceIdx=idx;
+          while(video.firstChild)video.removeChild(video.firstChild);
+          const src=sources[idx];
           const source=document.createElement('source');
           source.src=src.url;
-          source.type=src.type;
+          if(src.type)source.type=src.type;
           video.appendChild(source);
-        });
-        if(sources[0]){
-          video.src=sources[0].url;
+          video.src=src.url;
+          return true;
         }
+        if(sources.length)setVideoSource(0);
+        video.setAttribute('muted','');
+        video.setAttribute('autoplay','');
         video.addEventListener('playing',()=>{el.classList.add('is-video-playing');});
         video.addEventListener('pause',()=>{if(video.currentTime<0.05)el.classList.remove('is-video-playing');});
         video.addEventListener('error',()=>{
           el.classList.remove('is-video-playing');
-          console.warn('[IGNIS] logo video error',video.error);
+          if(setVideoSource(sourceIdx+1)){
+            video.load();
+            video.play().catch(()=>{});
+          }else{
+            console.warn('[IGNIS] logo video error',video.error);
+          }
         });
         el.appendChild(placeholder);
         el.appendChild(video);
@@ -1361,7 +1376,7 @@
     function initAdCarousel(){
       const slot=document.getElementById('ad-slot');
       if(!slot)return;
-      const adAssetV='45';
+      const adAssetV='48';
       const logoVideoSources=buildLogoVideoSources(adAssetV);
       const slides=IGNIS_AD_SLIDES.map(s=>{
         if(s.type==='video'){
@@ -1400,32 +1415,27 @@
       let slideW=0;
       let carouselTimer=null;
       function syncAdVideos(){
-        const activeIdx=index>=realCount?0:index;
-        track.querySelectorAll('.ad-carousel-slide').forEach(el=>{
-          const vid=el.querySelector('video.ad-carousel-video');
-          if(!vid)return;
-          const onSlide=parseInt(el.dataset.adIndex||'-1',10)===activeIdx;
-          if(onSlide){
-            if(!vid.dataset.loaded){
-              vid.load();
-              vid.dataset.loaded='1';
-            }
-            const play=()=>{vid.play().catch(err=>console.warn('[IGNIS] logo video play',err));};
-            if(vid.readyState>=2)play();
-            else{
-              vid.addEventListener('loadeddata',play,{once:true});
-              vid.addEventListener('canplay',play,{once:true});
-            }
-          }else{
-            vid.pause();
-            el.classList.remove('is-video-playing');
-            try{vid.currentTime=0;}catch(e){}
-          }
+        const slideEl=track.children[index];
+        track.querySelectorAll('video.ad-carousel-video').forEach(vid=>{
+          vid.pause();
+          try{vid.currentTime=0;}catch(e){}
+          const parent=vid.closest('.ad-carousel-slide');
+          if(parent)parent.classList.remove('is-video-playing');
         });
+        if(!slideEl)return;
+        const vid=slideEl.querySelector('video.ad-carousel-video');
+        if(!vid)return;
+        vid.muted=true;
+        const play=()=>{vid.play().catch(err=>console.warn('[IGNIS] logo video play',err));};
+        vid.load();
+        if(vid.readyState>=2)play();
+        else{
+          vid.addEventListener('loadeddata',play,{once:true});
+          vid.addEventListener('canplay',play,{once:true});
+        }
       }
       function slideDelayMs(){
-        const activeIdx=index>=realCount?0:index;
-        const slideEl=track.querySelector('.ad-carousel-slide[data-ad-index="'+activeIdx+'"]');
+        const slideEl=track.children[index>=realCount?0:index];
         const vid=slideEl&&slideEl.querySelector('video.ad-carousel-video');
         if(vid&&Number.isFinite(vid.duration)&&vid.duration>1.5){
           return Math.min(Math.max(vid.duration*1000+400,6000),20000);
@@ -4117,9 +4127,10 @@
           assignBtn.style.opacity=bench<=0?'0.5':'1';
         }
         const quote=getBuildingSellQuote(buildingData);
+        const benchBack=quote.emp;
         sellBtn.textContent=isJa
-          ?`💰 売却 +${quote.coins}コイン（${quote.floors}階×${getSellCoinMultiplier(quote.emp)}+100）`
-          :`💰 Sell +${quote.coins} coins (${quote.floors}F×${getSellCoinMultiplier(quote.emp)}+100)`;
+          ?`💰 売却 +${quote.coins}コイン・休職へ${benchBack}人（${quote.floors}階×${getSellCoinMultiplier(quote.emp)}+100）`
+          :`💰 Sell +${quote.coins} coins · ${benchBack} to bench (${quote.floors}F×${getSellCoinMultiplier(quote.emp)}+100)`;
       } else {
         sellBtn.style.display='none';
         sellBtn.hidden=true;
@@ -4285,7 +4296,7 @@
           document.getElementById('coin-count').textContent=data.coins_remaining;
         }
         if(coins>0)await recordCoin(coins,'building_sell');
-        showToast(isJa?`💰 売却完了！+${coins}コイン（${quote.floors}階ビル・配属${emp}人は休職中へ）`:`💰 Sold! +${coins} coins (${quote.floors}F bldg, ${emp} staff to bench)`);
+        showToast(isJa?`💰 売却完了！+${coins}コイン（${quote.floors}階ビル・休職へ${quote.emp}人）`:`💰 Sold! +${coins} coins (${quote.floors}F, ${quote.emp} staff to bench)`);
         await refreshEmployeeHeader();
       }catch(e){console.warn('sell error:',e.message);showToast('売却失敗: '+e.message);}
     }

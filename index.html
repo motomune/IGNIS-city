@@ -3496,6 +3496,14 @@
       const buyBtn=document.getElementById('land-buy-btn');
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
+        // 土地2面上限チェック
+        const{count:ownedCount}=await db.from('lands').select('*',{count:'exact',head:true}).eq('owner_id',currentUser.id);
+        if((ownedCount||0)>=2){
+          const isJa=currentLang==='ja';
+          showToast(isJa?'土地は最大2面まで取得できます（売却してから再取得）':'Max 2 plots allowed. Sell one first.');
+          buyBtn.disabled=false;
+          buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;return;
+        }
         const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
         const balance=ud?ud.coin_column||0:0;
         if(LAND_COST>0&&balance<LAND_COST){
@@ -4389,6 +4397,10 @@
         delete buildingMap[b.landKey];
         delete landMap[b.landKey];
         delete approvedProfiles[b.landKey];
+        zukanBuildings=zukanBuildings.filter(zb=>!(zb.x===b.x&&zb.z===b.z));
+        if(document.getElementById('zukan-overlay').classList.contains('open')){
+          renderZukanOwned();renderZukanRarity();
+        }
         document.getElementById('building-count').textContent=buildings.length;
         refreshTile(b.landKey);
         drawMinimap();

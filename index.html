@@ -766,6 +766,8 @@
     #building-modal-motto.rank-3 { color:#3b82f6;border-left:4px solid #3b82f6;background:rgba(59,130,246,0.1); }
     #building-modal-motto.rank-2 { color:#22c55e;border-left:4px solid #22c55e;background:rgba(34,197,94,0.1); }
     #building-modal-motto.rank-1 { color:#94a3b8;border-left:4px solid #94a3b8;background:rgba(148,163,184,0.1); }
+    #building-motto-btn { width:100%;background:linear-gradient(135deg,rgba(129,140,248,0.25),rgba(168,85,247,0.25));border:1px solid rgba(168,85,247,0.4);color:#c4b5fd;padding:10px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:8px;transition:opacity 0.2s; }
+    #building-motto-btn:hover { opacity:0.85; }
     #building-modal-notes { font-size:12px;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;display:none; }
     #building-modal-notes-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
     /* 3D格言ラベル */
@@ -984,6 +986,7 @@
       <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
+      <button id="building-motto-btn" onclick="openMottoFromModal()" style="display:none;">✍️ 格言を申請</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
   </div>
@@ -2303,7 +2306,7 @@
           .select('amount,reason,created_at')
           .eq('user_id',currentUser.id)
           .order('created_at',{ascending:false})
-          .limit(200);
+          .limit(50);
         if(error)throw error;
         coinHistoryData=data||[];
         renderCoinHistory();
@@ -3215,9 +3218,9 @@
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
-    arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=170;arcCamera.upperBetaLimit=Math.PI/2.2;
+    arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=240;arcCamera.upperBetaLimit=Math.PI/2.2;
     if(isCoarseMobile()){
-      arcCamera.upperRadiusLimit=420;
+      arcCamera.upperRadiusLimit=560;
       arcCamera.lowerRadiusLimit=6;
       arcCamera.radius=Math.max(arcCamera.radius,90);
       arcCamera.wheelPrecision=0.35;
@@ -3780,6 +3783,13 @@
       document.getElementById('profile-modal').classList.add('open');
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
+    function openMottoFromModal(){
+      const btn=document.getElementById('building-motto-btn');
+      if(!btn)return;
+      const bx=btn._bx,bz=btn._bz,bf=btn._bf||1;
+      document.getElementById('building-modal').classList.remove('open');
+      openProfileModal(bx,bz,bf);
+    }
     document.getElementById('profile-motto-input').addEventListener('input',function(){
       const len=this.value.length;
       const counter=document.getElementById('profile-motto-counter');
@@ -4202,6 +4212,7 @@
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
       const assignBtn=document.getElementById('building-assign-btn');
+      const mottoBtn=document.getElementById('building-motto-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
       if(isOwnLand){
         sellBtn.style.display='block';
@@ -4214,6 +4225,11 @@
           assignBtn.disabled=bench<=0;
           assignBtn.style.opacity=bench<=0?'0.5':'1';
         }
+        if(mottoBtn){
+          mottoBtn.style.display='block';mottoBtn.hidden=false;
+          mottoBtn.textContent=isJa?'✍️ 格言を申請':'✍️ Apply Motto';
+          mottoBtn._bx=buildingData.x;mottoBtn._bz=buildingData.z;mottoBtn._bf=buildingData.baseFloors;
+        }
         const quote=getBuildingSellQuote(buildingData);
         const benchBack=quote.emp;
         sellBtn.textContent=isJa
@@ -4223,6 +4239,7 @@
         sellBtn.style.display='none';
         sellBtn.hidden=true;
         if(assignBtn){assignBtn.style.display='none';assignBtn.hidden=true;}
+        if(mottoBtn){mottoBtn.style.display='none';mottoBtn.hidden=true;}
       }
       const land=landMap[key];const ownerEl=document.getElementById('building-modal-owner');
       if(land){
@@ -4743,13 +4760,14 @@
         document.getElementById('ranking-coins-list').innerHTML='<div class="ranking-empty">読み込みに失敗しました</div>';
       }finally{loadingEl.classList.remove('show');}
     }
-    function renderRankingList(containerId,rankData,type){
+    function renderRankingList(containerId,rankData,type,showAll=false){
       const container=document.getElementById(containerId);
       if(!rankData||rankData.length===0){container.innerHTML='<div class="ranking-empty">🏗 まだデータがありません</div>';return;}
       const medals=['🥇','🥈','🥉'];const isJa=currentLang==='ja';
       const now=new Date().toLocaleTimeString(isJa?'ja-JP':'en-US',{hour:'2-digit',minute:'2-digit'});
+      const displayData=showAll?rankData:rankData.slice(0,10);
       let html='';
-      rankData.forEach((u,i)=>{
+      displayData.forEach((u,i)=>{
         const rank=i+1;const isMe=currentUser&&u.uid===currentUser.id;
         const topClass=rank<=3?`top${rank}`:'';const meClass=isMe?' me':'';
         const badgeHtml=rank<=3?`<div class="rank-medal">${medals[rank-1]}</div>`:`<div class="rank-badge" style="color:rgba(255,255,255,0.35);">${rank}</div>`;
@@ -4765,6 +4783,10 @@
         const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
         html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="${nameClass}">${masked}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
       });
+      if(!showAll&&rankData.length>10){
+        html+=`<div style="text-align:center;margin-top:10px;"><button onclick="renderRankingList('${containerId}',window._rankDataCache_${containerId},'${type}',true);this.closest('div').remove();" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:8px 24px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">${isJa?'もっと見る':'Show more'} (${rankData.length-10})</button></div>`;
+        window[`_rankDataCache_${containerId}`]=rankData;
+      }
       html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}<br><span style="font-size:10px;opacity:0.75;">${isJa?'※1位のみユーザー名公開（Xリンク）':'※Only #1 name is public (X link)'}</span></div>`;
       container.innerHTML=html;
     }

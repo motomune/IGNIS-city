@@ -752,6 +752,54 @@
     #profile-skip-btn { width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:10px;border-radius:10px;font-size:13px;cursor:pointer;transition:background 0.2s; }
     #profile-skip-btn:hover { background:rgba(255,255,255,0.12); }
     #profile-approval-note { font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-top:10px; }
+    /* 過去詳細モーダル */
+    #past-detail-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:360;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 0; }
+    #past-detail-modal.open { display:flex; }
+    #past-detail-box { background:#080810;border:1px solid rgba(129,140,248,0.4);border-radius:22px;padding:28px 24px 24px;width:480px;max-width:96vw;position:relative;box-shadow:0 0 60px rgba(129,140,248,0.12),0 20px 60px rgba(0,0,0,0.8);margin:auto; }
+    #past-detail-close { position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer; }
+    #past-detail-close:hover { color:#fff; }
+    #past-detail-title { font-size:18px;font-weight:900;letter-spacing:0.08em;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px; }
+    #past-detail-subtitle { font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:20px;line-height:1.5; }
+    .pd-section { margin-bottom:18px; }
+    .pd-label { font-size:12px;font-weight:800;color:rgba(255,255,255,0.7);margin-bottom:10px;letter-spacing:0.04em; }
+    .pd-checkbox-group { display:flex;flex-wrap:wrap;gap:8px; }
+    .pd-check { display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,0.65);transition:all 0.15s;user-select:none; }
+    .pd-check input { display:none; }
+    .pd-check:has(input:checked) { background:rgba(129,140,248,0.2);border-color:rgba(129,140,248,0.6);color:#a5b4fc; }
+    .pd-stage-group { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px; }
+    .pd-stage-btn { display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);transition:all 0.15s;user-select:none; }
+    .pd-stage-btn input { display:none; }
+    .pd-stage-btn:has(input:checked) { background:rgba(129,140,248,0.2);border-color:#818cf8;color:#c4b5fd; }
+    .pd-textarea { width:100%;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;outline:none;resize:none;font-family:inherit;transition:border-color 0.25s;box-sizing:border-box; }
+    .pd-textarea:focus { border-color:rgba(129,140,248,0.7); }
+    .pd-counter { font-size:11px;color:rgba(255,255,255,0.3);text-align:right;margin-top:4px; }
+    .pd-divider { text-align:center;font-size:11px;font-weight:700;color:rgba(129,140,248,0.6);margin:20px 0 16px;padding:8px;background:rgba(129,140,248,0.08);border-radius:8px;border:1px solid rgba(129,140,248,0.2); }
+    #pd-submit-btn { width:100%;background:linear-gradient(135deg,#818cf8,#c084fc);border:none;color:#fff;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s;margin-bottom:8px; }
+    #pd-submit-btn:hover { opacity:0.85; }
+    .pd-skip-btn { width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.13);color:rgba(255,255,255,0.45);padding:10px;border-radius:10px;font-size:13px;cursor:pointer; }
+    /* 過去詳細表示（ビル詳細内） */
+    #building-past-detail-section { margin-bottom:12px; }
+    .bpd-lost-tags { display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px; }
+    .bpd-lost-tag { font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:rgba(129,140,248,0.15);border:1px solid rgba(129,140,248,0.3);color:#a5b4fc; }
+    .bpd-stage { font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;margin-bottom:8px;display:inline-block; }
+    .bpd-stage.recovering { background:rgba(34,197,94,0.15);color:#4ade80; }
+    .bpd-stage.stable { background:rgba(59,130,246,0.15);color:#60a5fa; }
+    .bpd-stage.growing { background:rgba(245,158,11,0.15);color:#fbbf24; }
+    .bpd-stage.new_challenge { background:rgba(238,9,121,0.15);color:#f472b6; }
+    .bpd-current { font-size:13px;color:rgba(255,255,255,0.75);line-height:1.55;margin-bottom:10px; }
+    .bpd-full-section { border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;margin-top:4px; }
+    .bpd-full-label { font-size:10px;font-weight:800;color:rgba(129,140,248,0.6);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
+    .bpd-full-text { font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:12px; }
+    .bpd-sub-required { text-align:center;padding:10px;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:10px;font-size:12px;color:rgba(129,140,248,0.7);cursor:pointer;margin-top:8px; }
+    /* 🕯️ 共感ボタン */
+    #building-candle-row { display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px; }
+    #building-candle-btn { background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px; }
+    #building-candle-btn.lit { background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.5);color:#fbbf24; }
+    #building-candle-btn:disabled { opacity:0.4;cursor:not-allowed; }
+    #building-candle-count { font-size:12px;color:rgba(255,255,255,0.35);font-weight:700; }
+    /* 過去詳細申請ボタン（ビル詳細内） */
+    #building-past-detail-btn { width:100%;background:linear-gradient(135deg,rgba(129,140,248,0.2),rgba(192,132,252,0.2));border:1px solid rgba(129,140,248,0.35);color:#a5b4fc;padding:10px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:8px;transition:opacity 0.2s; }
+    #building-past-detail-btn:hover { opacity:0.85; }
     /* ビル詳細 X リンク */
     .owner-x-link { color:#1d9bf0;font-weight:800;text-decoration:none; }
     .owner-x-link:hover { text-decoration:underline; }
@@ -983,10 +1031,15 @@
         <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
       <div id="building-modal-motto"></div>
-      <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
+      <div id="building-past-detail-section" style="display:none;"></div>
+      <div id="building-candle-row" style="display:none;">
+        <button id="building-candle-btn" onclick="toggleCandleReaction()">🕯️ 共感した</button>
+        <span id="building-candle-count"></span>
+      </div>
       <div id="building-modal-owner"></div>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
       <button id="building-motto-btn" onclick="openMottoFromModal()" style="display:none;">✍️ 格言を申請</button>
+      <button id="building-past-detail-btn" onclick="openPastDetailModal()" style="display:none;">📖 過去詳細を申請</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
   </div>
@@ -1182,6 +1235,62 @@
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
       <div id="profile-approval-note">※ 管理者の承認後にビルに公開されます</div>
+    </div>
+  </div>
+  <!-- 過去詳細申請モーダル -->
+  <div id="past-detail-modal">
+    <div id="past-detail-box">
+      <button id="past-detail-close" onclick="closePastDetailModal()">×</button>
+      <div id="past-detail-title">📖 過去詳細を申請</div>
+      <div id="past-detail-subtitle">個人が特定できる表現・宣伝は登録できません。承認後に公開されます。</div>
+      <div class="pd-section">
+        <div class="pd-label">① 何を失いましたか？（複数選択可）</div>
+        <div id="pd-lost-items" class="pd-checkbox-group">
+          <label class="pd-check"><input type="checkbox" value="money">💴 資金</label>
+          <label class="pd-check"><input type="checkbox" value="job">💼 仕事</label>
+          <label class="pd-check"><input type="checkbox" value="friends">👥 友人</label>
+          <label class="pd-check"><input type="checkbox" value="partner">🤝 ビジネスパートナー</label>
+          <label class="pd-check"><input type="checkbox" value="lover">💔 恋人</label>
+          <label class="pd-check"><input type="checkbox" value="trust">🔒 信用</label>
+          <label class="pd-check"><input type="checkbox" value="dream">⭐ 夢</label>
+          <label class="pd-check"><input type="checkbox" value="health">🏥 健康</label>
+          <label class="pd-check"><input type="checkbox" value="family">👨‍👩‍👧 家族</label>
+        </div>
+      </div>
+      <div class="pd-section">
+        <div class="pd-label">② 現在の自分はどうなっていますか？（良い面で）</div>
+        <div class="pd-stage-group">
+          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="recovering">🌱 回復中</label>
+          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="stable">🏠 安定</label>
+          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="growing">🚀 成長中</label>
+          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="new_challenge">🔥 新たな挑戦</label>
+        </div>
+        <textarea class="pd-textarea" id="pd-current-positive" rows="3" maxlength="300" placeholder="今の自分の良い変化を書いてください..."></textarea>
+        <div class="pd-counter"><span id="pd-current-counter">0</span>/300</div>
+      </div>
+      <div class="pd-divider">以下③〜⑥はサブスク会員のみ閲覧できます</div>
+      <div class="pd-section">
+        <div class="pd-label">③ 背景と詳細</div>
+        <textarea class="pd-textarea" id="pd-background" rows="4" maxlength="500" placeholder="何があったのか、背景と詳細を..."></textarea>
+        <div class="pd-counter"><span id="pd-bg-counter">0</span>/500</div>
+      </div>
+      <div class="pd-section">
+        <div class="pd-label">④ どう対応しましたか？</div>
+        <textarea class="pd-textarea" id="pd-how-handled" rows="4" maxlength="500" placeholder="その時どう行動しましたか..."></textarea>
+        <div class="pd-counter"><span id="pd-handled-counter">0</span>/500</div>
+      </div>
+      <div class="pd-section">
+        <div class="pd-label">⑤ その後どんなことが起きましたか？</div>
+        <textarea class="pd-textarea" id="pd-what-after" rows="4" maxlength="500" placeholder="対応後に起きたことを..."></textarea>
+        <div class="pd-counter"><span id="pd-after-counter">0</span>/500</div>
+      </div>
+      <div class="pd-section">
+        <div class="pd-label">⑥ そこから現在に至るまでにしてきたこと</div>
+        <textarea class="pd-textarea" id="pd-journey" rows="4" maxlength="500" placeholder="現在まで続けてきたことを..."></textarea>
+        <div class="pd-counter"><span id="pd-journey-counter">0</span>/500</div>
+      </div>
+      <button id="pd-submit-btn" onclick="submitPastDetail()">申請する</button>
+      <button class="pd-skip-btn" onclick="closePastDetailModal()">キャンセル</button>
     </div>
   </div>
   <!-- コイン獲得履歴 -->
@@ -3798,6 +3907,79 @@
       document.getElementById('building-modal').classList.remove('open');
       openProfileModal(bx,bz,bf);
     }
+    // ========================================
+    // 過去詳細モーダル
+    // ========================================
+    let pastDetailState={bx:0,bz:0};
+    function openPastDetailModal(){
+      if(!currentUser){showToast('ログインが必要です');return;}
+      const btn=document.getElementById('building-past-detail-btn');
+      if(btn){pastDetailState.bx=currentModalBuilding?.x||0;pastDetailState.bz=currentModalBuilding?.z||0;}
+      // フォームリセット
+      document.querySelectorAll('#pd-lost-items input[type=checkbox]').forEach(c=>c.checked=false);
+      document.querySelectorAll('input[name="pd-stage"]').forEach(r=>r.checked=false);
+      ['pd-current-positive','pd-background','pd-how-handled','pd-what-after','pd-journey'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      ['pd-current-counter','pd-bg-counter','pd-handled-counter','pd-after-counter','pd-journey-counter'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='0';});
+      document.getElementById('building-modal').classList.remove('open');
+      document.getElementById('past-detail-modal').classList.add('open');
+    }
+    function closePastDetailModal(){document.getElementById('past-detail-modal').classList.remove('open');}
+    // カウンターバインド
+    [['pd-current-positive','pd-current-counter'],['pd-background','pd-bg-counter'],['pd-how-handled','pd-handled-counter'],['pd-what-after','pd-after-counter'],['pd-journey','pd-journey-counter']].forEach(([tid,cid])=>{
+      const ta=document.getElementById(tid);const ct=document.getElementById(cid);
+      if(ta&&ct)ta.addEventListener('input',()=>ct.textContent=ta.value.length);
+    });
+    async function submitPastDetail(){
+      if(!currentUser||!db)return;
+      const lostItems=Array.from(document.querySelectorAll('#pd-lost-items input:checked')).map(c=>c.value);
+      const stage=document.querySelector('input[name="pd-stage"]:checked')?.value||null;
+      const currentPositive=document.getElementById('pd-current-positive').value.trim();
+      const background=document.getElementById('pd-background').value.trim();
+      const howHandled=document.getElementById('pd-how-handled').value.trim();
+      const whatAfter=document.getElementById('pd-what-after').value.trim();
+      const journey=document.getElementById('pd-journey').value.trim();
+      if(lostItems.length===0&&!currentPositive){showToast('①か②を入力してください');return;}
+      const btn=document.getElementById('pd-submit-btn');
+      btn.disabled=true;btn.textContent='申請中...';
+      try{
+        const{error}=await db.from('building_past_details').upsert({
+          user_id:currentUser.id,
+          building_x:pastDetailState.bx,building_z:pastDetailState.bz,
+          lost_items:lostItems,current_stage:stage,current_positive:currentPositive||null,
+          background_detail:background||null,how_handled:howHandled||null,
+          what_happened_after:whatAfter||null,journey_to_now:journey||null,
+          status:'pending',updated_at:new Date().toISOString()
+        },{onConflict:'building_x,building_z'});
+        if(error)throw error;
+        closePastDetailModal();
+        showToast('📨 過去詳細を申請しました。承認後に公開されます');
+      }catch(e){
+        console.warn('past detail submit error:',e.message);
+        showToast('申請に失敗しました: '+e.message);
+        btn.disabled=false;btn.textContent='申請する';
+      }
+    }
+    // ========================================
+    // 🕯️ 共感ボタン
+    // ========================================
+    async function toggleCandleReaction(){
+      if(!currentUser){showToast('ログインが必要です');return;}
+      const btn=document.getElementById('building-candle-btn');
+      if(!btn||!currentModalBuilding)return;
+      btn.disabled=true;
+      try{
+        const{data,error}=await db.rpc('toggle_candle',{bx:currentModalBuilding.x,bz:currentModalBuilding.z});
+        if(error)throw error;
+        if(!data?.ok){
+          if(data?.reason==='subscription_required'){showToast('🕯️ 共感ボタンはサブスク会員限定です');}
+          else{showToast('エラーが発生しました');}
+          return;
+        }
+        btn.className='building-candle-btn'+(data.lit?' lit':'');
+        document.getElementById('building-candle-count').textContent=(currentLang==='ja'?`${data.count}人が共感`:`${data.count} resonated`);
+      }catch(e){console.warn('candle error:',e.message);}
+      finally{btn.disabled=false;}
+    }
     document.getElementById('profile-motto-input').addEventListener('input',function(){
       const len=this.value.length;
       const counter=document.getElementById('profile-motto-counter');
@@ -4222,6 +4404,7 @@
       const assignBtn=document.getElementById('building-assign-btn');
       const mottoBtn=document.getElementById('building-motto-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
+      const pastDetailBtn=document.getElementById('building-past-detail-btn');
       if(isOwnLand){
         sellBtn.style.display='block';
         sellBtn.hidden=false;
@@ -4238,6 +4421,7 @@
           mottoBtn.textContent=isJa?'✍️ 格言を申請':'✍️ Apply Motto';
           mottoBtn._bx=buildingData.x;mottoBtn._bz=buildingData.z;mottoBtn._bf=buildingData.baseFloors;
         }
+        if(pastDetailBtn){pastDetailBtn.style.display='block';pastDetailBtn.hidden=false;pastDetailBtn.textContent=isJa?'📖 過去詳細を申請':'📖 Apply Past Detail';}
         const quote=getBuildingSellQuote(buildingData);
         const benchBack=quote.emp;
         sellBtn.textContent=isJa
@@ -4248,6 +4432,7 @@
         sellBtn.hidden=true;
         if(assignBtn){assignBtn.style.display='none';assignBtn.hidden=true;}
         if(mottoBtn){mottoBtn.style.display='none';mottoBtn.hidden=true;}
+        if(pastDetailBtn){pastDetailBtn.style.display='none';pastDetailBtn.hidden=true;}
       }
       const land=landMap[key];const ownerEl=document.getElementById('building-modal-owner');
       if(land){
@@ -4274,8 +4459,66 @@
       document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
       document.getElementById('building-modal').classList.add('open');
       recordBuildingView(buildingData);
+      loadBuildingModalExtras(buildingData).catch(()=>{});
     }
     function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
+    async function loadBuildingModalExtras(buildingData){
+      if(!db)return;
+      const bx=buildingData.x,bz=buildingData.z;
+      const isJa=currentLang==='ja';
+      const pdSection=document.getElementById('building-past-detail-section');
+      const candleRow=document.getElementById('building-candle-row');
+      const candleBtn=document.getElementById('building-candle-btn');
+      const candleCount=document.getElementById('building-candle-count');
+      pdSection.style.display='none';pdSection.innerHTML='';
+      candleRow.style.display='none';
+      // 🕯️ カウント取得
+      try{
+        const{count}=await db.from('building_candles').select('*',{count:'exact',head:true}).eq('building_x',bx).eq('building_z',bz);
+        const myLit=currentUser?(await db.from('building_candles').select('id').eq('user_id',currentUser.id).eq('building_x',bx).eq('building_z',bz).maybeSingle()).data!=null:false;
+        candleCount.textContent=isJa?`${count||0}人が共感`:`${count||0} resonated`;
+        candleBtn.className='building-candle-btn'+(myLit?' lit':'');
+        candleBtn.dataset.bx=bx;candleBtn.dataset.bz=bz;
+        candleBtn.disabled=!currentUser;
+        candleRow.style.display='flex';
+      }catch(e){}
+      // 過去詳細（①②）取得
+      try{
+        const{data:preview}=await db.rpc('get_past_detail_preview',{bx,bz});
+        if(!preview)return;
+        const lostLabels={money:'💴 資金',job:'💼 仕事',friends:'👥 友人',partner:'🤝 BP',lover:'💔 恋人',trust:'🔒 信用',dream:'⭐ 夢',health:'🏥 健康',family:'👨‍👩‍👧 家族'};
+        const stageLabel={recovering:'🌱 回復中',stable:'🏠 安定',growing:'🚀 成長中',new_challenge:'🔥 新たな挑戦'};
+        let html='<div style="margin-bottom:8px;"><span style="font-size:10px;font-weight:800;color:rgba(129,140,248,0.7);letter-spacing:0.08em;">📖 '+(isJa?'過去詳細':'PAST DETAIL')+'</span></div>';
+        if(preview.lost_items&&preview.lost_items.length>0){
+          html+='<div class="bpd-lost-tags">';
+          preview.lost_items.forEach(k=>{html+=`<span class="bpd-lost-tag">${lostLabels[k]||k}</span>`;});
+          html+='</div>';
+        }
+        if(preview.current_stage){html+=`<div class="bpd-stage ${preview.current_stage}">${stageLabel[preview.current_stage]||preview.current_stage}</div>`;}
+        if(preview.current_positive){html+=`<div class="bpd-current">${preview.current_positive.replace(/\n/g,'<br>')}</div>`;}
+        // ③〜⑥：課金者のみ
+        if(currentUser?.is_subscribed){
+          try{
+            const{data:full}=await db.rpc('get_past_detail_full',{bx,bz});
+            if(full&&!full.error){
+              const sections=[
+                {label:'③ 背景と詳細',key:'background_detail'},
+                {label:'④ どう対応したか',key:'how_handled'},
+                {label:'⑤ その後',key:'what_happened_after'},
+                {label:'⑥ 現在に至るまで',key:'journey_to_now'}
+              ];
+              html+='<div class="bpd-full-section">';
+              sections.forEach(s=>{if(full[s.key])html+=`<div class="bpd-full-label">${s.label}</div><div class="bpd-full-text">${full[s.key].replace(/\n/g,'<br>')}</div>`;});
+              html+='</div>';
+            }
+          }catch(e){}
+        } else if(currentUser){
+          html+='<div class="bpd-sub-required" onclick="showToast(\'③〜⑥はサブスク会員のみ閲覧できます\')">🔒 '+(isJa?'③〜⑥はサブスク会員のみ閲覧できます':'③–⑥ for subscribers only')+'</div>';
+        }
+        pdSection.innerHTML=html;
+        pdSection.style.display='block';
+      }catch(e){}
+    }
     async function assignEmployeesToCurrentBuilding(){
       if(!currentUser||!currentModalBuilding||!db)return;
       const isJa=currentLang==='ja';

@@ -4689,11 +4689,11 @@
     }
     function maskRankingDisplayName(u,rank){
       const raw=u.x_username?`@${u.x_username}`:(u.username||'?');
-      if(rank===1&&u.x_username){
+      if(rank<=3&&u.x_username){
         const handle=encodeURIComponent(u.x_username.replace(/^@/,''));
         return `<a class="rank-x-link" href="https://x.com/${handle}" target="_blank" rel="noopener">@${u.x_username.replace(/^@/,'')}</a>`;
       }
-      if(rank===1)return raw;
+      if(rank<=3)return raw;
       const chars='█▓▒░▄▀■□';
       const seed=rankingNameHash(u.uid,new Date().toISOString().slice(0,10));
       let out='';
@@ -4772,7 +4772,7 @@
         const topClass=rank<=3?`top${rank}`:'';const meClass=isMe?' me':'';
         const badgeHtml=rank<=3?`<div class="rank-medal">${medals[rank-1]}</div>`:`<div class="rank-badge" style="color:rgba(255,255,255,0.35);">${rank}</div>`;
         const masked=maskRankingDisplayName(u,rank);
-        const nameClass=rank===1?'ranking-username':'ranking-username masked';
+        const nameClass=rank<=3?'ranking-username':'ranking-username masked';
         let value,unit,subText;
         if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}

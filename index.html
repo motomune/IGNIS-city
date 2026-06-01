@@ -70,6 +70,8 @@
     }
     #sound-toggle:hover { filter: brightness(1.06); }
     #sound-toggle.muted { opacity: 0.45; }
+    #x-rules-header-btn { background:linear-gradient(135deg,rgba(29,155,240,0.5),rgba(96,60,200,0.5));border:1px solid rgba(100,160,255,0.3);color:#fff;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;line-height:1; }
+    #x-rules-header-btn:hover { filter:brightness(1.1); }
     #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
@@ -907,6 +909,11 @@
       #book-result-actions { max-width: 100%; }
       #book-result-build, #book-result-city, #book-result-retry { font-size: 13px; padding: 11px 18px; }
       #audio-unlock-btn { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; padding: 10px 18px; }
+      .btn-txt { display: none; }
+      #x-rules-header-btn { padding: 4px 8px; font-size: 11px; min-height: 32px; }
+      #ranking-btn { padding: 4px 6px !important; font-size: 0 !important; }
+      #ranking-btn::after { content: '🏆'; font-size: 14px; }
+      #building-box { max-height: 80vh; overflow-y: auto; }
     }
     #gacha-modal-close,#build-modal-close,#auth-close,#building-modal-close,#profile-modal-close,#land-panel-close {
       background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);border-radius:10px;
@@ -973,6 +980,7 @@
         </div>
       </div>
       <div id="user-area">
+        <button id="x-rules-header-btn" type="button" onclick="openXRewardRules()" title="X連携コイン報酬ルール">X<span class="btn-txt" id="x-rules-hdr-label"> 報酬</span></button>
         <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
         <button id="lang-btn" onclick="toggleLang()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -983,8 +991,8 @@
           <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク<span id="task-notice-badge">0</span></button>
           <span id="user-name" style="display:none;" aria-hidden="true"></span>
           <button id="ranking-btn" onclick="openRanking()" style="background:linear-gradient(135deg,rgba(245,158,11,0.55),rgba(238,9,121,0.55));border:1px solid rgba(255,255,255,0.16);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">🏆 ランキング</button>
-          <button id="coin-history-btn" onclick="openCoinHistory()">💰 履歴</button>
-          <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
+          <button id="coin-history-btn" onclick="openCoinHistory()">💰<span class="btn-txt"> 履歴</span></button>
+          <button id="logout-btn" onclick="handleLogout()">↩<span class="btn-txt"> ログアウト</span></button>
         </div>
       </div>
       <div id="ad-slot-wrap">
@@ -2784,7 +2792,7 @@
         renderRankingList('ranking-buildings-list',rankingCache.buildings,'buildings');
       }
       // コイン履歴
-      document.getElementById('coin-history-btn').textContent=isJa?'💰 履歴':'💰 History';
+      document.getElementById('coin-history-btn').innerHTML='💰<span class="btn-txt">'+(isJa?' 履歴':' History')+'</span>';
       document.getElementById('coin-history-title').textContent=isJa?'💰 コイン履歴':'💰 Coin History';
       document.getElementById('ch-tab-all').textContent=isJa?'📜 全て':'📜 All';
       document.getElementById('ch-tab-gain').textContent=isJa?'📈 獲得':'📈 Gain';
@@ -2793,12 +2801,12 @@
       if(chXRules)chXRules.textContent=isJa?'📋 X報酬ルール':'📋 X rewards';
       document.getElementById('coin-history-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
-      document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
+      document.getElementById('logout-btn').innerHTML='↩<span class="btn-txt">'+(isJa?' ログアウト':' Logout')+'</span>';
       document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
       const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'🔔 通知':'🔔 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
-      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML=(isJa?'📋 タスク':'📋 Tasks')+'<span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
+      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML='📋<span class="btn-txt">'+(isJa?' タスク':' Tasks')+'</span><span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
       const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'🔔 お知らせ / 通知':'🔔 Notices';
       const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'通知はまだありません':'No notices yet';
       const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
@@ -2921,6 +2929,8 @@
       set('x-setup-save',isJa?'保存':'Save');
       const xRulesLink=document.getElementById('x-setup-rules-link');
       if(xRulesLink)xRulesLink.textContent=isJa?'📋 X連携コイン報酬のルール':'📋 X engagement coin rules';
+      const xRulesHdr=document.getElementById('x-rules-hdr-label');
+      if(xRulesHdr)xRulesHdr.textContent=isJa?' 報酬':' Rewards';
       set('x-reward-rules-title',isJa?'X連携コイン報酬':'X engagement coins');
       set('x-reward-rules-close',isJa?'閉じる':'Close');
       const xRulesBody=document.getElementById('x-reward-rules-body');
@@ -4896,8 +4906,13 @@
     // ========================================
     // グリッドタップ
     // ========================================
+    let _ptrDnX=0,_ptrDnY=0,_ptrTapFired=false;
     scene.onPointerObservable.add((pointerInfo)=>{
-      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
+      const PT=BABYLON.PointerEventTypes;
+      if(pointerInfo.type===PT.POINTERDOWN){_ptrDnX=scene.pointerX;_ptrDnY=scene.pointerY;_ptrTapFired=false;return;}
+      const isTap=pointerInfo.type===PT.POINTERTAP||(pointerInfo.type===PT.POINTERUP&&!_ptrTapFired&&Math.hypot(scene.pointerX-_ptrDnX,scene.pointerY-_ptrDnY)<20);
+      if(!isTap)return;
+      _ptrTapFired=true;
       if(isFlying&&!pendingBuildMode)return;
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;

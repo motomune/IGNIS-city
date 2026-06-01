@@ -10,7 +10,10 @@ const SERVICE_KEY  = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const FOUNDER_X_ID  = '1996865590414528512';
 const REPOST_COINS  = 15;
 const REPLY_COINS   = 10;
-const COOLDOWN_HOURS = 24;
+/** 創設者投稿からこの時間経過後のみリポスト／引用リポスト報酬対象 */
+const REPOST_MIN_AGE_HOURS = 24;
+/** この時間を超えた投稿は API 読み込み・報酬付与の対象外 */
+const TWEET_API_WINDOW_HOURS = 48;
 
 const db = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -38,16 +41,58 @@ async function getFounderTweets(launchDate: string): Promise<any[]> {
   return data.data ?? [];
 }
 
-/** ツイートをリポストしたユーザー（username→小文字） */
+/** 通常リポストしたユーザー（username→小文字） */
 async function getRetweeters(tweetId: string): Promise<string[]> {
   try {
     const data = await xGet(
       `/tweets/${tweetId}/retweeted_by?max_results=100&user.fields=username`
     );
-    return (data.data ?? []).map((u: any) => u.username?.toLowerCase() ?? '');
+    return (data.data ?? []).map((u: any) => u.username?.toLowerCase() ?? '').filter(Boolean);
   } catch {
     return [];
   }
+}
+
+/** 引用リポストしたユーザー（username→小文字） */
+async function getQuoters(tweetId: string): Promise<string[]> {
+  try {
+    const data = await xGet(
+      `/tweets/${tweetId}/quote_tweets?max_results=100` +
+      `&tweet.fields=author_id&expansions=author_id&user.fields=username`
+    );
+    const idToName: Record<string, string> = {};
+    ((data.includes?.users) ?? []).forEach((u: any) => {
+      idToName[u.id] = u.username?.toLowerCase() ?? '';
+    });
+    return (data.data ?? [])
+      .map((t: any) => idToName[t.author_id] ?? '')
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/** リポスト＋引用リポスト（重複ハンドルは1人1回） */
+async function getRepostHandles(tweetId: string): Promise<string[]> {
+  const handles = new Set<string>();
+  for (const h of [...await getRetweeters(tweetId), ...await getQuoters(tweetId)]) {
+    if (h) handles.add(h);
+  }
+  return [...handles];
+}
+
+function tweetAgeHours(tweetCreatedAt: string): number {
+  return (Date.now() - new Date(tweetCreatedAt).getTime()) / 3600_000;
+}
+
+/** 投稿後48h未満のみバッチ対象（リポスト・リプライとも API を読む） */
+function isWithinApiWindow(tweetCreatedAt: string): boolean {
+  return tweetAgeHours(tweetCreatedAt) < TWEET_API_WINDOW_HOURS;
+}
+
+function isRepostEligible(tweetCreatedAt: string): boolean {
+  const h = tweetAgeHours(tweetCreatedAt);
+  return h >= REPOST_MIN_AGE_HOURS && h < TWEET_API_WINDOW_HOURS;
 }
 
 /**
@@ -111,18 +156,6 @@ function countTurns(
 // ======================================================
 // DB ヘルパー
 // ======================================================
-/** 直近 COOLDOWN_HOURS 以内にそのテーブルで報酬を受け取ったか */
-async function hasRecentReward(table: string, userId: string): Promise<boolean> {
-  const since = new Date(Date.now() - COOLDOWN_HOURS * 3600_000).toISOString();
-  const { data } = await db
-    .from(table)
-    .select('id')
-    .eq('user_id', userId)
-    .gte('rewarded_at', since)
-    .limit(1);
-  return (data ?? []).length > 0;
-}
-
 /** コイン付与 + テーブルへの記録 */
 async function grantReward(
   table: string,
@@ -171,33 +204,34 @@ Deno.serve(async () => {
     let totalReply  = 0;
 
     for (const tweet of founderTweets) {
+      if (!tweet.created_at || !isWithinApiWindow(tweet.created_at)) continue;
+
       const tweetId  = tweet.id as string;
       const convoId  = (tweet.conversation_id ?? tweetId) as string;
 
-      // ── リポスト処理 ──────────────────────────
-      const retweeters = await getRetweeters(tweetId);
-      for (const handle of retweeters) {
-        const uid = handleToUid[handle];
-        if (!uid) continue;
+      // ── リポスト／引用リポスト（投稿24h〜48hの窓内のみ）──
+      if (isRepostEligible(tweet.created_at)) {
+        const repostHandles = await getRepostHandles(tweetId);
+        for (const handle of repostHandles) {
+          const uid = handleToUid[handle];
+          if (!uid) continue;
 
-        // 同一ツイートへの重複チェック
-        const { data: dup } = await db
-          .from('x_repost_rewards')
-          .select('id')
-          .eq('user_id', uid)
-          .eq('founder_tweet_id', tweetId)
-          .limit(1);
-        if ((dup ?? []).length > 0) continue;
+          // 同一投稿への重複（削除→再リポストも1回のみ）
+          const { data: dup } = await db
+            .from('x_repost_rewards')
+            .select('id')
+            .eq('user_id', uid)
+            .eq('founder_tweet_id', tweetId)
+            .limit(1);
+          if ((dup ?? []).length > 0) continue;
 
-        // 24h クールダウンチェック
-        if (await hasRecentReward('x_repost_rewards', uid)) continue;
-
-        await grantReward(
-          'x_repost_rewards',
-          { founder_tweet_id: tweetId },
-          uid, REPOST_COINS, 'x_repost'
-        );
-        totalRepost++;
+          await grantReward(
+            'x_repost_rewards',
+            { founder_tweet_id: tweetId },
+            uid, REPOST_COINS, 'x_repost'
+          );
+          totalRepost++;
+        }
       }
 
       // ── リプライ処理 ──────────────────────────
@@ -220,9 +254,8 @@ Deno.serve(async () => {
         const turns = countTurns(convoTweets, FOUNDER_X_ID, userXId);
         if (turns === 0) continue;
 
-        // ターンごとに 1 コイン付与（ただし 24h クールダウンと重複スキップ）
+        // ターンごとに付与（重複スキップのみ、クールダウンなし）
         for (let i = 0; i < turns; i++) {
-          // 同一スレッド・同一ターンの重複チェック
           const { data: dup } = await db
             .from('x_reply_rewards')
             .select('id')
@@ -231,9 +264,6 @@ Deno.serve(async () => {
             .eq('turn_index', i)
             .limit(1);
           if ((dup ?? []).length > 0) continue;
-
-          // 24h クールダウン
-          if (await hasRecentReward('x_reply_rewards', uid)) continue;
 
           await grantReward(
             'x_reply_rewards',

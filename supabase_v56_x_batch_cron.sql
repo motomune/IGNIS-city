@@ -11,10 +11,10 @@ SELECT cron.schedule(
   '0 23 * * *',
   $$
   SELECT net.http_post(
-    url     := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/x-reward-batch',
+    url     := 'https://xssjhgosxyhknonlrjrq.supabase.co/functions/v1/x-reward-batch',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer YOUR_ANON_KEY'
+      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU'
     ),
     body    := '{}'::jsonb
   );
@@ -26,10 +26,10 @@ SELECT cron.schedule(
   '0 11 * * *',
   $$
   SELECT net.http_post(
-    url     := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/x-reward-batch',
+    url     := 'https://xssjhgosxyhknonlrjrq.supabase.co/functions/v1/x-reward-batch',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer YOUR_ANON_KEY'
+      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU'
     ),
     body    := '{}'::jsonb
   );

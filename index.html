@@ -416,6 +416,17 @@
     #x-setup-desc { font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:14px;text-align:center;line-height:1.5; }
     #x-setup-save { width:100%;margin-top:12px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:12px;border-radius:10px;font-weight:800;cursor:pointer; }
     #x-setup-error { color:#ff4444;font-size:12px;margin-top:8px;text-align:center;min-height:18px; }
+    #x-setup-rules-link { width:100%;margin-top:10px;background:transparent;border:1px solid rgba(255,106,0,0.35);color:rgba(255,200,150,0.9);padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer; }
+    #x-setup-rules-link:hover { background:rgba(255,106,0,0.12); }
+    #x-reward-rules-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:260;align-items:center;justify-content:center;padding:16px;box-sizing:border-box; }
+    #x-reward-rules-modal.open { display:flex; }
+    #x-reward-rules-box { background:linear-gradient(160deg,#12082a,#0a0618);border:1px solid rgba(255,106,0,0.45);border-radius:16px;padding:22px 20px;width:min(420px,96vw);max-height:min(88vh,720px);overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.65); }
+    #x-reward-rules-title { font-size:17px;font-weight:900;color:#fff;margin-bottom:12px;text-align:center; }
+    #x-reward-rules-body { font-size:12px;color:rgba(255,255,255,0.72);line-height:1.65; }
+    #x-reward-rules-body h3 { font-size:13px;color:#ffb86a;margin:14px 0 6px;font-weight:800; }
+    #x-reward-rules-body ul { margin:0 0 8px;padding-left:1.2em; }
+    #x-reward-rules-body li { margin-bottom:4px; }
+    #x-reward-rules-close { width:100%;margin-top:14px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:11px;border-radius:10px;font-weight:800;cursor:pointer; }
     @keyframes audioHintPulse { 0%,100%{opacity:0.7;} 50%{opacity:1;} }
     #gacha-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:160;align-items:center;justify-content:center; }
     #gacha-modal.open { display: flex; }
@@ -1302,6 +1313,7 @@
         <button class="ch-tab" id="ch-tab-gain" onclick="switchCoinHistoryTab('gain')">📈 獲得</button>
         <button class="ch-tab" id="ch-tab-spend" onclick="switchCoinHistoryTab('spend')">📉 消費</button>
       </div>
+      <button type="button" id="coin-history-x-rules-btn" onclick="openXRewardRules()" style="background:rgba(255,106,0,0.2);border:1px solid rgba(255,106,0,0.45);color:#ffb86a;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">📋 X報酬ルール</button>
       <button id="coin-history-close" onclick="closeCoinHistory()">✕ 閉じる</button>
     </div>
     <div id="coin-history-body">
@@ -1327,7 +1339,15 @@
         <input id="input-x-setup" type="text" data-placeholder-ja="例: soultamash81989" data-placeholder-en="e.g. soultamash81989" placeholder="例: soultamash81989" autocomplete="off">
       </div>
       <button id="x-setup-save" type="button" onclick="saveXUsername()">保存</button>
+      <button id="x-setup-rules-link" type="button" onclick="openXRewardRules()">📋 X連携コイン報酬のルール</button>
       <div id="x-setup-error"></div>
+    </div>
+  </div>
+  <div id="x-reward-rules-modal" onclick="if(event.target===this)closeXRewardRules()">
+    <div id="x-reward-rules-box">
+      <div id="x-reward-rules-title">X連携コイン報酬</div>
+      <div id="x-reward-rules-body"></div>
+      <button id="x-reward-rules-close" type="button" onclick="closeXRewardRules()">閉じる</button>
     </div>
   </div>
   <div id="auth-modal">
@@ -2370,6 +2390,8 @@
       random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
       hire_employee: {ja:'会社員採用',           en:'Hire Office Worker',       icon:'👷'},
       extend_staff_terms: {ja:'任期延長',        en:'Term Extension',          icon:'📋'},
+      x_repost:          {ja:'X：リポスト／引用', en:'X: Repost / Quote',       icon:'🔁'},
+      x_reply:           {ja:'X：リプライ',       en:'X: Reply',                icon:'💬'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
@@ -2580,6 +2602,50 @@
         await refreshInviteStats();
       }
     }
+    function getXRewardRulesHtml(isJa){
+      if(isJa){
+        return `<p>創設者の X 投稿に反応するとコインが付きます。ゲームに登録した <b>@ユーザー名</b> と X のアカウントが一致している必要があります（リプライ後にログイン・登録しても、次回の自動集計で反映されます）。</p>
+<h3>共通</h3><ul>
+<li>対象はローンチ日（2026/6/1）以降の創設者投稿です。</li>
+<li>集計は <b>毎日 8:00 / 20:00（日本時間）</b> に自動実行されます。</li>
+<li>創設者投稿から <b>48時間</b> を過ぎた投稿は、以降 API で読み込まず、新規の報酬付与はありません（すでに付いたコインはそのままです）。</li>
+</ul>
+<h3>リポスト・引用リポスト（+15コイン）</h3><ul>
+<li>通常のリポストと引用リポストは同じ扱いです。</li>
+<li>創設者が投稿してから <b>24時間経過後</b> に行ったものが対象（それより早いリポストは対象外）。</li>
+<li><b>投稿ごとに1回</b>（別の投稿なら別々に対象）。同じ投稿を削除して再リポストしても <b>1回だけ</b> カウントされます。</li>
+<li>人ごとの「24時間に1回まで」などの制限はありません。</li>
+</ul>
+<h3>リプライ（+10コイン／ターン）</h3><ul>
+<li>創設者との <b>キャッチボール</b>（創設者の返信のあとにあなたが返信）でターンが増えます。何ターン目までも対象です。</li>
+<li>創設者の返信なしに <b>連続でリプライ</b> した場合は、まとめて <b>1ターン</b> として数えます。</li>
+<li>クールダウンはありません。条件を満たしたターンごとに付与されます（同一ターンの二重付与はしません）。</li>
+</ul>`;
+      }
+      return `<p>Earn coins by engaging with the founder on X. Your in-game <b>@username</b> must match your X handle (register after replying — rewards apply on the next batch run).</p>
+<h3>Common</h3><ul>
+<li>Founder posts on or after launch day (2026-06-01).</li>
+<li>Batch runs at <b>8:00 and 20:00 JST</b> daily.</li>
+<li>Posts older than <b>48 hours</b> are no longer fetched; no new rewards after that (coins already granted stay).</li>
+</ul>
+<h3>Repost / Quote (+15 coins)</h3><ul>
+<li>Standard reposts and quote reposts count the same.</li>
+<li>Eligible <b>24+ hours after</b> the founder posted (earlier reposts do not count).</li>
+<li><b>Once per founder post</b> per player; delete &amp; repost again still counts once. Different posts = separate rewards.</li>
+<li>No per-player 24h cooldown across different posts.</li>
+</ul>
+<h3>Reply (+10 coins / turn)</h3><ul>
+<li><b>Back-and-forth</b> with the founder adds turns; unlimited turns if the conversation continues.</li>
+<li>Consecutive replies without the founder in between count as <b>one turn</b>.</li>
+<li>No cooldown; each qualifying turn pays once (no duplicate pay for the same turn).</li>
+</ul>`;
+    }
+    function openXRewardRules(){
+      const body=document.getElementById('x-reward-rules-body');
+      if(body)body.innerHTML=getXRewardRulesHtml(currentLang==='ja');
+      document.getElementById('x-reward-rules-modal').classList.add('open');
+    }
+    function closeXRewardRules(){document.getElementById('x-reward-rules-modal').classList.remove('open');}
     function openHelpContact(){
       const isJa=currentLang==='ja';
       const body=isJa
@@ -2723,6 +2789,8 @@
       document.getElementById('ch-tab-all').textContent=isJa?'📜 全て':'📜 All';
       document.getElementById('ch-tab-gain').textContent=isJa?'📈 獲得':'📈 Gain';
       document.getElementById('ch-tab-spend').textContent=isJa?'📉 消費':'📉 Spend';
+      const chXRules=document.getElementById('coin-history-x-rules-btn');
+      if(chXRules)chXRules.textContent=isJa?'📋 X報酬ルール':'📋 X rewards';
       document.getElementById('coin-history-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
       document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
@@ -2851,6 +2919,14 @@
       const xDesc=document.getElementById('x-setup-desc');
       if(xDesc)xDesc.textContent=isJa?'ヘッダーに表示する @ユーザー名 を設定してください':'Set your @handle shown in the header';
       set('x-setup-save',isJa?'保存':'Save');
+      const xRulesLink=document.getElementById('x-setup-rules-link');
+      if(xRulesLink)xRulesLink.textContent=isJa?'📋 X連携コイン報酬のルール':'📋 X engagement coin rules';
+      set('x-reward-rules-title',isJa?'X連携コイン報酬':'X engagement coins');
+      set('x-reward-rules-close',isJa?'閉じる':'Close');
+      const xRulesBody=document.getElementById('x-reward-rules-body');
+      if(xRulesBody&&document.getElementById('x-reward-rules-modal').classList.contains('open')){
+        xRulesBody.innerHTML=getXRewardRulesHtml(isJa);
+      }
       set('bml-views',isJa?'閲覧回数':'Views');
       set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');
       const xLabel=document.getElementById('x-username-label');
@@ -3322,7 +3398,8 @@
           gl_FragColor=vec4(diff+emis*(0.35+t*0.55),1.0);
         }`;
     }
-    const engine=window.BABYLON?new BABYLON.Engine(canvas,true):{runRenderLoop:function(){},resize:function(){}};
+    const engine=window.BABYLON?new BABYLON.Engine(canvas,!isCoarseMobile()):{runRenderLoop:function(){},resize:function(){}};
+    if(isCoarseMobile()&&engine.setHardwareScalingLevel)engine.setHardwareScalingLevel(1.5);
     const scene=window.BABYLON?new BABYLON.Scene(engine):{onPointerObservable:{add:function(){}},activeCamera:null};
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
@@ -3337,7 +3414,7 @@
     }
     const flyCamera=new BABYLON.FlyCamera('flyCam',new BABYLON.Vector3(0,30,-60),scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
-    flyCamera.speed=1.4;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
+    flyCamera.speed=0.7;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
     flyCamera.bankedTurn=true;flyCamera.bankedTurnLimit=Math.PI/4;flyCamera.bankedTurnMultiplier=0.5;flyCamera.minZ=0.1;
     flyCamera.keysUp=[];flyCamera.keysDown=[];flyCamera.keysLeft=[];flyCamera.keysRight=[];
     scene.activeCamera=arcCamera;
@@ -3444,13 +3521,13 @@
       }else{
         const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
         const right=flyCamera.getDirection(BABYLON.Axis.X);
-        const moveScale=26*dt;
+        const moveScale=13*dt;
         if(flyKeyState.up)flyCamera.cameraDirection.addInPlace(fwd.scale(moveScale));
         if(flyKeyState.down)flyCamera.cameraDirection.addInPlace(fwd.scale(-moveScale));
         if(flyKeyState.left)flyCamera.cameraDirection.addInPlace(right.scale(-moveScale*0.8));
         if(flyKeyState.right)flyCamera.cameraDirection.addInPlace(right.scale(moveScale*0.8));
         const lift=(flyKeyState.rise?1:0)-(flyKeyState.fall?1:0);
-        if(lift!==0)flyCamera.position.y+=lift*18*dt;
+        if(lift!==0)flyCamera.position.y+=lift*9*dt;
       }
     });
     function toggleFlyMode(){isFlying=!isFlying;setFlyMode(isFlying);}
@@ -3484,15 +3561,15 @@
     hemiLight.intensity=0.6;hemiLight.groundColor=new BABYLON.Color3(0.1,0.05,0.1);
     const dirLight=new BABYLON.DirectionalLight('dir',new BABYLON.Vector3(-1,-2,-1),scene);
     dirLight.intensity=0.8;dirLight.position=new BABYLON.Vector3(50,50,50);
-    const ground=BABYLON.MeshBuilder.CreateGround('ground',{width:200,height:200,subdivisions:20},scene);
+    const ground=BABYLON.MeshBuilder.CreateGround('ground',{width:200,height:200,subdivisions:isCoarseMobile()?1:20},scene);
     const groundMat=new BABYLON.StandardMaterial('groundMat',scene);
     groundMat.diffuseColor=new BABYLON.Color3(0.06,0.06,0.1);groundMat.specularColor=new BABYLON.Color3(0,0,0);
-    ground.material=groundMat;
+    ground.material=groundMat;ground.freezeWorldMatrix();
     const lineMat=new BABYLON.StandardMaterial('lineMat',scene);
     lineMat.emissiveColor=new BABYLON.Color3(0.15,0.1,0.2);
     for(let i=-GRID_HALF;i<=GRID_HALF;i+=CELL){
-      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);hL.position=new BABYLON.Vector3(0,0.01,i);hL.material=lineMat;hL.isPickable=false;
-      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;
+      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);hL.position=new BABYLON.Vector3(0,0.01,i);hL.material=lineMat;hL.isPickable=false;hL.freezeWorldMatrix();
+      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;vL.freezeWorldMatrix();
     }
     // ========================================
     // 土地管理
@@ -3504,7 +3581,7 @@
     function keyToCoord(key){const[gx,gz]=key.split('_').map(Number);return{gx,gz};}
     let highlightTile=null;
     function showHighlight(gx,gz){
-      if(highlightTile)highlightTile.dispose();
+      if(highlightTile){if(highlightTile.material)highlightTile.material.dispose();highlightTile.dispose();}
       highlightTile=BABYLON.MeshBuilder.CreateGround('hl_tile',{width:CELL-0.3,height:CELL-0.3},scene);
       highlightTile.position=new BABYLON.Vector3(gx,0.07,gz);
       const mat=new BABYLON.StandardMaterial('hl_mat_'+Date.now(),scene);
@@ -3512,7 +3589,7 @@
     }
     function hideHighlight(){if(highlightTile){highlightTile.dispose();highlightTile=null;}}
     function drawOwnedTile(gx,gz,key,ownerId){
-      if(landMap[key]&&landMap[key].tile)landMap[key].tile.dispose();
+      if(landMap[key]&&landMap[key].tile){const _ot=landMap[key].tile;if(_ot.material)_ot.material.dispose();_ot.dispose();}
       const tile=BABYLON.MeshBuilder.CreateGround('lt_'+key,{width:CELL-0.4,height:CELL-0.4},scene);
       tile.position=new BABYLON.Vector3(gx,0.02,gz);
       const mat=new BABYLON.StandardMaterial('ltm_'+key+'_'+Date.now(),scene);
@@ -4780,7 +4857,7 @@
       const prism=normalizePrism(shape);
       const w=PRISMS[prism]?.w||5.5;
       let mesh;
-      if(prism==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:20},scene);
+      if(prism==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:isCoarseMobile()?8:20},scene);
       else if(prism==='triangle')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:3},scene);
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:w},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);

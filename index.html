@@ -8,7 +8,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0f; color: #fff; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; }
-    #renderCanvas { width: 100vw; height: 100vh; touch-action: none; }
+    #renderCanvas { width: 100vw; height: 100vh; touch-action: none; background: #0a0a0f; }
     #ui { position: fixed; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10; }
     #header {
       display: flex; justify-content: space-between; align-items: center;
@@ -1202,6 +1202,8 @@
         <button class="ranking-tab active" id="rtab-coins" onclick="switchRankingTab('coins')">💰 コイン</button>
         <button class="ranking-tab" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員</button>
         <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">🏢 階数</button>
+        <button class="ranking-tab" id="rtab-view" onclick="switchRankingTab('view')">👁 閲覧数</button>
+        <button class="ranking-tab" id="rtab-candle" onclick="switchRankingTab('candle')">🕯 ろうそく</button>
       </div>
       <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
     </div>
@@ -1210,6 +1212,8 @@
       <div id="ranking-coins-list"></div>
       <div id="ranking-emp-list" style="display:none;"></div>
       <div id="ranking-floors-list" style="display:none;"></div>
+      <div id="ranking-view-list" style="display:none;"></div>
+      <div id="ranking-candle-list" style="display:none;"></div>
     </div>
   </div>
   <!-- 図鑑 -->
@@ -2612,22 +2616,20 @@
     }
     function getXRewardRulesHtml(isJa){
       if(isJa){
-        return `<p>創設者の X 投稿に反応するとコインが付きます。ゲームに登録した <b>@ユーザー名</b> と X のアカウントが一致している必要があります（リプライ後にログイン・登録しても、次回の自動集計で反映されます）。</p>
+        return `<p>創設者の X 投稿に反応するとコインが貰えます。</p>
 <h3>共通</h3><ul>
-<li>対象はローンチ日（2026/6/1）以降の創設者投稿です。</li>
+<li>対象はローンチ日以降の創設者投稿です。</li>
 <li>集計は <b>毎日 8:00 / 20:00（日本時間）</b> に自動実行されます。</li>
 <li>創設者投稿から <b>48時間</b> を過ぎた投稿は、以降 API で読み込まず、新規の報酬付与はありません（すでに付いたコインはそのままです）。</li>
 </ul>
 <h3>リポスト・引用リポスト（+15コイン）</h3><ul>
-<li>通常のリポストと引用リポストは同じ扱いです。</li>
-<li>創設者が投稿してから <b>24時間経過後</b> に行ったものが対象（それより早いリポストは対象外）。</li>
+<li>リポストまたは引用リポストしてから <b>24時間経過</b> し、かつ創設者の投稿から <b>48時間以内</b> が対象（それより早いリポストは対象外）。</li>
 <li><b>投稿ごとに1回</b>（別の投稿なら別々に対象）。同じ投稿を削除して再リポストしても <b>1回だけ</b> カウントされます。</li>
-<li>人ごとの「24時間に1回まで」などの制限はありません。</li>
 </ul>
 <h3>リプライ（+10コイン／ターン）</h3><ul>
 <li>創設者との <b>キャッチボール</b>（創設者の返信のあとにあなたが返信）でターンが増えます。何ターン目までも対象です。</li>
 <li>創設者の返信なしに <b>連続でリプライ</b> した場合は、まとめて <b>1ターン</b> として数えます。</li>
-<li>クールダウンはありません。条件を満たしたターンごとに付与されます（同一ターンの二重付与はしません）。</li>
+<li>条件を満たしたターンごとに付与されます（同一ターンの二重付与はしません）。</li>
 </ul>`;
       }
       return `<p>Earn coins by engaging with the founder on X. Your in-game <b>@username</b> must match your X handle (register after replying — rewards apply on the next batch run).</p>
@@ -2786,6 +2788,8 @@
       const rtabCoins=document.getElementById('rtab-coins');if(rtabCoins)rtabCoins.textContent=isJa?'💰 コイン':'💰 Coins';
       const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'👥 従業員':'👥 Staff';
       const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'🏢 階数':'🏢 Floors';
+      const rtabView=document.getElementById('rtab-view');if(rtabView)rtabView.textContent=isJa?'👁 閲覧数':'👁 Views';
+      const rtabCandle=document.getElementById('rtab-candle');if(rtabCandle)rtabCandle.textContent=isJa?'🕯 ろうそく':'🕯 Candles';
       document.getElementById('ranking-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('ranking-overlay').classList.contains('open')&&rankingCache.emp){
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
@@ -3408,8 +3412,7 @@
           gl_FragColor=vec4(diff+emis*(0.35+t*0.55),1.0);
         }`;
     }
-    const engine=window.BABYLON?new BABYLON.Engine(canvas,!isCoarseMobile()):{runRenderLoop:function(){},resize:function(){}};
-    if(isCoarseMobile()&&engine.setHardwareScalingLevel)engine.setHardwareScalingLevel(1.5);
+    const engine=window.BABYLON?new BABYLON.Engine(canvas,!isCoarseMobile(),isCoarseMobile()?{adaptToDeviceRatio:false}:{}):{runRenderLoop:function(){},resize:function(){}};
     const scene=window.BABYLON?new BABYLON.Scene(engine):{onPointerObservable:{add:function(){}},activeCamera:null};
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
@@ -5028,7 +5031,7 @@
     // ========================================
     // ランキング
     // ========================================
-    let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null};
+    let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null,view:null,candle:null};
     function rankingNameHash(uid,dayKey){
       let h=0;const s=`${uid}:${dayKey}`;
       for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i)|0;
@@ -5067,7 +5070,7 @@
     function closeRanking(){document.getElementById('ranking-overlay').classList.remove('open');}
     function switchRankingTab(tab){
       rankingTab=tab;
-      ['coins','emp','floors'].forEach(t=>{
+      ['coins','emp','floors','view','candle'].forEach(t=>{
         const tabEl=document.getElementById('rtab-'+t);
         if(tabEl)tabEl.classList.toggle('active',tab===t);
         const listEl=document.getElementById('ranking-'+t+'-list');
@@ -5076,31 +5079,41 @@
     }
     async function loadRanking(){
       const loadingEl=document.getElementById('ranking-loading-msg');loadingEl.classList.add('show');
-      ['ranking-coins-list','ranking-emp-list','ranking-floors-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+      ['ranking-coins-list','ranking-emp-list','ranking-floors-list','ranking-view-list','ranking-candle-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
       try{
-        const[{data:users,error:uErr},{data:buildings,error:bErr}]=await Promise.all([
+        const[{data:users,error:uErr},{data:buildings,error:bErr},{data:candleRows,error:cErr}]=await Promise.all([
           db.from('users').select('id,username,x_username,coin_column,bench_employees'),
-          db.from('buildings').select('owner_id,floors,employees')
+          db.from('buildings').select('owner_id,floors,employees,x,z,view_count'),
+          db.from('building_candles').select('building_x,building_z')
         ]);
         if(uErr)throw uErr;
         if(bErr)throw bErr;
         const userMap={};
         (users||[]).forEach(u=>{
-          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0};
+          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0,totalViewCount:0,totalCandles:0};
         });
+        // candle counts per building (x,z)
+        const candleMap={};
+        (candleRows||[]).forEach(c=>{const k=`${c.building_x}_${c.building_z}`;candleMap[k]=(candleMap[k]||0)+1;});
         (buildings||[]).forEach(b=>{
           const uid=b.owner_id;if(!uid||!userMap[uid])return;
           userMap[uid].assigned+=(b.employees||0);
           userMap[uid].totalFloors+=Math.min(b.floors||0,MAX_BUILDING_FLOORS);
           userMap[uid].buildingCount+=1;
+          userMap[uid].totalViewCount+=(b.view_count||0);
+          userMap[uid].totalCandles+=(candleMap[`${b.x}_${b.z}`]||0);
         });
         const list=Object.values(userMap).map(u=>({...u,totalEmp:u.assigned+u.bench}));
         rankingCache.coins=[...list].sort((a,b)=>b.coins-a.coins).slice(0,50);
         rankingCache.emp=[...list].sort((a,b)=>b.totalEmp-a.totalEmp).slice(0,50);
         rankingCache.floors=[...list].sort((a,b)=>b.totalFloors-a.totalFloors).slice(0,50);
+        rankingCache.view=[...list].sort((a,b)=>b.totalViewCount-a.totalViewCount).slice(0,50);
+        rankingCache.candle=[...list].sort((a,b)=>b.totalCandles-a.totalCandles).slice(0,50);
         renderRankingList('ranking-coins-list',rankingCache.coins,'coins');
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
         renderRankingList('ranking-floors-list',rankingCache.floors,'floors');
+        renderRankingList('ranking-view-list',rankingCache.view,'view');
+        renderRankingList('ranking-candle-list',rankingCache.candle,'candle');
         switchRankingTab(rankingTab);
       }catch(e){
         console.warn('ranking load error:',e.message);
@@ -5123,6 +5136,8 @@
         let value,unit,subText;
         if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
+        else if(type==='view'){value=(u.totalViewCount||0).toLocaleString();unit=isJa?'回':'views';subText=isJa?`🏢 ${u.buildingCount}棟 合計閲覧数`:`🏢 ${u.buildingCount} bldgs total views`;}
+        else if(type==='candle'){value=(u.totalCandles||0).toLocaleString();unit=isJa?'本':'🕯';subText=isJa?`🏢 ${u.buildingCount}棟 合計共感数`:`🏢 ${u.buildingCount} bldgs total candles`;}
         else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';
         if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}

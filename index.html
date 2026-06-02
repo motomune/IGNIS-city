@@ -1218,7 +1218,7 @@
   <div id="x-infographic-modal" onclick="if(event.target===this)closeXRewardsRules()">
     <div id="x-infographic-box">
       <button id="x-infographic-close" type="button" onclick="closeXRewardsRules()">✕ 閉じる</button>
-      <iframe id="x-infographic-frame" frameborder="0" scrolling="yes" sandbox="allow-scripts allow-same-origin" style="width:100%;height:100%;border:none;display:block;"></iframe>
+      <iframe id="x-infographic-frame" frameborder="0" scrolling="yes" sandbox="allow-scripts" style="width:100%;height:100%;border:none;display:block;"></iframe>
     </div>
   </div>
   <div id="auth-modal">
@@ -2299,9 +2299,10 @@
     function _loadInfographic(frame,isJa){
       const src=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
       fetch(src).then(r=>r.text()).then(html=>{
-        frame.removeAttribute('src');
-        frame.srcdoc=html;
-      }).catch(()=>{frame.src=src;});
+        // doc.write keeps iframe URL as about:blank → no new-tab navigation
+        const doc=frame.contentDocument||(frame.contentWindow&&frame.contentWindow.document);
+        if(doc){doc.open('text/html','replace');doc.write(html);doc.close();}
+      }).catch(e=>{console.warn('[IGNIS] infographic load error',e);});
     }
     function openXRewardsRules(){
       try{IgnisAudio.playClick();}catch(e){}

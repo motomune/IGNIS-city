@@ -8,7 +8,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0f; color: #fff; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; }
-    #renderCanvas { width: 100vw; height: 100vh; touch-action: none; background: #0a0a0f; }
+    #renderCanvas { width: 100vw; height: 100vh; touch-action: none; }
     #ui { position: fixed; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10; }
     #header {
       display: flex; justify-content: space-between; align-items: center;
@@ -70,8 +70,6 @@
     }
     #sound-toggle:hover { filter: brightness(1.06); }
     #sound-toggle.muted { opacity: 0.45; }
-    #x-rules-header-btn { background:linear-gradient(135deg,rgba(29,155,240,0.5),rgba(96,60,200,0.5));border:1px solid rgba(100,160,255,0.3);color:#fff;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;line-height:1; }
-    #x-rules-header-btn:hover { filter:brightness(1.1); }
     #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
@@ -424,10 +422,24 @@
     #x-reward-rules-modal.open { display:flex; }
     #x-reward-rules-box { background:linear-gradient(160deg,#12082a,#0a0618);border:1px solid rgba(255,106,0,0.45);border-radius:16px;padding:22px 20px;width:min(420px,96vw);max-height:min(88vh,720px);overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.65); }
     #x-reward-rules-title { font-size:17px;font-weight:900;color:#fff;margin-bottom:12px;text-align:center; }
-    #x-reward-rules-body { font-size:12px;color:rgba(255,255,255,0.72);line-height:1.65; }
-    #x-reward-rules-body h3 { font-size:13px;color:#ffb86a;margin:14px 0 6px;font-weight:800; }
-    #x-reward-rules-body ul { margin:0 0 8px;padding-left:1.2em; }
-    #x-reward-rules-body li { margin-bottom:4px; }
+    #x-reward-rules-body { font-size:12px;color:rgba(255,255,255,0.78);line-height:1.6; }
+    .xrr-lead { text-align:center;font-size:12px;color:rgba(255,220,180,0.85);margin:0 0 14px;line-height:1.55; }
+    .xrr-label { text-align:center;font-size:10px;font-weight:800;letter-spacing:0.18em;color:rgba(255,106,0,0.75);margin:0 0 12px; }
+    .xrr-card { background:rgba(0,0,0,0.35);border:1px solid rgba(255,106,0,0.28);border-radius:12px;padding:14px 12px;margin-bottom:12px; }
+    .xrr-card-title { font-size:14px;font-weight:900;color:#ffb86a;margin:0 0 10px;text-align:center; }
+    .xrr-coin { display:inline-block;background:rgba(255,106,0,0.2);border:1px solid rgba(255,106,0,0.45);color:#ffd4a8;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:800;margin-left:4px; }
+    .xrr-timeline { display:flex;align-items:stretch;justify-content:space-between;gap:4px;margin:10px 0 12px;font-size:10px;text-align:center; }
+    .xrr-tl-node { flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 4px; }
+    .xrr-tl-node strong { display:block;font-size:11px;color:#fff;margin-bottom:2px; }
+    .xrr-tl-window { flex:1.2;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:8px 4px;color:#86efac;font-weight:800; }
+    .xrr-tl-arrow { align-self:center;color:rgba(255,255,255,0.35);font-size:14px;flex-shrink:0; }
+    .xrr-flow { background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;margin:8px 0;font-size:11px;line-height:1.7; }
+    .xrr-flow-title { font-size:10px;font-weight:800;color:rgba(255,255,255,0.45);margin-bottom:6px;letter-spacing:0.06em; }
+    .xrr-flow .ok { color:#86efac;font-weight:700; }
+    .xrr-flow .muted { color:rgba(255,255,255,0.45); }
+    .xrr-list { margin:0;padding-left:1.15em; }
+    .xrr-list li { margin-bottom:5px; }
+    .xrr-note { font-size:11px;color:rgba(255,255,255,0.55);margin:8px 0 0;line-height:1.5; }
     #x-reward-rules-close { width:100%;margin-top:14px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:11px;border-radius:10px;font-weight:800;cursor:pointer; }
     @keyframes audioHintPulse { 0%,100%{opacity:0.7;} 50%{opacity:1;} }
     #gacha-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:160;align-items:center;justify-content:center; }
@@ -909,11 +921,6 @@
       #book-result-actions { max-width: 100%; }
       #book-result-build, #book-result-city, #book-result-retry { font-size: 13px; padding: 11px 18px; }
       #audio-unlock-btn { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; padding: 10px 18px; }
-      .btn-txt { display: none; }
-      #x-rules-header-btn { padding: 4px 8px; font-size: 11px; min-height: 32px; }
-      #ranking-btn { padding: 4px 6px !important; font-size: 0 !important; }
-      #ranking-btn::after { content: '🏆'; font-size: 14px; }
-      #building-box { max-height: 80vh; overflow-y: auto; }
     }
     #gacha-modal-close,#build-modal-close,#auth-close,#building-modal-close,#profile-modal-close,#land-panel-close {
       background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);border-radius:10px;
@@ -980,7 +987,6 @@
         </div>
       </div>
       <div id="user-area">
-        <button id="x-rules-header-btn" type="button" onclick="openXRewardRules()" title="X連携コイン報酬ルール">X<span class="btn-txt" id="x-rules-hdr-label"> 報酬</span></button>
         <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
         <button id="lang-btn" onclick="toggleLang()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -991,8 +997,8 @@
           <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク<span id="task-notice-badge">0</span></button>
           <span id="user-name" style="display:none;" aria-hidden="true"></span>
           <button id="ranking-btn" onclick="openRanking()" style="background:linear-gradient(135deg,rgba(245,158,11,0.55),rgba(238,9,121,0.55));border:1px solid rgba(255,255,255,0.16);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">🏆 ランキング</button>
-          <button id="coin-history-btn" onclick="openCoinHistory()">💰<span class="btn-txt"> 履歴</span></button>
-          <button id="logout-btn" onclick="handleLogout()">↩<span class="btn-txt"> ログアウト</span></button>
+          <button id="coin-history-btn" onclick="openCoinHistory()">💰 履歴</button>
+          <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
         </div>
       </div>
       <div id="ad-slot-wrap">
@@ -1202,8 +1208,6 @@
         <button class="ranking-tab active" id="rtab-coins" onclick="switchRankingTab('coins')">💰 コイン</button>
         <button class="ranking-tab" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員</button>
         <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">🏢 階数</button>
-        <button class="ranking-tab" id="rtab-view" onclick="switchRankingTab('view')">👁 閲覧数</button>
-        <button class="ranking-tab" id="rtab-candle" onclick="switchRankingTab('candle')">🕯 ろうそく</button>
       </div>
       <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
     </div>
@@ -1212,8 +1216,6 @@
       <div id="ranking-coins-list"></div>
       <div id="ranking-emp-list" style="display:none;"></div>
       <div id="ranking-floors-list" style="display:none;"></div>
-      <div id="ranking-view-list" style="display:none;"></div>
-      <div id="ranking-candle-list" style="display:none;"></div>
     </div>
   </div>
   <!-- 図鑑 -->
@@ -2614,45 +2616,61 @@
         await refreshInviteStats();
       }
     }
-    function getXRewardRulesHtml(isJa){
-      if(isJa){
-        return `<p>創設者の X 投稿に反応するとコインが貰えます。</p>
-<h3>共通</h3><ul>
-<li>対象はローンチ日以降の創設者投稿です。</li>
-<li>集計は <b>毎日 8:00 / 20:00（日本時間）</b> に自動実行されます。</li>
-<li>創設者投稿から <b>48時間</b> を過ぎた投稿は、以降 API で読み込まず、新規の報酬付与はありません（すでに付いたコインはそのままです）。</li>
-</ul>
-<h3>リポスト・引用リポスト（+15コイン）</h3><ul>
-<li>リポストまたは引用リポストしてから <b>24時間経過</b> し、かつ創設者の投稿から <b>48時間以内</b> が対象（それより早いリポストは対象外）。</li>
-<li><b>投稿ごとに1回</b>（別の投稿なら別々に対象）。同じ投稿を削除して再リポストしても <b>1回だけ</b> カウントされます。</li>
-</ul>
-<h3>リプライ（+10コイン／ターン）</h3><ul>
-<li>創設者との <b>キャッチボール</b>（創設者の返信のあとにあなたが返信）でターンが増えます。何ターン目までも対象です。</li>
-<li>創設者の返信なしに <b>連続でリプライ</b> した場合は、まとめて <b>1ターン</b> として数えます。</li>
-<li>条件を満たしたターンごとに付与されます（同一ターンの二重付与はしません）。</li>
-</ul>`;
-      }
-      return `<p>Earn coins by engaging with the founder on X. Your in-game <b>@username</b> must match your X handle (register after replying — rewards apply on the next batch run).</p>
-<h3>Common</h3><ul>
-<li>Founder posts on or after launch day (2026-06-01).</li>
-<li>Batch runs at <b>8:00 and 20:00 JST</b> daily.</li>
-<li>Posts older than <b>48 hours</b> are no longer fetched; no new rewards after that (coins already granted stay).</li>
-</ul>
-<h3>Repost / Quote (+15 coins)</h3><ul>
-<li>Standard reposts and quote reposts count the same.</li>
-<li>Eligible <b>24+ hours after</b> the founder posted (earlier reposts do not count).</li>
-<li><b>Once per founder post</b> per player; delete &amp; repost again still counts once. Different posts = separate rewards.</li>
-<li>No per-player 24h cooldown across different posts.</li>
-</ul>
-<h3>Reply (+10 coins / turn)</h3><ul>
-<li><b>Back-and-forth</b> with the founder adds turns; unlimited turns if the conversation continues.</li>
-<li>Consecutive replies without the founder in between count as <b>one turn</b>.</li>
-<li>No cooldown; each qualifying turn pays once (no duplicate pay for the same turn).</li>
-</ul>`;
+    /** X報酬ルール（日本語固定・インフォグラフィック） */
+    function getXRewardRulesHtml(){
+      return `
+<p class="xrr-lead">創設者の X 投稿に反応するとコインがもらえます。<br>ゲームの <b>@ユーザー名</b> と X アカウントが一致している必要があります。<br>（リプライ後にログイン・登録しても、次回の自動集計で反映されます）</p>
+<p class="xrr-label">コイン獲得報酬</p>
+
+<div class="xrr-card">
+  <div class="xrr-card-title">リポスト・引用リポスト<span class="xrr-coin">+15 コイン</span></div>
+  <div class="xrr-timeline">
+    <div class="xrr-tl-node"><strong>0時間</strong>創設者の投稿</div>
+    <div class="xrr-tl-arrow">→</div>
+    <div class="xrr-tl-node"><strong>24時間</strong>24時間経過</div>
+    <div class="xrr-tl-arrow">→</div>
+    <div class="xrr-tl-window">対象<br><span style="font-weight:600;font-size:9px;opacity:0.9">24h〜48h</span></div>
+    <div class="xrr-tl-arrow">→</div>
+    <div class="xrr-tl-node"><strong>48時間</strong>48時間経過</div>
+  </div>
+  <ul class="xrr-list">
+    <li><b>24時間経過後</b> かつ <b>48時間以内</b> のリポスト・引用が対象（それ以前は対象外）</li>
+    <li>通常リポストと引用リポストは<b>同じ扱い</b></li>
+    <li><b>投稿ごとに1回</b>（別の投稿なら別々に対象）</li>
+    <li>削除して再リポストしても <b>1回だけ</b> カウント</li>
+  </ul>
+</div>
+
+<div class="xrr-card">
+  <div class="xrr-card-title">リプライ<span class="xrr-coin">+10 コイン／ターン</span></div>
+  <div class="xrr-flow">
+    <div class="xrr-flow-title">キャッチボール（創設者の返信のあとにあなたが返信）</div>
+    創設者の投稿 → あなたの返信 <span class="ok">（+10）</span> → 創設者の返信 → あなたの返信 <span class="ok">（+10）</span> → …
+  </div>
+  <div class="xrr-flow">
+    <div class="xrr-flow-title">連続リプライ（創設者が挟まない）</div>
+    創設者の投稿 → あなたの返信 → あなたの返信 → あなたの返信 … <span class="muted">まとめて 1ターン（+10）のみ</span>
+  </div>
+  <ul class="xrr-list">
+    <li>キャッチボール形式（返信に返信）でターンが増えます</li>
+    <li>条件を満たした<b>ターンごと</b>に付与（同一ターンの二重付与なし）</li>
+    <li>クールダウン<b>なし</b>（何ターン目までも対象）</li>
+  </ul>
+</div>
+
+<div class="xrr-card">
+  <div class="xrr-card-title">共通ルール</div>
+  <ul class="xrr-list">
+    <li>対象はローンチ日（<b>2026/6/1</b>）以降の創設者投稿</li>
+    <li>集計は毎日 <b>8:00 / 20:00（日本時間）</b> に自動実行</li>
+    <li>投稿から <b>48時間</b> 経過後はその投稿の読み込みをやめ、<b>新規報酬なし</b></li>
+    <li>すでに付いたコインはそのまま残ります</li>
+  </ul>
+</div>`;
     }
     function openXRewardRules(){
       const body=document.getElementById('x-reward-rules-body');
-      if(body)body.innerHTML=getXRewardRulesHtml(currentLang==='ja');
+      if(body)body.innerHTML=getXRewardRulesHtml();
       document.getElementById('x-reward-rules-modal').classList.add('open');
     }
     function closeXRewardRules(){document.getElementById('x-reward-rules-modal').classList.remove('open');}
@@ -2788,29 +2806,27 @@
       const rtabCoins=document.getElementById('rtab-coins');if(rtabCoins)rtabCoins.textContent=isJa?'💰 コイン':'💰 Coins';
       const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'👥 従業員':'👥 Staff';
       const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'🏢 階数':'🏢 Floors';
-      const rtabView=document.getElementById('rtab-view');if(rtabView)rtabView.textContent=isJa?'👁 閲覧数':'👁 Views';
-      const rtabCandle=document.getElementById('rtab-candle');if(rtabCandle)rtabCandle.textContent=isJa?'🕯 ろうそく':'🕯 Candles';
       document.getElementById('ranking-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('ranking-overlay').classList.contains('open')&&rankingCache.emp){
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
         renderRankingList('ranking-buildings-list',rankingCache.buildings,'buildings');
       }
       // コイン履歴
-      document.getElementById('coin-history-btn').innerHTML='💰<span class="btn-txt">'+(isJa?' 履歴':' History')+'</span>';
+      document.getElementById('coin-history-btn').textContent=isJa?'💰 履歴':'💰 History';
       document.getElementById('coin-history-title').textContent=isJa?'💰 コイン履歴':'💰 Coin History';
       document.getElementById('ch-tab-all').textContent=isJa?'📜 全て':'📜 All';
       document.getElementById('ch-tab-gain').textContent=isJa?'📈 獲得':'📈 Gain';
       document.getElementById('ch-tab-spend').textContent=isJa?'📉 消費':'📉 Spend';
       const chXRules=document.getElementById('coin-history-x-rules-btn');
-      if(chXRules)chXRules.textContent=isJa?'📋 X報酬ルール':'📋 X rewards';
+      if(chXRules)chXRules.textContent='📋 X報酬ルール';
       document.getElementById('coin-history-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
-      document.getElementById('logout-btn').innerHTML='↩<span class="btn-txt">'+(isJa?' ログアウト':' Logout')+'</span>';
+      document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
       document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
       const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'🔔 通知':'🔔 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
-      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML='📋<span class="btn-txt">'+(isJa?' タスク':' Tasks')+'</span><span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
+      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML=(isJa?'📋 タスク':'📋 Tasks')+'<span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
       const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'🔔 お知らせ / 通知':'🔔 Notices';
       const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'通知はまだありません':'No notices yet';
       const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
@@ -2932,14 +2948,12 @@
       if(xDesc)xDesc.textContent=isJa?'ヘッダーに表示する @ユーザー名 を設定してください':'Set your @handle shown in the header';
       set('x-setup-save',isJa?'保存':'Save');
       const xRulesLink=document.getElementById('x-setup-rules-link');
-      if(xRulesLink)xRulesLink.textContent=isJa?'📋 X連携コイン報酬のルール':'📋 X engagement coin rules';
-      const xRulesHdr=document.getElementById('x-rules-hdr-label');
-      if(xRulesHdr)xRulesHdr.textContent=isJa?' 報酬':' Rewards';
-      set('x-reward-rules-title',isJa?'X連携コイン報酬':'X engagement coins');
-      set('x-reward-rules-close',isJa?'閉じる':'Close');
+      if(xRulesLink)xRulesLink.textContent='📋 X連携コイン報酬のルール';
+      set('x-reward-rules-title','X連携コイン報酬','X連携コイン報酬');
+      set('x-reward-rules-close','閉じる','閉じる');
       const xRulesBody=document.getElementById('x-reward-rules-body');
       if(xRulesBody&&document.getElementById('x-reward-rules-modal').classList.contains('open')){
-        xRulesBody.innerHTML=getXRewardRulesHtml(isJa);
+        xRulesBody.innerHTML=getXRewardRulesHtml();
       }
       set('bml-views',isJa?'閲覧回数':'Views');
       set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');
@@ -3412,7 +3426,7 @@
           gl_FragColor=vec4(diff+emis*(0.35+t*0.55),1.0);
         }`;
     }
-    const engine=window.BABYLON?new BABYLON.Engine(canvas,!isCoarseMobile(),isCoarseMobile()?{adaptToDeviceRatio:false}:{}):{runRenderLoop:function(){},resize:function(){}};
+    const engine=window.BABYLON?new BABYLON.Engine(canvas,true):{runRenderLoop:function(){},resize:function(){}};
     const scene=window.BABYLON?new BABYLON.Scene(engine):{onPointerObservable:{add:function(){}},activeCamera:null};
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
@@ -3427,7 +3441,7 @@
     }
     const flyCamera=new BABYLON.FlyCamera('flyCam',new BABYLON.Vector3(0,30,-60),scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
-    flyCamera.speed=0.7;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
+    flyCamera.speed=0.23;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
     flyCamera.bankedTurn=true;flyCamera.bankedTurnLimit=Math.PI/4;flyCamera.bankedTurnMultiplier=0.5;flyCamera.minZ=0.1;
     flyCamera.keysUp=[];flyCamera.keysDown=[];flyCamera.keysLeft=[];flyCamera.keysRight=[];
     scene.activeCamera=arcCamera;
@@ -3534,13 +3548,13 @@
       }else{
         const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
         const right=flyCamera.getDirection(BABYLON.Axis.X);
-        const moveScale=13*dt;
+        const moveScale=4.3*dt;
         if(flyKeyState.up)flyCamera.cameraDirection.addInPlace(fwd.scale(moveScale));
         if(flyKeyState.down)flyCamera.cameraDirection.addInPlace(fwd.scale(-moveScale));
         if(flyKeyState.left)flyCamera.cameraDirection.addInPlace(right.scale(-moveScale*0.8));
         if(flyKeyState.right)flyCamera.cameraDirection.addInPlace(right.scale(moveScale*0.8));
         const lift=(flyKeyState.rise?1:0)-(flyKeyState.fall?1:0);
-        if(lift!==0)flyCamera.position.y+=lift*9*dt;
+        if(lift!==0)flyCamera.position.y+=lift*3*dt;
       }
     });
     function toggleFlyMode(){isFlying=!isFlying;setFlyMode(isFlying);}
@@ -3574,15 +3588,15 @@
     hemiLight.intensity=0.6;hemiLight.groundColor=new BABYLON.Color3(0.1,0.05,0.1);
     const dirLight=new BABYLON.DirectionalLight('dir',new BABYLON.Vector3(-1,-2,-1),scene);
     dirLight.intensity=0.8;dirLight.position=new BABYLON.Vector3(50,50,50);
-    const ground=BABYLON.MeshBuilder.CreateGround('ground',{width:200,height:200,subdivisions:isCoarseMobile()?1:20},scene);
+    const ground=BABYLON.MeshBuilder.CreateGround('ground',{width:200,height:200,subdivisions:20},scene);
     const groundMat=new BABYLON.StandardMaterial('groundMat',scene);
     groundMat.diffuseColor=new BABYLON.Color3(0.06,0.06,0.1);groundMat.specularColor=new BABYLON.Color3(0,0,0);
-    ground.material=groundMat;ground.freezeWorldMatrix();
+    ground.material=groundMat;
     const lineMat=new BABYLON.StandardMaterial('lineMat',scene);
     lineMat.emissiveColor=new BABYLON.Color3(0.15,0.1,0.2);
     for(let i=-GRID_HALF;i<=GRID_HALF;i+=CELL){
-      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);hL.position=new BABYLON.Vector3(0,0.01,i);hL.material=lineMat;hL.isPickable=false;hL.freezeWorldMatrix();
-      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;vL.freezeWorldMatrix();
+      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);hL.position=new BABYLON.Vector3(0,0.01,i);hL.material=lineMat;hL.isPickable=false;
+      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;
     }
     // ========================================
     // 土地管理
@@ -3594,7 +3608,7 @@
     function keyToCoord(key){const[gx,gz]=key.split('_').map(Number);return{gx,gz};}
     let highlightTile=null;
     function showHighlight(gx,gz){
-      if(highlightTile){if(highlightTile.material)highlightTile.material.dispose();highlightTile.dispose();}
+      if(highlightTile)highlightTile.dispose();
       highlightTile=BABYLON.MeshBuilder.CreateGround('hl_tile',{width:CELL-0.3,height:CELL-0.3},scene);
       highlightTile.position=new BABYLON.Vector3(gx,0.07,gz);
       const mat=new BABYLON.StandardMaterial('hl_mat_'+Date.now(),scene);
@@ -3602,7 +3616,7 @@
     }
     function hideHighlight(){if(highlightTile){highlightTile.dispose();highlightTile=null;}}
     function drawOwnedTile(gx,gz,key,ownerId){
-      if(landMap[key]&&landMap[key].tile){const _ot=landMap[key].tile;if(_ot.material)_ot.material.dispose();_ot.dispose();}
+      if(landMap[key]&&landMap[key].tile)landMap[key].tile.dispose();
       const tile=BABYLON.MeshBuilder.CreateGround('lt_'+key,{width:CELL-0.4,height:CELL-0.4},scene);
       tile.position=new BABYLON.Vector3(gx,0.02,gz);
       const mat=new BABYLON.StandardMaterial('ltm_'+key+'_'+Date.now(),scene);
@@ -4870,7 +4884,7 @@
       const prism=normalizePrism(shape);
       const w=PRISMS[prism]?.w||5.5;
       let mesh;
-      if(prism==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:isCoarseMobile()?8:20},scene);
+      if(prism==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:20},scene);
       else if(prism==='triangle')mesh=BABYLON.MeshBuilder.CreateCylinder('b_'+Date.now(),{height,diameter:w,tessellation:3},scene);
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:w},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
@@ -4909,16 +4923,10 @@
     // ========================================
     // グリッドタップ
     // ========================================
-    let _ptrDnX=0,_ptrDnY=0,_ptrTapFired=false;
-    scene.onPointerObservable.add((pointerInfo)=>{
-      const PT=BABYLON.PointerEventTypes;
-      if(pointerInfo.type===PT.POINTERDOWN){_ptrDnX=scene.pointerX;_ptrDnY=scene.pointerY;_ptrTapFired=false;return;}
-      const isTap=pointerInfo.type===PT.POINTERTAP||(pointerInfo.type===PT.POINTERUP&&!_ptrTapFired&&Math.hypot(scene.pointerX-_ptrDnX,scene.pointerY-_ptrDnY)<20);
-      if(!isTap)return;
-      _ptrTapFired=true;
+    function handleCanvasTap(x,y){
       if(isFlying&&!pendingBuildMode)return;
-      const pick=scene.pick(scene.pointerX,scene.pointerY);
-      if(!pick.hit||!pick.pickedMesh)return;
+      const pick=scene.pick(x,y);
+      if(!pick||!pick.hit||!pick.pickedMesh)return;
       if(pick.pickedMesh.name.startsWith('b_')){
         let bData=buildings.find(b=>b.mesh===pick.pickedMesh);
         if(!bData&&pick.pickedMesh.metadata&&pick.pickedMesh.metadata.landKey){
@@ -4943,7 +4951,27 @@
         }
         openLandPanel(gx,gz);
       }
+    }
+    // PC: POINTERTAP は確実に動作する
+    scene.onPointerObservable.add((pointerInfo)=>{
+      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
+      handleCanvasTap(scene.pointerX,scene.pointerY);
     });
+    // モバイル: native touchend（POINTERTAP は指が少し動くと発火しないため）
+    if(isCoarseMobile()){
+      let _mTapX=0,_mTapY=0;
+      canvas.addEventListener('touchstart',e=>{
+        if(e.touches.length!==1)return;
+        _mTapX=e.touches[0].clientX;_mTapY=e.touches[0].clientY;
+      },{passive:true});
+      canvas.addEventListener('touchend',e=>{
+        if(e.changedTouches.length!==1)return;
+        const t=e.changedTouches[0];
+        if(Math.hypot(t.clientX-_mTapX,t.clientY-_mTapY)>15)return;
+        const rect=canvas.getBoundingClientRect();
+        handleCanvasTap(t.clientX-rect.left,t.clientY-rect.top);
+      },{passive:true});
+    }
     // build-btn は onclick="openGachaModal(false)" に変更済み（addEventListener不要）
     // ========================================
     // 図鑑
@@ -5031,7 +5059,7 @@
     // ========================================
     // ランキング
     // ========================================
-    let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null,view:null,candle:null};
+    let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null};
     function rankingNameHash(uid,dayKey){
       let h=0;const s=`${uid}:${dayKey}`;
       for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i)|0;
@@ -5070,7 +5098,7 @@
     function closeRanking(){document.getElementById('ranking-overlay').classList.remove('open');}
     function switchRankingTab(tab){
       rankingTab=tab;
-      ['coins','emp','floors','view','candle'].forEach(t=>{
+      ['coins','emp','floors'].forEach(t=>{
         const tabEl=document.getElementById('rtab-'+t);
         if(tabEl)tabEl.classList.toggle('active',tab===t);
         const listEl=document.getElementById('ranking-'+t+'-list');
@@ -5079,41 +5107,31 @@
     }
     async function loadRanking(){
       const loadingEl=document.getElementById('ranking-loading-msg');loadingEl.classList.add('show');
-      ['ranking-coins-list','ranking-emp-list','ranking-floors-list','ranking-view-list','ranking-candle-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+      ['ranking-coins-list','ranking-emp-list','ranking-floors-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
       try{
-        const[{data:users,error:uErr},{data:buildings,error:bErr},{data:candleRows,error:cErr}]=await Promise.all([
+        const[{data:users,error:uErr},{data:buildings,error:bErr}]=await Promise.all([
           db.from('users').select('id,username,x_username,coin_column,bench_employees'),
-          db.from('buildings').select('owner_id,floors,employees,x,z,view_count'),
-          db.from('building_candles').select('building_x,building_z')
+          db.from('buildings').select('owner_id,floors,employees')
         ]);
         if(uErr)throw uErr;
         if(bErr)throw bErr;
         const userMap={};
         (users||[]).forEach(u=>{
-          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0,totalViewCount:0,totalCandles:0};
+          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0};
         });
-        // candle counts per building (x,z)
-        const candleMap={};
-        (candleRows||[]).forEach(c=>{const k=`${c.building_x}_${c.building_z}`;candleMap[k]=(candleMap[k]||0)+1;});
         (buildings||[]).forEach(b=>{
           const uid=b.owner_id;if(!uid||!userMap[uid])return;
           userMap[uid].assigned+=(b.employees||0);
           userMap[uid].totalFloors+=Math.min(b.floors||0,MAX_BUILDING_FLOORS);
           userMap[uid].buildingCount+=1;
-          userMap[uid].totalViewCount+=(b.view_count||0);
-          userMap[uid].totalCandles+=(candleMap[`${b.x}_${b.z}`]||0);
         });
         const list=Object.values(userMap).map(u=>({...u,totalEmp:u.assigned+u.bench}));
         rankingCache.coins=[...list].sort((a,b)=>b.coins-a.coins).slice(0,50);
         rankingCache.emp=[...list].sort((a,b)=>b.totalEmp-a.totalEmp).slice(0,50);
         rankingCache.floors=[...list].sort((a,b)=>b.totalFloors-a.totalFloors).slice(0,50);
-        rankingCache.view=[...list].sort((a,b)=>b.totalViewCount-a.totalViewCount).slice(0,50);
-        rankingCache.candle=[...list].sort((a,b)=>b.totalCandles-a.totalCandles).slice(0,50);
         renderRankingList('ranking-coins-list',rankingCache.coins,'coins');
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
         renderRankingList('ranking-floors-list',rankingCache.floors,'floors');
-        renderRankingList('ranking-view-list',rankingCache.view,'view');
-        renderRankingList('ranking-candle-list',rankingCache.candle,'candle');
         switchRankingTab(rankingTab);
       }catch(e){
         console.warn('ranking load error:',e.message);
@@ -5136,8 +5154,6 @@
         let value,unit,subText;
         if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
-        else if(type==='view'){value=(u.totalViewCount||0).toLocaleString();unit=isJa?'回':'views';subText=isJa?`🏢 ${u.buildingCount}棟 合計閲覧数`:`🏢 ${u.buildingCount} bldgs total views`;}
-        else if(type==='candle'){value=(u.totalCandles||0).toLocaleString();unit=isJa?'本':'🕯';subText=isJa?`🏢 ${u.buildingCount}棟 合計共感数`:`🏢 ${u.buildingCount} bldgs total candles`;}
         else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';
         if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}

@@ -78,6 +78,12 @@
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     }
     #x-rewards-btn:hover { opacity: 0.85; }
+    #x-infographic-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:260;align-items:center;justify-content:center; }
+    #x-infographic-modal.open { display:flex; }
+    #x-infographic-box { position:relative;width:min(1200px,98vw);height:min(92vh,860px);border-radius:14px;overflow:hidden;box-shadow:0 0 80px rgba(95,160,255,0.18); }
+    #x-infographic-close { position:absolute;top:12px;right:12px;z-index:10;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.28);color:#fff;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;backdrop-filter:blur(6px); }
+    #x-infographic-close:hover { background:rgba(255,90,0,0.6); }
+    #x-infographic-frame { width:100%;height:100%;border:none;display:block; }
     #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
@@ -1209,6 +1215,12 @@
       <div id="x-setup-error"></div>
     </div>
   </div>
+  <div id="x-infographic-modal" onclick="if(event.target===this)closeXRewardsRules()">
+    <div id="x-infographic-box">
+      <button id="x-infographic-close" type="button" onclick="closeXRewardsRules()">✕ 閉じる</button>
+      <iframe id="x-infographic-frame" frameborder="0" scrolling="yes" sandbox="allow-scripts allow-same-origin" style="width:100%;height:100%;border:none;display:block;"></iframe>
+    </div>
+  </div>
   <div id="auth-modal">
     <div id="auth-box">
       <button id="auth-close" type="button" onclick="closeAuthModal()" aria-label="閉じる">×</button>
@@ -1534,7 +1546,8 @@
     }
     function refreshCityBgm(){
       if(IgnisAudio.muted)return;
-      if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
+      if(typeof isXRewardScreenOpen==='function'&&isXRewardScreenOpen())IgnisAudio.playBgmTrack('retrogame').catch(()=>{});
+      else if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
       else if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
       else IgnisAudio.playBgmTrack('city').catch(()=>{});
     }
@@ -1913,7 +1926,8 @@
     try{
       IgnisAudio.init();
       await IgnisAudio.ensure();
-      const _tid=(typeof isCollectionScreenOpen==='function'&&isCollectionScreenOpen())?'collection':
+      const _tid=(typeof isXRewardScreenOpen==='function'&&isXRewardScreenOpen())?'retrogame':
+                 (typeof isCollectionScreenOpen==='function'&&isCollectionScreenOpen())?'collection':
                  (typeof isOpeningBgmScreenOpen==='function'&&isOpeningBgmScreenOpen())?'opening':'city';
       const ok=await IgnisAudio.playBgmTrack(_tid);
       if(ok){
@@ -2278,9 +2292,29 @@
       document.getElementById('coin-history-overlay').classList.add('open');
       await loadCoinHistory();
     }
+    function isXRewardScreenOpen(){
+      const el=document.getElementById('x-infographic-modal');
+      return !!(el&&el.classList.contains('open'));
+    }
+    function _loadInfographic(frame,isJa){
+      const src=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
+      fetch(src).then(r=>r.text()).then(html=>{
+        frame.removeAttribute('src');
+        frame.srcdoc=html;
+      }).catch(()=>{frame.src=src;});
+    }
     function openXRewardsRules(){
       try{IgnisAudio.playClick();}catch(e){}
-      window.open('x_rewards_infographic.html','_blank','noopener');
+      document.getElementById('x-infographic-modal').classList.add('open');
+      const frame=document.getElementById('x-infographic-frame');
+      if(frame)_loadInfographic(frame,currentLang==='ja');
+      if(!IgnisAudio.muted)IgnisAudio.playBgmTrack('retrogame').catch(()=>{});
+    }
+    function closeXRewardsRules(){
+      document.getElementById('x-infographic-modal').classList.remove('open');
+      const frame=document.getElementById('x-infographic-frame');
+      if(frame){frame.removeAttribute('srcdoc');frame.removeAttribute('src');}
+      refreshCityBgm();
     }
     function closeCoinHistory(){document.getElementById('coin-history-overlay').classList.remove('open');}
     function switchCoinHistoryTab(tab){
@@ -2744,6 +2778,12 @@
       const xDesc=document.getElementById('x-setup-desc');
       if(xDesc)xDesc.textContent=isJa?'ヘッダーに表示する @ユーザー名 を設定してください':'Set your @handle shown in the header';
       set('x-setup-save',isJa?'保存':'Save');
+      const xInfClose=document.getElementById('x-infographic-close');
+      if(xInfClose)xInfClose.textContent=isJa?'✕ 閉じる':'✕ Close';
+      if(isXRewardScreenOpen()){
+        const frame=document.getElementById('x-infographic-frame');
+        if(frame)_loadInfographic(frame,isJa);
+      }
       set('bml-views',isJa?'閲覧回数':'Views');
       set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');
       const xLabel=document.getElementById('x-username-label');

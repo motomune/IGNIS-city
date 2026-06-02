@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X連携コイン報酬システム</title>
+<style>
+  :root{
+    --bg-0:#000000;
+    --bg-1:#02040a;
+    --bg-2:#04070f;
+    --panel:rgba(8,16,34,.78);
+    --panel-edge:rgba(96,160,255,.65);
+    --text:#eaf3ff;
+    --muted:#9fb6d8;
+    --cyan:#5fd6ff;
+    --blue:#5b8cff;
+    --violet:#b78bff;
+    --gold:#ffce5a;
+    --gold-deep:#ffa825;
+    --ok:#5fe39a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI","Noto Sans JP","Hiragino Sans",sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(60,110,220,.20), transparent 60%),
+      radial-gradient(900px 500px at 90% 20%, rgba(150,90,255,.12), transparent 55%),
+      linear-gradient(160deg,var(--bg-0),var(--bg-1) 45%,var(--bg-2));
+    min-height:100vh;
+    padding:32px 20px 56px;
+    overflow-x:hidden;
+  }
+  /* decorative animated grid + particles */
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    background-image:
+      linear-gradient(rgba(80,140,255,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(80,140,255,.05) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(circle at 50% 30%,#000 0%,transparent 75%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto}
+
+  /* floating particles */
+  .particles{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .particles i{
+    position:absolute;width:4px;height:4px;border-radius:50%;
+    background:var(--cyan);box-shadow:0 0 8px var(--cyan);
+    animation:float-dot 6s ease-in-out infinite;
+  }
+  .particles i:nth-child(1){left:8%;top:30%;animation-delay:0s}
+  .particles i:nth-child(2){left:22%;top:65%;animation-delay:1.1s;background:var(--blue);box-shadow:0 0 8px var(--blue)}
+  .particles i:nth-child(3){left:48%;top:18%;animation-delay:2.3s}
+  .particles i:nth-child(4){left:70%;top:55%;animation-delay:.6s;background:var(--violet);box-shadow:0 0 8px var(--violet)}
+  .particles i:nth-child(5){left:86%;top:28%;animation-delay:1.8s}
+  .particles i:nth-child(6){left:92%;top:72%;animation-delay:3s;background:var(--blue);box-shadow:0 0 8px var(--blue)}
+  .particles i:nth-child(7){left:38%;top:80%;animation-delay:2.6s}
+  .particles i:nth-child(8){left:60%;top:40%;animation-delay:.3s}
+
+  /* ===== HERO ===== */
+  .hero{text-align:center;margin-bottom:30px;animation:fadeUp .8s ease both}
+  .hero .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.32em;color:var(--cyan);
+    border:1px solid rgba(95,214,255,.35);
+    border-radius:999px;padding:6px 16px;margin-bottom:18px;
+    background:rgba(95,214,255,.06);
+    text-transform:uppercase;
+  }
+  .hero .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pulse 1.8s infinite}
+  h1{
+    font-size:clamp(34px,6vw,62px);
+    font-weight:800;letter-spacing:.04em;line-height:1.1;
+    background:linear-gradient(180deg,#ffffff 0%,#bfe0ff 45%,#6fa8ff 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 40px rgba(95,160,255,.35);
+  }
+  .hero .lead{
+    margin:16px auto 0;max-width:640px;
+    font-size:clamp(15px,2.4vw,19px);color:var(--muted);line-height:1.7;
+  }
+  .hero .lead b{color:var(--gold)}
+
+  /* ===== MAIN GRID ===== */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}
+
+  .card{
+    position:relative;border-radius:20px;padding:26px 24px 24px;
+    background:var(--panel);
+    border:1px solid var(--panel-edge);
+    backdrop-filter:blur(8px);
+    overflow:hidden;
+    animation:fadeUp .8s ease both;
+    box-shadow:0 0 0 1px rgba(95,160,255,.08), 0 24px 60px -30px rgba(0,0,0,.9), inset 0 0 60px -40px var(--accent,var(--cyan));
+    transition:box-shadow .3s, border-color .3s, transform .3s;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:var(--accent,var(--cyan));
+    box-shadow:0 0 32px -8px var(--accent,var(--cyan)), 0 24px 60px -28px rgba(0,0,0,.9), inset 0 0 70px -40px var(--accent,var(--cyan));
+  }
+  .card.repost{animation-delay:.1s}
+  .card.reply{animation-delay:.2s}
+  /* glowing top accent line + travelling sheen */
+  .card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,transparent,var(--accent,var(--cyan)),transparent);
+    opacity:.95;
+    background-size:200% 100%;
+    animation:sheen 3.5s linear infinite;
+  }
+  /* corner glow */
+  .card::after{
+    content:"";position:absolute;width:240px;height:240px;border-radius:50%;
+    top:-120px;right:-80px;
+    background:radial-gradient(circle,var(--accent,var(--cyan)),transparent 70%);
+    opacity:.14;pointer-events:none;
+  }
+  .repost{--accent:var(--cyan)}
+  .reply{--accent:var(--violet)}
+
+  .card-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .icon-badge{
+    flex:none;width:52px;height:52px;border-radius:14px;
+    display:grid;place-items:center;font-size:26px;
+    background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02));
+    border:1px solid var(--accent);
+    box-shadow:0 0 22px -6px var(--accent), inset 0 0 18px -10px var(--accent);
+  }
+  .card-head h2{font-size:clamp(20px,3vw,26px);font-weight:800;letter-spacing:.01em}
+  .reward{
+    display:flex;align-items:baseline;gap:8px;margin:14px 0 4px;
+  }
+  .reward .num{
+    font-size:clamp(38px,6vw,54px);font-weight:900;line-height:1;
+    background:linear-gradient(180deg,#fff0c2,var(--gold) 40%,var(--gold-deep));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 30px rgba(255,180,60,.30);
+  }
+  .reward .unit{font-size:18px;font-weight:700;color:var(--gold)}
+  .mini{font-size:13.5px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+
+  .block{
+    border:1px solid rgba(95,214,255,.38);
+    border-radius:14px;padding:14px;margin-bottom:14px;
+    background:rgba(6,18,36,.6);
+    box-shadow:inset 0 0 26px -16px var(--cyan);
+    transition:border-color .25s, box-shadow .25s;
+  }
+  .block:hover{
+    border-color:rgba(95,214,255,.7);
+    box-shadow:0 0 22px -8px rgba(95,214,255,.45), inset 0 0 26px -14px var(--cyan);
+  }
+  .block .label{
+    display:inline-block;font-size:11px;letter-spacing:.18em;
+    color:var(--accent);margin-bottom:12px;text-transform:uppercase;font-weight:700;
+  }
+
+  /* timeline for repost */
+  .timeline{position:relative;padding:6px 4px 2px}
+  .timeline .track{
+    position:relative;height:6px;border-radius:6px;margin:30px 0 6px;
+    background:linear-gradient(90deg,#1a2c52,#243b6c);
+  }
+  .timeline .window{
+    position:absolute;top:0;bottom:0;left:50%;right:0;border-radius:6px;
+    background:linear-gradient(90deg,rgba(95,227,154,.25),rgba(95,227,154,.55));
+    box-shadow:0 0 16px -2px rgba(95,227,154,.5);
+  }
+  .timeline .runner{
+    position:absolute;top:50%;left:0;width:14px;height:14px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle at 35% 30%,#fff,var(--cyan));
+    box-shadow:0 0 14px var(--cyan);
+    animation:run 4.5s ease-in-out infinite;
+  }
+  .timeline .marks{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+  .timeline .marks span{flex:1;text-align:center}
+  .timeline .marks span:first-child{text-align:left}
+  .timeline .marks span:last-child{text-align:right}
+  .timeline .marks b{display:block;color:#cfe2ff;font-size:12px;margin-bottom:2px}
+  .win-note{
+    margin-top:10px;text-align:center;font-size:12.5px;color:var(--ok);font-weight:700;
+    background:rgba(95,227,154,.08);border:1px solid rgba(95,227,154,.3);
+    border-radius:999px;padding:5px 10px;
+  }
+
+  /* flow for reply */
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .pill{
+    font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:10px;
+    border:1px solid rgba(95,214,255,.45);background:rgba(12,40,68,.85);color:#d7f1ff;
+    white-space:nowrap;
+  }
+  .pill.you{border-color:rgba(183,139,255,.6);background:rgba(60,40,100,.5);color:#e7d9ff}
+  .pill.win{
+    border-color:var(--gold);color:#ffe9b0;font-weight:800;
+    background:linear-gradient(180deg,rgba(255,180,60,.18),rgba(255,180,60,.06));
+    box-shadow:0 0 14px -3px var(--gold);
+  }
+  .arrow{color:var(--cyan);font-weight:800;font-size:14px}
+
+  /* reply tables */
+  .reply-table{display:flex;flex-direction:column;gap:12px}
+  .reply-row{
+    border:1px solid rgba(95,214,255,.35);border-radius:14px;padding:13px 14px;
+    background:linear-gradient(180deg,rgba(12,40,68,.55),rgba(8,20,40,.55));
+    box-shadow:inset 0 0 22px -14px var(--cyan);
+    transition:border-color .25s, box-shadow .25s;
+  }
+  .reply-row:hover{
+    border-color:var(--cyan);
+    box-shadow:0 0 24px -6px rgba(95,214,255,.55), inset 0 0 22px -12px var(--cyan);
+  }
+  .reply-row .row-head{
+    display:flex;align-items:center;gap:8px;margin-bottom:11px;
+    font-size:12.5px;font-weight:800;color:#bfeaff;letter-spacing:.02em;
+  }
+  .reply-row .row-head .badge{
+    font-size:10px;letter-spacing:.1em;padding:3px 9px;border-radius:999px;
+    background:rgba(95,214,255,.14);border:1px solid rgba(95,214,255,.5);color:var(--cyan);
+  }
+  .turn-tag{
+    display:block;margin-top:9px;font-size:11.5px;color:#86c8ef;
+    border-top:1px dashed rgba(95,214,255,.3);padding-top:7px;
+  }
+  .turn-tag b{color:var(--gold)}
+
+  .points{list-style:none;display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .points li{display:flex;gap:9px;align-items:flex-start;font-size:14px;color:#dceaff;line-height:1.45}
+  .points li .ic{flex:none;color:var(--accent);font-weight:800;margin-top:1px}
+  .points li.no .ic{color:#ff8b8b}
+  .coins-row{display:flex;gap:4px;font-size:22px;margin-top:14px;filter:drop-shadow(0 4px 6px rgba(255,170,40,.35))}
+
+  /* ===== COMMON RULES ===== */
+  .common{
+    border-radius:20px;padding:26px 24px;
+    background:linear-gradient(160deg,rgba(18,28,52,.8),rgba(12,20,40,.8));
+    border:1px solid rgba(120,160,230,.25);
+    animation:fadeUp .8s ease both;animation-delay:.3s;
+  }
+  .common-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .common-head .tag{
+    font-size:12px;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase;font-weight:700;
+  }
+  .common-head h3{font-size:clamp(19px,3vw,24px);font-weight:800}
+  .rules{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .rule{
+    border:1px solid rgba(95,214,255,.3);border-radius:14px;padding:16px 14px;
+    background:rgba(6,18,36,.55);transition:transform .25s, border-color .25s, box-shadow .25s;
+    box-shadow:inset 0 0 24px -16px var(--cyan);
+  }
+  .rule:hover{
+    transform:translateY(-4px);border-color:var(--cyan);
+    box-shadow:0 0 26px -6px rgba(95,214,255,.55), inset 0 0 24px -12px var(--cyan);
+  }
+  .rule .emoji{font-size:26px;display:block;margin-bottom:10px}
+  .rule .rt{font-size:14px;font-weight:700;color:#e7f1ff;margin-bottom:4px}
+  .rule .rd{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .rule .rd b{color:var(--gold)}
+
+  /* ===== KEY POINTS FOOTER ===== */
+  .keys{
+    margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+    animation:fadeUp .8s ease both;animation-delay:.4s;
+  }
+  .key{
+    position:relative;border-radius:16px;padding:20px 18px;
+    background:rgba(14,24,46,.7);border:1px solid rgba(120,160,230,.22);
+    overflow:hidden;
+  }
+  .key .n{
+    font-size:13px;font-weight:800;color:#04070f;
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    background:linear-gradient(160deg,#fff0c2,var(--gold-deep));margin-bottom:12px;
+    box-shadow:0 0 18px -4px var(--gold);
+  }
+  .key p{font-size:14px;line-height:1.55;color:#dceaff}
+  .key p b{color:var(--gold)}
+
+  /* ===== animations ===== */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+  @keyframes sheen{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  @keyframes float-dot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-18px);opacity:1}}
+  @keyframes run{
+    0%{left:0%}
+    40%{left:50%}
+    55%{left:75%}
+    100%{left:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important}
+  }
+
+  /* ===== responsive ===== */
+  @media (max-width:880px){
+    .grid{grid-template-columns:1fr}
+    .rules{grid-template-columns:repeat(2,1fr)}
+    .keys{grid-template-columns:1fr}
+  }
+  @media (max-width:480px){
+    body{padding:20px 12px 40px}
+    .rules{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="particles"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span>IGNIS CITY × X REWARDS</span>
+    <h1>X連携コイン報酬システム</h1>
+    <p class="lead">創設者の<b>X投稿</b>にリアクションして、<b>限定コイン</b>を獲得せよ。<br>報酬は「リポスト/引用」と「リプライ」の2種類。</p>
+  </header>
+
+  <!-- MAIN PANELS -->
+  <section class="grid">
+
+    <!-- REPOST CARD -->
+    <article class="card repost">
+      <div class="card-head">
+        <div class="icon-badge">🔁</div>
+        <h2>リポスト・引用リポスト</h2>
+      </div>
+      <div class="reward"><span class="num">+15</span><span class="unit">コイン / 投稿</span></div>
+      <p class="mini">1つの創設者投稿につき、最大 <b style="color:var(--gold)">1回</b> 獲得（削除→再投稿は無効）</p>
+
+      <div class="block">
+        <span class="label">⏱ 報酬の判定タイミング</span>
+        <div class="timeline">
+          <div class="track">
+            <div class="window"></div>
+            <div class="runner"></div>
+          </div>
+          <div class="marks">
+            <span><b>Hour 0</b>投稿公開</span>
+            <span><b>Hour 24</b>判定開始</span>
+            <span><b>Hour 48</b>対象終了</span>
+          </div>
+          <div class="win-note">リポスト実行から +24h 経過で報酬対象 ✓</div>
+        </div>
+      </div>
+
+      <ul class="points">
+        <li><span class="ic">✓</span><span>創設者投稿が <b style="color:var(--gold)">48時間以内</b>、かつリポスト/引用から <b style="color:var(--gold)">24時間以上</b>経過が対象</span></li>
+        <li class="no"><span class="ic">✕</span><span>同じ投稿への複数回リポストでの重複獲得は不可（リポスト→その投稿を削除→もう一度リポスト、も無効）</span></li>
+      </ul>
+      <div class="coins-row">🪙🪙🪙</div>
+    </article>
+
+    <!-- REPLY CARD -->
+    <article class="card reply">
+      <div class="card-head">
+        <div class="icon-badge">💬</div>
+        <h2>リプライ（会話ターン）</h2>
+      </div>
+      <div class="reward"><span class="num">+10</span><span class="unit">コイン / あなたの返信1回</span></div>
+      <p class="mini">あなたの返信<b style="color:var(--gold)">1つにつき +10</b>。ただし<b style="color:var(--gold)">連続返信はまとめて1回</b>分。</p>
+
+      <div class="reply-table">
+
+        <!-- Pattern A: alternating -->
+        <div class="reply-row">
+          <div class="row-head"><span class="badge">交互</span>キャッチボール形式（返信ごとに付与）</div>
+          <div class="flow">
+            <span class="pill">創設者投稿</span><span class="arrow">→</span>
+            <span class="pill you">あなたの返信</span><span class="arrow">→</span>
+            <span class="pill win">+10</span><span class="arrow">→</span>
+            <span class="pill">創設者返信</span><span class="arrow">→</span>
+            <span class="pill you">あなたの返信</span><span class="arrow">→</span>
+            <span class="pill win">+10</span>
+          </div>
+          <span class="turn-tag">創設者が返信を挟んで交互に続くと、<b>あなたの返信ごとに +10</b></span>
+        </div>
+
+        <!-- Pattern B: consecutive -->
+        <div class="reply-row">
+          <div class="row-head"><span class="badge">連続</span>連投はまとめて1回分</div>
+          <div class="flow">
+            <span class="pill">創設者投稿</span><span class="arrow">→</span>
+            <span class="pill you">あなたの返信</span><span class="arrow">→</span>
+            <span class="pill you">あなたの返信</span><span class="arrow">→</span>
+            <span class="pill you">あなたの返信</span><span class="arrow">→</span>
+            <span class="pill win">+10（1回だけ）</span>
+          </div>
+          <span class="turn-tag">創設者の返信を挟まず連続で送っても、<b>合計 +10 のみ</b></span>
+        </div>
+
+      </div>
+
+      <ul class="points">
+        <li><span class="ic">✓</span><span>創設者と<b style="color:var(--gold)">交互</b>に続くたび、あなたの返信ごとに +10</span></li>
+        <li class="no"><span class="ic">✕</span><span>創設者を挟まない<b style="color:#ff8b8b">連続返信</b>はまとめて1回分（二重加算なし）</span></li>
+      </ul>
+      <div class="coins-row">🪙🪙🪙</div>
+    </article>
+
+  </section>
+
+  <!-- COMMON RULES -->
+  <section class="common">
+    <div class="common-head">
+      <span class="tag">COMMON</span>
+      <h3>共通ルール</h3>
+    </div>
+    <div class="rules">
+      <div class="rule">
+        <span class="emoji">🚀</span>
+        <div class="rt">ローンチ起点</div>
+        <div class="rd"><b>ローンチ日以降</b>の投稿が報酬対象</div>
+      </div>
+      <div class="rule">
+        <span class="emoji">⏰</span>
+        <div class="rt">自動集計</div>
+        <div class="rd">毎日 <b>8:00 / 20:00</b>（JST）に集計</div>
+      </div>
+      <div class="rule">
+        <span class="emoji">🎬</span>
+        <div class="rt">48時間ルール</div>
+        <div class="rd"><b>創設者の最新投稿</b>から<b>48時間</b>を過ぎると、その投稿はAPI読込・新規報酬の対象外に</div>
+      </div>
+      <div class="rule">
+        <span class="emoji">💎</span>
+        <div class="rt">コインは保持</div>
+        <div class="rd"><b>獲得済みコイン</b>はそのまま保持される</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY POINTS -->
+  <section class="keys">
+    <div class="key">
+      <div class="n">1</div>
+      <p>リポスト系は <b>1投稿1回まで +15</b>コイン。</p>
+    </div>
+    <div class="key">
+      <div class="n">2</div>
+      <p>リプライ系は <b>1ターンごと +10</b>コイン（連投はまとめ）。</p>
+    </div>
+    <div class="key">
+      <div class="n">3</div>
+      <p>対象期間は <b>創設者の投稿から48時間</b>まで。</p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

@@ -4260,14 +4260,26 @@
       const mottoEl=document.getElementById('building-modal-motto');
       const notesEl=document.getElementById('building-modal-notes');
       const notesTextEl=document.getElementById('building-modal-notes-text');
-      if(profile&&profile.motto_text){
-        mottoEl.textContent='💬 '+profile.motto_text;
-        mottoEl.classList.remove('rank-1','rank-2','rank-3','rank-4','rank-5');
-        mottoEl.classList.add('rank-'+star);
-        mottoEl.style.display='block';
-      } else{mottoEl.style.display='none';}
-      if(profile&&profile.notes_text){notesTextEl.textContent=profile.notes_text;notesEl.style.display='block';}
-      else{notesEl.style.display='none';}
+      function _applyProfile(p,pending){
+        if(p&&p.motto_text){
+          mottoEl.innerHTML='💬 '+p.motto_text+(pending?` <span class="motto-pending-badge">${isJa?'申請中・審査待ち':'Pending review'}</span>`:'');
+          mottoEl.classList.remove('rank-1','rank-2','rank-3','rank-4','rank-5');
+          mottoEl.classList.add('rank-'+star);
+          mottoEl.style.display='block';
+        }else{mottoEl.style.display='none';}
+        if(p&&p.notes_text){notesTextEl.textContent=p.notes_text;notesEl.style.display='block';}
+        else{notesEl.style.display='none';}
+      }
+      _applyProfile(profile,false);
+      // 自分のビルで承認済みがなければ申請中データを取得して表示
+      if(!profile&&isOwnLandBuilding(buildingData)&&currentUser&&db){
+        db.from('building_profiles')
+          .select('motto_text,notes_text,status')
+          .eq('building_x',buildingData.x).eq('building_z',buildingData.z)
+          .eq('user_id',currentUser.id).maybeSingle()
+          .then(({data})=>{if(data&&(data.motto_text||data.notes_text))_applyProfile(data,true);})
+          .catch(()=>{});
+      }
       document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
       document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
       document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';

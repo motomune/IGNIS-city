@@ -418,8 +418,13 @@
     #x-setup-error { color:#ff4444;font-size:12px;margin-top:8px;text-align:center;min-height:18px; }
     #x-setup-rules-link { width:100%;margin-top:10px;background:transparent;border:1px solid rgba(255,106,0,0.35);color:rgba(255,200,150,0.9);padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer; }
     #x-setup-rules-link:hover { background:rgba(255,106,0,0.12); }
-    #x-reward-rules-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:260;align-items:center;justify-content:center;padding:16px;box-sizing:border-box; }
-    #x-reward-rules-modal.open { display:flex; }
+    #x-reward-rules-modal { display:none; }
+    #x-infographic-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:260;align-items:center;justify-content:center; }
+    #x-infographic-modal.open { display:flex; }
+    #x-infographic-box { position:relative;width:min(1200px,98vw);height:min(92vh,860px);border-radius:14px;overflow:hidden;box-shadow:0 0 80px rgba(95,160,255,0.18); }
+    #x-infographic-close { position:absolute;top:12px;right:12px;z-index:10;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.28);color:#fff;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;backdrop-filter:blur(6px); }
+    #x-infographic-close:hover { background:rgba(255,100,0,0.55); }
+    #x-infographic-frame { width:100%;height:100%;border:none;display:block; }
     #x-reward-rules-box { background:linear-gradient(160deg,#12082a,#0a0618);border:1px solid rgba(255,106,0,0.45);border-radius:16px;padding:22px 20px;width:min(420px,96vw);max-height:min(88vh,720px);overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.65); }
     #x-reward-rules-title { font-size:17px;font-weight:900;color:#fff;margin-bottom:12px;text-align:center; }
     #x-reward-rules-body { font-size:12px;color:rgba(255,255,255,0.78);line-height:1.6; }
@@ -1357,11 +1362,11 @@
       <div id="x-setup-error"></div>
     </div>
   </div>
-  <div id="x-reward-rules-modal" onclick="if(event.target===this)closeXRewardRules()">
-    <div id="x-reward-rules-box">
-      <div id="x-reward-rules-title">X連携コイン報酬</div>
-      <div id="x-reward-rules-body"></div>
-      <button id="x-reward-rules-close" type="button" onclick="closeXRewardRules()">閉じる</button>
+  <div id="x-reward-rules-modal"></div>
+  <div id="x-infographic-modal" onclick="if(event.target===this)closeXRewardRules()">
+    <div id="x-infographic-box">
+      <button id="x-infographic-close" type="button" onclick="closeXRewardRules()">✕ 閉じる</button>
+      <iframe id="x-infographic-frame" src="" frameborder="0" scrolling="yes" allowtransparency="true"></iframe>
     </div>
   </div>
   <div id="auth-modal">
@@ -1676,6 +1681,15 @@
           'https://motomune.github.io/IGNIS-city/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3',
           'https://raw.githubusercontent.com/motomune/IGNIS-city/main/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3'
         ]
+      },
+      retrogame:{
+        label:'Retro Game BGM',
+        volume:0.38,
+        sources:[
+          '%E3%83%AC%E3%83%88%E3%83%AD%E3%82%B2%E3%83%BC%E3%83%A0bgm.mp3',
+          'https://motomune.github.io/IGNIS-city/%E3%83%AC%E3%83%88%E3%83%AD%E3%82%B2%E3%83%BC%E3%83%A0bgm.mp3',
+          'https://raw.githubusercontent.com/motomune/IGNIS-city/main/%E3%83%AC%E3%83%88%E3%83%AD%E3%82%B2%E3%83%BC%E3%83%A0bgm.mp3'
+        ]
       }
     };
     function isCollectionScreenOpen(){
@@ -1686,9 +1700,13 @@
         ||document.getElementById('gacha-overlay').classList.contains('show')
         ||document.getElementById('build-modal').classList.contains('open');
     }
+    function isXRewardScreenOpen(){
+      return document.getElementById('x-infographic-modal').classList.contains('open');
+    }
     function refreshCityBgm(){
       if(IgnisAudio.muted)return;
-      if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
+      if(isXRewardScreenOpen())IgnisAudio.playBgmTrack('retrogame').catch(()=>{});
+      else if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
       else if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
       else IgnisAudio.playBgmTrack('city').catch(()=>{});
     }
@@ -2669,11 +2687,18 @@
 </div>`;
     }
     function openXRewardRules(){
-      const body=document.getElementById('x-reward-rules-body');
-      if(body)body.innerHTML=getXRewardRulesHtml();
-      document.getElementById('x-reward-rules-modal').classList.add('open');
+      const isJa=currentLang==='ja';
+      const frame=document.getElementById('x-infographic-frame');
+      if(frame)frame.src=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
+      document.getElementById('x-infographic-modal').classList.add('open');
+      IgnisAudio.playBgmTrack('retrogame').catch(()=>{});
     }
-    function closeXRewardRules(){document.getElementById('x-reward-rules-modal').classList.remove('open');}
+    function closeXRewardRules(){
+      document.getElementById('x-infographic-modal').classList.remove('open');
+      const frame=document.getElementById('x-infographic-frame');
+      if(frame)frame.src='';
+      refreshCityBgm();
+    }
     function openHelpContact(){
       const isJa=currentLang==='ja';
       const body=isJa
@@ -2951,9 +2976,9 @@
       if(xRulesLink)xRulesLink.textContent='📋 X連携コイン報酬のルール';
       set('x-reward-rules-title','X連携コイン報酬','X連携コイン報酬');
       set('x-reward-rules-close','閉じる','閉じる');
-      const xRulesBody=document.getElementById('x-reward-rules-body');
-      if(xRulesBody&&document.getElementById('x-reward-rules-modal').classList.contains('open')){
-        xRulesBody.innerHTML=getXRewardRulesHtml();
+      if(isXRewardScreenOpen()){
+        const frame=document.getElementById('x-infographic-frame');
+        if(frame)frame.src=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
       }
       set('bml-views',isJa?'閲覧回数':'Views');
       set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');

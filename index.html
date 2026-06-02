@@ -70,6 +70,14 @@
     }
     #sound-toggle:hover { filter: brightness(1.06); }
     #sound-toggle.muted { opacity: 0.45; }
+    #x-rewards-btn {
+      background: linear-gradient(135deg, rgba(96,210,255,0.55), rgba(91,140,255,0.55));
+      border: 1px solid rgba(170,220,255,0.45);
+      color: #eaf6ff; padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; cursor: pointer; line-height: 1;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    #x-rewards-btn:hover { opacity: 0.85; }
     #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
@@ -416,36 +424,6 @@
     #x-setup-desc { font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:14px;text-align:center;line-height:1.5; }
     #x-setup-save { width:100%;margin-top:12px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:12px;border-radius:10px;font-weight:800;cursor:pointer; }
     #x-setup-error { color:#ff4444;font-size:12px;margin-top:8px;text-align:center;min-height:18px; }
-    #x-setup-rules-link { width:100%;margin-top:10px;background:transparent;border:1px solid rgba(255,106,0,0.35);color:rgba(255,200,150,0.9);padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer; }
-    #x-setup-rules-link:hover { background:rgba(255,106,0,0.12); }
-    #x-reward-rules-modal { display:none; }
-    #x-infographic-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:260;align-items:center;justify-content:center; }
-    #x-infographic-modal.open { display:flex; }
-    #x-infographic-box { position:relative;width:min(1200px,98vw);height:min(92vh,860px);border-radius:14px;overflow:hidden;box-shadow:0 0 80px rgba(95,160,255,0.18); }
-    #x-infographic-close { position:absolute;top:12px;right:12px;z-index:10;background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.28);color:#fff;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:800;cursor:pointer;backdrop-filter:blur(6px); }
-    #x-infographic-close:hover { background:rgba(255,100,0,0.55); }
-    #x-infographic-frame { width:100%;height:100%;border:none;display:block; }
-    #x-reward-rules-box { background:linear-gradient(160deg,#12082a,#0a0618);border:1px solid rgba(255,106,0,0.45);border-radius:16px;padding:22px 20px;width:min(420px,96vw);max-height:min(88vh,720px);overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,0.65); }
-    #x-reward-rules-title { font-size:17px;font-weight:900;color:#fff;margin-bottom:12px;text-align:center; }
-    #x-reward-rules-body { font-size:12px;color:rgba(255,255,255,0.78);line-height:1.6; }
-    .xrr-lead { text-align:center;font-size:12px;color:rgba(255,220,180,0.85);margin:0 0 14px;line-height:1.55; }
-    .xrr-label { text-align:center;font-size:10px;font-weight:800;letter-spacing:0.18em;color:rgba(255,106,0,0.75);margin:0 0 12px; }
-    .xrr-card { background:rgba(0,0,0,0.35);border:1px solid rgba(255,106,0,0.28);border-radius:12px;padding:14px 12px;margin-bottom:12px; }
-    .xrr-card-title { font-size:14px;font-weight:900;color:#ffb86a;margin:0 0 10px;text-align:center; }
-    .xrr-coin { display:inline-block;background:rgba(255,106,0,0.2);border:1px solid rgba(255,106,0,0.45);color:#ffd4a8;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:800;margin-left:4px; }
-    .xrr-timeline { display:flex;align-items:stretch;justify-content:space-between;gap:4px;margin:10px 0 12px;font-size:10px;text-align:center; }
-    .xrr-tl-node { flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 4px; }
-    .xrr-tl-node strong { display:block;font-size:11px;color:#fff;margin-bottom:2px; }
-    .xrr-tl-window { flex:1.2;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.45);border-radius:8px;padding:8px 4px;color:#86efac;font-weight:800; }
-    .xrr-tl-arrow { align-self:center;color:rgba(255,255,255,0.35);font-size:14px;flex-shrink:0; }
-    .xrr-flow { background:rgba(255,255,255,0.04);border-radius:8px;padding:10px;margin:8px 0;font-size:11px;line-height:1.7; }
-    .xrr-flow-title { font-size:10px;font-weight:800;color:rgba(255,255,255,0.45);margin-bottom:6px;letter-spacing:0.06em; }
-    .xrr-flow .ok { color:#86efac;font-weight:700; }
-    .xrr-flow .muted { color:rgba(255,255,255,0.45); }
-    .xrr-list { margin:0;padding-left:1.15em; }
-    .xrr-list li { margin-bottom:5px; }
-    .xrr-note { font-size:11px;color:rgba(255,255,255,0.55);margin:8px 0 0;line-height:1.5; }
-    #x-reward-rules-close { width:100%;margin-top:14px;background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:11px;border-radius:10px;font-weight:800;cursor:pointer; }
     @keyframes audioHintPulse { 0%,100%{opacity:0.7;} 50%{opacity:1;} }
     #gacha-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:160;align-items:center;justify-content:center; }
     #gacha-modal.open { display: flex; }
@@ -611,70 +589,52 @@
     }
     #minimap-toggle:hover { background:rgba(255,255,255,0.2);color:#fff; }
     /* 図鑑 */
-    #zukan-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,14,0.98);backdrop-filter:blur(24px);flex-direction:column;overflow:hidden; }
-    #zukan-overlay.open { display:flex; }
-    #zukan-header { display:flex;align-items:center;gap:14px;padding:14px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.6),transparent);border-bottom:1px solid rgba(255,255,255,0.08); }
-    #zukan-title { font-size:19px;font-weight:900;letter-spacing:0.08em;background:linear-gradient(135deg,#06b6d4,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0; }
+    #zukan-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
+    #zukan-overlay.open { display: flex; }
+    #zukan-header { display:flex;align-items:center;gap:16px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
+    #zukan-title { font-size:18px;font-weight:900;letter-spacing:0.1em;background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0; }
     #zukan-tabs { display:flex;gap:8px;flex:1; }
-    .zukan-tab { background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);padding:7px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s; }
-    .zukan-tab:hover { background:rgba(255,255,255,0.11);color:#fff; }
-    .zukan-tab.active { background:linear-gradient(135deg,#06b6d4,#818cf8);border-color:transparent;color:#fff;box-shadow:0 0 16px rgba(6,182,212,0.3); }
-    #zukan-close { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);color:rgba(255,255,255,0.55);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all 0.2s; }
-    #zukan-close:hover { background:rgba(255,255,255,0.16);color:#fff; }
-    #zukan-body { flex:1;overflow-y:auto;padding:20px 24px 32px;max-width:1100px;width:100%;margin:0 auto;box-sizing:border-box; }
-    #zukan-body::-webkit-scrollbar { width:5px; }
-    #zukan-body::-webkit-scrollbar-track { background:transparent; }
-    #zukan-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.13);border-radius:4px; }
-    #zukan-owned-stats { display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap; }
-    .zukan-stat-chip { background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 18px;display:flex;flex-direction:column;gap:2px;min-width:72px; }
-    .zukan-stat-chip .chip-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.06em;text-transform:uppercase; }
-    .zukan-stat-chip .chip-val { font-size:18px;font-weight:900;color:#fff;line-height:1.1; }
-    .zukan-stat-chip.highlight { border-color:rgba(238,9,121,0.4);background:rgba(238,9,121,0.08); }
-    .zukan-stat-chip.highlight .chip-val { background:linear-gradient(135deg,#ee0979,#ff6a00);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
-    #zukan-owned-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px; }
-    @keyframes zRainbowBorder { 0%{border-color:#ee0979;box-shadow:0 0 18px rgba(238,9,121,0.4);} 33%{border-color:#ff6a00;box-shadow:0 0 18px rgba(255,106,0,0.4);} 66%{border-color:#818cf8;box-shadow:0 0 18px rgba(129,140,248,0.4);} 100%{border-color:#ee0979;box-shadow:0 0 18px rgba(238,9,121,0.4);} }
-    .zukan-card { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:18px 14px 14px;cursor:pointer;transition:transform 0.18s,background 0.18s;position:relative;overflow:hidden; }
-    .zukan-card:hover { background:rgba(255,255,255,0.08);transform:translateY(-3px); }
-    .zukan-card::before { content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0; }
-    .zukan-card.star5 { background:rgba(238,9,121,0.06);animation:zRainbowBorder 2.8s linear infinite; }
-    .zukan-card.star5::before { background:linear-gradient(90deg,#ee0979,#ff6a00,#fbbf24,#22c55e,#06b6d4,#818cf8,#ee0979);background-size:200%;animation:zRainbowBorder 2.8s linear infinite; }
-    .zukan-card.star4 { border-color:rgba(245,158,11,0.35);background:rgba(245,158,11,0.05); }
+    .zukan-tab { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:7px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s; }
+    .zukan-tab:hover { background:rgba(255,255,255,0.12);color:#fff; }
+    .zukan-tab.active { background:linear-gradient(135deg,#06b6d4,#3b82f6);border-color:transparent;color:#fff; }
+    #zukan-close { background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all 0.2s; }
+    #zukan-close:hover { background:rgba(255,255,255,0.18);color:#fff; }
+    #zukan-body { flex:1;overflow-y:auto;padding:24px; }
+    #zukan-body::-webkit-scrollbar { width: 4px; }
+    #zukan-body::-webkit-scrollbar-track { background: transparent; }
+    #zukan-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15);border-radius:4px; }
+    #zukan-owned-stats { display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap; }
+    .zukan-stat-chip { background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 16px;font-size:13px;display:flex;align-items:center;gap:8px; }
+    .zukan-stat-chip .chip-label { color: rgba(255,255,255,0.4); }
+    .zukan-stat-chip .chip-val { font-weight:900;color:#fff; }
+    #zukan-owned-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px; }
+    .zukan-card { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:16px 14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden; }
+    .zukan-card:hover { background:rgba(255,255,255,0.08);transform:translateY(-2px);border-color:rgba(255,255,255,0.2); }
+    .zukan-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0; }
+    .zukan-card.star5::before { background:linear-gradient(90deg,#ee0979,#ff6a00); }
     .zukan-card.star4::before { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
-    .zukan-card.star3 { border-color:rgba(59,130,246,0.3);background:rgba(59,130,246,0.04); }
     .zukan-card.star3::before { background:linear-gradient(90deg,#3b82f6,#60a5fa); }
     .zukan-card.star2::before { background:linear-gradient(90deg,#22c55e,#4ade80); }
-    .zukan-card.star1::before { background:rgba(255,255,255,0.12); }
-    .zcard-icon { font-size:42px;text-align:center;margin-bottom:6px;line-height:1; }
-    .zcard-rank { font-size:11px;font-weight:800;text-align:center;margin-bottom:8px;letter-spacing:0.06em;opacity:0.85; }
-    .zcard-floors { font-size:28px;font-weight:900;color:#fff;text-align:center;line-height:1;margin-bottom:2px; }
-    .zcard-floors-label { font-size:10px;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:10px;letter-spacing:0.04em; }
-    .zcard-footer { display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap; }
-    .zcard-emp { display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7); }
-    .zcard-coord { font-size:10px;color:rgba(255,255,255,0.22);font-family:monospace; }
+    .zukan-card.star1::before { background: rgba(255,255,255,0.15); }
+    .zcard-icon { font-size:36px;text-align:center;margin-bottom:8px; }
+    .zcard-rank { font-size:13px;font-weight:900;text-align:center;margin-bottom:6px; }
+    .zcard-floors { font-size:20px;font-weight:900;color:#fff;text-align:center;margin-bottom:2px; }
+    .zcard-floors-label { font-size:10px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:8px; }
+    .zcard-meta { font-size:11px;color:rgba(255,255,255,0.4);text-align:center; }
+    .zcard-emp { display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.07); }
     #zukan-empty { text-align:center;padding:60px 20px; }
     #zukan-rarity-grid { display:flex;flex-direction:column;gap:16px; }
     .zukan-rarity-section { background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden; }
-    .zukan-rarity-section.star5 { border-color:rgba(238,9,121,0.25);background:rgba(238,9,121,0.04); }
-    .zukan-rarity-section.star4 { border-color:rgba(245,158,11,0.2);background:rgba(245,158,11,0.03); }
-    .zukan-rarity-header { display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06); }
-    .zukan-rarity-stars { font-size:17px;font-weight:900; }
+    .zukan-rarity-header { display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06); }
+    .zukan-rarity-stars { font-size:16px;font-weight:900; }
     .zukan-rarity-label { font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);flex:1; }
-    .zukan-rarity-count { font-size:12px;font-weight:800;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4); }
-    .zukan-rarity-count.has-count { background:rgba(255,106,0,0.18);color:#ff6a00; }
-    .zukan-rarity-buildings { display:flex;flex-wrap:wrap;gap:8px;padding:14px 20px;min-height:52px; }
-    .zukan-mini-card { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.75);display:flex;align-items:center;gap:6px;transition:background 0.15s;cursor:pointer; }
-    .zukan-mini-card:hover { background:rgba(255,255,255,0.13); }
+    .zukan-rarity-count { font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5); }
+    .zukan-rarity-count.has-count { background:rgba(255,106,0,0.2);color:#ff6a00; }
+    .zukan-rarity-buildings { display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px;min-height:48px; }
+    .zukan-mini-card { background:rgba(255,255,255,0.06);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:6px; }
     .zukan-empty-rarity { font-size:12px;color:rgba(255,255,255,0.2);padding:4px 0; }
-    #zukan-loading { display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;background:rgba(4,4,14,0.85);font-size:14px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.1em; }
-    #zukan-loading.show { display:flex; }
-    @media(max-width:600px){
-      #zukan-body { padding:14px 12px 28px; }
-      #zukan-owned-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px; }
-      .zukan-stat-chip { padding:8px 12px;min-width:60px; }
-      .zukan-stat-chip .chip-val { font-size:16px; }
-      .zcard-floors { font-size:24px; }
-      .zcard-icon { font-size:36px; }
-    }
+    #zukan-loading { display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;background:rgba(4,4,12,0.8);font-size:14px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.1em; }
+    #zukan-loading.show { display: flex; }
     /* ランキング */
     #ranking-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
     #ranking-overlay.open { display: flex; }
@@ -782,54 +742,6 @@
     #profile-skip-btn { width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:10px;border-radius:10px;font-size:13px;cursor:pointer;transition:background 0.2s; }
     #profile-skip-btn:hover { background:rgba(255,255,255,0.12); }
     #profile-approval-note { font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-top:10px; }
-    /* 過去詳細モーダル */
-    #past-detail-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:360;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 0; }
-    #past-detail-modal.open { display:flex; }
-    #past-detail-box { background:#080810;border:1px solid rgba(129,140,248,0.4);border-radius:22px;padding:28px 24px 24px;width:480px;max-width:96vw;position:relative;box-shadow:0 0 60px rgba(129,140,248,0.12),0 20px 60px rgba(0,0,0,0.8);margin:auto; }
-    #past-detail-close { position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer; }
-    #past-detail-close:hover { color:#fff; }
-    #past-detail-title { font-size:18px;font-weight:900;letter-spacing:0.08em;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px; }
-    #past-detail-subtitle { font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:20px;line-height:1.5; }
-    .pd-section { margin-bottom:18px; }
-    .pd-label { font-size:12px;font-weight:800;color:rgba(255,255,255,0.7);margin-bottom:10px;letter-spacing:0.04em; }
-    .pd-checkbox-group { display:flex;flex-wrap:wrap;gap:8px; }
-    .pd-check { display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,0.65);transition:all 0.15s;user-select:none; }
-    .pd-check input { display:none; }
-    .pd-check:has(input:checked) { background:rgba(129,140,248,0.2);border-color:rgba(129,140,248,0.6);color:#a5b4fc; }
-    .pd-stage-group { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px; }
-    .pd-stage-btn { display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);transition:all 0.15s;user-select:none; }
-    .pd-stage-btn input { display:none; }
-    .pd-stage-btn:has(input:checked) { background:rgba(129,140,248,0.2);border-color:#818cf8;color:#c4b5fd; }
-    .pd-textarea { width:100%;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;outline:none;resize:none;font-family:inherit;transition:border-color 0.25s;box-sizing:border-box; }
-    .pd-textarea:focus { border-color:rgba(129,140,248,0.7); }
-    .pd-counter { font-size:11px;color:rgba(255,255,255,0.3);text-align:right;margin-top:4px; }
-    .pd-divider { text-align:center;font-size:11px;font-weight:700;color:rgba(129,140,248,0.6);margin:20px 0 16px;padding:8px;background:rgba(129,140,248,0.08);border-radius:8px;border:1px solid rgba(129,140,248,0.2); }
-    #pd-submit-btn { width:100%;background:linear-gradient(135deg,#818cf8,#c084fc);border:none;color:#fff;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s;margin-bottom:8px; }
-    #pd-submit-btn:hover { opacity:0.85; }
-    .pd-skip-btn { width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.13);color:rgba(255,255,255,0.45);padding:10px;border-radius:10px;font-size:13px;cursor:pointer; }
-    /* 過去詳細表示（ビル詳細内） */
-    #building-past-detail-section { margin-bottom:12px; }
-    .bpd-lost-tags { display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px; }
-    .bpd-lost-tag { font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:rgba(129,140,248,0.15);border:1px solid rgba(129,140,248,0.3);color:#a5b4fc; }
-    .bpd-stage { font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;margin-bottom:8px;display:inline-block; }
-    .bpd-stage.recovering { background:rgba(34,197,94,0.15);color:#4ade80; }
-    .bpd-stage.stable { background:rgba(59,130,246,0.15);color:#60a5fa; }
-    .bpd-stage.growing { background:rgba(245,158,11,0.15);color:#fbbf24; }
-    .bpd-stage.new_challenge { background:rgba(238,9,121,0.15);color:#f472b6; }
-    .bpd-current { font-size:13px;color:rgba(255,255,255,0.75);line-height:1.55;margin-bottom:10px; }
-    .bpd-full-section { border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;margin-top:4px; }
-    .bpd-full-label { font-size:10px;font-weight:800;color:rgba(129,140,248,0.6);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
-    .bpd-full-text { font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:12px; }
-    .bpd-sub-required { text-align:center;padding:10px;background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:10px;font-size:12px;color:rgba(129,140,248,0.7);cursor:pointer;margin-top:8px; }
-    /* 🕯️ 共感ボタン */
-    #building-candle-row { display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px; }
-    #building-candle-btn { background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px; }
-    #building-candle-btn.lit { background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.5);color:#fbbf24; }
-    #building-candle-btn:disabled { opacity:0.4;cursor:not-allowed; }
-    #building-candle-count { font-size:12px;color:rgba(255,255,255,0.35);font-weight:700; }
-    /* 過去詳細申請ボタン（ビル詳細内） */
-    #building-past-detail-btn { width:100%;background:linear-gradient(135deg,rgba(129,140,248,0.2),rgba(192,132,252,0.2));border:1px solid rgba(129,140,248,0.35);color:#a5b4fc;padding:10px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:8px;transition:opacity 0.2s; }
-    #building-past-detail-btn:hover { opacity:0.85; }
     /* ビル詳細 X リンク */
     .owner-x-link { color:#1d9bf0;font-weight:800;text-decoration:none; }
     .owner-x-link:hover { text-decoration:underline; }
@@ -844,8 +756,6 @@
     #building-modal-motto.rank-3 { color:#3b82f6;border-left:4px solid #3b82f6;background:rgba(59,130,246,0.1); }
     #building-modal-motto.rank-2 { color:#22c55e;border-left:4px solid #22c55e;background:rgba(34,197,94,0.1); }
     #building-modal-motto.rank-1 { color:#94a3b8;border-left:4px solid #94a3b8;background:rgba(148,163,184,0.1); }
-    #building-motto-btn { width:100%;background:linear-gradient(135deg,rgba(129,140,248,0.25),rgba(168,85,247,0.25));border:1px solid rgba(168,85,247,0.4);color:#c4b5fd;padding:10px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:8px;transition:opacity 0.2s; }
-    #building-motto-btn:hover { opacity:0.85; }
     #building-modal-notes { font-size:12px;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;display:none; }
     #building-modal-notes-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
     /* 3D格言ラベル */
@@ -885,7 +795,7 @@
         gap: 4px; flex-wrap: nowrap; justify-content: flex-end;
         max-width: none; align-self: center;
       }
-      #lang-btn, #sound-toggle { padding: 4px 8px; font-size: 10px; min-height: 32px; }
+      #lang-btn, #sound-toggle, #x-rewards-btn { padding: 4px 8px; font-size: 10px; min-height: 32px; }
       #login-btn-header { padding: 4px 10px; font-size: 10px; }
       #logged-in-area { gap: 4px; flex-wrap: nowrap; max-width: 100%; }
       #user-name { display: none !important; }
@@ -993,6 +903,7 @@
       </div>
       <div id="user-area">
         <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
+        <button id="x-rewards-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
         <button id="lang-btn" onclick="toggleLang()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span id="lang-label">EN</span>
@@ -1061,15 +972,9 @@
         <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
       <div id="building-modal-motto"></div>
-      <div id="building-past-detail-section" style="display:none;"></div>
-      <div id="building-candle-row" style="display:none;">
-        <button id="building-candle-btn" onclick="toggleCandleReaction()">🕯️ 共感した</button>
-        <span id="building-candle-count"></span>
-      </div>
+      <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
-      <button id="building-motto-btn" onclick="openMottoFromModal()" style="display:none;">✍️ 格言を申請</button>
-      <button id="building-past-detail-btn" onclick="openPastDetailModal()" style="display:none;">📖 過去詳細を申請</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
   </div>
@@ -1267,62 +1172,6 @@
       <div id="profile-approval-note">※ 管理者の承認後にビルに公開されます</div>
     </div>
   </div>
-  <!-- 過去詳細申請モーダル -->
-  <div id="past-detail-modal">
-    <div id="past-detail-box">
-      <button id="past-detail-close" onclick="closePastDetailModal()">×</button>
-      <div id="past-detail-title">📖 過去詳細を申請</div>
-      <div id="past-detail-subtitle">個人が特定できる表現・宣伝は登録できません。承認後に公開されます。</div>
-      <div class="pd-section">
-        <div class="pd-label">① 何を失いましたか？（複数選択可）</div>
-        <div id="pd-lost-items" class="pd-checkbox-group">
-          <label class="pd-check"><input type="checkbox" value="money">💴 資金</label>
-          <label class="pd-check"><input type="checkbox" value="job">💼 仕事</label>
-          <label class="pd-check"><input type="checkbox" value="friends">👥 友人</label>
-          <label class="pd-check"><input type="checkbox" value="partner">🤝 ビジネスパートナー</label>
-          <label class="pd-check"><input type="checkbox" value="lover">💔 恋人</label>
-          <label class="pd-check"><input type="checkbox" value="trust">🔒 信用</label>
-          <label class="pd-check"><input type="checkbox" value="dream">⭐ 夢</label>
-          <label class="pd-check"><input type="checkbox" value="health">🏥 健康</label>
-          <label class="pd-check"><input type="checkbox" value="family">👨‍👩‍👧 家族</label>
-        </div>
-      </div>
-      <div class="pd-section">
-        <div class="pd-label">② 現在の自分はどうなっていますか？（良い面で）</div>
-        <div class="pd-stage-group">
-          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="recovering">🌱 回復中</label>
-          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="stable">🏠 安定</label>
-          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="growing">🚀 成長中</label>
-          <label class="pd-stage-btn"><input type="radio" name="pd-stage" value="new_challenge">🔥 新たな挑戦</label>
-        </div>
-        <textarea class="pd-textarea" id="pd-current-positive" rows="3" maxlength="300" placeholder="今の自分の良い変化を書いてください..."></textarea>
-        <div class="pd-counter"><span id="pd-current-counter">0</span>/300</div>
-      </div>
-      <div class="pd-divider">以下③〜⑥はサブスク会員のみ閲覧できます</div>
-      <div class="pd-section">
-        <div class="pd-label">③ 背景と詳細</div>
-        <textarea class="pd-textarea" id="pd-background" rows="4" maxlength="500" placeholder="何があったのか、背景と詳細を..."></textarea>
-        <div class="pd-counter"><span id="pd-bg-counter">0</span>/500</div>
-      </div>
-      <div class="pd-section">
-        <div class="pd-label">④ どう対応しましたか？</div>
-        <textarea class="pd-textarea" id="pd-how-handled" rows="4" maxlength="500" placeholder="その時どう行動しましたか..."></textarea>
-        <div class="pd-counter"><span id="pd-handled-counter">0</span>/500</div>
-      </div>
-      <div class="pd-section">
-        <div class="pd-label">⑤ その後どんなことが起きましたか？</div>
-        <textarea class="pd-textarea" id="pd-what-after" rows="4" maxlength="500" placeholder="対応後に起きたことを..."></textarea>
-        <div class="pd-counter"><span id="pd-after-counter">0</span>/500</div>
-      </div>
-      <div class="pd-section">
-        <div class="pd-label">⑥ そこから現在に至るまでにしてきたこと</div>
-        <textarea class="pd-textarea" id="pd-journey" rows="4" maxlength="500" placeholder="現在まで続けてきたことを..."></textarea>
-        <div class="pd-counter"><span id="pd-journey-counter">0</span>/500</div>
-      </div>
-      <button id="pd-submit-btn" onclick="submitPastDetail()">申請する</button>
-      <button class="pd-skip-btn" onclick="closePastDetailModal()">キャンセル</button>
-    </div>
-  </div>
   <!-- コイン獲得履歴 -->
   <div id="coin-history-overlay">
     <div id="coin-history-header">
@@ -1332,7 +1181,6 @@
         <button class="ch-tab" id="ch-tab-gain" onclick="switchCoinHistoryTab('gain')">📈 獲得</button>
         <button class="ch-tab" id="ch-tab-spend" onclick="switchCoinHistoryTab('spend')">📉 消費</button>
       </div>
-      <button type="button" id="coin-history-x-rules-btn" onclick="openXRewardRules()" style="background:rgba(255,106,0,0.2);border:1px solid rgba(255,106,0,0.45);color:#ffb86a;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">📋 X報酬ルール</button>
       <button id="coin-history-close" onclick="closeCoinHistory()">✕ 閉じる</button>
     </div>
     <div id="coin-history-body">
@@ -1358,15 +1206,7 @@
         <input id="input-x-setup" type="text" data-placeholder-ja="例: soultamash81989" data-placeholder-en="e.g. soultamash81989" placeholder="例: soultamash81989" autocomplete="off">
       </div>
       <button id="x-setup-save" type="button" onclick="saveXUsername()">保存</button>
-      <button id="x-setup-rules-link" type="button" onclick="openXRewardRules()">📋 X連携コイン報酬のルール</button>
       <div id="x-setup-error"></div>
-    </div>
-  </div>
-  <div id="x-reward-rules-modal"></div>
-  <div id="x-infographic-modal" onclick="if(event.target===this)closeXRewardRules()">
-    <div id="x-infographic-box">
-      <button id="x-infographic-close" type="button" onclick="closeXRewardRules()">✕ 閉じる</button>
-      <iframe id="x-infographic-frame" src="" frameborder="0" scrolling="yes" allowtransparency="true"></iframe>
     </div>
   </div>
   <div id="auth-modal">
@@ -1455,7 +1295,8 @@
     ];
     const IGNIS_AD_SLIDES=[
       {file:'SOUL日本語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK},
-      {type:'video',base:'ignis-logo',poster:'ignis-logo.jpeg',alt:'IGNIS CITY',action:'signup'}
+      {type:'video',base:'ignis-logo',poster:'ignis-logo.jpeg',alt:'IGNIS CITY',action:'signup'},
+      {file:'SOUL英語写真.png',alt:'SOUL',action:'link',href:IGNIS_AD_LINK}
     ];
     const IGNIS_AD_INTERVAL_MS=5000;
     const IGNIS_AD_SLIDE_MS=550;
@@ -1681,15 +1522,6 @@
           'https://motomune.github.io/IGNIS-city/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3',
           'https://raw.githubusercontent.com/motomune/IGNIS-city/main/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3'
         ]
-      },
-      retrogame:{
-        label:'Retro Game BGM',
-        volume:0.38,
-        sources:[
-          '%E3%83%AC%E3%83%88%E3%83%AD%E3%82%B2%E3%83%BC%E3%83%A0bgm.mp3',
-          'https://motomune.github.io/IGNIS-city/%E3%83%AC%E3%83%88%E3%83%AD%E3%82%B2%E3%83%BC%E3%83%A0bgm.mp3',
-          'https://raw.githubusercontent.com/motomune/IGNIS-city/main/%E3%83%AC%E3%83%88%E3%83%AD%E3%82%B2%E3%83%BC%E3%83%A0bgm.mp3'
-        ]
       }
     };
     function isCollectionScreenOpen(){
@@ -1700,13 +1532,9 @@
         ||document.getElementById('gacha-overlay').classList.contains('show')
         ||document.getElementById('build-modal').classList.contains('open');
     }
-    function isXRewardScreenOpen(){
-      return document.getElementById('x-infographic-modal').classList.contains('open');
-    }
     function refreshCityBgm(){
       if(IgnisAudio.muted)return;
-      if(isXRewardScreenOpen())IgnisAudio.playBgmTrack('retrogame').catch(()=>{});
-      else if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
+      if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
       else if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
       else IgnisAudio.playBgmTrack('city').catch(()=>{});
     }
@@ -2085,10 +1913,7 @@
     try{
       IgnisAudio.init();
       await IgnisAudio.ensure();
-      const _tid=(typeof isXRewardScreenOpen==='function'&&isXRewardScreenOpen())?'retrogame':
-                 (typeof isCollectionScreenOpen==='function'&&isCollectionScreenOpen())?'collection':
-                 (typeof isOpeningBgmScreenOpen==='function'&&isOpeningBgmScreenOpen())?'opening':'city';
-      const ok=await IgnisAudio.playBgmTrack(_tid);
+      const ok=await IgnisAudio.playBgmTrack('city');
       if(ok){
         hideBgmUnlockBtn();
         return true;
@@ -2425,8 +2250,6 @@
       random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
       hire_employee: {ja:'会社員採用',           en:'Hire Office Worker',       icon:'👷'},
       extend_staff_terms: {ja:'任期延長',        en:'Term Extension',          icon:'📋'},
-      x_repost:          {ja:'X：リポスト／引用', en:'X: Repost / Quote',       icon:'🔁'},
-      x_reply:           {ja:'X：リプライ',       en:'X: Reply',                icon:'💬'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
@@ -2453,6 +2276,10 @@
       document.getElementById('coin-history-overlay').classList.add('open');
       await loadCoinHistory();
     }
+    function openXRewardsRules(){
+      try{IgnisAudio.playClick();}catch(e){}
+      window.open('x_rewards_infographic.html','_blank','noopener');
+    }
     function closeCoinHistory(){document.getElementById('coin-history-overlay').classList.remove('open');}
     function switchCoinHistoryTab(tab){
       coinHistoryTab=tab;
@@ -2472,7 +2299,7 @@
           .select('amount,reason,created_at')
           .eq('user_id',currentUser.id)
           .order('created_at',{ascending:false})
-          .limit(50);
+          .limit(200);
         if(error)throw error;
         coinHistoryData=data||[];
         renderCoinHistory();
@@ -2637,71 +2464,6 @@
         await refreshInviteStats();
       }
     }
-    /** X報酬ルール（日本語固定・インフォグラフィック） */
-    function getXRewardRulesHtml(){
-      return `
-<p class="xrr-lead">創設者の X 投稿に反応するとコインがもらえます。<br>ゲームの <b>@ユーザー名</b> と X アカウントが一致している必要があります。<br>（リプライ後にログイン・登録しても、次回の自動集計で反映されます）</p>
-<p class="xrr-label">コイン獲得報酬</p>
-
-<div class="xrr-card">
-  <div class="xrr-card-title">リポスト・引用リポスト<span class="xrr-coin">+15 コイン</span></div>
-  <div class="xrr-timeline">
-    <div class="xrr-tl-node"><strong>0時間</strong>創設者の投稿</div>
-    <div class="xrr-tl-arrow">→</div>
-    <div class="xrr-tl-node"><strong>24時間</strong>24時間経過</div>
-    <div class="xrr-tl-arrow">→</div>
-    <div class="xrr-tl-window">対象<br><span style="font-weight:600;font-size:9px;opacity:0.9">24h〜48h</span></div>
-    <div class="xrr-tl-arrow">→</div>
-    <div class="xrr-tl-node"><strong>48時間</strong>48時間経過</div>
-  </div>
-  <ul class="xrr-list">
-    <li><b>24時間経過後</b> かつ <b>48時間以内</b> のリポスト・引用が対象（それ以前は対象外）</li>
-    <li>通常リポストと引用リポストは<b>同じ扱い</b></li>
-    <li><b>投稿ごとに1回</b>（別の投稿なら別々に対象）</li>
-    <li>削除して再リポストしても <b>1回だけ</b> カウント</li>
-  </ul>
-</div>
-
-<div class="xrr-card">
-  <div class="xrr-card-title">リプライ<span class="xrr-coin">+10 コイン／ターン</span></div>
-  <div class="xrr-flow">
-    <div class="xrr-flow-title">キャッチボール（創設者の返信のあとにあなたが返信）</div>
-    創設者の投稿 → あなたの返信 <span class="ok">（+10）</span> → 創設者の返信 → あなたの返信 <span class="ok">（+10）</span> → …
-  </div>
-  <div class="xrr-flow">
-    <div class="xrr-flow-title">連続リプライ（創設者が挟まない）</div>
-    創設者の投稿 → あなたの返信 → あなたの返信 → あなたの返信 … <span class="muted">まとめて 1ターン（+10）のみ</span>
-  </div>
-  <ul class="xrr-list">
-    <li>キャッチボール形式（返信に返信）でターンが増えます</li>
-    <li>条件を満たした<b>ターンごと</b>に付与（同一ターンの二重付与なし）</li>
-    <li>クールダウン<b>なし</b>（何ターン目までも対象）</li>
-  </ul>
-</div>
-
-<div class="xrr-card">
-  <div class="xrr-card-title">共通ルール</div>
-  <ul class="xrr-list">
-    <li>対象はローンチ日（<b>2026/6/1</b>）以降の創設者投稿</li>
-    <li>集計は毎日 <b>8:00 / 20:00（日本時間）</b> に自動実行</li>
-    <li>投稿から <b>48時間</b> 経過後はその投稿の読み込みをやめ、<b>新規報酬なし</b></li>
-    <li>すでに付いたコインはそのまま残ります</li>
-  </ul>
-</div>`;
-    }
-    function openXRewardRules(){
-      const isJa=currentLang==='ja';
-      const frame=document.getElementById('x-infographic-frame');
-      if(frame)frame.src=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
-      document.getElementById('x-infographic-modal').classList.add('open');
-      IgnisAudio.playBgmTrack('retrogame').catch(()=>{});
-    }
-    function closeXRewardRules(){
-      document.getElementById('x-infographic-modal').classList.remove('open');
-      const frame=document.getElementById('x-infographic-frame');
-      if(frame)frame.src='';
-      refreshCityBgm();
-    }
     function openHelpContact(){
       const isJa=currentLang==='ja';
       const body=isJa
@@ -2777,8 +2539,10 @@
       const panel=document.getElementById('notice-panel');
       if(!panel)return;
       panel.classList.toggle('open');
-      markAllNoticesRead();
-      if(panel.classList.contains('open'))renderNoticeList();
+      if(panel.classList.contains('open')){
+        markAllNoticesRead();
+        renderNoticeList();
+      }
     }
     function maybeNotifyStaffNotice(soon,total){
       if(!currentUser||soon<=0)return;
@@ -2817,6 +2581,11 @@
       document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
       document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
       document.getElementById('coin-count').title=isJa?'クリックでコイン履歴を表示':'Click to view coin history';
+      const xRewardsBtn=document.getElementById('x-rewards-btn');
+      if(xRewardsBtn){
+        xRewardsBtn.textContent=isJa?'📘 X報酬':'📘 X Rewards';
+        xRewardsBtn.title=isJa?'X報酬ルールを開く':'Open X rewards rules';
+      }
       const buildBtnText=document.getElementById('build-btn-text');
       if(buildBtnText)buildBtnText.textContent=isJa?'獲得':'Get';
       const buildBtn=document.getElementById('build-btn');
@@ -2845,8 +2614,6 @@
       document.getElementById('ch-tab-all').textContent=isJa?'📜 全て':'📜 All';
       document.getElementById('ch-tab-gain').textContent=isJa?'📈 獲得':'📈 Gain';
       document.getElementById('ch-tab-spend').textContent=isJa?'📉 消費':'📉 Spend';
-      const chXRules=document.getElementById('coin-history-x-rules-btn');
-      if(chXRules)chXRules.textContent=isJa?'📋 X報酬ルール':'📋 X Rewards';
       document.getElementById('coin-history-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
       document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
@@ -2975,16 +2742,6 @@
       const xDesc=document.getElementById('x-setup-desc');
       if(xDesc)xDesc.textContent=isJa?'ヘッダーに表示する @ユーザー名 を設定してください':'Set your @handle shown in the header';
       set('x-setup-save',isJa?'保存':'Save');
-      const xRulesLink=document.getElementById('x-setup-rules-link');
-      if(xRulesLink)xRulesLink.textContent=isJa?'📋 X連携コイン報酬のルール':'📋 X engagement coin rules';
-      const xRulesHdr=document.getElementById('x-rules-hdr-label');
-      if(xRulesHdr)xRulesHdr.textContent=isJa?' 報酬':' Rewards';
-      const xInfClose=document.getElementById('x-infographic-close');
-      if(xInfClose)xInfClose.textContent=isJa?'✕ 閉じる':'✕ Close';
-      if(isXRewardScreenOpen()){
-        const frame=document.getElementById('x-infographic-frame');
-        if(frame)frame.src=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
-      }
       set('bml-views',isJa?'閲覧回数':'Views');
       set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');
       const xLabel=document.getElementById('x-username-label');
@@ -3416,54 +3173,14 @@
     const canvas=document.getElementById('renderCanvas');
     if(!window.BABYLON){__ignisStatus('3D library not loaded - tap to start');}
     else{__ignisStatus('4) Starting 3D engine...');}
-    // Rainbow bottom-to-top shader
-    if(window.BABYLON&&BABYLON.Effect){
-      BABYLON.Effect.ShadersStore['ignisRainbowVertexShader']=`
-        precision highp float;
-        attribute vec3 position;
-        attribute vec3 normal;
-        uniform mat4 worldViewProjection;
-        uniform mat4 world;
-        varying float vWorldY;
-        void main(void){
-          vWorldY=(world*vec4(position,1.0)).y;
-          gl_Position=worldViewProjection*vec4(position,1.0);
-        }`;
-      BABYLON.Effect.ShadersStore['ignisRainbowFragmentShader']=`
-        precision highp float;
-        varying float vWorldY;
-        uniform float uTime;
-        uniform float uBaseY;
-        uniform float uHeight;
-        vec3 hsl2rgb(float h,float s,float l){
-          float c=(1.0-abs(2.0*l-1.0))*s;
-          float x=c*(1.0-abs(mod(h*6.0,2.0)-1.0));
-          float m=l-c*0.5;
-          vec3 rgb=vec3(0.0);
-          if(h<0.1667)rgb=vec3(c,x,0.0);
-          else if(h<0.3333)rgb=vec3(x,c,0.0);
-          else if(h<0.5)rgb=vec3(0.0,c,x);
-          else if(h<0.6667)rgb=vec3(0.0,x,c);
-          else if(h<0.8333)rgb=vec3(x,0.0,c);
-          else rgb=vec3(c,0.0,x);
-          return clamp(rgb+m,0.0,1.0);
-        }
-        void main(void){
-          float t=clamp((vWorldY-uBaseY)/max(uHeight,0.01),0.0,1.0);
-          float hue=fract(uTime-t*0.65);
-          vec3 diff=hsl2rgb(hue,0.90,0.40+t*0.12);
-          vec3 emis=hsl2rgb(fract(hue+0.08),1.0,0.10+t*0.28);
-          gl_FragColor=vec4(diff+emis*(0.35+t*0.55),1.0);
-        }`;
-    }
     const engine=window.BABYLON?new BABYLON.Engine(canvas,true):{runRenderLoop:function(){},resize:function(){}};
     const scene=window.BABYLON?new BABYLON.Scene(engine):{onPointerObservable:{add:function(){}},activeCamera:null};
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
-    arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=240;arcCamera.upperBetaLimit=Math.PI/2.2;
+    arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=170;arcCamera.upperBetaLimit=Math.PI/2.2;
     if(isCoarseMobile()){
-      arcCamera.upperRadiusLimit=560;
+      arcCamera.upperRadiusLimit=420;
       arcCamera.lowerRadiusLimit=6;
       arcCamera.radius=Math.max(arcCamera.radius,90);
       arcCamera.wheelPrecision=0.35;
@@ -3471,7 +3188,7 @@
     }
     const flyCamera=new BABYLON.FlyCamera('flyCam',new BABYLON.Vector3(0,30,-60),scene);
     flyCamera.setTarget(BABYLON.Vector3.Zero());
-    flyCamera.speed=0.23;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
+    flyCamera.speed=1.4;flyCamera.angularSensibility=800;flyCamera.rollCorrect=10;
     flyCamera.bankedTurn=true;flyCamera.bankedTurnLimit=Math.PI/4;flyCamera.bankedTurnMultiplier=0.5;flyCamera.minZ=0.1;
     flyCamera.keysUp=[];flyCamera.keysDown=[];flyCamera.keysLeft=[];flyCamera.keysRight=[];
     scene.activeCamera=arcCamera;
@@ -3578,13 +3295,13 @@
       }else{
         const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
         const right=flyCamera.getDirection(BABYLON.Axis.X);
-        const moveScale=4.3*dt;
+        const moveScale=26*dt;
         if(flyKeyState.up)flyCamera.cameraDirection.addInPlace(fwd.scale(moveScale));
         if(flyKeyState.down)flyCamera.cameraDirection.addInPlace(fwd.scale(-moveScale));
         if(flyKeyState.left)flyCamera.cameraDirection.addInPlace(right.scale(-moveScale*0.8));
         if(flyKeyState.right)flyCamera.cameraDirection.addInPlace(right.scale(moveScale*0.8));
         const lift=(flyKeyState.rise?1:0)-(flyKeyState.fall?1:0);
-        if(lift!==0)flyCamera.position.y+=lift*3*dt;
+        if(lift!==0)flyCamera.position.y+=lift*18*dt;
       }
     });
     function toggleFlyMode(){isFlying=!isFlying;setFlyMode(isFlying);}
@@ -3739,14 +3456,6 @@
       const buyBtn=document.getElementById('land-buy-btn');
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
-        // 土地2面上限チェック
-        const{count:ownedCount}=await db.from('lands').select('*',{count:'exact',head:true}).eq('owner_id',currentUser.id);
-        if((ownedCount||0)>=2){
-          const isJa=currentLang==='ja';
-          showToast(isJa?'土地は最大2面まで取得できます（売却してから再取得）':'Max 2 plots allowed. Sell one first.');
-          buyBtn.disabled=false;
-          buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;return;
-        }
         const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
         const balance=ud?ud.coin_column||0:0;
         if(LAND_COST>0&&balance<LAND_COST){
@@ -4034,86 +3743,6 @@
       document.getElementById('profile-modal').classList.add('open');
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
-    function openMottoFromModal(){
-      const btn=document.getElementById('building-motto-btn');
-      if(!btn)return;
-      const bx=btn._bx,bz=btn._bz,bf=btn._bf||1;
-      document.getElementById('building-modal').classList.remove('open');
-      openProfileModal(bx,bz,bf);
-    }
-    // ========================================
-    // 過去詳細モーダル
-    // ========================================
-    let pastDetailState={bx:0,bz:0};
-    function openPastDetailModal(){
-      if(!currentUser){showToast('ログインが必要です');return;}
-      const btn=document.getElementById('building-past-detail-btn');
-      if(btn){pastDetailState.bx=currentModalBuilding?.x||0;pastDetailState.bz=currentModalBuilding?.z||0;}
-      // フォームリセット
-      document.querySelectorAll('#pd-lost-items input[type=checkbox]').forEach(c=>c.checked=false);
-      document.querySelectorAll('input[name="pd-stage"]').forEach(r=>r.checked=false);
-      ['pd-current-positive','pd-background','pd-how-handled','pd-what-after','pd-journey'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-      ['pd-current-counter','pd-bg-counter','pd-handled-counter','pd-after-counter','pd-journey-counter'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='0';});
-      document.getElementById('building-modal').classList.remove('open');
-      document.getElementById('past-detail-modal').classList.add('open');
-    }
-    function closePastDetailModal(){document.getElementById('past-detail-modal').classList.remove('open');}
-    // カウンターバインド
-    [['pd-current-positive','pd-current-counter'],['pd-background','pd-bg-counter'],['pd-how-handled','pd-handled-counter'],['pd-what-after','pd-after-counter'],['pd-journey','pd-journey-counter']].forEach(([tid,cid])=>{
-      const ta=document.getElementById(tid);const ct=document.getElementById(cid);
-      if(ta&&ct)ta.addEventListener('input',()=>ct.textContent=ta.value.length);
-    });
-    async function submitPastDetail(){
-      if(!currentUser||!db)return;
-      const lostItems=Array.from(document.querySelectorAll('#pd-lost-items input:checked')).map(c=>c.value);
-      const stage=document.querySelector('input[name="pd-stage"]:checked')?.value||null;
-      const currentPositive=document.getElementById('pd-current-positive').value.trim();
-      const background=document.getElementById('pd-background').value.trim();
-      const howHandled=document.getElementById('pd-how-handled').value.trim();
-      const whatAfter=document.getElementById('pd-what-after').value.trim();
-      const journey=document.getElementById('pd-journey').value.trim();
-      if(lostItems.length===0&&!currentPositive){showToast('①か②を入力してください');return;}
-      const btn=document.getElementById('pd-submit-btn');
-      btn.disabled=true;btn.textContent='申請中...';
-      try{
-        const{error}=await db.from('building_past_details').upsert({
-          user_id:currentUser.id,
-          building_x:pastDetailState.bx,building_z:pastDetailState.bz,
-          lost_items:lostItems,current_stage:stage,current_positive:currentPositive||null,
-          background_detail:background||null,how_handled:howHandled||null,
-          what_happened_after:whatAfter||null,journey_to_now:journey||null,
-          status:'pending',updated_at:new Date().toISOString()
-        },{onConflict:'building_x,building_z'});
-        if(error)throw error;
-        closePastDetailModal();
-        showToast('📨 過去詳細を申請しました。承認後に公開されます');
-      }catch(e){
-        console.warn('past detail submit error:',e.message);
-        showToast('申請に失敗しました: '+e.message);
-        btn.disabled=false;btn.textContent='申請する';
-      }
-    }
-    // ========================================
-    // 🕯️ 共感ボタン
-    // ========================================
-    async function toggleCandleReaction(){
-      if(!currentUser){showToast('ログインが必要です');return;}
-      const btn=document.getElementById('building-candle-btn');
-      if(!btn||!currentModalBuilding)return;
-      btn.disabled=true;
-      try{
-        const{data,error}=await db.rpc('toggle_candle',{bx:currentModalBuilding.x,bz:currentModalBuilding.z});
-        if(error)throw error;
-        if(!data?.ok){
-          if(data?.reason==='subscription_required'){showToast('🕯️ 共感ボタンはサブスク会員限定です');}
-          else{showToast('エラーが発生しました');}
-          return;
-        }
-        btn.className='building-candle-btn'+(data.lit?' lit':'');
-        document.getElementById('building-candle-count').textContent=(currentLang==='ja'?`${data.count}人が共感`:`${data.count} resonated`);
-      }catch(e){console.warn('candle error:',e.message);}
-      finally{btn.disabled=false;}
-    }
     document.getElementById('profile-motto-input').addEventListener('input',function(){
       const len=this.value.length;
       const counter=document.getElementById('profile-motto-counter');
@@ -4536,9 +4165,7 @@
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
       const assignBtn=document.getElementById('building-assign-btn');
-      const mottoBtn=document.getElementById('building-motto-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
-      const pastDetailBtn=document.getElementById('building-past-detail-btn');
       if(isOwnLand){
         sellBtn.style.display='block';
         sellBtn.hidden=false;
@@ -4550,12 +4177,6 @@
           assignBtn.disabled=bench<=0;
           assignBtn.style.opacity=bench<=0?'0.5':'1';
         }
-        if(mottoBtn){
-          mottoBtn.style.display='block';mottoBtn.hidden=false;
-          mottoBtn.textContent=isJa?'✍️ 格言を申請':'✍️ Apply Motto';
-          mottoBtn._bx=buildingData.x;mottoBtn._bz=buildingData.z;mottoBtn._bf=buildingData.baseFloors;
-        }
-        if(pastDetailBtn){pastDetailBtn.style.display='block';pastDetailBtn.hidden=false;pastDetailBtn.textContent=isJa?'📖 過去詳細を申請':'📖 Apply Past Detail';}
         const quote=getBuildingSellQuote(buildingData);
         const benchBack=quote.emp;
         sellBtn.textContent=isJa
@@ -4565,8 +4186,6 @@
         sellBtn.style.display='none';
         sellBtn.hidden=true;
         if(assignBtn){assignBtn.style.display='none';assignBtn.hidden=true;}
-        if(mottoBtn){mottoBtn.style.display='none';mottoBtn.hidden=true;}
-        if(pastDetailBtn){pastDetailBtn.style.display='none';pastDetailBtn.hidden=true;}
       }
       const land=landMap[key];const ownerEl=document.getElementById('building-modal-owner');
       if(land){
@@ -4593,66 +4212,8 @@
       document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
       document.getElementById('building-modal').classList.add('open');
       recordBuildingView(buildingData);
-      loadBuildingModalExtras(buildingData).catch(()=>{});
     }
     function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
-    async function loadBuildingModalExtras(buildingData){
-      if(!db)return;
-      const bx=buildingData.x,bz=buildingData.z;
-      const isJa=currentLang==='ja';
-      const pdSection=document.getElementById('building-past-detail-section');
-      const candleRow=document.getElementById('building-candle-row');
-      const candleBtn=document.getElementById('building-candle-btn');
-      const candleCount=document.getElementById('building-candle-count');
-      pdSection.style.display='none';pdSection.innerHTML='';
-      candleRow.style.display='none';
-      // 🕯️ カウント取得
-      try{
-        const{count}=await db.from('building_candles').select('*',{count:'exact',head:true}).eq('building_x',bx).eq('building_z',bz);
-        const myLit=currentUser?(await db.from('building_candles').select('id').eq('user_id',currentUser.id).eq('building_x',bx).eq('building_z',bz).maybeSingle()).data!=null:false;
-        candleCount.textContent=isJa?`${count||0}人が共感`:`${count||0} resonated`;
-        candleBtn.className='building-candle-btn'+(myLit?' lit':'');
-        candleBtn.dataset.bx=bx;candleBtn.dataset.bz=bz;
-        candleBtn.disabled=!currentUser;
-        candleRow.style.display='flex';
-      }catch(e){}
-      // 過去詳細（①②）取得
-      try{
-        const{data:preview}=await db.rpc('get_past_detail_preview',{bx,bz});
-        if(!preview)return;
-        const lostLabels={money:'💴 資金',job:'💼 仕事',friends:'👥 友人',partner:'🤝 BP',lover:'💔 恋人',trust:'🔒 信用',dream:'⭐ 夢',health:'🏥 健康',family:'👨‍👩‍👧 家族'};
-        const stageLabel={recovering:'🌱 回復中',stable:'🏠 安定',growing:'🚀 成長中',new_challenge:'🔥 新たな挑戦'};
-        let html='<div style="margin-bottom:8px;"><span style="font-size:10px;font-weight:800;color:rgba(129,140,248,0.7);letter-spacing:0.08em;">📖 '+(isJa?'過去詳細':'PAST DETAIL')+'</span></div>';
-        if(preview.lost_items&&preview.lost_items.length>0){
-          html+='<div class="bpd-lost-tags">';
-          preview.lost_items.forEach(k=>{html+=`<span class="bpd-lost-tag">${lostLabels[k]||k}</span>`;});
-          html+='</div>';
-        }
-        if(preview.current_stage){html+=`<div class="bpd-stage ${preview.current_stage}">${stageLabel[preview.current_stage]||preview.current_stage}</div>`;}
-        if(preview.current_positive){html+=`<div class="bpd-current">${preview.current_positive.replace(/\n/g,'<br>')}</div>`;}
-        // ③〜⑥：課金者のみ
-        if(currentUser?.is_subscribed){
-          try{
-            const{data:full}=await db.rpc('get_past_detail_full',{bx,bz});
-            if(full&&!full.error){
-              const sections=[
-                {label:'③ 背景と詳細',key:'background_detail'},
-                {label:'④ どう対応したか',key:'how_handled'},
-                {label:'⑤ その後',key:'what_happened_after'},
-                {label:'⑥ 現在に至るまで',key:'journey_to_now'}
-              ];
-              html+='<div class="bpd-full-section">';
-              sections.forEach(s=>{if(full[s.key])html+=`<div class="bpd-full-label">${s.label}</div><div class="bpd-full-text">${full[s.key].replace(/\n/g,'<br>')}</div>`;});
-              html+='</div>';
-            }
-          }catch(e){}
-        } else if(currentUser){
-          html+='<div class="bpd-sub-required" onclick="showToast(\'③〜⑥はサブスク会員のみ閲覧できます\')">🔒 '+(isJa?'③〜⑥はサブスク会員のみ閲覧できます':'③–⑥ for subscribers only')+'</div>';
-        }
-        pdSection.innerHTML=html;
-        pdSection.style.display='block';
-      }catch(e){}
-    }
     async function assignEmployeesToCurrentBuilding(){
       if(!currentUser||!currentModalBuilding||!db)return;
       const isJa=currentLang==='ja';
@@ -4727,7 +4288,7 @@
           buildingData.viewCount=data.view_count;
           document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
           if(buildingData.mesh&&buildingData.mesh.material){
-            buildingData.mesh.material=applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5)||buildingData.mesh.material;
+            applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5);
           }
           await checkViewTaskProgress();
           if(data.employees_added>0){
@@ -4774,10 +4335,6 @@
         delete buildingMap[b.landKey];
         delete landMap[b.landKey];
         delete approvedProfiles[b.landKey];
-        zukanBuildings=zukanBuildings.filter(zb=>!(zb.x===b.x&&zb.z===b.z));
-        if(document.getElementById('zukan-overlay').classList.contains('open')){
-          renderZukanOwned();renderZukanRarity();
-        }
         document.getElementById('building-count').textContent=buildings.length;
         refreshTile(b.landKey);
         drawMinimap();
@@ -4858,7 +4415,16 @@
         animatedBuildingMats.forEach((entry)=>{
           const{mat,type}=entry;
           if(type==='rainbow'){
-            mat.setFloat('uTime',(t/9000)%1);
+            const sweep=((t%2200)/2200);
+            const hue=((t/20)%360)/360;
+            const c=hslToRgb(hue,0.92,0.28+sweep*0.38);
+            const e=hslToRgb((hue+0.07)%1,1,0.08+sweep*0.62);
+            mat.diffuseColor.r=c.r*(0.55+sweep*0.45);
+            mat.diffuseColor.g=c.g*(0.55+sweep*0.45);
+            mat.diffuseColor.b=c.b*(0.55+sweep*0.45);
+            mat.emissiveColor.r=e.r*sweep;
+            mat.emissiveColor.g=e.g*sweep;
+            mat.emissiveColor.b=e.b*sweep;
           } else if(type==='gold'){
             // インゴット風シマー：高速で明暗が走る金色
             const shimmer=0.5+0.5*Math.sin(t/420);
@@ -4881,20 +4447,11 @@
       if(isShowcaseBuilding(x,z))tier='rainbow';
       else if(viewCount>=300)tier='gold';
       if(tier==='rainbow'){
+        mat.diffuseColor=new BABYLON.Color3(1,0.2,0.5);
+        mat.emissiveColor=new BABYLON.Color3(0.3,0.0,0.3);
         const baseY=mesh?(mesh.position.y-(buildingHeight||0)/2):0;
-        const h=buildingHeight||10;
-        const shaderMat=new BABYLON.ShaderMaterial('rainbow_'+Date.now(),scene,'ignisRainbow',{
-          attributes:['position','normal'],
-          uniforms:['worldViewProjection','world','uTime','uBaseY','uHeight']
-        });
-        shaderMat.backFaceCulling=false;
-        shaderMat.setFloat('uTime',0);
-        shaderMat.setFloat('uBaseY',baseY);
-        shaderMat.setFloat('uHeight',h);
-        if(mesh)mesh.material=shaderMat;
-        animatedBuildingMats.set(shaderMat.uniqueId,{mat:shaderMat,type:'rainbow',mesh,baseY,height:h});
+        animatedBuildingMats.set(key,{mat,type:'rainbow',mesh,baseY,height:buildingHeight||10});
         ensureBuildingAnimation();
-        return shaderMat;
       } else if(tier==='gold'){
         mat.diffuseColor=new BABYLON.Color3(1.0,0.84,0.0);
         mat.emissiveColor=new BABYLON.Color3(0.4,0.28,0.0);
@@ -4906,7 +4463,6 @@
         mat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
       }
       if(mesh){mesh.onDisposeObservable.add(()=>{animatedBuildingMats.delete(key);});}
-      return mat;
     }
     function addBuilding(x,z,baseFloors,shape='square',employees=0,fromDB=false,lKey=null,viewCount=0,ownerId=null){
       const totalFloors=calcTotalFloors(baseFloors,employees);
@@ -4919,7 +4475,8 @@
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:w},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
-      mesh.material=applyBuildingRankColor(mat,viewCount,mesh,x,z,height)||mat;
+      applyBuildingRankColor(mat,viewCount,mesh,x,z,height);
+      mesh.material=mat;
       const key=lKey||landKey(x,z);
       const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,ownerId};
       if(mesh){mesh.metadata={landKey:key,bx:x,bz:z};}
@@ -4953,10 +4510,11 @@
     // ========================================
     // グリッドタップ
     // ========================================
-    function handleCanvasTap(x,y){
+    scene.onPointerObservable.add((pointerInfo)=>{
+      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
       if(isFlying&&!pendingBuildMode)return;
-      const pick=scene.pick(x,y);
-      if(!pick||!pick.hit||!pick.pickedMesh)return;
+      const pick=scene.pick(scene.pointerX,scene.pointerY);
+      if(!pick.hit||!pick.pickedMesh)return;
       if(pick.pickedMesh.name.startsWith('b_')){
         let bData=buildings.find(b=>b.mesh===pick.pickedMesh);
         if(!bData&&pick.pickedMesh.metadata&&pick.pickedMesh.metadata.landKey){
@@ -4981,27 +4539,7 @@
         }
         openLandPanel(gx,gz);
       }
-    }
-    // PC: POINTERTAP は確実に動作する
-    scene.onPointerObservable.add((pointerInfo)=>{
-      if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
-      handleCanvasTap(scene.pointerX,scene.pointerY);
     });
-    // モバイル: native touchend（POINTERTAP は指が少し動くと発火しないため）
-    if(isCoarseMobile()){
-      let _mTapX=0,_mTapY=0;
-      canvas.addEventListener('touchstart',e=>{
-        if(e.touches.length!==1)return;
-        _mTapX=e.touches[0].clientX;_mTapY=e.touches[0].clientY;
-      },{passive:true});
-      canvas.addEventListener('touchend',e=>{
-        if(e.changedTouches.length!==1)return;
-        const t=e.changedTouches[0];
-        if(Math.hypot(t.clientX-_mTapX,t.clientY-_mTapY)>15)return;
-        const rect=canvas.getBoundingClientRect();
-        handleCanvasTap(t.clientX-rect.left,t.clientY-rect.top);
-      },{passive:true});
-    }
     // build-btn は onclick="openGachaModal(false)" に変更済み（addEventListener不要）
     // ========================================
     // 図鑑
@@ -5065,8 +4603,7 @@
         const prismIcon=PRISM_ICONS[prism]||'🏢';
         const empDisplay=isJa?`${(b.employees||0).toLocaleString()}人`:`${(b.employees||0).toLocaleString()}`;
         const card=document.createElement('div');card.className=`zukan-card star${star}`;
-        const empColor=ci.name==='rainbow'?'#ee0979':ci.name==='gold'?'#f59e0b':ci.name==='red'?'#ef4444':'rgba(255,255,255,0.65)';
-        card.innerHTML=`<div class="zcard-icon">${prismIcon}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${isJa?`${b.floors}階`:`${b.floors}F`}</div><div class="zcard-floors-label">${prismLabel}</div><div class="zcard-footer"><span class="zcard-emp" style="color:${empColor}">👥 ${empDisplay}</span><span class="zcard-coord">${b.x},${b.z}</span></div>`;
+        card.innerHTML=`<div class="zcard-icon">${prismIcon}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${isJa?`${b.floors}階`:`${b.floors}F`}</div><div class="zcard-floors-label">${prismLabel}</div><div class="zcard-meta"><span class="zcard-emp" style="color:${ci.name==='gold'?'#f59e0b':ci.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">👥 ${empDisplay}</span><br><span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span></div>`;
         card.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;showToast(`📍 X:${b.x} / Z:${b.z} にフォーカス`);});
         grid.appendChild(card);
       });
@@ -5076,7 +4613,7 @@
       const rarityNames=isJa?RARITY_NAMES_JA:RARITY_NAMES_EN;
       [5,4,3,2,1].forEach(star=>{
         const myBuildings=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===star);
-        const section=document.createElement('div');section.className=`zukan-rarity-section${star>=4?' star'+star:''}`;
+        const section=document.createElement('div');section.className='zukan-rarity-section';
         const countLabel=isJa?myBuildings.length+'棟':myBuildings.length+'';
         const countClass=myBuildings.length>0?'zukan-rarity-count has-count':'zukan-rarity-count';
         section.innerHTML=`<div class="zukan-rarity-header"><span class="zukan-rarity-stars" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</span><span class="zukan-rarity-label">${rarityNames[star]}</span><span class="${countClass}">${countLabel}</span></div><div class="zukan-rarity-buildings" id="zukan-rarity-${star}"></div>`;
@@ -5097,11 +4634,11 @@
     }
     function maskRankingDisplayName(u,rank){
       const raw=u.x_username?`@${u.x_username}`:(u.username||'?');
-      if(rank<=3&&u.x_username){
+      if(rank===1&&u.x_username){
         const handle=encodeURIComponent(u.x_username.replace(/^@/,''));
         return `<a class="rank-x-link" href="https://x.com/${handle}" target="_blank" rel="noopener">@${u.x_username.replace(/^@/,'')}</a>`;
       }
-      if(rank<=3)return raw;
+      if(rank===1)return raw;
       const chars='█▓▒░▄▀■□';
       const seed=rankingNameHash(u.uid,new Date().toISOString().slice(0,10));
       let out='';
@@ -5121,7 +4658,7 @@
       if(handle!==OWNER_X_HANDLE.toLowerCase())return;
       b.employees=1000;
       if(b.mesh&&b.mesh.material){
-        b.mesh.material=applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5)||b.mesh.material;
+        applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }
     }
     async function openRanking(){document.getElementById('ranking-overlay').classList.add('open');await loadRanking();}
@@ -5168,19 +4705,18 @@
         document.getElementById('ranking-coins-list').innerHTML='<div class="ranking-empty">読み込みに失敗しました</div>';
       }finally{loadingEl.classList.remove('show');}
     }
-    function renderRankingList(containerId,rankData,type,showAll=false){
+    function renderRankingList(containerId,rankData,type){
       const container=document.getElementById(containerId);
       if(!rankData||rankData.length===0){container.innerHTML='<div class="ranking-empty">🏗 まだデータがありません</div>';return;}
       const medals=['🥇','🥈','🥉'];const isJa=currentLang==='ja';
       const now=new Date().toLocaleTimeString(isJa?'ja-JP':'en-US',{hour:'2-digit',minute:'2-digit'});
-      const displayData=showAll?rankData:rankData.slice(0,10);
       let html='';
-      displayData.forEach((u,i)=>{
+      rankData.forEach((u,i)=>{
         const rank=i+1;const isMe=currentUser&&u.uid===currentUser.id;
         const topClass=rank<=3?`top${rank}`:'';const meClass=isMe?' me':'';
         const badgeHtml=rank<=3?`<div class="rank-medal">${medals[rank-1]}</div>`:`<div class="rank-badge" style="color:rgba(255,255,255,0.35);">${rank}</div>`;
         const masked=maskRankingDisplayName(u,rank);
-        const nameClass=rank<=3?'ranking-username':'ranking-username masked';
+        const nameClass=rank===1?'ranking-username':'ranking-username masked';
         let value,unit,subText;
         if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
@@ -5191,10 +4727,6 @@
         const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
         html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="${nameClass}">${masked}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
       });
-      if(!showAll&&rankData.length>10){
-        html+=`<div style="text-align:center;margin-top:10px;"><button onclick="renderRankingList('${containerId}',window._rankDataCache_${containerId},'${type}',true);this.closest('div').remove();" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:8px 24px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">${isJa?'もっと見る':'Show more'} (${rankData.length-10})</button></div>`;
-        window[`_rankDataCache_${containerId}`]=rankData;
-      }
       html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}<br><span style="font-size:10px;opacity:0.75;">${isJa?'※1位のみユーザー名公開（Xリンク）':'※Only #1 name is public (X link)'}</span></div>`;
       container.innerHTML=html;
     }

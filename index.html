@@ -2085,7 +2085,10 @@
     try{
       IgnisAudio.init();
       await IgnisAudio.ensure();
-      const ok=await IgnisAudio.playBgmTrack('city');
+      const _tid=(typeof isXRewardScreenOpen==='function'&&isXRewardScreenOpen())?'retrogame':
+                 (typeof isCollectionScreenOpen==='function'&&isCollectionScreenOpen())?'collection':
+                 (typeof isOpeningBgmScreenOpen==='function'&&isOpeningBgmScreenOpen())?'opening':'city';
+      const ok=await IgnisAudio.playBgmTrack(_tid);
       if(ok){
         hideBgmUnlockBtn();
         return true;
@@ -2843,7 +2846,7 @@
       document.getElementById('ch-tab-gain').textContent=isJa?'📈 獲得':'📈 Gain';
       document.getElementById('ch-tab-spend').textContent=isJa?'📉 消費':'📉 Spend';
       const chXRules=document.getElementById('coin-history-x-rules-btn');
-      if(chXRules)chXRules.textContent='📋 X報酬ルール';
+      if(chXRules)chXRules.textContent=isJa?'📋 X報酬ルール':'📋 X Rewards';
       document.getElementById('coin-history-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
       document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
@@ -2973,9 +2976,11 @@
       if(xDesc)xDesc.textContent=isJa?'ヘッダーに表示する @ユーザー名 を設定してください':'Set your @handle shown in the header';
       set('x-setup-save',isJa?'保存':'Save');
       const xRulesLink=document.getElementById('x-setup-rules-link');
-      if(xRulesLink)xRulesLink.textContent='📋 X連携コイン報酬のルール';
-      set('x-reward-rules-title','X連携コイン報酬','X連携コイン報酬');
-      set('x-reward-rules-close','閉じる','閉じる');
+      if(xRulesLink)xRulesLink.textContent=isJa?'📋 X連携コイン報酬のルール':'📋 X engagement coin rules';
+      const xRulesHdr=document.getElementById('x-rules-hdr-label');
+      if(xRulesHdr)xRulesHdr.textContent=isJa?' 報酬':' Rewards';
+      const xInfClose=document.getElementById('x-infographic-close');
+      if(xInfClose)xInfClose.textContent=isJa?'✕ 閉じる':'✕ Close';
       if(isXRewardScreenOpen()){
         const frame=document.getElementById('x-infographic-frame');
         if(frame)frame.src=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';

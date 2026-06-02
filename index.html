@@ -756,6 +756,8 @@
     /* 承認済み格言・備考 */
     #building-sell-btn { width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:14px;transition:opacity 0.2s; }
     #building-sell-btn:hover { opacity:0.85; }
+    #building-profile-btn { width:100%;background:linear-gradient(135deg,rgba(255,106,0,0.55),rgba(238,9,121,0.55));color:#fff;border:1px solid rgba(255,255,255,0.15);padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s;backdrop-filter:blur(6px); }
+    #building-profile-btn:hover { opacity:0.85; }
     #building-assign-btn { width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
     #building-assign-btn:hover { opacity:0.9; }
     #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em;background:rgba(255,255,255,0.04); }
@@ -982,6 +984,7 @@
       <div id="building-modal-motto"></div>
       <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
+      <button id="building-profile-btn" onclick="openProfileFromModal()" style="display:none;">✍️ 格言を申請・更新</button>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
@@ -4227,7 +4230,9 @@
       const sellBtn=document.getElementById('building-sell-btn');
       const assignBtn=document.getElementById('building-assign-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
+      const profileBtn=document.getElementById('building-profile-btn');
       if(isOwnLand){
+        if(profileBtn){profileBtn.style.display='block';profileBtn.hidden=false;profileBtn.textContent=isJa?'✍️ 格言を申請・更新':'✍️ Submit / Update Motto';}
         sellBtn.style.display='block';
         sellBtn.hidden=false;
         if(assignBtn){
@@ -4244,6 +4249,7 @@
           ?`💰 売却 +${quote.coins}コイン・休職へ${benchBack}人（${quote.floors}階×${getSellCoinMultiplier(quote.emp)}+100）`
           :`💰 Sell +${quote.coins} coins · ${benchBack} to bench (${quote.floors}F×${getSellCoinMultiplier(quote.emp)}+100)`;
       } else {
+        if(profileBtn){profileBtn.style.display='none';profileBtn.hidden=true;}
         sellBtn.style.display='none';
         sellBtn.hidden=true;
         if(assignBtn){assignBtn.style.display='none';assignBtn.hidden=true;}
@@ -4287,6 +4293,11 @@
       recordBuildingView(buildingData);
     }
     function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
+    function openProfileFromModal(){
+      if(!currentModalBuilding)return;
+      closeBuildingModal();
+      openProfileModal(currentModalBuilding.x,currentModalBuilding.z,currentModalBuilding.totalFloors);
+    }
     async function assignEmployeesToCurrentBuilding(){
       if(!currentUser||!currentModalBuilding||!db)return;
       const isJa=currentLang==='ja';

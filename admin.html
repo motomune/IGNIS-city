@@ -17,7 +17,6 @@
     .user-info .uname{color:#ff6a00;font-weight:700;}
     .logout-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:6px 12px;border-radius:8px;font-size:11px;cursor:pointer;margin-top:6px;}
     .logout-btn:hover{background:rgba(255,255,255,0.1);}
-    /* ログイン画面 */
     #login-screen{max-width:380px;margin:80px auto;background:#0a0a14;border:1px solid rgba(255,106,0,0.3);border-radius:18px;padding:32px;position:relative;z-index:1;}
     #login-screen h1{font-size:20px;font-weight:900;background:linear-gradient(135deg,#ff6a00,#ee0979);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:6px;}
     #login-screen .sub{font-size:11px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:24px;letter-spacing:0.1em;text-transform:uppercase;}
@@ -29,18 +28,16 @@
     .primary-btn:hover{opacity:0.9;}
     .primary-btn:disabled{opacity:0.4;cursor:not-allowed;}
     .error-msg{color:#ef4444;font-size:12px;margin-top:8px;text-align:center;min-height:16px;}
-    /* タブ */
-    .tabs{display:flex;gap:6px;margin-bottom:20px;}
+    .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
     .tab{padding:10px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
     .tab.active{background:linear-gradient(135deg,rgba(255,106,0,0.2),rgba(238,9,121,0.15));border-color:rgba(255,106,0,0.4);color:#fff;}
     .tab .badge{display:inline-block;background:rgba(255,106,0,0.3);border-radius:8px;padding:1px 8px;font-size:11px;margin-left:6px;}
-    /* リスト */
     .list{display:flex;flex-direction:column;gap:12px;}
-    .card{background:#0a0a14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;}
+    .card{background:#0a0a14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:start;}
     .card.pending{border-color:rgba(255,165,0,0.3);}
     .card.approved{border-color:rgba(34,197,94,0.25);}
     .card.rejected{opacity:0.55;border-color:rgba(239,68,68,0.25);}
-    .rank-icon{font-size:32px;text-align:center;}
+    .rank-icon{font-size:32px;text-align:center;padding-top:4px;}
     .card-body{min-width:0;}
     .card-row{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;}
     .owner{font-size:12px;color:#1d9bf0;font-weight:700;}
@@ -52,12 +49,19 @@
     .status-badge.pending{background:rgba(255,165,0,0.18);color:#ffab40;border:1px solid rgba(255,165,0,0.4);}
     .status-badge.approved{background:rgba(34,197,94,0.18);color:#4ade80;border:1px solid rgba(34,197,94,0.4);}
     .status-badge.rejected{background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.4);}
-    .motto-text{margin-top:8px;padding:8px 12px;border-radius:8px;font-size:15px;font-weight:800;display:inline-block;letter-spacing:0.06em;}
-    .motto-text.rank-legendary{color:#fff;background:linear-gradient(90deg,#ff0080,#ff8c00,#ffd700,#00e676,#00bfff,#8a2be2,#ff0080);background-size:300% 100%;animation:mottoRainbow 4s linear infinite;}
-    .motto-text.rank-epic{color:#000;background:linear-gradient(135deg,#FFE769,#FFD700,#C99700);}
-    .motto-text.rank-gray{color:#fff;background:#475569;}
-    @keyframes mottoRainbow{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
-    .notes-text{margin-top:8px;font-size:12px;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:8px;line-height:1.6;white-space:pre-wrap;}
+    .type-badge{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;margin-left:6px;vertical-align:middle;letter-spacing:0.06em;}
+    .type-badge.motto{background:rgba(255,106,0,0.2);color:#ff6a00;border:1px solid rgba(255,106,0,0.4);}
+    .type-badge.past{background:rgba(96,165,250,0.18);color:#60a5fa;border:1px solid rgba(96,165,250,0.4);}
+    .chip-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;}
+    .chip-item{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);padding:3px 9px;border-radius:12px;font-size:11px;color:rgba(255,255,255,0.7);}
+    .past-section{margin-top:8px;font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:0.06em;font-weight:700;}
+    .past-text{margin-top:4px;font-size:12px;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:8px;line-height:1.6;white-space:pre-wrap;}
+    .motto-text{margin-top:8px;padding:10px 14px;border-radius:10px;font-size:15px;font-weight:800;display:inline-block;letter-spacing:0.06em;background:rgba(0,0,0,0.5);}
+    .motto-text.rank-5{color:#ee0979;border:2px solid #ee0979;box-shadow:0 0 12px rgba(238,9,121,0.4);}
+    .motto-text.rank-4{color:#f59e0b;border:2px solid #f59e0b;box-shadow:0 0 12px rgba(245,158,11,0.4);}
+    .motto-text.rank-3{color:#3b82f6;border:2px solid #3b82f6;box-shadow:0 0 12px rgba(59,130,246,0.4);}
+    .motto-text.rank-2{color:#22c55e;border:2px solid #22c55e;box-shadow:0 0 12px rgba(34,197,94,0.4);}
+    .motto-text.rank-1{color:#94a3b8;border:2px solid #94a3b8;box-shadow:0 0 12px rgba(148,163,184,0.4);}
     .meta{margin-top:8px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.06em;}
     .actions{display:flex;flex-direction:column;gap:6px;}
     .action-btn{padding:8px 16px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:opacity 0.2s;min-width:96px;}
@@ -79,7 +83,6 @@
 <body>
   <div class="bg-gradient"></div>
 
-  <!-- ログイン画面 -->
   <div id="login-screen">
     <h1>IGNIS CITY</h1>
     <div class="sub">Admin Approval Console</div>
@@ -97,7 +100,6 @@
     </form>
   </div>
 
-  <!-- アクセス拒否画面 -->
   <div id="denied-screen" class="container" style="display:none;">
     <div class="access-denied">
       <h2>⛔ アクセス拒否</h2>
@@ -106,12 +108,11 @@
     </div>
   </div>
 
-  <!-- 管理画面 -->
   <div id="admin-screen" class="container" style="display:none;">
     <div class="header">
       <div>
         <div class="title">🛡 IGNIS CITY 管理</div>
-        <div class="subtitle">Motto Approval Console</div>
+        <div class="subtitle">Motto &amp; Past Details Console</div>
       </div>
       <div class="user-info">
         <div>logged in as <span class="uname" id="admin-uname">-</span></div>
@@ -136,6 +137,9 @@
     const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhzc2poZ29zeHloa25vbmxyanJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDE5OTYsImV4cCI6MjA5MjY3Nzk5Nn0.mK-w9uRuOEFkY4XBGervejqmuxiC4yiHHG20OQPOUjU';
     const ADMIN_USER_ID='afc818cd-d2fa-4c1c-8460-9dbce9e60e37';
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+    const CHIP_LABELS={money:'お金',trust:'信用',friend:'友人',partner:'恋人',family:'家族',health:'健康',workplace:'職場の居場所',other:'その他'};
+    function chipsHtml(arr){if(!arr||!arr.length)return '<span style="font-size:11px;color:rgba(255,255,255,0.3);">（なし）</span>';return arr.map(v=>`<span class="chip-item">${CHIP_LABELS[v]||v}</span>`).join('');}
 
     let currentTab='pending';
     let profiles=[];
@@ -183,21 +187,30 @@
     async function loadProfiles(){
       document.getElementById('list-container').innerHTML='<div class="loading">読み込み中...</div>';
       try{
-        const{data,error}=await db
-          .from('building_profiles')
-          .select('id,user_id,building_x,building_z,motto_text,notes_text,status,created_at,reviewed_at,users(username,x_username)')
-          .order('created_at',{ascending:false});
-        if(error)throw error;
-        const bx=[...new Set((data||[]).map(p=>p.building_x))];
-        const bz=[...new Set((data||[]).map(p=>p.building_z))];
-        let buildings=[];
-        if(bx.length){
-          const{data:bd}=await db.from('buildings').select('x,z,floors').in('x',bx).in('z',bz);
-          buildings=bd||[];
+        const[mottoRes,pastRes]=await Promise.all([
+          db.from('building_profiles').select('id,user_id,building_x,building_z,motto_text,status,created_at,reviewed_at').order('created_at',{ascending:false}),
+          db.from('building_past_details').select('id,user_id,building_x,building_z,lost_items,gained_items,background_detail,current_positive,status,created_at,updated_at').order('updated_at',{ascending:false}),
+        ]);
+        if(mottoRes.error)throw mottoRes.error;
+        if(pastRes.error)throw pastRes.error;
+        const allItems=[
+          ...(mottoRes.data||[]).map(p=>({...p,_type:'motto'})),
+          ...(pastRes.data||[]).map(p=>({...p,created_at:p.updated_at||p.created_at,_type:'past'})),
+        ];
+        const userIds=[...new Set(allItems.map(p=>p.user_id))];
+        let userMap={};
+        if(userIds.length){
+          const{data:ud}=await db.from('users').select('id,username,x_username').in('id',userIds);
+          (ud||[]).forEach(u=>{userMap[u.id]={username:u.username,x_username:u.x_username};});
         }
-        const bMap={};
-        buildings.forEach(b=>{bMap[`${b.x}_${b.z}`]=b.floors;});
-        profiles=(data||[]).map(p=>({...p,_floors:bMap[`${p.building_x}_${p.building_z}`]||0}));
+        const bxList=[...new Set(allItems.map(p=>p.building_x))];
+        let bMap={};
+        if(bxList.length){
+          const{data:bd}=await db.from('buildings').select('x,z,floors').in('x',bxList);
+          (bd||[]).forEach(b=>{bMap[`${b.x}_${b.z}`]=b.floors;});
+        }
+        profiles=allItems.map(p=>({...p,users:userMap[p.user_id]||{},_floors:bMap[`${p.building_x}_${p.building_z}`]||0}));
+        profiles.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
         renderList();
       }catch(e){
         console.warn(e);
@@ -208,7 +221,7 @@
     function getStarByFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
     const BUILDING_ICONS={5:'🏙',4:'🏢',3:'🏬',2:'🏪',1:'🏠'};
     const STAR_LABELS={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
-    function rankClass(star){if(star===5)return 'rank-legendary';if(star===4)return 'rank-epic';return 'rank-gray';}
+    function rankClass(star){return 'rank-'+star;}
 
     function switchTab(tab){
       currentTab=tab;
@@ -236,29 +249,42 @@
       const u=p.users||{};
       const xName=u.x_username||'';
       const ownerHtml=xName?`<a href="https://x.com/${encodeURIComponent(xName)}" target="_blank" rel="noopener">@${xName}</a>`:(u.username||'(unknown)');
-      const mottoHtml=p.motto_text?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.motto_text)}</div>`:'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
-      const notesHtml=p.notes_text?`<div class="notes-text">📝 ${escapeHtml(p.notes_text)}</div>`:'';
+      const typeBadge=p._type==='motto'
+        ?`<span class="type-badge motto">💬 格言</span>`
+        :`<span class="type-badge past">📖 過去詳細</span>`;
+      let bodyHtml='';
+      if(p._type==='motto'){
+        bodyHtml=p.motto_text
+          ?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.motto_text)}</div>`
+          :'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+      } else {
+        bodyHtml=`
+          <div class="past-section">① 失ったもの</div><div class="chip-row">${chipsHtml(p.lost_items)}</div>
+          <div class="past-section" style="margin-top:8px;">② 得たもの・得ようとしているもの</div><div class="chip-row">${chipsHtml(p.gained_items)}</div>
+          ${p.background_detail?`<div class="past-section" style="margin-top:8px;">③ 詳細</div><div class="past-text">${escapeHtml(p.background_detail)}</div>`:''}
+          ${p.current_positive?`<div class="past-section" style="margin-top:8px;">④ 読者へのメッセージ</div><div class="past-text">${escapeHtml(p.current_positive)}</div>`:''}`;
+      }
       let actions='';
       if(p.status==='pending'){
         actions=`
-          <button class="action-btn btn-approve" onclick="updateStatus(${p.id},'approved')">✅ 承認</button>
-          <button class="action-btn btn-reject" onclick="updateStatus(${p.id},'rejected')">❌ 却下</button>`;
+          <button class="action-btn btn-approve" onclick="updateStatus('${p.id}','${p._type}','approved')">✅ 承認</button>
+          <button class="action-btn btn-reject" onclick="updateStatus('${p.id}','${p._type}','rejected')">❌ 却下</button>`;
       } else {
-        actions=`<button class="action-btn btn-revert" onclick="updateStatus(${p.id},'pending')">↩ 申請中に戻す</button>`;
+        actions=`<button class="action-btn btn-revert" onclick="updateStatus('${p.id}','${p._type}','pending')">↩ 差し戻し</button>`;
       }
-      const reviewedLine=p.reviewed_at?` ／ 審査: ${fmtTime(p.reviewed_at)}`:'';
+      const reviewedAt=p._type==='motto'?p.reviewed_at:p.updated_at;
+      const reviewedLine=reviewedAt?` ／ 審査: ${fmtTime(reviewedAt)}`:'';
       return `
         <div class="card ${p.status}">
           <div class="rank-icon" title="${STAR_LABELS[star]}">${icon}</div>
           <div class="card-body">
             <div class="card-row">
-              <span class="owner">👤 ${ownerHtml}</span>
+              <span class="owner">👤 ${ownerHtml}</span>${typeBadge}
               <span class="coord">座標 ${p.building_x},${p.building_z}</span>
               <span class="floors">${p._floors||'?'}F / ${STAR_LABELS[star]}</span>
               <span class="status-badge ${p.status}">${p.status}</span>
             </div>
-            ${mottoHtml}
-            ${notesHtml}
+            ${bodyHtml}
             <div class="meta">申請: ${fmtTime(p.created_at)}${reviewedLine}</div>
           </div>
           <div class="actions">${actions}</div>
@@ -267,12 +293,16 @@
 
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
 
-    async function updateStatus(id,newStatus){
+    async function updateStatus(id,type,newStatus){
       const ok=newStatus==='rejected'?confirm('この申請を却下しますか？'):true;
       if(!ok)return;
       try{
-        const payload={status:newStatus,reviewed_at:newStatus==='pending'?null:new Date().toISOString()};
-        const{error}=await db.from('building_profiles').update(payload).eq('id',id);
+        const table=type==='motto'?'building_profiles':'building_past_details';
+        const now=new Date().toISOString();
+        const payload=type==='motto'
+          ?{status:newStatus,reviewed_at:newStatus==='pending'?null:now}
+          :{status:newStatus,updated_at:now};
+        const{error}=await db.from(table).update(payload).eq('id',id);
         if(error)throw error;
         const label=newStatus==='approved'?'承認':newStatus==='rejected'?'却下':'差し戻し';
         showToast(`✓ ${label}しました`);

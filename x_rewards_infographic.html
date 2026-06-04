@@ -309,6 +309,17 @@
     body{padding:20px 12px 40px}
     .rules{grid-template-columns:1fr}
   }
+  #retro-bgm{display:none}
+  #bgm-unlock{
+    position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+    background:linear-gradient(135deg,#5fd6ff,#5b8cff);
+    color:#fff;border:1px solid rgba(255,255,255,.35);
+    border-radius:999px;padding:10px 18px;font-size:13px;font-weight:800;
+    letter-spacing:.04em;cursor:pointer;z-index:20;
+    box-shadow:0 6px 22px rgba(95,160,255,.45);
+  }
+  #bgm-unlock.hidden{display:none}
+  body.embed #retro-bgm,body.embed #bgm-unlock{display:none!important}
 </style>
 </head>
 <body>
@@ -453,5 +464,62 @@
   </section>
 
 </div>
+<audio id="retro-bgm" loop preload="auto" playsinline></audio>
+<button id="bgm-unlock" type="button">🔊 BGMをオンにする</button>
+<script>
+  const isEmbed=new URLSearchParams(location.search).get('embed')==='1';
+  if(isEmbed)document.body.classList.add('embed');
+  else{
+    const retroBgm=document.getElementById('retro-bgm');
+    const bgmUnlockBtn=document.getElementById('bgm-unlock');
+    const bases=[
+      'https://motomune.github.io/IGNIS-city/',
+      'https://raw.githubusercontent.com/motomune/IGNIS-city/main/'
+    ];
+    const candidates=['レトロゲームBGM.mp3','レトロゲームbgm.mp3','retro-game-bgm.mp3'];
+    const urls=[];
+    const seen=new Set();
+    candidates.forEach(f=>{
+      const enc=encodeURIComponent(f);
+      bases.forEach(b=>{
+        const u=b+enc;
+        if(!seen.has(u)){seen.add(u);urls.push(u);}
+      });
+    });
+    let sourceIdx=0;
+    let bgmStarted=false;
+    function setNextSource(){
+      if(sourceIdx>=urls.length)return false;
+      retroBgm.src=urls[sourceIdx++];
+      return true;
+    }
+    async function startRetroBgm(){
+      if(bgmStarted)return true;
+      while(setNextSource()){
+        try{
+          retroBgm.volume=0.65;
+          await retroBgm.play();
+          bgmStarted=true;
+          bgmUnlockBtn.classList.add('hidden');
+          return true;
+        }catch(e){}
+      }
+      return false;
+    }
+    retroBgm.addEventListener('error',()=>{
+      if(bgmStarted)return;
+      if(setNextSource())retroBgm.play().then(()=>{
+        bgmStarted=true;
+        bgmUnlockBtn.classList.add('hidden');
+      }).catch(()=>{});
+    });
+    bgmUnlockBtn.addEventListener('click',()=>{startRetroBgm();});
+    document.addEventListener('pointerdown',()=>{startRetroBgm();},{once:true,passive:true});
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden)return;
+      if(!bgmStarted)startRetroBgm();
+    });
+  }
+</script>
 </body>
 </html>

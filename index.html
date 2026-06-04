@@ -1331,7 +1331,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v61';
+    const IGNIS_BUILD='2026-06-04-v62';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -3802,52 +3802,91 @@
     }
     function applyProfileI18n(){
       const isJa=currentLang==='ja';
-      const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=isJa?ja:en;};
-      const setHtml=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.innerHTML=isJa?ja:en;};
-      set('profile-title',isJa?'🏢 ビルプロフィール申請':'🏢 Building Profile');
-      set('profile-subtitle',isJa?'格言と過去の記録を申請できます':'Apply a motto and your past story');
-      set('profile-motto-label',isJa?'💬 格言（ビルの壁に縦表示）':'💬 Motto (shown vertically on the building)');
-      set('profile-motto-limit',isJa?'最大30文字':'Max 30 characters');
-      setHtml('profile-motto-ban',
-        '※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・ビジネス宣伝・勧誘',
-        '※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, business ads, or solicitation');
-      set('profile-s1-title',isJa?'① 何を失いましたか？（複数選択可）':'① What did you lose? (multi-select)');
-      set('profile-s2-title',isJa?'② 何を得ましたか？または得ようとしていますか？（複数選択可）':'② What did you gain or are pursuing? (multi-select)');
-      set('profile-s3-title',isJa?'③ 背景と経緯の詳細（300文字以内）':'③ Background & story (max 300 chars)');
-      set('profile-s3-hint',isJa?"①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください":"Based on ①②, describe what happened, what you did next, and hardships");
+      const L=isJa?{
+        profileTitle:'🏢 ビルプロフィール申請',
+        profileSubtitle:'格言と過去の記録を申請できます',
+        profileMottoLabel:'💬 格言（ビルの壁に縦表示）',
+        profileMottoLimit:'最大30文字',
+        profileMottoBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・ビジネス宣伝・勧誘',
+        profileS1:'① 何を失いましたか？（複数選択可）',
+        profileS2:'② 何を得ましたか？または得ようとしていますか？（複数選択可）',
+        profileS3:'③ 背景と経緯の詳細（300文字以内）',
+        profileS3Hint:'①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください',
+        profileS4:'④ 読者に伝えたいこと',
+        profileS4Opt:'（任意・50文字以内）',
+        profileInputBan:'※ <strong>入力禁止</strong>：会社名・屋号などビジネスがわかる表記／ビジネス宣伝／勧誘・募集などの案内',
+        profileApproval:'📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます',
+        mottoPh:'皆さんに伝えたい一言...',
+        detailPh:'背景・経緯・取り組み・苦労まで...',
+        messagePh:'書かなくても申請できます（任意）',
+        otherPh:'その他の内容を入力（15文字以内）',
+        otherUnit:'15文字',
+        submit:'申請する',
+        skip:'スキップ',
+        mottoBtn:'💬 格言・過去詳細を申請'
+      }:{
+        profileTitle:'🏢 Building Profile',
+        profileSubtitle:'Apply a motto and your past story',
+        profileMottoLabel:'💬 Motto (shown vertically on the building)',
+        profileMottoLimit:'Max 30 characters',
+        profileMottoBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, business ads, or solicitation',
+        profileS1:'① What did you lose? (multi-select)',
+        profileS2:'② What did you gain or are pursuing? (multi-select)',
+        profileS3:'③ Background & story (max 300 chars)',
+        profileS3Hint:'Based on ①②, describe what happened, what you did next, and hardships',
+        profileS4:'④ Message to readers',
+        profileS4Opt:' (optional, max 50 chars)',
+        profileInputBan:'※ <strong>Do not enter</strong>: business-identifying names, ads, or solicitation/recruitment',
+        profileApproval:'📋 <strong>Note</strong>: An admin will review your submission. You will be notified when approved or rejected.',
+        mottoPh:'A message for everyone...',
+        detailPh:'Background, story, efforts, hardships...',
+        messagePh:'Optional — you can submit without this',
+        otherPh:'Other (max 15 characters)',
+        otherUnit:'15 chars',
+        submit:'Submit',
+        skip:'Skip',
+        mottoBtn:'💬 Apply Motto / Past'
+      };
+      const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+      const setH=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
+      setT('profile-title',L.profileTitle);
+      setT('profile-subtitle',L.profileSubtitle);
+      setT('profile-motto-label',L.profileMottoLabel);
+      setT('profile-motto-limit',L.profileMottoLimit);
+      setH('profile-motto-ban',L.profileMottoBan);
+      setT('profile-s1-title',L.profileS1);
+      setT('profile-s2-title',L.profileS2);
+      setT('profile-s3-title',L.profileS3);
+      setT('profile-s3-hint',L.profileS3Hint);
       const s4opt=document.getElementById('profile-s4-optional');
-      if(s4opt)s4opt.textContent=isJa?'（任意・50文字以内）':' (optional, max 50 chars)';
-      set('profile-s4-title',isJa?'④ 読者に伝えたいこと':'④ Message to readers');
-      setHtml('profile-input-ban-note',
-        '※ <strong>入力禁止</strong>：会社名・屋号などビジネスがわかる表記／ビジネス宣伝／勧誘・募集などの案内',
-        '※ <strong>Do not enter</strong>: business-identifying names, ads, or solicitation/recruitment');
-      setHtml('profile-approval-note',
-        '📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます',
-        '📋 <strong>Note</strong>: An admin will review your submission. You will be notified when approved or rejected.');
+      if(s4opt)s4opt.textContent=L.profileS4Opt;
+      setT('profile-s4-title',L.profileS4);
+      setH('profile-input-ban-note',L.profileInputBan);
+      setH('profile-approval-note',L.profileApproval);
       const mottoIn=document.getElementById('profile-motto-input');
-      if(mottoIn)mottoIn.placeholder=isJa?'皆さんに伝えたい一言...':'A message for everyone...';
+      if(mottoIn)mottoIn.placeholder=L.mottoPh;
       const detailIn=document.getElementById('profile-detail-input');
-      if(detailIn)detailIn.placeholder=isJa?'背景・経緯・取り組み・苦労まで...':'Background, story, efforts, hardships...';
+      if(detailIn)detailIn.placeholder=L.detailPh;
       const msgIn=document.getElementById('profile-message-input');
-      if(msgIn)msgIn.placeholder=isJa?'書かなくても申請できます（任意）':'Optional — you can submit without this';
+      if(msgIn)msgIn.placeholder=L.messagePh;
       ['lost','gained'].forEach(k=>{
         const inp=document.getElementById(`chips-${k}-other-input`);
-        if(inp)inp.placeholder=isJa?'その他の内容を入力（15文字以内）':'Other (max 15 characters)';
+        if(inp)inp.placeholder=L.otherPh;
         const ctr=document.getElementById(`chips-${k}-other-counter`);
         const hint=document.querySelector(`#chips-${k}-other-wrap .profile-other-hint`);
         if(ctr&&hint){
           const n=ctr.textContent||'0';
-          hint.innerHTML=`<span id="chips-${k}-other-counter">${n}</span>/${isJa?'15文字':'15 chars'}`;
+          hint.innerHTML='<span id="chips-'+k+'-other-counter">'+n+'</span>/'+L.otherUnit;
         }
       });
       const submitBtn=document.getElementById('profile-submit-btn');
       if(submitBtn&&!submitBtn.disabled&&submitBtn.textContent!=='申請中...'&&submitBtn.textContent!=='Submitting...'){
-        submitBtn.textContent=isJa?'申請する':'Submit';
+        submitBtn.textContent=L.submit;
       }
-      set('profile-skip-btn',isJa?'スキップ':'Skip');
+      setT('profile-skip-btn',L.skip);
       const mottoBtn=document.getElementById('building-motto-btn');
       if(mottoBtn&&mottoBtn.style.display!=='none'){
-        mottoBtn.textContent=isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past';
+        mottoBtn.textContent=L.mottoBtn;
       }
       if(document.getElementById('profile-modal')?.classList.contains('open')){
         const lostSel=getSelectedChips('chips-lost');

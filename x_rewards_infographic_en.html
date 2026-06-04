@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>X Engagement Coin Reward System</title>
+<title>X Coin Rewards — IGNIS CITY</title>
 <style>
   :root{
     --bg-0:#000000;
@@ -23,7 +23,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
-    font-family:"Segoe UI","Helvetica Neue",sans-serif;
+    font-family:"Segoe UI","Noto Sans JP","Hiragino Sans",sans-serif;
     color:var(--text);
     background:
       radial-gradient(1200px 600px at 50% -10%, rgba(60,110,220,.20), transparent 60%),
@@ -33,6 +33,7 @@
     padding:32px 20px 56px;
     overflow-x:hidden;
   }
+  /* decorative animated grid + particles */
   body::before{
     content:"";
     position:fixed;inset:0;
@@ -45,6 +46,8 @@
     z-index:0;
   }
   .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto}
+
+  /* floating particles */
   .particles{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
   .particles i{
     position:absolute;width:4px;height:4px;border-radius:50%;
@@ -60,6 +63,7 @@
   .particles i:nth-child(7){left:38%;top:80%;animation-delay:2.6s}
   .particles i:nth-child(8){left:60%;top:40%;animation-delay:.3s}
 
+  /* ===== HERO ===== */
   .hero{text-align:center;margin-bottom:30px;animation:fadeUp .8s ease both}
   .hero .eyebrow{
     display:inline-flex;align-items:center;gap:8px;
@@ -83,7 +87,9 @@
   }
   .hero .lead b{color:var(--gold)}
 
+  /* ===== MAIN GRID ===== */
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}
+
   .card{
     position:relative;border-radius:20px;padding:26px 24px 24px;
     background:var(--panel);
@@ -101,12 +107,15 @@
   }
   .card.repost{animation-delay:.1s}
   .card.reply{animation-delay:.2s}
+  /* glowing top accent line + travelling sheen */
   .card::before{
     content:"";position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,transparent,var(--accent,var(--cyan)),transparent);
-    opacity:.95;background-size:200% 100%;
+    opacity:.95;
+    background-size:200% 100%;
     animation:sheen 3.5s linear infinite;
   }
+  /* corner glow */
   .card::after{
     content:"";position:absolute;width:240px;height:240px;border-radius:50%;
     top:-120px;right:-80px;
@@ -125,7 +134,9 @@
     box-shadow:0 0 22px -6px var(--accent), inset 0 0 18px -10px var(--accent);
   }
   .card-head h2{font-size:clamp(20px,3vw,26px);font-weight:800;letter-spacing:.01em}
-  .reward{display:flex;align-items:baseline;gap:8px;margin:14px 0 4px;}
+  .reward{
+    display:flex;align-items:baseline;gap:8px;margin:14px 0 4px;
+  }
   .reward .num{
     font-size:clamp(38px,6vw,54px);font-weight:900;line-height:1;
     background:linear-gradient(180deg,#fff0c2,var(--gold) 40%,var(--gold-deep));
@@ -151,6 +162,7 @@
     color:var(--accent);margin-bottom:12px;text-transform:uppercase;font-weight:700;
   }
 
+  /* timeline for repost */
   .timeline{position:relative;padding:6px 4px 2px}
   .timeline .track{
     position:relative;height:6px;border-radius:6px;margin:30px 0 6px;
@@ -179,6 +191,7 @@
     border-radius:999px;padding:5px 10px;
   }
 
+  /* flow for reply */
   .flow{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
   .pill{
     font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:10px;
@@ -193,6 +206,7 @@
   }
   .arrow{color:var(--cyan);font-weight:800;font-size:14px}
 
+  /* reply tables */
   .reply-table{display:flex;flex-direction:column;gap:12px}
   .reply-row{
     border:1px solid rgba(95,214,255,.35);border-radius:14px;padding:13px 14px;
@@ -224,6 +238,7 @@
   .points li.no .ic{color:#ff8b8b}
   .coins-row{display:flex;gap:4px;font-size:22px;margin-top:14px;filter:drop-shadow(0 4px 6px rgba(255,170,40,.35))}
 
+  /* ===== COMMON RULES ===== */
   .common{
     border-radius:20px;padding:26px 24px;
     background:linear-gradient(160deg,rgba(18,28,52,.8),rgba(12,20,40,.8));
@@ -250,6 +265,7 @@
   .rule .rd{font-size:12.5px;color:var(--muted);line-height:1.5}
   .rule .rd b{color:var(--gold)}
 
+  /* ===== KEY POINTS FOOTER ===== */
   .keys{
     margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
     animation:fadeUp .8s ease both;animation-delay:.4s;
@@ -268,78 +284,104 @@
   .key p{font-size:14px;line-height:1.55;color:#dceaff}
   .key p b{color:var(--gold)}
 
+  /* ===== animations ===== */
   @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
   @keyframes sheen{0%{background-position:200% 0}100%{background-position:-200% 0}}
   @keyframes float-dot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-18px);opacity:1}}
-  @keyframes run{0%{left:0%}40%{left:50%}55%{left:75%}100%{left:100%}}
-  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
-  @media(max-width:880px){
+  @keyframes run{
+    0%{left:0%}
+    40%{left:50%}
+    55%{left:75%}
+    100%{left:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important}
+  }
+
+  /* ===== responsive ===== */
+  @media (max-width:880px){
     .grid{grid-template-columns:1fr}
     .rules{grid-template-columns:repeat(2,1fr)}
     .keys{grid-template-columns:1fr}
   }
-  @media(max-width:480px){
+  @media (max-width:480px){
     body{padding:20px 12px 40px}
     .rules{grid-template-columns:1fr}
   }
+  #retro-bgm{display:none}
+  #bgm-unlock{
+    position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+    background:linear-gradient(135deg,#5fd6ff,#5b8cff);
+    color:#fff;border:1px solid rgba(255,255,255,.35);
+    border-radius:999px;padding:10px 18px;font-size:13px;font-weight:800;
+    letter-spacing:.04em;cursor:pointer;z-index:20;
+    box-shadow:0 6px 22px rgba(95,160,255,.45);
+  }
+  #bgm-unlock.hidden{display:none}
+  body.embed #retro-bgm,body.embed #bgm-unlock{display:none!important}
 </style>
 </head>
 <body>
 <div class="particles"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 <div class="wrap">
 
+  <!-- HERO -->
   <header class="hero">
     <span class="eyebrow"><span class="dot"></span>IGNIS CITY × X REWARDS</span>
-    <h1>X Engagement Coin Rewards</h1>
-    <p class="lead">React to the founder's <b>X posts</b> and earn <b>exclusive coins</b>.<br>Two reward types: "Repost / Quote" and "Reply".</p>
+    <h1>X Coin Reward System</h1>
+    <p class="lead">React to the founder's <b>X posts</b> to earn <b>exclusive coins</b>.<br>Two reward types: <b>reposts/quotes</b> and <b>replies</b>.</p>
   </header>
 
+  <!-- MAIN PANELS -->
   <section class="grid">
 
+    <!-- REPOST CARD -->
     <article class="card repost">
       <div class="card-head">
         <div class="icon-badge">🔁</div>
-        <h2>Repost · Quote Repost</h2>
+        <h2>Repost &amp; Quote Repost</h2>
       </div>
       <div class="reward"><span class="num">+15</span><span class="unit">coins / post</span></div>
-      <p class="mini">Up to <b style="color:var(--gold)">1 reward</b> per founder post (delete → repost = still counts once)</p>
+      <p class="mini">Max <b style="color:var(--gold)">once</b> per founder post (delete &amp; repost again does not count)</p>
 
       <div class="block">
-        <span class="label">⏱ Eligibility Window</span>
+        <span class="label">⏱ When rewards are counted</span>
         <div class="timeline">
           <div class="track">
             <div class="window"></div>
             <div class="runner"></div>
           </div>
           <div class="marks">
-            <span><b>Hour 0</b>Post published</span>
-            <span><b>Hour 24</b>Eligible from</span>
-            <span><b>Hour 48</b>Window closes</span>
+            <span><b>Hour 0</b>Post goes live</span>
+            <span><b>Hour 24</b>Eligible window opens</span>
+            <span><b>Hour 48</b>Window ends</span>
           </div>
-          <div class="win-note">Eligible: 24h+ after your repost ✓</div>
+          <div class="win-note">Eligible after +24h from your repost ✓</div>
         </div>
       </div>
 
       <ul class="points">
-        <li><span class="ic">✓</span><span>Founder post within <b style="color:var(--gold)">48h</b> AND your repost/quote <b style="color:var(--gold)">24h+ ago</b></span></li>
-        <li class="no"><span class="ic">✕</span><span>Reposting the same post multiple times does not stack (delete + repost also counts only once)</span></li>
+        <li><span class="ic">✓</span><span>Founder post must be within <b style="color:var(--gold)">48 hours</b>, and your repost/quote must be at least <b style="color:var(--gold)">24 hours</b> old</span></li>
+        <li class="no"><span class="ic">✕</span><span>No double rewards for multiple reposts on the same post (delete &amp; repost again is invalid)</span></li>
       </ul>
       <div class="coins-row">🪙🪙🪙</div>
     </article>
 
+    <!-- REPLY CARD -->
     <article class="card reply">
       <div class="card-head">
         <div class="icon-badge">💬</div>
-        <h2>Reply (Conversation Turn)</h2>
+        <h2>Replies (conversation turns)</h2>
       </div>
       <div class="reward"><span class="num">+10</span><span class="unit">coins / your reply</span></div>
-      <p class="mini"><b style="color:var(--gold)">+10 per reply</b>. Consecutive replies without founder's response count as <b style="color:var(--gold)">one turn</b>.</p>
+      <p class="mini"><b style="color:var(--gold)">+10</b> per qualifying reply. <b style="color:var(--gold)">Consecutive replies</b> from you count as one turn only.</p>
 
       <div class="reply-table">
 
+        <!-- Pattern A: alternating -->
         <div class="reply-row">
-          <div class="row-head"><span class="badge">TURN</span>Back-and-forth (reward per your reply)</div>
+          <div class="row-head"><span class="badge">Alternating</span>Back-and-forth (reward per your reply)</div>
           <div class="flow">
             <span class="pill">Founder post</span><span class="arrow">→</span>
             <span class="pill you">Your reply</span><span class="arrow">→</span>
@@ -348,76 +390,134 @@
             <span class="pill you">Your reply</span><span class="arrow">→</span>
             <span class="pill win">+10</span>
           </div>
-          <span class="turn-tag">When founder replies in between, <b>each of your replies earns +10</b></span>
+          <span class="turn-tag">When the founder replies between yours, <b>each of your replies earns +10</b></span>
         </div>
 
+        <!-- Pattern B: consecutive -->
         <div class="reply-row">
-          <div class="row-head"><span class="badge">CONSEC.</span>Consecutive replies = 1 turn only</div>
+          <div class="row-head"><span class="badge">Burst</span>Consecutive replies = one turn</div>
           <div class="flow">
             <span class="pill">Founder post</span><span class="arrow">→</span>
             <span class="pill you">Your reply</span><span class="arrow">→</span>
             <span class="pill you">Your reply</span><span class="arrow">→</span>
             <span class="pill you">Your reply</span><span class="arrow">→</span>
-            <span class="pill win">+10 (once only)</span>
+            <span class="pill win">+10 (once)</span>
           </div>
-          <span class="turn-tag">Multiple replies without founder in between = <b>+10 total only</b></span>
+          <span class="turn-tag">Multiple replies in a row without the founder in between: <b>+10 total only</b></span>
         </div>
 
       </div>
 
       <ul class="points">
-        <li><span class="ic">✓</span><span>Alternating turns with the founder: each of <b style="color:var(--gold)">your replies earns +10</b></span></li>
-        <li class="no"><span class="ic">✕</span><span>Consecutive replies without founder's response count as <b style="color:#ff8b8b">one turn</b> (no double counting)</span></li>
+        <li><span class="ic">✓</span><span>Each alternating turn with the founder: <b style="color:var(--gold)">+10</b> per your reply</span></li>
+        <li class="no"><span class="ic">✕</span><span><b style="color:#ff8b8b">Consecutive</b> replies without the founder between count as one turn (no stacking)</span></li>
       </ul>
       <div class="coins-row">🪙🪙🪙</div>
     </article>
 
   </section>
 
+  <!-- COMMON RULES -->
   <section class="common">
     <div class="common-head">
       <span class="tag">COMMON</span>
-      <h3>Common Rules</h3>
+      <h3>Common rules</h3>
     </div>
     <div class="rules">
       <div class="rule">
         <span class="emoji">🚀</span>
-        <div class="rt">Launch Date</div>
-        <div class="rd">Only posts from <b>launch day onward</b> are eligible</div>
+        <div class="rt">Since launch</div>
+        <div class="rd">Only posts from <b>launch day onward</b> qualify</div>
       </div>
       <div class="rule">
         <span class="emoji">⏰</span>
-        <div class="rt">Auto Batch</div>
-        <div class="rd">Daily batch at <b>8:00 / 20:00 JST</b></div>
+        <div class="rt">Auto tally</div>
+        <div class="rd">Counted daily at <b>8:00 / 20:00 JST</b></div>
       </div>
       <div class="rule">
         <span class="emoji">🎬</span>
-        <div class="rt">48-Hour Rule</div>
-        <div class="rd">After <b>48h</b> from the founder's post, no new rewards for that post</div>
+        <div class="rt">48-hour rule</div>
+        <div class="rd">After <b>48 hours</b> from the founder's latest post, that post is no longer eligible for new rewards</div>
       </div>
       <div class="rule">
         <span class="emoji">💎</span>
-        <div class="rt">Coins Kept</div>
-        <div class="rd"><b>Already-earned coins</b> are never removed</div>
+        <div class="rt">Coins kept</div>
+        <div class="rd"><b>Coins you already earned</b> stay in your balance</div>
       </div>
     </div>
   </section>
 
+  <!-- KEY POINTS -->
   <section class="keys">
     <div class="key">
       <div class="n">1</div>
-      <p>Reposts: <b>+15 coins per founder post</b>, once only.</p>
+      <p>Reposts/quotes: <b>+15 once per post</b>.</p>
     </div>
     <div class="key">
       <div class="n">2</div>
-      <p>Replies: <b>+10 coins per turn</b> (consecutive = one turn).</p>
+      <p>Replies: <b>+10 per turn</b> (bursts count as one).</p>
     </div>
     <div class="key">
       <div class="n">3</div>
-      <p>Eligible window: up to <b>48h after the founder's post</b>.</p>
+      <p>Eligible window: <b>48 hours</b> from the founder's post.</p>
     </div>
   </section>
 
 </div>
+<audio id="retro-bgm" loop preload="auto" playsinline></audio>
+<button id="bgm-unlock" type="button">🔊 Turn on BGM</button>
+<script>
+  const isEmbed=new URLSearchParams(location.search).get('embed')==='1';
+  if(isEmbed)document.body.classList.add('embed');
+  else{
+    const retroBgm=document.getElementById('retro-bgm');
+    const bgmUnlockBtn=document.getElementById('bgm-unlock');
+    const bases=[
+      'https://motomune.github.io/IGNIS-city/',
+      'https://raw.githubusercontent.com/motomune/IGNIS-city/main/'
+    ];
+    const retroFile='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
+    const enc=encodeURIComponent(retroFile);
+    const urls=[];
+    const seen=new Set();
+    bases.forEach(b=>{
+      const u=b+enc;
+      if(!seen.has(u)){seen.add(u);urls.push(u);}
+    });
+    let sourceIdx=0;
+    let bgmStarted=false;
+    function setNextSource(){
+      if(sourceIdx>=urls.length)return false;
+      retroBgm.src=urls[sourceIdx++];
+      return true;
+    }
+    async function startRetroBgm(){
+      if(bgmStarted)return true;
+      while(setNextSource()){
+        try{
+          retroBgm.volume=0.65;
+          await retroBgm.play();
+          bgmStarted=true;
+          bgmUnlockBtn.classList.add('hidden');
+          return true;
+        }catch(e){}
+      }
+      return false;
+    }
+    retroBgm.addEventListener('error',()=>{
+      if(bgmStarted)return;
+      if(setNextSource())retroBgm.play().then(()=>{
+        bgmStarted=true;
+        bgmUnlockBtn.classList.add('hidden');
+      }).catch(()=>{});
+    });
+    bgmUnlockBtn.addEventListener('click',()=>{startRetroBgm();});
+    document.addEventListener('pointerdown',()=>{startRetroBgm();},{once:true,passive:true});
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden)return;
+      if(!bgmStarted)startRetroBgm();
+    });
+  }
+</script>
 </body>
 </html>

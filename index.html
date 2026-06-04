@@ -769,6 +769,13 @@
     #building-modal-notes-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
     /* 3D格言ラベル */
     .motto-pending-badge { display:inline-block;font-size:10px;background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);color:rgba(255,165,0,0.8);padding:2px 8px;border-radius:6px;margin-left:6px; }
+    #building-modal-past { margin:12px 0;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;display:none; }
+    .bm-past-title { font-size:11px;font-weight:800;color:rgba(255,255,255,0.45);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
+    .bm-past-label { font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin:8px 0 4px; }
+    .bm-past-chips { display:flex;flex-wrap:wrap;gap:5px; }
+    .bm-past-chip { font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.75); }
+    .bm-past-text { font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;white-space:pre-wrap;margin-top:4px; }
+    .bm-past-locked { margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(96,165,250,0.08);border:1px dashed rgba(96,165,250,0.35);font-size:11px;color:rgba(147,197,253,0.85);line-height:1.5; }
     /* スマホ・タブレット */
     @media (max-width: 768px) {
       #header {
@@ -981,7 +988,23 @@
         <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
       <div id="building-modal-motto"></div>
-      <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
+      <div id="building-modal-past">
+        <div class="bm-past-title">📖 過去詳細 <span id="bm-past-status" class="motto-pending-badge" style="display:none;"></span></div>
+        <div class="bm-past-label" id="bml-past-lost">① 失ったもの</div>
+        <div id="bm-past-lost" class="bm-past-chips"></div>
+        <div class="bm-past-label" id="bml-past-gained">② 得たもの・得ようとしているもの</div>
+        <div id="bm-past-gained" class="bm-past-chips"></div>
+        <div id="bm-past-detail-wrap" style="display:none;">
+          <div class="bm-past-label" id="bml-past-detail">③ 詳細</div>
+          <div id="bm-past-detail" class="bm-past-text"></div>
+        </div>
+        <div id="bm-past-message-wrap" style="display:none;">
+          <div class="bm-past-label" id="bml-past-message">④ 読者へのメッセージ</div>
+          <div id="bm-past-message" class="bm-past-text"></div>
+        </div>
+        <div id="bm-past-locked" class="bm-past-locked" style="display:none;"></div>
+      </div>
+      <div id="building-modal-notes" style="display:none;"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
       <button id="building-motto-btn" type="button" onclick="openProfileFromBuildingModal()" style="display:none;">💬 格言・過去詳細を申請</button>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
@@ -1169,7 +1192,7 @@
     <div id="profile-box">
       <button id="profile-modal-close" onclick="closeProfileModal()">×</button>
       <div id="profile-title">🏢 ビルプロフィール申請</div>
-      <div id="profile-subtitle">格言と過去の記録を申請できます（IGNIS Rank 2 以上）</div>
+      <div id="profile-subtitle">格言と過去の記録を申請できます</div>
       <div class="custom-label">💬 格言（ビルの壁に縦表示）</div>
       <div id="profile-motto-limit">最大30文字</div>
       <textarea class="profile-textarea" id="profile-motto-input" rows="2" maxlength="30" placeholder="皆さんに伝えたい一言..."></textarea>
@@ -1281,7 +1304,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v57';
+    const IGNIS_BUILD='2026-06-04-v58';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -3099,7 +3122,7 @@
       try{
         if(!usernameOverride){
           const{data}=await withTimeout(
-            db.from('users').select('username,x_username,coin_column,rank,bench_employees').eq('id',user.id).single(),
+            db.from('users').select('username,x_username,coin_column,rank,bench_employees,is_subscribed').eq('id',user.id).single(),
             8000,'loadUserProfile'
           );
           if(data){
@@ -3107,15 +3130,17 @@
             document.getElementById('coin-count').textContent=data.coin_column||0;
             currentUser.rank=data.rank||1;
             currentUser.benchEmployees=data.bench_employees||0;
+            currentUser.isSubscribed=!!data.is_subscribed;
           }
         }else{
           const{data:rd}=await withTimeout(
-            db.from('users').select('rank,bench_employees,coin_column').eq('id',user.id).single(),
+            db.from('users').select('rank,bench_employees,coin_column,is_subscribed').eq('id',user.id).single(),
             6000,'loadUserRank'
           );
           if(rd){
             currentUser.rank=rd.rank||1;
             currentUser.benchEmployees=rd.bench_employees||0;
+            currentUser.isSubscribed=!!rd.is_subscribed;
             if(rd.coin_column!=null)document.getElementById('coin-count').textContent=rd.coin_column;
           }
         }
@@ -3768,24 +3793,13 @@
       document.getElementById('profile-motto-counter').textContent='0';
       document.getElementById('profile-detail-counter').textContent='0';
       document.getElementById('profile-message-counter').textContent='0';
-      const rank=(currentUser&&currentUser.rank)||1;
       const submitBtn=document.getElementById('profile-submit-btn');
       const noteEl=document.getElementById('profile-approval-note');
-      const allInputs=document.querySelectorAll('#profile-box textarea');
-      const chipEls=document.querySelectorAll('#profile-box .profile-chip');
-      if(rank<2){
-        allInputs.forEach(el=>{el.disabled=true;});
-        chipEls.forEach(el=>{el.style.pointerEvents='none';el.style.opacity='0.4';});
-        submitBtn.disabled=true;submitBtn.style.opacity='0.35';
-        submitBtn.textContent='🔒 Rank 2 以上で申請可能';
-        noteEl.innerHTML=`現在のRank: <b style="color:#ff6a00">${rank}</b> ／ Rank 2に上げると申請できます`;
-      } else {
-        allInputs.forEach(el=>{el.disabled=false;});
-        chipEls.forEach(el=>{el.style.pointerEvents='';el.style.opacity='';});
-        submitBtn.disabled=false;submitBtn.style.opacity='1';
-        submitBtn.textContent='申請する';
-        noteEl.textContent='※ 管理者の確認後、承認で公開・却下時は通知が届きます';
-      }
+      document.querySelectorAll('#profile-box textarea').forEach(el=>{el.disabled=false;});
+      document.querySelectorAll('#profile-box .profile-chip').forEach(el=>{el.style.pointerEvents='';el.style.opacity='';});
+      submitBtn.disabled=false;submitBtn.style.opacity='1';
+      submitBtn.textContent='申請する';
+      noteEl.textContent='※ 管理者の確認後、承認で公開・却下時は通知が届きます';
       document.getElementById('profile-modal').classList.add('open');
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
@@ -4210,6 +4224,99 @@
       return land&&land.owner_id?land.owner_id:null;
     }
     let currentModalBuilding=null;
+    const VIEW_CHIP_LABELS={money:'お金',trust:'信用',friend:'友人',partner:'恋人',family:'家族',health:'健康',workplace:'職場の居場所',other:'その他'};
+    function renderPastChips(containerId,arr){
+      const el=document.getElementById(containerId);
+      if(!el)return;
+      if(!arr||!arr.length){el.innerHTML='<span style="font-size:11px;color:rgba(255,255,255,0.3);">—</span>';return;}
+      el.innerHTML=arr.map(v=>`<span class="bm-past-chip">${VIEW_CHIP_LABELS[v]||v}</span>`).join('');
+    }
+    function clearBuildingPastModal(){
+      const pastEl=document.getElementById('building-modal-past');
+      if(pastEl)pastEl.style.display='none';
+      renderPastChips('bm-past-lost',[]);
+      renderPastChips('bm-past-gained',[]);
+      ['bm-past-detail-wrap','bm-past-message-wrap','bm-past-locked'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+      const st=document.getElementById('bm-past-status');if(st)st.style.display='none';
+    }
+    async function loadBuildingPastDetails(bx,bz,isOwn){
+      clearBuildingPastModal();
+      if(!db||!currentUser)return;
+      const pastEl=document.getElementById('building-modal-past');
+      const isJa=currentLang==='ja';
+      try{
+        let lost=[],gained=[],detail='',message='',status='';
+        let showDetail=false,showLock=false;
+        if(isOwn){
+          const{data:row,error}=await db.from('building_past_details')
+            .select('lost_items,gained_items,background_detail,current_positive,status')
+            .eq('building_x',bx).eq('building_z',bz).maybeSingle();
+          if(error)throw error;
+          if(!row)return;
+          status=row.status||'';
+          if(status!=='approved'&&status!=='pending')return;
+          lost=row.lost_items||[];
+          gained=row.gained_items||[];
+          detail=row.background_detail||'';
+          message=row.current_positive||'';
+          showDetail=true;
+        }else{
+          const{data:preview,error:pErr}=await db.rpc('get_past_detail_preview',{bx,bz});
+          if(pErr)throw pErr;
+          if(!preview)return;
+          lost=preview.lost_items||[];
+          gained=preview.gained_items||[];
+          if(currentUser.isSubscribed){
+            const{data:full,error:fErr}=await db.rpc('get_past_detail_full',{bx,bz});
+            if(!fErr&&full&&!full.error){
+              detail=full.background_detail||'';
+              message=full.current_positive||'';
+              showDetail=true;
+            }
+          }else{
+            showLock=true;
+          }
+        }
+        const has12=lost.length||gained.length;
+        const has34=detail||message;
+        if(!has12&&!has34&&!showLock)return;
+        pastEl.style.display='block';
+        renderPastChips('bm-past-lost',lost);
+        renderPastChips('bm-past-gained',gained);
+        const statusEl=document.getElementById('bm-past-status');
+        if(statusEl){
+          if(isOwn&&status==='pending'){
+            statusEl.textContent=isJa?'審査中':'Pending';
+            statusEl.style.display='inline-block';
+          }else{statusEl.style.display='none';}
+        }
+        const detailWrap=document.getElementById('bm-past-detail-wrap');
+        const msgWrap=document.getElementById('bm-past-message-wrap');
+        const lockedEl=document.getElementById('bm-past-locked');
+        if(showDetail){
+          if(detailWrap){
+            detailWrap.style.display=detail?'block':'none';
+            const dEl=document.getElementById('bm-past-detail');
+            if(dEl)dEl.textContent=detail;
+          }
+          if(msgWrap){
+            msgWrap.style.display=message?'block':'none';
+            const mEl=document.getElementById('bm-past-message');
+            if(mEl)mEl.textContent=message;
+          }
+          if(lockedEl)lockedEl.style.display='none';
+        }else if(showLock){
+          if(detailWrap)detailWrap.style.display='none';
+          if(msgWrap)msgWrap.style.display='none';
+          if(lockedEl){
+            lockedEl.style.display='block';
+            lockedEl.textContent=isJa
+              ?'③ 詳細・④ 読者へのメッセージはサブスク会員のみ閲覧できます'
+              :'Sections ③–④ are available to subscribers only';
+          }
+        }
+      }catch(e){console.warn('loadBuildingPastDetails',e.message);}
+    }
     function openBuildingModal(buildingData){
       currentModalBuilding=buildingData;
       const ownerId=getBuildingOwnerId(buildingData);
@@ -4237,16 +4344,13 @@
       const assignBtn=document.getElementById('building-assign-btn');
       const mottoBtn=document.getElementById('building-motto-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
-      const userRank=(currentUser&&currentUser.rank)||1;
       if(mottoBtn){
         if(isOwnLand&&currentUser){
           mottoBtn.style.display='block';
           mottoBtn.hidden=false;
           mottoBtn.disabled=false;
           mottoBtn.style.opacity='1';
-          mottoBtn.textContent=userRank<2
-            ?(isJa?'💬 格言・過去詳細を申請（Rank 2以上）':'💬 Motto / Past (Rank 2+)')
-            :(isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past');
+          mottoBtn.textContent=isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past';
         }else{
           mottoBtn.style.display='none';
           mottoBtn.hidden=true;
@@ -4292,14 +4396,24 @@
         mottoEl.style.display='block';
       } else{mottoEl.style.display='none';}
       if(profile&&profile.notes_text){notesTextEl.textContent=profile.notes_text;notesEl.style.display='block';}
-      else{notesEl.style.display='none';}
+      else if(notesEl)notesEl.style.display='none';
+      clearBuildingPastModal();
+      const bmlLost=document.getElementById('bml-past-lost');if(bmlLost)bmlLost.textContent=isJa?'① 失ったもの':'① What was lost';
+      const bmlGained=document.getElementById('bml-past-gained');if(bmlGained)bmlGained.textContent=isJa?'② 得たもの・得ようとしているもの':'② Gained / pursuing';
+      const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 詳細':'③ Details';
+      const bmlMsg=document.getElementById('bml-past-message');if(bmlMsg)bmlMsg.textContent=isJa?'④ 読者へのメッセージ':'④ Message to readers';
       document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
       document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
       document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
       document.getElementById('building-modal').classList.add('open');
+      loadBuildingPastDetails(buildingData.x,buildingData.z,isOwnLand);
       recordBuildingView(buildingData);
     }
-    function closeBuildingModal(){document.getElementById('building-modal').classList.remove('open');currentModalBuilding=null;}
+    function closeBuildingModal(){
+      document.getElementById('building-modal').classList.remove('open');
+      clearBuildingPastModal();
+      currentModalBuilding=null;
+    }
     async function assignEmployeesToCurrentBuilding(){
       if(!currentUser||!currentModalBuilding||!db)return;
       const isJa=currentLang==='ja';

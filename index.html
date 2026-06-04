@@ -1331,7 +1331,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v60';
+    const IGNIS_BUILD='2026-06-04-v61';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -3797,7 +3797,7 @@
       const isJa=currentLang==='ja';
       return [
         {v:'money',l:isJa?'お金':'Money'},{v:'trust',l:isJa?'信用':'Trust'},{v:'friend',l:isJa?'友人':'Friends'},{v:'partner',l:isJa?'恋人':'Partner'},
-        {v:'family',l:isJa?'家族':'Family'},{v:'health',l:isJa?'健康':'Health'},{v:'workplace',l:isJa?'職場の居場所':'Workplace'},{v:'other',l:isJa?'その他':'Other'},
+        {v:'family',l:isJa?'家族':'Family'},{v:'health',l:isJa?'健康':'Health'},{v:'workplace',l:isJa?'職場の居場所':'Workplace'},{v:'other',l:isJa?'その他':'Other'}
       ];
     }
     function applyProfileI18n(){
@@ -3814,7 +3814,7 @@
       set('profile-s1-title',isJa?'① 何を失いましたか？（複数選択可）':'① What did you lose? (multi-select)');
       set('profile-s2-title',isJa?'② 何を得ましたか？または得ようとしていますか？（複数選択可）':'② What did you gain or are pursuing? (multi-select)');
       set('profile-s3-title',isJa?'③ 背景と経緯の詳細（300文字以内）':'③ Background & story (max 300 chars)');
-      set('profile-s3-hint',isJa?'①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください','Based on ①②, describe what happened, what you did next, and hardships');
+      set('profile-s3-hint',isJa?"①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください":"Based on ①②, describe what happened, what you did next, and hardships");
       const s4opt=document.getElementById('profile-s4-optional');
       if(s4opt)s4opt.textContent=isJa?'（任意・50文字以内）':' (optional, max 50 chars)';
       set('profile-s4-title',isJa?'④ 読者に伝えたいこと':'④ Message to readers');

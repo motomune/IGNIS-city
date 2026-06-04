@@ -22,11 +22,10 @@ BEGIN
   SELECT * INTO v_row FROM building_past_details
   WHERE building_x = bx AND building_z = bz AND status = 'approved';
   IF NOT FOUND THEN RETURN NULL; END IF;
+  -- 閲覧者向けは ①② のみ（③④は get_past_detail_full / 本人閲覧）
   RETURN jsonb_build_object(
-    'lost_items',       v_row.lost_items,
-    'gained_items',     v_row.gained_items,
-    'background_detail',v_row.background_detail,
-    'current_positive', v_row.current_positive
+    'lost_items',   v_row.lost_items,
+    'gained_items', v_row.gained_items
   );
 END;
 $$;

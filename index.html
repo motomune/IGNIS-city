@@ -764,9 +764,18 @@
     #building-sell-btn:hover { opacity:0.85; }
     #building-assign-btn { width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
     #building-assign-btn:hover { opacity:0.9; }
-    #building-motto-btn { width:100%;background:linear-gradient(135deg,rgba(255,106,0,0.9),rgba(238,9,121,0.9));color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
-    #building-motto-btn:hover { opacity:0.9; }
-    #building-motto-btn:disabled { opacity:0.45;cursor:not-allowed; }
+    @keyframes motto-btn-glow{0%,100%{box-shadow:0 0 10px rgba(255,106,0,0.45);transform:scale(1);}50%{box-shadow:0 0 22px rgba(238,9,121,0.7),0 0 36px rgba(255,106,0,0.25);transform:scale(1.015);}}
+    @keyframes motto-btn-ripple{0%{box-shadow:0 0 0 0 rgba(255,106,0,0.65);}70%{box-shadow:0 0 0 16px rgba(255,106,0,0);}100%{box-shadow:0 0 0 0 rgba(255,106,0,0);}}
+    #building-motto-btn { width:100%;background:linear-gradient(135deg,rgba(255,106,0,0.9),rgba(238,9,121,0.9));color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:transform 0.15s,opacity 0.2s;position:relative;overflow:visible; }
+    #building-motto-btn.motto-btn-attn { animation:motto-btn-glow 2.4s ease-in-out infinite; }
+    #building-motto-btn.motto-btn-ripple { animation:motto-btn-ripple 0.45s ease-out; }
+    #building-motto-btn:hover { opacity:0.92;transform:scale(1.02); }
+    #building-motto-btn:disabled { opacity:0.45;cursor:not-allowed;animation:none; }
+    #profile-entrance-flash { display:none;position:fixed;inset:0;z-index:360;pointer-events:none;background:radial-gradient(ellipse at center,rgba(255,106,0,0.28) 0%,transparent 65%); }
+    #profile-entrance-flash.show { display:block;animation:profile-flash-fade 0.65s ease-out forwards; }
+    @keyframes profile-flash-fade{0%{opacity:0;}25%{opacity:1;}100%{opacity:0;}}
+    @keyframes profile-box-in{0%{opacity:0;transform:scale(0.9) translateY(18px);}100%{opacity:1;transform:scale(1) translateY(0);}}
+    #profile-box.profile-entrance { animation:profile-box-in 0.5s cubic-bezier(0.34,1.45,0.64,1); }
     #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em;background:rgba(255,255,255,0.04); }
     #building-modal-motto.rank-5 { color:#ee0979;border-left:4px solid #ee0979;background:rgba(238,9,121,0.1); }
     #building-modal-motto.rank-4 { color:#f59e0b;border-left:4px solid #f59e0b;background:rgba(245,158,11,0.1); }
@@ -1195,19 +1204,20 @@
     </div>
     <div id="zukan-loading">読み込み中...</div>
   </div>
+  <div id="profile-entrance-flash" aria-hidden="true"></div>
   <!-- ビルプロフィール入力モーダル -->
   <div id="profile-modal">
     <div id="profile-box">
       <button id="profile-modal-close" onclick="closeProfileModal()">×</button>
       <div id="profile-title">🏢 ビルプロフィール申請</div>
       <div id="profile-subtitle">格言と過去の記録を申請できます</div>
-      <div class="custom-label">💬 格言（ビルの壁に縦表示）</div>
+      <div class="custom-label" id="profile-motto-label">💬 格言（ビルの壁に縦表示）</div>
       <div id="profile-motto-limit">最大30文字</div>
       <textarea class="profile-textarea" id="profile-motto-input" rows="2" maxlength="30" placeholder="皆さんに伝えたい一言..."></textarea>
       <div class="profile-counter"><span id="profile-motto-counter">0</span>/30</div>
-      <div class="profile-rule-note profile-alert-note">※ <strong>格言も禁止</strong>：SNSアカウント名・個人が特定できる内容・ビジネス宣伝・勧誘</div>
+      <div id="profile-motto-ban" class="profile-rule-note profile-alert-note"></div>
       <div class="profile-section">
-        <div class="profile-section-title">① 何を失いましたか？（複数選択可）</div>
+        <div class="profile-section-title" id="profile-s1-title">① 何を失いましたか？（複数選択可）</div>
         <div class="profile-chips" id="chips-lost"></div>
         <div id="chips-lost-other-wrap" class="profile-other-wrap">
           <input type="text" class="profile-other-input" id="chips-lost-other-input" maxlength="15" placeholder="その他の内容を入力（15文字以内）" autocomplete="off">
@@ -1215,7 +1225,7 @@
         </div>
       </div>
       <div class="profile-section">
-        <div class="profile-section-title">② 何を得ましたか？または得ようとしていますか？（複数選択可）</div>
+        <div class="profile-section-title" id="profile-s2-title">② 何を得ましたか？または得ようとしていますか？（複数選択可）</div>
         <div class="profile-chips" id="chips-gained"></div>
         <div id="chips-gained-other-wrap" class="profile-other-wrap">
           <input type="text" class="profile-other-input" id="chips-gained-other-input" maxlength="15" placeholder="その他の内容を入力（15文字以内）" autocomplete="off">
@@ -1223,16 +1233,16 @@
         </div>
       </div>
       <div class="profile-section">
-        <div class="profile-section-title">③ 拝啓と経緯の詳細（300文字以内）</div>
-        <div class="profile-alert-note">※ <strong>入力禁止</strong>：会社名・屋号などビジネスがわかる表記／ビジネス宣伝／勧誘・募集などの案内</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;">①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください</div>
-        <textarea class="profile-textarea" id="profile-detail-input" rows="5" maxlength="300" placeholder="拝啓から経緯・取り組み・苦労まで..."></textarea>
+        <div class="profile-section-title" id="profile-s3-title">③ 背景と経緯の詳細（300文字以内）</div>
+        <div id="profile-s3-hint" style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;"></div>
+        <textarea class="profile-textarea" id="profile-detail-input" rows="5" maxlength="300" placeholder=""></textarea>
         <div class="profile-counter"><span id="profile-detail-counter">0</span>/300</div>
       </div>
       <div class="profile-section">
-        <div class="profile-section-title">④ 読者に伝えたいこと<span class="profile-optional-tag">（任意・50文字以内）</span></div>
-        <textarea class="profile-textarea" id="profile-message-input" rows="2" maxlength="50" placeholder="書かなくても申請できます（任意）"></textarea>
+        <div class="profile-section-title" id="profile-s4-title">④ 読者に伝えたいこと<span class="profile-optional-tag" id="profile-s4-optional"></span></div>
+        <textarea class="profile-textarea" id="profile-message-input" rows="2" maxlength="50" placeholder=""></textarea>
         <div class="profile-counter"><span id="profile-message-counter">0</span>/50</div>
+        <div id="profile-input-ban-note" class="profile-alert-note profile-ban-note"></div>
       </div>
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
@@ -1321,7 +1331,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v59';
+    const IGNIS_BUILD='2026-06-04-v60';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -2827,6 +2837,7 @@
       if(gachaState.result)syncBookResultDetail(gachaState.result);
       const extendBtn=document.getElementById('staff-extend-btn');
       if(extendBtn)extendBtn.textContent=isJa?`任期を3か月延長（${STAFF_EXTEND_COST_PER}コイン/人）`:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
+      applyProfileI18n();
     }
     function localViewStorageKey(){
       if(!currentUser)return null;
@@ -3782,16 +3793,92 @@
     // ========================================
     // ビルプロフィール（格言・過去詳細）
     // ========================================
-    const PROFILE_CHIP_OPTIONS=[
-      {v:'money',l:'お金'},{v:'trust',l:'信用'},{v:'friend',l:'友人'},{v:'partner',l:'恋人'},
-      {v:'family',l:'家族'},{v:'health',l:'健康'},{v:'workplace',l:'職場の居場所'},{v:'other',l:'その他'},
-    ];
+    function getProfileChipOptions(){
+      const isJa=currentLang==='ja';
+      return [
+        {v:'money',l:isJa?'お金':'Money'},{v:'trust',l:isJa?'信用':'Trust'},{v:'friend',l:isJa?'友人':'Friends'},{v:'partner',l:isJa?'恋人':'Partner'},
+        {v:'family',l:isJa?'家族':'Family'},{v:'health',l:isJa?'健康':'Health'},{v:'workplace',l:isJa?'職場の居場所':'Workplace'},{v:'other',l:isJa?'その他':'Other'},
+      ];
+    }
+    function applyProfileI18n(){
+      const isJa=currentLang==='ja';
+      const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=isJa?ja:en;};
+      const setHtml=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.innerHTML=isJa?ja:en;};
+      set('profile-title',isJa?'🏢 ビルプロフィール申請':'🏢 Building Profile');
+      set('profile-subtitle',isJa?'格言と過去の記録を申請できます':'Apply a motto and your past story');
+      set('profile-motto-label',isJa?'💬 格言（ビルの壁に縦表示）':'💬 Motto (shown vertically on the building)');
+      set('profile-motto-limit',isJa?'最大30文字':'Max 30 characters');
+      setHtml('profile-motto-ban',
+        '※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・ビジネス宣伝・勧誘',
+        '※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, business ads, or solicitation');
+      set('profile-s1-title',isJa?'① 何を失いましたか？（複数選択可）':'① What did you lose? (multi-select)');
+      set('profile-s2-title',isJa?'② 何を得ましたか？または得ようとしていますか？（複数選択可）':'② What did you gain or are pursuing? (multi-select)');
+      set('profile-s3-title',isJa?'③ 背景と経緯の詳細（300文字以内）':'③ Background & story (max 300 chars)');
+      set('profile-s3-hint',isJa?'①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください','Based on ①②, describe what happened, what you did next, and hardships');
+      const s4opt=document.getElementById('profile-s4-optional');
+      if(s4opt)s4opt.textContent=isJa?'（任意・50文字以内）':' (optional, max 50 chars)';
+      set('profile-s4-title',isJa?'④ 読者に伝えたいこと':'④ Message to readers');
+      setHtml('profile-input-ban-note',
+        '※ <strong>入力禁止</strong>：会社名・屋号などビジネスがわかる表記／ビジネス宣伝／勧誘・募集などの案内',
+        '※ <strong>Do not enter</strong>: business-identifying names, ads, or solicitation/recruitment');
+      setHtml('profile-approval-note',
+        '📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます',
+        '📋 <strong>Note</strong>: An admin will review your submission. You will be notified when approved or rejected.');
+      const mottoIn=document.getElementById('profile-motto-input');
+      if(mottoIn)mottoIn.placeholder=isJa?'皆さんに伝えたい一言...':'A message for everyone...';
+      const detailIn=document.getElementById('profile-detail-input');
+      if(detailIn)detailIn.placeholder=isJa?'背景・経緯・取り組み・苦労まで...':'Background, story, efforts, hardships...';
+      const msgIn=document.getElementById('profile-message-input');
+      if(msgIn)msgIn.placeholder=isJa?'書かなくても申請できます（任意）':'Optional — you can submit without this';
+      ['lost','gained'].forEach(k=>{
+        const inp=document.getElementById(`chips-${k}-other-input`);
+        if(inp)inp.placeholder=isJa?'その他の内容を入力（15文字以内）':'Other (max 15 characters)';
+        const ctr=document.getElementById(`chips-${k}-other-counter`);
+        const hint=document.querySelector(`#chips-${k}-other-wrap .profile-other-hint`);
+        if(ctr&&hint){
+          const n=ctr.textContent||'0';
+          hint.innerHTML=`<span id="chips-${k}-other-counter">${n}</span>/${isJa?'15文字':'15 chars'}`;
+        }
+      });
+      const submitBtn=document.getElementById('profile-submit-btn');
+      if(submitBtn&&!submitBtn.disabled&&submitBtn.textContent!=='申請中...'&&submitBtn.textContent!=='Submitting...'){
+        submitBtn.textContent=isJa?'申請する':'Submit';
+      }
+      set('profile-skip-btn',isJa?'スキップ':'Skip');
+      const mottoBtn=document.getElementById('building-motto-btn');
+      if(mottoBtn&&mottoBtn.style.display!=='none'){
+        mottoBtn.textContent=isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past';
+      }
+      if(document.getElementById('profile-modal')?.classList.contains('open')){
+        const lostSel=getSelectedChips('chips-lost');
+        const gainedSel=getSelectedChips('chips-gained');
+        buildProfileChips('chips-lost',lostSel);
+        buildProfileChips('chips-gained',gainedSel);
+      }
+    }
+    function playProfileApplyEntrance(){
+      const flash=document.getElementById('profile-entrance-flash');
+      const box=document.getElementById('profile-box');
+      if(flash){
+        flash.classList.remove('show');
+        void flash.offsetWidth;
+        flash.classList.add('show');
+        setTimeout(()=>flash.classList.remove('show'),700);
+      }
+      if(box){
+        box.classList.remove('profile-entrance');
+        void box.offsetWidth;
+        box.classList.add('profile-entrance');
+      }
+    }
     let profileState={gx:0,gz:0};
     const PROFILE_OTHER_MAX=15;
     function chipGroupKey(containerId){return containerId==='chips-lost'?'lost':'gained';}
     function formatChipDisplayLabel(v){
-      if(String(v).startsWith('other:'))return 'その他: '+String(v).slice(6);
-      return VIEW_CHIP_LABELS[v]||v;
+      const isJa=currentLang==='ja';
+      if(String(v).startsWith('other:'))return (isJa?'その他: ':'Other: ')+String(v).slice(6);
+      const opt=getProfileChipOptions().find(o=>o.v===v);
+      return opt?opt.l:(VIEW_CHIP_LABELS[v]||v);
     }
     function syncProfileOtherWrap(containerId){
       const key=chipGroupKey(containerId);
@@ -3805,7 +3892,7 @@
       const key=chipGroupKey(containerId);
       const otherEntry=(selectedValues||[]).find(v=>String(v).startsWith('other:'));
       const otherActive=(selectedValues||[]).includes('other')||!!otherEntry;
-      container.innerHTML=PROFILE_CHIP_OPTIONS.map(o=>{
+      container.innerHTML=getProfileChipOptions().map(o=>{
         const on=o.v==='other'?otherActive:(selectedValues||[]).includes(o.v);
         return `<div class="profile-chip${on?' active':''}" data-v="${o.v}">${o.l}</div>`;
       }).join('');
@@ -3850,8 +3937,9 @@
       }
       return true;
     }
-    function openProfileModal(gx,gz){
+    function openProfileModal(gx,gz,opts){
       profileState.gx=gx;profileState.gz=gz;
+      applyProfileI18n();
       buildProfileChips('chips-lost',[]);
       buildProfileChips('chips-gained',[]);
       ['lost','gained'].forEach(k=>{
@@ -3867,20 +3955,30 @@
       document.getElementById('profile-detail-counter').textContent='0';
       document.getElementById('profile-message-counter').textContent='0';
       const submitBtn=document.getElementById('profile-submit-btn');
-      const noteEl=document.getElementById('profile-approval-note');
       document.querySelectorAll('#profile-box textarea').forEach(el=>{el.disabled=false;});
       document.querySelectorAll('#profile-box .profile-chip').forEach(el=>{el.style.pointerEvents='';el.style.opacity='';});
       submitBtn.disabled=false;submitBtn.style.opacity='1';
-      submitBtn.textContent='申請する';
-      noteEl.innerHTML='📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます';
+      submitBtn.textContent=currentLang==='ja'?'申請する':'Submit';
+      applyProfileI18n();
       document.getElementById('profile-modal').classList.add('open');
+      if(opts&&opts.fromBuilding)playProfileApplyEntrance();
+      else{
+        const box=document.getElementById('profile-box');
+        if(box){box.classList.remove('profile-entrance');void box.offsetWidth;box.classList.add('profile-entrance');}
+      }
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
     function openProfileFromBuildingModal(){
       if(!currentModalBuilding)return;
       const b=currentModalBuilding;
+      const btn=document.getElementById('building-motto-btn');
+      if(btn){
+        btn.classList.remove('motto-btn-ripple');
+        void btn.offsetWidth;
+        btn.classList.add('motto-btn-ripple');
+      }
       closeBuildingModal();
-      openProfileModal(b.x,b.z);
+      openProfileModal(b.x,b.z,{fromBuilding:true});
     }
     ['lost','gained'].forEach(k=>{
       const inp=document.getElementById(`chips-${k}-other-input`);
@@ -3915,7 +4013,7 @@
       const hasAnything=motto||detail||message||lostItems.length||gainedItems.length;
       if(!hasAnything){closeProfileModal();return;}
       const btn=document.getElementById('profile-submit-btn');
-      btn.disabled=true;btn.textContent='申請中...';
+        btn.disabled=true;btn.textContent=currentLang==='ja'?'申請中...':'Submitting...';
       try{
         if(motto){
           const{error:e1}=await db.from('building_profiles').upsert({
@@ -3941,7 +4039,7 @@
       }catch(e){
         console.warn('profile submit error:',e.message);
         showToast('申請に失敗しました');
-        btn.disabled=false;btn.textContent='申請する';
+        btn.disabled=false;btn.textContent=currentLang==='ja'?'申請する':'Submit';
       }
     }
     // 承認済みプロフィールのキャッシュ
@@ -4393,7 +4491,7 @@
           if(lockedEl){
             lockedEl.style.display='block';
             lockedEl.textContent=isJa
-              ?'③ 拝啓と経緯の詳細・④ 読者へのメッセージはサブスク会員のみ閲覧できます'
+              ?'③ 背景と経緯の詳細・④ 読者へのメッセージはサブスク会員のみ閲覧できます'
               :'Sections ③–④ are available to subscribers only';
           }
         }
@@ -4432,10 +4530,12 @@
           mottoBtn.hidden=false;
           mottoBtn.disabled=false;
           mottoBtn.style.opacity='1';
+          mottoBtn.classList.add('motto-btn-attn');
           mottoBtn.textContent=isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past';
         }else{
           mottoBtn.style.display='none';
           mottoBtn.hidden=true;
+          mottoBtn.classList.remove('motto-btn-attn','motto-btn-ripple');
         }
       }
       if(isOwnLand){
@@ -4482,7 +4582,7 @@
       clearBuildingPastModal();
       const bmlLost=document.getElementById('bml-past-lost');if(bmlLost)bmlLost.textContent=isJa?'① 失ったもの':'① What was lost';
       const bmlGained=document.getElementById('bml-past-gained');if(bmlGained)bmlGained.textContent=isJa?'② 得たもの・得ようとしているもの':'② Gained / pursuing';
-      const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 拝啓と経緯の詳細':'③ Opening & background';
+      const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 背景と経緯の詳細':'③ Background & story';
       const bmlMsg=document.getElementById('bml-past-message');if(bmlMsg)bmlMsg.textContent=isJa?'④ 読者へのメッセージ':'④ Message to readers';
       document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
       document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';

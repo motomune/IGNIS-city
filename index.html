@@ -1289,6 +1289,7 @@
   </div>
   <div id="toast"></div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
+  <audio id="ignis-retro-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <button type="button" id="audio-unlock-btn" onclick="tryUnlockBgm()">🔊 BGMをオンにする</button>
   <div id="x-setup-modal">
     <div id="x-setup-box">
@@ -1347,7 +1348,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v64';
+    const IGNIS_BUILD='2026-06-04-v65';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -1650,10 +1651,13 @@
     }
     function refreshCityBgm(){
       if(IgnisAudio.muted)return;
-      if(isXRewardsOverlayOpen())IgnisAudio.playBgmTrack('retro').catch(()=>{});
-      else if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
-      else if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
-      else IgnisAudio.playBgmTrack('city').catch(()=>{});
+      if(isXRewardsOverlayOpen())IgnisAudio.playRetroBgm().catch(()=>{});
+      else{
+        IgnisAudio.stopRetroBgm();
+        if(isCollectionScreenOpen())IgnisAudio.playBgmTrack('collection').catch(()=>{});
+        else if(isOpeningBgmScreenOpen())IgnisAudio.playBgmTrack('opening').catch(()=>{});
+        else IgnisAudio.playBgmTrack('city').catch(()=>{});
+      }
     }
     console.warn('[IGNIS CITY] build',IGNIS_BUILD);
     function isCoarseMobile(){
@@ -1777,7 +1781,7 @@
   // サウンド（BGM・UIクリック・ガチャクリック）
   // ========================================
   const IgnisAudio={
-    ctx:null,master:null,sfxGain:null,bgmEl:null,bgmStarted:false,muted:false,_inited:false,currentTrack:'city',
+    ctx:null,master:null,sfxGain:null,bgmEl:null,retroBgmEl:null,retroBgmPlaying:false,bgmStarted:false,muted:false,_inited:false,currentTrack:'city',
     _ensureBgmElement(){
       if(this.bgmEl)return this.bgmEl;
       const el=document.getElementById('ignis-bgm');
@@ -1787,6 +1791,55 @@
       this.bgmEl.preload='auto';
       this.bgmEl.setAttribute('playsinline','');
       return this.bgmEl;
+    },
+    _ensureRetroBgmElement(){
+      if(this.retroBgmEl)return this.retroBgmEl;
+      const el=document.getElementById('ignis-retro-bgm');
+      this.retroBgmEl=el||document.createElement('audio');
+      if(!el)document.body.appendChild(this.retroBgmEl);
+      this.retroBgmEl.loop=true;
+      this.retroBgmEl.preload='auto';
+      this.retroBgmEl.setAttribute('playsinline','');
+      return this.retroBgmEl;
+    },
+    _loadAudioSources(el,sources,label){
+      return new Promise(resolve=>{
+        let i=0;
+        const tryNext=()=>{
+          if(i>=sources.length){
+            console.warn('[IGNIS] audio load failed:',label);
+            resolve(false);
+            return;
+          }
+          const url=sources[i++];
+          let settled=false;
+          const finish=ok=>{
+            if(settled)return;
+            settled=true;
+            cleanup();
+            resolve(ok);
+          };
+          const cleanup=()=>{
+            clearTimeout(timer);
+            el.removeEventListener('canplaythrough',onOk);
+            el.removeEventListener('loadeddata',onOk);
+            el.removeEventListener('error',onFail);
+          };
+          const onOk=()=>finish(true);
+          const onFail=()=>{cleanup();tryNext();};
+          const timer=setTimeout(()=>{
+            if(el.readyState>=2)finish(true);
+            else{cleanup();tryNext();}
+          },12000);
+          el.addEventListener('canplaythrough',onOk,{once:true});
+          el.addEventListener('loadeddata',onOk,{once:true});
+          el.addEventListener('error',onFail,{once:true});
+          el.src=url;
+          el.load();
+          if(el.readyState>=2)finish(true);
+        };
+        tryNext();
+      });
     },
     _bgmVolume(){
       const t=IGNIS_BGM[this.currentTrack];
@@ -1800,28 +1853,35 @@
       if(wasPlaying){el.pause();this.bgmStarted=false;}
       if(this.currentTrack===trackId&&el.src)return Promise.resolve(true);
       this.currentTrack=trackId;
-      return new Promise(resolve=>{
-        let i=0;
-        const tryNext=()=>{
-          if(i>=track.sources.length){
-            console.warn('[IGNIS] BGM load failed:',trackId);
-            resolve(false);
-            return;
-          }
-          const url=track.sources[i++];
-          const onOk=()=>{cleanup();resolve(true);};
-          const onFail=()=>{cleanup();tryNext();};
-          const cleanup=()=>{
-            el.removeEventListener('canplaythrough',onOk);
-            el.removeEventListener('error',onFail);
-          };
-          el.addEventListener('canplaythrough',onOk,{once:true});
-          el.addEventListener('error',onFail,{once:true});
-          el.src=url;
-          el.load();
-        };
-        tryNext();
-      });
+      return this._loadAudioSources(el,track.sources,trackId);
+    },
+    async playRetroBgm(){
+      if(this.muted)return false;
+      this.init();
+      const el=this._ensureRetroBgmElement();
+      const track=IGNIS_BGM.retro;
+      if(!track)return false;
+      this.stopBgm();
+      if(!el.src||el.error){
+        const ok=await this._loadAudioSources(el,track.sources,'retro');
+        if(!ok)return false;
+      }
+      el.volume=track.volume;
+      try{
+        const p=el.play();
+        if(p&&typeof p.then==='function')await p;
+        this.retroBgmPlaying=true;
+        return true;
+      }catch(e){
+        console.warn('[IGNIS] retro BGM play',e);
+        this.retroBgmPlaying=false;
+        return false;
+      }
+    },
+    stopRetroBgm(){
+      const el=this.retroBgmEl||document.getElementById('ignis-retro-bgm');
+      if(el){el.pause();try{el.currentTime=0;}catch(e){}}
+      this.retroBgmPlaying=false;
     },
     async playBgmTrack(trackId){
       if(this.muted)return false;
@@ -1854,6 +1914,8 @@
     },
     applyMute(){
       if(this.bgmEl)this.bgmEl.volume=this.muted?0:this._bgmVolume();
+      const retro=this.retroBgmEl||document.getElementById('ignis-retro-bgm');
+      if(retro)retro.volume=this.muted?0:(IGNIS_BGM.retro?.volume||0.65);
       if(!this.master||!this.ctx)return;
       const v=this.muted?0:1;
       this.master.gain.cancelScheduledValues(this.ctx.currentTime);
@@ -1870,7 +1932,7 @@
       this.init();
       this.muted=!this.muted;
       localStorage.setItem('ignis_mute',this.muted?'1':'0');
-      if(this.muted)this.stopBgm();
+      if(this.muted){this.stopBgm();this.stopRetroBgm();}
       this.applyMute();
       this.updateToggleBtn();
       if(!this.muted)tryUnlockBgm();
@@ -2041,6 +2103,12 @@
   }
   function bootIgnisAudioOnce(){
     tryUnlockBgm();
+    IgnisAudio.init();
+    const retroTrack=IGNIS_BGM.retro;
+    if(retroTrack&&!IgnisAudio.muted){
+      const rel=IgnisAudio._ensureRetroBgmElement();
+      if(!rel.src)IgnisAudio._loadAudioSources(rel,retroTrack.sources,'retro-preload').catch(()=>{});
+    }
     document.removeEventListener('pointerdown',bootIgnisAudioOnce,true);
     document.removeEventListener('keydown',bootIgnisAudioOnce,true);
     document.removeEventListener('click',bootIgnisAudioOnce,true);
@@ -2426,7 +2494,7 @@
       })();
       return xRewardsLoadPromise;
     }
-    async function openXRewardsRules(){
+    function openXRewardsRules(){
       try{IgnisAudio.playClick();}catch(e){}
       const ov=document.getElementById('x-rewards-overlay');
       if(!ov)return;
@@ -2434,17 +2502,16 @@
       document.body.style.overflow='hidden';
       loadXRewardsPanel();
       if(!IgnisAudio.muted){
-        try{
-          IgnisAudio.init();
-          await IgnisAudio.ensure();
-          await IgnisAudio.playBgmTrack('retro');
-        }catch(e){console.warn('[IGNIS] retro BGM',e);}
+        IgnisAudio.init();
+        IgnisAudio.playRetroBgm().catch(e=>console.warn('[IGNIS] retro BGM',e));
+        IgnisAudio.ensure().catch(()=>{});
       }
     }
     function closeXRewardsRules(){
       const ov=document.getElementById('x-rewards-overlay');
       if(ov)ov.classList.remove('open');
       document.body.style.overflow='';
+      IgnisAudio.stopRetroBgm();
       refreshCityBgm();
     }
     function closeCoinHistory(){document.getElementById('coin-history-overlay').classList.remove('open');}
@@ -3902,7 +3969,7 @@
         profileSubtitle:'格言と過去の記録を申請できます',
         profileMottoLabel:'💬 格言（ビルの壁に縦表示）',
         profileMottoLimit:'最大30文字',
-        profileInputBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号などビジネスがわかる表記・ビジネス宣伝・勧誘・募集などの案内',
+        profileInputBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号がわかる表記・ビジネス宣伝・勧誘・募集などの案内',
         profileS1:'① 何を失いましたか？（複数選択可）',
         profileS2:'② 何を得ましたか？または得ようとしていますか？（複数選択可）',
         profileS3:'③ 背景と経緯の詳細（300文字以内）',
@@ -3923,7 +3990,7 @@
         profileSubtitle:'Apply a motto and your past story',
         profileMottoLabel:'💬 Motto (shown vertically on the building)',
         profileMottoLimit:'Max 30 characters',
-        profileInputBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, business-identifying names, ads, solicitation, or recruitment',
+        profileInputBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, identifiable company/shop names, ads, solicitation, or recruitment',
         profileS1:'① What did you lose? (multi-select)',
         profileS2:'② What did you gain or are pursuing? (multi-select)',
         profileS3:'③ Background & story (max 300 chars)',

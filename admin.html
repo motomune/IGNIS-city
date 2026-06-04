@@ -139,7 +139,14 @@
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
     const CHIP_LABELS={money:'お金',trust:'信用',friend:'友人',partner:'恋人',family:'家族',health:'健康',workplace:'職場の居場所',other:'その他'};
-    function chipsHtml(arr){if(!arr||!arr.length)return '<span style="font-size:11px;color:rgba(255,255,255,0.3);">（なし）</span>';return arr.map(v=>`<span class="chip-item">${CHIP_LABELS[v]||v}</span>`).join('');}
+    function chipsHtml(arr){
+      if(!arr||!arr.length)return '<span style="font-size:11px;color:rgba(255,255,255,0.3);">（なし）</span>';
+      return arr.map(v=>{
+        const s=String(v);
+        const label=s.startsWith('other:')?`その他: ${s.slice(6)}`:(CHIP_LABELS[s]||s);
+        return `<span class="chip-item">${escapeHtml(label)}</span>`;
+      }).join('');
+    }
 
     let currentTab='pending';
     let profiles=[];
@@ -261,7 +268,7 @@
         bodyHtml=`
           <div class="past-section">① 失ったもの</div><div class="chip-row">${chipsHtml(p.lost_items)}</div>
           <div class="past-section" style="margin-top:8px;">② 得たもの・得ようとしているもの</div><div class="chip-row">${chipsHtml(p.gained_items)}</div>
-          ${p.background_detail?`<div class="past-section" style="margin-top:8px;">③ 詳細</div><div class="past-text">${escapeHtml(p.background_detail)}</div>`:''}
+          ${p.background_detail?`<div class="past-section" style="margin-top:8px;">③ 拝啓と経緯の詳細</div><div class="past-text">${escapeHtml(p.background_detail)}</div>`:''}
           ${p.current_positive?`<div class="past-section" style="margin-top:8px;">④ 読者へのメッセージ</div><div class="past-text">${escapeHtml(p.current_positive)}</div>`:''}`;
       }
       let actions='';

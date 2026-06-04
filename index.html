@@ -595,13 +595,15 @@
     #building-box {
       background:#0a0a14;border:1px solid rgba(255,106,0,0.4);border-radius:22px;
       width:min(400px,calc(100vw - 24px));max-width:100%;
-      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;
-      max-height:min(calc(100dvh - 16px),calc(100vh - 16px));overflow:hidden;
+      position:fixed;left:50%;top:max(8px,env(safe-area-inset-top,0px));
+      transform:translateX(-50%);transform-origin:top center;margin:0;
+      max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);max-height:calc(100svh - 16px);
+      overflow:hidden;
       display:flex;flex-direction:column;
       box-shadow:0 0 60px rgba(255,106,0,0.1),0 20px 60px rgba(0,0,0,0.8);
       animation:modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
     }
-    @keyframes modalPop { from{transform:translate(-50%,-50%) scale(0.92);opacity:0;} to{transform:translate(-50%,-50%) scale(1);opacity:1;} }
+    @keyframes modalPop { from{transform:translateX(-50%) scale(0.94);opacity:0;} to{transform:translateX(-50%) scale(1);opacity:1;} }
     .building-modal-toolbar {
       flex-shrink:0;display:flex;justify-content:flex-end;align-items:center;
       padding:10px 12px 6px;
@@ -1463,7 +1465,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v80';
+    const IGNIS_BUILD='2026-06-05-v81';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4455,7 +4457,7 @@
     }
     // 承認済みプロフィールのキャッシュ
     let approvedProfiles={};
-    const MOTTO_WALL_MAX_CHARS=28;
+    const MOTTO_WALL_MAX_CHARS=18;
     async function loadApprovedProfiles(){
       if(!db)return;
       try{
@@ -4496,10 +4498,9 @@
       return mapped&&mapped.mesh&&!mapped.mesh.isDisposed()?mapped:null;
     }
     function applyMottoForLandKey(key){
-      const p=approvedProfiles[key];
-      const b=getBuildingForLandKey(key);
-      if(!p||!p.motto_text||!b)return;
-      addMottoMesh(b,p.motto_text);
+      // 壁の格言は、常にカメラを向き地上の高さに出る DOM ラベル（updateMottoWallLabels）で表示する。
+      // 旧バージョンが生成した 3D プレートが残っていれば除去（重複表示・高所表示の防止）。
+      if(scene){const old=scene.getMeshByName('motto_'+key);if(old)old.dispose();}
     }
     function scheduleMottoRefresh(){
       [0,400,1000,2200,4000,6500].forEach(ms=>setTimeout(()=>applyApprovedMottosToScene(),ms));
@@ -4536,7 +4537,8 @@
         if(!p.motto_text)return;
         const b=getBuildingForLandKey(key);
         if(!b||!b.mesh||b.mesh.isDisposed())return;
-        const {localPos}=getMottoWallPlacementLocal(b);
+        const chars=splitMottoChars(p.motto_text);
+        const {localPos}=getMottoWallPlacementLocal(b,chars.length);
         const world=BABYLON.Vector3.TransformCoordinates(localPos,b.mesh.getWorldMatrix());
         const coord=projectWorldToScreen(world);
         if(!coord||!coord.visible)return;
@@ -4548,7 +4550,7 @@
           layer.appendChild(el);
           mottoLabelEls.set(key,el);
         }
-        el.textContent=splitMottoChars(p.motto_text).join('');
+        el.textContent=chars.join('');
         el.style.left=Math.round(coord.x)+'px';
         el.style.top=Math.round(coord.y)+'px';
         el.style.display='block';
@@ -4578,7 +4580,7 @@
       ensureMottoLabelLoop();
       console.warn('[IGNIS] motto wall labels:',n,'/',Object.keys(approvedProfiles).length);
     }
-    function getMottoWallPlacementLocal(b){
+    function getMottoWallPlacementLocal(b,charCount){
       const prism=normalizePrism(b.shape||'square');
       const w=PRISMS[prism]?.w||5.5;
       const height=Math.max((b.totalFloors||b.baseFloors||1)*0.5,2);
@@ -4594,7 +4596,13 @@
         const sign=toCamZ>=0?1:-1;
         lz=sign*(w/2+0.58);lx=0;rotY=sign>0?0:Math.PI;
       }
-      return{localPos:new BABYLON.Vector3(lx,height*0.06,lz),rotY,height,w};
+      // 高層ビルでも地上の目線の高さで読めるよう、壁の下部に固定表示する
+      const cc=Math.max(1,charCount||6);
+      const planeH=Math.min(Math.max(cc*0.62+0.6,3),Math.min(height*0.9,15));
+      const bottomY=Math.min(2,height*0.15);
+      const centerWorldY=Math.max(planeH/2,Math.min(bottomY+planeH/2,height-planeH/2-0.3));
+      const localY=centerWorldY-height/2; // mesh中心基準のローカルYに変換
+      return{localPos:new BABYLON.Vector3(lx,localY,lz),rotY,height,w,planeH,centerWorldY};
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
     function splitMottoChars(text){

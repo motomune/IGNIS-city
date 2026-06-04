@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0f'/%3E%3Cpath fill='%23ff6a00' d='M16 5c-3 9-7 11-7 17a7 7 0 0 0 14 0c0-6-4-8-7-17z'/%3E%3C/svg%3E">
   <title>IGNIS CITY</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -69,6 +70,14 @@
     }
     #sound-toggle:hover { filter: brightness(1.06); }
     #sound-toggle.muted { opacity: 0.45; }
+    #x-rewards-btn {
+      background: linear-gradient(135deg, rgba(96,210,255,0.55), rgba(91,140,255,0.55));
+      border: 1px solid rgba(170,220,255,0.45);
+      color: #eaf6ff; padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; cursor: pointer; line-height: 1;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    #x-rewards-btn:hover { opacity: 0.85; }
     #user-name { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 600; }
     #logout-btn {
       background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
@@ -718,7 +727,7 @@
     /* ビルプロフィール入力モーダル */
     #profile-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:350;align-items:center;justify-content:center; }
     #profile-modal.open { display: flex; }
-    #profile-box { background:#0a0a14;border:1px solid rgba(255,106,0,0.4);border-radius:22px;padding:28px 28px 24px;width:400px;max-width:94vw;position:relative;box-shadow:0 0 60px rgba(255,106,0,0.15),0 20px 60px rgba(0,0,0,0.8); }
+    #profile-box { background:#0a0a14;border:1px solid rgba(255,106,0,0.4);border-radius:22px;padding:28px 28px 24px;width:440px;max-width:94vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 0 60px rgba(255,106,0,0.15),0 20px 60px rgba(0,0,0,0.8); }
     #profile-modal-close { position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer; }
     #profile-modal-close:hover { color:#fff; }
     #profile-title { font-size:18px;font-weight:900;letter-spacing:0.1em;background:linear-gradient(135deg,#ff6a00,#ee0979);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px; }
@@ -733,6 +742,12 @@
     #profile-skip-btn { width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);padding:10px;border-radius:10px;font-size:13px;cursor:pointer;transition:background 0.2s; }
     #profile-skip-btn:hover { background:rgba(255,255,255,0.12); }
     #profile-approval-note { font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-top:10px; }
+    .profile-rule-note { font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:14px;line-height:1.5; }
+    .profile-section { margin-bottom:14px; }
+    .profile-section-title { font-size:12px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:8px;letter-spacing:0.04em; }
+    .profile-chips { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px; }
+    .profile-chip { background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.13);color:rgba(255,255,255,0.55);padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;transition:all 0.15s;user-select:none; }
+    .profile-chip.active { background:rgba(255,106,0,0.22);border-color:#ff6a00;color:#ff6a00;font-weight:700; }
     /* ビル詳細 X リンク */
     .owner-x-link { color:#1d9bf0;font-weight:800;text-decoration:none; }
     .owner-x-link:hover { text-decoration:underline; }
@@ -786,7 +801,7 @@
         gap: 4px; flex-wrap: nowrap; justify-content: flex-end;
         max-width: none; align-self: center;
       }
-      #lang-btn, #sound-toggle { padding: 4px 8px; font-size: 10px; min-height: 32px; }
+      #lang-btn, #sound-toggle, #x-rewards-btn { padding: 4px 8px; font-size: 10px; min-height: 32px; }
       #login-btn-header { padding: 4px 10px; font-size: 10px; }
       #logged-in-area { gap: 4px; flex-wrap: nowrap; max-width: 100%; }
       #user-name { display: none !important; }
@@ -894,6 +909,7 @@
       </div>
       <div id="user-area">
         <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
+        <button id="x-rewards-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
         <button id="lang-btn" onclick="toggleLang()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span id="lang-label">EN</span>
@@ -1149,17 +1165,34 @@
     <div id="profile-box">
       <button id="profile-modal-close" onclick="closeProfileModal()">×</button>
       <div id="profile-title">🏢 ビルプロフィール申請</div>
-      <div id="profile-subtitle">建設おめでとうございます！格言と備考を申請できます（IGNIS Rank 2 以上）</div>
-      <div class="custom-label">💬 格言</div>
-      <div id="profile-motto-limit">最大 <span id="profile-motto-max">3</span> 文字（階数に応じて最大数が増えます）</div>
-      <textarea class="profile-textarea" id="profile-motto-input" rows="2" placeholder="皆さんに伝えたい一言..."></textarea>
-      <div class="profile-counter"><span id="profile-motto-counter">0</span>/<span id="profile-motto-max2">3</span></div>
-      <div class="custom-label">📝 備考（苦労話・どう乗り越えたか）</div>
-      <textarea class="profile-textarea" id="profile-notes-input" rows="6" maxlength="500" placeholder="過去の苦労やその時どう乗り越えたのか..."></textarea>
-      <div class="profile-counter"><span id="profile-notes-counter">0</span>/500</div>
+      <div id="profile-subtitle">格言と過去の記録を申請できます（IGNIS Rank 2 以上）</div>
+      <div class="custom-label">💬 格言（ビルの壁に縦表示）</div>
+      <div id="profile-motto-limit">最大30文字</div>
+      <textarea class="profile-textarea" id="profile-motto-input" rows="2" maxlength="30" placeholder="皆さんに伝えたい一言..."></textarea>
+      <div class="profile-counter"><span id="profile-motto-counter">0</span>/30</div>
+      <div class="profile-rule-note">※ SNSアカウント名・個人を特定できる内容・ビジネス宣伝は禁止です</div>
+      <div class="profile-section">
+        <div class="profile-section-title">① 何を失いましたか？（複数選択可）</div>
+        <div class="profile-chips" id="chips-lost"></div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title">② 現在、何を得ましたか？または得ようとしていますか？（複数選択可）</div>
+        <div class="profile-chips" id="chips-gained"></div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title">③ 詳細（300文字以内）</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:6px;">①②を踏まえてどんな経緯だったか、その後どんな取り組みをして、どんな苦労があったか</div>
+        <textarea class="profile-textarea" id="profile-detail-input" rows="5" maxlength="300" placeholder="経緯・取り組み・苦労を書いてください..."></textarea>
+        <div class="profile-counter"><span id="profile-detail-counter">0</span>/300</div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title">④ 読者に伝えたいこと（50文字以内）</div>
+        <textarea class="profile-textarea" id="profile-message-input" rows="2" maxlength="50" placeholder="同じ経験をした人へのメッセージ..."></textarea>
+        <div class="profile-counter"><span id="profile-message-counter">0</span>/50</div>
+      </div>
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
-      <div id="profile-approval-note">※ 管理者の承認後にビルに公開されます</div>
+      <div id="profile-approval-note">※ 管理者の確認後、承認で公開・却下時は通知が届きます</div>
     </div>
   </div>
   <!-- コイン獲得履歴 -->
@@ -1244,7 +1277,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-05-30-v50';
+    const IGNIS_BUILD='2026-06-04-v56';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -2240,9 +2273,6 @@
       random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
       hire_employee: {ja:'会社員採用',           en:'Hire Office Worker',       icon:'👷'},
       extend_staff_terms: {ja:'任期延長',        en:'Term Extension',          icon:'📋'},
-      building_sell:      {ja:'ビル売却',         en:'Building Sale',           icon:'💰'},
-      invite_send:        {ja:'招待送信ボーナス',  en:'Invite Send Bonus',       icon:'📨'},
-      invite_register:    {ja:'招待登録ボーナス',  en:'Invite Signup Bonus',     icon:'🎁'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
@@ -2268,6 +2298,10 @@
       if(!currentUser){openAuthModal();showToast('ログインが必要です');return;}
       document.getElementById('coin-history-overlay').classList.add('open');
       await loadCoinHistory();
+    }
+    function openXRewardsRules(){
+      try{IgnisAudio.playClick();}catch(e){}
+      window.open('x_rewards_infographic.html','_blank','noopener');
     }
     function closeCoinHistory(){document.getElementById('coin-history-overlay').classList.remove('open');}
     function switchCoinHistoryTab(tab){
@@ -2570,6 +2604,11 @@
       document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
       document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
       document.getElementById('coin-count').title=isJa?'クリックでコイン履歴を表示':'Click to view coin history';
+      const xRewardsBtn=document.getElementById('x-rewards-btn');
+      if(xRewardsBtn){
+        xRewardsBtn.textContent=isJa?'📘 X報酬':'📘 X Rewards';
+        xRewardsBtn.title=isJa?'X報酬ルールを開く':'Open X rewards rules';
+      }
       const buildBtnText=document.getElementById('build-btn-text');
       if(buildBtnText)buildBtnText.textContent=isJa?'獲得':'Get';
       const buildBtn=document.getElementById('build-btn');
@@ -2812,19 +2851,13 @@
       await db.from('daily_tasks').update({completed:true,completed_at:new Date().toISOString(),reward_given:true}).eq('id',data.id);
       const task=DAILY_TASKS.find(t=>t.type===taskType);
       if(!task)return;
-      // アトミックなコイン加算（read-then-write競合を防ぐ）
-      const{data:ud,error:coinErr}=await db.rpc('add_coins_and_record',{p_amount:task.reward,p_reason:'task_'+taskType});
-      if(!coinErr&&ud!=null){
-        document.getElementById('coin-count').textContent=ud;
-      } else {
-        // フォールバック: RPCが未適用の場合は従来方式
-        const{data:uRow}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
-        if(uRow){
-          const newCoins=(uRow.coin_column||0)+task.reward;
-          await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
-          document.getElementById('coin-count').textContent=newCoins;
-          await recordCoin(task.reward,'task_'+taskType);
-        }
+      // コイン付与
+      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
+      if(ud){
+        const newCoins=(ud.coin_column||0)+task.reward;
+        await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
+        document.getElementById('coin-count').textContent=newCoins;
+        await recordCoin(task.reward,'task_'+taskType);
       }
       const isJa=currentLang==='ja';
       showToast(`✅ ${isJa?'タスク完了':'Task done'}！「${isJa?task.label:task.labelEn}」+${task.reward}コイン`);
@@ -3444,38 +3477,32 @@
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
       const buyBtn=document.getElementById('land-buy-btn');
-      const isJa=currentLang==='ja';
-      buyBtn.disabled=true;buyBtn.textContent=isJa?'処理中...':'Processing...';
+      buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
-        const{data,error}=await db.rpc('buy_land',{gx,gz});
-        if(error)throw error;
-        if(!data||!data.ok){
-          if(data&&data.reason==='insufficient_coins'){
-            showToast(isJa?`コインが足りません（必要：${LAND_COST}コイン、残高：${data.coins}コイン）`:`Not enough coins (need ${LAND_COST}, have ${data.coins})`);
-          } else if(data&&data.reason==='already_owned'){
-            showToast(isJa?'この土地はすでに取得済みです':'This land is already owned');
-            closeLandPanel();
-          } else {
-            showToast(isJa?'取得に失敗しました':'Failed to acquire land');
-          }
+        const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
+        const balance=ud?ud.coin_column||0:0;
+        if(LAND_COST>0&&balance<LAND_COST){
+          showToast(`コインが足りません（必要：${LAND_COST}コイン、残高：${balance}コイン）`);
           buyBtn.disabled=false;
-          buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
-          return;
+          buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;return;
         }
-        document.getElementById('coin-count').textContent=data.coins_remaining;
-        await recordCoin(-LAND_COST,'land_buy');
-        const{data:ud}=await db.from('users').select('username,x_username').eq('id',currentUser.id).single();
+        const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
+        if(landErr)throw landErr;
+        if(LAND_COST>0){
+          const newCoins=balance-LAND_COST;
+          await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
+          document.getElementById('coin-count').textContent=newCoins;
+          await recordCoin(-LAND_COST,'land_buy');
+        }
         const xName=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:'?';
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile:null};
         landMap[selectedLandKey].tile=drawOwnedTile(gx,gz,selectedLandKey,currentUser.id);
         await completeTask('get_land');
-        showToast(isJa?`🏡 土地を取得！（-${LAND_COST}コイン）`:`🏡 Land acquired! (-${LAND_COST} coins)`);
-        openLandPanel(gx,gz);
+        showToast(`🏡 土地を取得！（-${LAND_COST}コイン）`);openLandPanel(gx,gz);
       }catch(e){
-        console.warn('land buy error:',e.message);
-        showToast(isJa?'取得に失敗しました: '+e.message:'Failed: '+e.message);
+        console.warn('land buy error:',e.message);showToast('取得に失敗しました: '+e.message);
         buyBtn.disabled=false;
-        buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+        buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       }
     }
     // ========================================
@@ -3616,15 +3643,9 @@
     async function onGachaResultRetry(){
       if(!currentUser){openAuthModal();return;}
       const isJa=currentLang==='ja';
-      // DOMではなくDBから最新残高を確認（古いキャッシュを避ける）
-      let balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
-      try{
-        const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
-        if(ud!=null)balance=ud.coin_column||0;
-        document.getElementById('coin-count').textContent=balance;
-      }catch(e){console.warn('[IGNIS] retry balance check',e.message);}
+      const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
       if(balance<GACHA_COST){
-        showToast(isJa?`コインが足りません（必要：${GACHA_COST}、残高：${balance}）`:`Not enough coins (need ${GACHA_COST}, have ${balance})`);
+        showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);
         return;
       }
       const retryBtn=document.getElementById('book-result-retry');
@@ -3708,72 +3729,115 @@
         const ci=getColorByEmployees(employees);
         showToast(`🏢 ${floors}${isJa?'階建て完成':'F building done'}！${isJa?ci.label:ci.labelEn}`);
         gachaState={result:null,isRebuild:false,landKey:null};pendingBuildMode=false;
-        openProfileModal(gx,gz,savedFloors);
+        openProfileModal(gx,gz);
       }catch(e){console.warn('build error:',e.message);showToast(isJa?'建設に失敗しました':'Build failed');btn.disabled=false;btn.textContent=isJa?'🏢 建設する':'🏢 Build';}
     }
     let pendingBuildMode=false;
     // ========================================
-    // ビルプロフィール（格言・備考）
+    // ビルプロフィール（格言・過去詳細）
     // ========================================
-    let profileState={gx:0,gz:0,maxMottoChars:3};
-    function openProfileModal(gx,gz,floors){
+    const PROFILE_CHIP_OPTIONS=[
+      {v:'money',l:'お金'},{v:'trust',l:'信用'},{v:'friend',l:'友人'},{v:'partner',l:'恋人'},
+      {v:'family',l:'家族'},{v:'health',l:'健康'},{v:'workplace',l:'職場の居場所'},{v:'other',l:'その他'},
+    ];
+    let profileState={gx:0,gz:0};
+    function buildProfileChips(containerId,selectedValues){
+      const container=document.getElementById(containerId);
+      if(!container)return;
+      container.innerHTML=PROFILE_CHIP_OPTIONS.map(o=>
+        `<div class="profile-chip${(selectedValues||[]).includes(o.v)?' active':''}" data-v="${o.v}">${o.l}</div>`
+      ).join('');
+      container.querySelectorAll('.profile-chip').forEach(c=>{
+        c.addEventListener('click',function(){this.classList.toggle('active');});
+      });
+    }
+    function getSelectedChips(containerId){
+      return Array.from(document.querySelectorAll(`#${containerId} .profile-chip.active`)).map(c=>c.dataset.v);
+    }
+    function openProfileModal(gx,gz){
       profileState.gx=gx;profileState.gz=gz;
-      profileState.maxMottoChars=Math.max(3,Math.floor(floors/5)*3);
-      const max=profileState.maxMottoChars;
-      document.getElementById('profile-motto-max').textContent=max;
-      document.getElementById('profile-motto-max2').textContent=max;
-      const mottoInput=document.getElementById('profile-motto-input');
-      const notesInput=document.getElementById('profile-notes-input');
-      mottoInput.maxLength=max;
-      mottoInput.value='';notesInput.value='';
+      buildProfileChips('chips-lost',[]);
+      buildProfileChips('chips-gained',[]);
+      document.getElementById('profile-motto-input').value='';
+      document.getElementById('profile-detail-input').value='';
+      document.getElementById('profile-message-input').value='';
       document.getElementById('profile-motto-counter').textContent='0';
-      document.getElementById('profile-notes-counter').textContent='0';
+      document.getElementById('profile-detail-counter').textContent='0';
+      document.getElementById('profile-message-counter').textContent='0';
       const rank=(currentUser&&currentUser.rank)||1;
       const submitBtn=document.getElementById('profile-submit-btn');
       const noteEl=document.getElementById('profile-approval-note');
+      const allInputs=document.querySelectorAll('#profile-box textarea');
+      const chipEls=document.querySelectorAll('#profile-box .profile-chip');
       if(rank<2){
-        mottoInput.disabled=true;notesInput.disabled=true;
+        allInputs.forEach(el=>{el.disabled=true;});
+        chipEls.forEach(el=>{el.style.pointerEvents='none';el.style.opacity='0.4';});
         submitBtn.disabled=true;submitBtn.style.opacity='0.35';
         submitBtn.textContent='🔒 Rank 2 以上で申請可能';
         noteEl.innerHTML=`現在のRank: <b style="color:#ff6a00">${rank}</b> ／ Rank 2に上げると申請できます`;
       } else {
-        mottoInput.disabled=false;notesInput.disabled=false;
+        allInputs.forEach(el=>{el.disabled=false;});
+        chipEls.forEach(el=>{el.style.pointerEvents='';el.style.opacity='';});
         submitBtn.disabled=false;submitBtn.style.opacity='1';
         submitBtn.textContent='申請する';
-        noteEl.textContent='※ 管理者の承認後にビルに公開されます';
+        noteEl.textContent='※ 管理者の確認後、承認で公開・却下時は通知が届きます';
       }
       document.getElementById('profile-modal').classList.add('open');
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
-    document.getElementById('profile-motto-input').addEventListener('input',function(){
-      const len=this.value.length;
-      const counter=document.getElementById('profile-motto-counter');
-      counter.textContent=len;
-      const max=profileState.maxMottoChars;
-      counter.closest('.profile-counter').classList.toggle('warn',len>=max);
-    });
-    document.getElementById('profile-notes-input').addEventListener('input',function(){
-      const len=this.value.length;
-      const counter=document.getElementById('profile-notes-counter');
-      counter.textContent=len;
-      counter.closest('.profile-counter').classList.toggle('warn',len>=500);
+    function openProfileFromBuildingModal(){
+      if(!currentModalBuilding)return;
+      const b=currentModalBuilding;
+      closeBuildingModal();
+      openProfileModal(b.x,b.z);
+    }
+    ['profile-motto-input','profile-detail-input','profile-message-input'].forEach(function(id){
+      const maxMap={'profile-motto-input':30,'profile-detail-input':300,'profile-message-input':50};
+      const counterMap={'profile-motto-input':'profile-motto-counter','profile-detail-input':'profile-detail-counter','profile-message-input':'profile-message-counter'};
+      const el=document.getElementById(id);
+      if(!el)return;
+      el.addEventListener('input',function(){
+        const len=this.value.length;
+        const max=maxMap[id];
+        const counter=document.getElementById(counterMap[id]);
+        if(counter)counter.textContent=len;
+        const wrap=counter&&counter.closest('.profile-counter');
+        if(wrap)wrap.classList.toggle('warn',len>=max);
+      });
     });
     async function submitBuildingProfile(){
       if(!currentUser)return;
       const motto=document.getElementById('profile-motto-input').value.trim();
-      const notes=document.getElementById('profile-notes-input').value.trim();
-      if(!motto&&!notes){closeProfileModal();return;}
+      const detail=document.getElementById('profile-detail-input').value.trim();
+      const message=document.getElementById('profile-message-input').value.trim();
+      const lostItems=getSelectedChips('chips-lost');
+      const gainedItems=getSelectedChips('chips-gained');
+      const hasAnything=motto||detail||message||lostItems.length||gainedItems.length;
+      if(!hasAnything){closeProfileModal();return;}
       const btn=document.getElementById('profile-submit-btn');
       btn.disabled=true;btn.textContent='申請中...';
       try{
-        const{error}=await db.from('building_profiles').upsert({
-          user_id:currentUser.id,building_x:profileState.gx,building_z:profileState.gz,
-          motto_text:motto||null,notes_text:notes||null,status:'pending',
-          created_at:new Date().toISOString()
-        },{onConflict:'building_x,building_z'});
-        if(error)throw error;
+        if(motto){
+          const{error:e1}=await db.from('building_profiles').upsert({
+            user_id:currentUser.id,building_x:profileState.gx,building_z:profileState.gz,
+            motto_text:motto,notes_text:null,status:'pending',
+            created_at:new Date().toISOString()
+          },{onConflict:'building_x,building_z'});
+          if(e1)throw e1;
+        }
+        const hasPastDetail=lostItems.length||gainedItems.length||detail||message;
+        if(hasPastDetail){
+          const{error:e2}=await db.from('building_past_details').upsert({
+            user_id:currentUser.id,building_x:profileState.gx,building_z:profileState.gz,
+            lost_items:lostItems,gained_items:gainedItems,
+            background_detail:detail||null,
+            current_positive:message||null,
+            status:'pending',updated_at:new Date().toISOString()
+          },{onConflict:'building_x,building_z'});
+          if(e2)throw e2;
+        }
         closeProfileModal();
-        showToast('📨 格言を申請しました。承認後に公開されます');
+        showToast('📨 申請しました。確認後に公開されます');
       }catch(e){
         console.warn('profile submit error:',e.message);
         showToast('申請に失敗しました');
@@ -4161,15 +4225,8 @@
       empVal.textContent=isJa?`${buildingData.employees||0}人`:`${buildingData.employees||0}`;
       empVal.className='bm-stat-value';
       if(ci.name==='rainbow')empVal.classList.add('emp-rainbow');else if(ci.name==='gold')empVal.classList.add('emp-gold');else if(ci.name==='red')empVal.classList.add('emp-red');
-      const vCount=buildingData.viewCount||0;
-      document.getElementById('bm-views-val').textContent=vCount.toLocaleString();
-      if(vCount>=300){
-        document.getElementById('bml-views').textContent=isJa?'閲覧 🥇':'Views 🥇';
-      } else if(vCount>=100){
-        document.getElementById('bml-views').textContent=isJa?`閲覧（ゴールドまで${300-vCount}）`:`Views (${300-vCount} to gold)`;
-      } else {
-        document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
-      }
+      document.getElementById('bm-views-val').textContent=(buildingData.viewCount||0).toLocaleString();
+      document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
@@ -4232,7 +4289,7 @@
         return;
       }
       try{
-        const{data:uRow,error:uErr}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
+        const {data:uRow,error:uErr}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
         if(uErr)throw uErr;
         const bench=Math.max(0,Number(uRow?.bench_employees||0));
         if(bench<=0){
@@ -4249,23 +4306,17 @@
           return;
         }
         const key=b.landKey||landKey(b.x,b.z);
-        const{data:rows,error:bErr}=await db.from('buildings').select('employees,floors,style,owner_id,view_count').eq('x',b.x).eq('z',b.z).limit(1);
+        const {data:rows,error:bErr}=await db.from('buildings').select('employees,floors,style,owner_id,view_count').eq('x',b.x).eq('z',b.z).limit(1);
         if(bErr)throw bErr;
         const row=(rows&&rows[0])||null;
         if(!row){showToast(isJa?'対象ビルが見つかりません':'Building not found');return;}
-        // Atomic assignment via RPC
-        const{data,error}=await db.rpc('assign_employees',{bx:b.x,bz:b.z,p_count:count});
-        if(error)throw error;
-        if(!data||!data.ok){
-          if(data?.reason==='insufficient_bench'){
-            showToast(isJa?`休職中の人数が足りません（残:${data.bench}人）`:`Not enough bench staff (have ${data.bench})`);
-          } else {
-            showToast(isJa?'配属に失敗しました':'Assignment failed');
-          }
-          return;
-        }
-        const nextBench=data.bench_employees;
-        const nextEmp=data.building_employees;
+        if(row.owner_id!==currentUser.id){showToast(isJa?'自分のビルではありません':'Not your building');return;}
+        const nextBench=bench-count;
+        const nextEmp=(Number(row.employees)||0)+count;
+        const {error:uuErr}=await db.from('users').update({bench_employees:nextBench}).eq('id',currentUser.id);
+        if(uuErr)throw uuErr;
+        const {error:bbErr}=await db.from('buildings').update({employees:nextEmp}).eq('x',b.x).eq('z',b.z).eq('owner_id',currentUser.id);
+        if(bbErr)throw bbErr;
         currentUser.benchEmployees=nextBench;
         b.employees=nextEmp;
         b.totalFloors=calcTotalFloors(b.baseFloors||row.floors||1,nextEmp);
@@ -4301,16 +4352,13 @@
         if(data&&data.counted){
           addLocalView(buildingData.x,buildingData.z);
           buildingData.viewCount=data.view_count;
-          const vc=data.view_count||0;
-          document.getElementById('bm-views-val').textContent=vc.toLocaleString();
-          const isJa=currentLang==='ja';
-          if(vc>=300)document.getElementById('bml-views').textContent=isJa?'閲覧 🥇':'Views 🥇';
-          else if(vc>=100)document.getElementById('bml-views').textContent=isJa?`閲覧（ゴールドまで${300-vc}）`:`Views (${300-vc} to gold)`;
+          document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
           if(buildingData.mesh&&buildingData.mesh.material){
             applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5);
           }
           await checkViewTaskProgress();
           if(data.employees_added>0){
+            const isJa=currentLang==='ja';
             showToast(isJa?`🎉 30閲覧達成！従業員+${data.employees_added}人を獲得`:`🎉 30 views! +${data.employees_added} employee(s)`);
           }
           if(data.bench_employees!==undefined){
@@ -4380,12 +4428,11 @@
     const buildingMap={};
     function toggleMinimap(){
       minimapVisible=!minimapVisible;
-      if(!minimapVisible&&minimapAnimId){cancelAnimationFrame(minimapAnimId);minimapAnimId=null;}
       minimapCanvas.style.display=minimapVisible?'block':'none';
       document.getElementById('minimap-label').style.display=minimapVisible?'block':'none';
       document.getElementById('minimap-toggle').textContent=minimapVisible?'✕':'🗺';
       document.getElementById('minimap-toggle').title=minimapVisible?(currentLang==='ja'?'地図を閉じる':'Hide map'):(currentLang==='ja'?'地図を表示':'Show map');
-      if(minimapVisible&&!minimapAnimId)drawMinimap();
+      if(minimapVisible)drawMinimap();
     }
     function worldToMM(wx,wz){return{px:(wx+MM_RANGE/2)/MM_RANGE*MM_SIZE,py:(wz+MM_RANGE/2)/MM_RANGE*MM_SIZE};}
     function minimapClick(e){
@@ -4395,7 +4442,7 @@
       arcCamera.target=new BABYLON.Vector3((e.clientX-rect.left)*scaleX/MM_SIZE*MM_RANGE-MM_RANGE/2,0,(e.clientY-rect.top)*scaleY/MM_SIZE*MM_RANGE-MM_RANGE/2);
     }
     function drawMinimap(){
-      if(!minimapVisible){minimapAnimId=null;return;}
+      if(!minimapVisible)return;
       mmCtx.clearRect(0,0,MM_SIZE,MM_SIZE);
       mmCtx.fillStyle='rgba(6,6,16,0.95)';mmCtx.fillRect(0,0,MM_SIZE,MM_SIZE);
       mmCtx.strokeStyle='rgba(255,255,255,0.04)';mmCtx.lineWidth=0.5;
@@ -4601,15 +4648,14 @@
       grid.innerHTML='';statsEl.innerHTML='';
       if(zukanBuildings.length===0){emptyEl.style.display='block';grid.style.display='none';return;}
       emptyEl.style.display='none';grid.style.display='grid';
-      const totalFloors=zukanBuildings.reduce((s,b)=>s+Math.min(b.floors+Math.floor((b.employees||0)/5),MAX_BUILDING_FLOORS),0);
+      const totalFloors=zukanBuildings.reduce((s,b)=>s+b.floors,0);
       const totalEmp=zukanBuildings.reduce((s,b)=>s+(b.employees||0),0);
       const best=zukanBuildings[0];
-      const bestTotal=Math.min(best.floors+Math.floor((best.employees||0)/5),MAX_BUILDING_FLOORS);
       const star5count=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===5).length;
       [{label:isJa?'所有ビル':'Buildings',val:isJa?zukanBuildings.length+'棟':zukanBuildings.length+''},
-       {label:isJa?'総階数（表示）':'Total Floors',val:totalFloors.toLocaleString()+'F'},
+       {label:isJa?'総階数':'Total Floors',val:totalFloors+'F'},
        {label:isJa?'総従業員':'Employees',val:isJa?totalEmp.toLocaleString()+'人':totalEmp.toLocaleString()},
-       {label:isJa?'最高層（表示）':'Tallest',val:bestTotal+'F'},
+       {label:isJa?'最高層':'Tallest',val:best.floors+'F'},
        {label:'★×5',val:isJa?star5count+'棟':star5count+'',highlight:star5count>0}
       ].forEach(c=>{
         const el=document.createElement('div');el.className='zukan-stat-chip';
@@ -4677,7 +4723,6 @@
       const handle=(land.owner_display||'').replace(/^@/,'').toLowerCase();
       if(handle!==OWNER_X_HANDLE.toLowerCase())return;
       b.employees=1000;
-      b.totalFloors=calcTotalFloors(b.baseFloors,1000);
       if(b.mesh&&b.mesh.material){
         applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }
@@ -4698,8 +4743,8 @@
       ['ranking-coins-list','ranking-emp-list','ranking-floors-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
       try{
         const[{data:users,error:uErr},{data:buildings,error:bErr}]=await Promise.all([
-          db.from('users').select('id,username,x_username,coin_column,bench_employees').limit(2000),
-          db.from('buildings').select('owner_id,floors,employees').limit(5000)
+          db.from('users').select('id,username,x_username,coin_column,bench_employees'),
+          db.from('buildings').select('owner_id,floors,employees')
         ]);
         if(uErr)throw uErr;
         if(bErr)throw bErr;
@@ -4710,7 +4755,7 @@
         (buildings||[]).forEach(b=>{
           const uid=b.owner_id;if(!uid||!userMap[uid])return;
           userMap[uid].assigned+=(b.employees||0);
-          userMap[uid].totalFloors+=Math.min((b.floors||0)+Math.floor((b.employees||0)/5),MAX_BUILDING_FLOORS);
+          userMap[uid].totalFloors+=Math.min(b.floors||0,MAX_BUILDING_FLOORS);
           userMap[uid].buildingCount+=1;
         });
         const list=Object.values(userMap).map(u=>({...u,totalEmp:u.assigned+u.bench}));

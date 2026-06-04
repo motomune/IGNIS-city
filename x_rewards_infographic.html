@@ -476,15 +476,13 @@
       'https://motomune.github.io/IGNIS-city/',
       'https://raw.githubusercontent.com/motomune/IGNIS-city/main/'
     ];
-    const candidates=['レトロゲームBGM.mp3','レトロゲームbgm.mp3','retro-game-bgm.mp3'];
+    const retroFile='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
+    const enc=encodeURIComponent(retroFile);
     const urls=[];
     const seen=new Set();
-    candidates.forEach(f=>{
-      const enc=encodeURIComponent(f);
-      bases.forEach(b=>{
-        const u=b+enc;
-        if(!seen.has(u)){seen.add(u);urls.push(u);}
-      });
+    bases.forEach(b=>{
+      const u=b+enc;
+      if(!seen.has(u)){seen.add(u);urls.push(u);}
     });
     let sourceIdx=0;
     let bgmStarted=false;

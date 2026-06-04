@@ -756,6 +756,9 @@
     #building-sell-btn:hover { opacity:0.85; }
     #building-assign-btn { width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
     #building-assign-btn:hover { opacity:0.9; }
+    #building-motto-btn { width:100%;background:linear-gradient(135deg,rgba(255,106,0,0.9),rgba(238,9,121,0.9));color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
+    #building-motto-btn:hover { opacity:0.9; }
+    #building-motto-btn:disabled { opacity:0.45;cursor:not-allowed; }
     #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em;background:rgba(255,255,255,0.04); }
     #building-modal-motto.rank-5 { color:#ee0979;border-left:4px solid #ee0979;background:rgba(238,9,121,0.1); }
     #building-modal-motto.rank-4 { color:#f59e0b;border-left:4px solid #f59e0b;background:rgba(245,158,11,0.1); }
@@ -980,6 +983,7 @@
       <div id="building-modal-motto"></div>
       <div id="building-modal-notes"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
+      <button id="building-motto-btn" type="button" onclick="openProfileFromBuildingModal()" style="display:none;">💬 格言・過去詳細を申請</button>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
     </div>
@@ -1277,7 +1281,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v56';
+    const IGNIS_BUILD='2026-06-04-v57';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -4231,7 +4235,23 @@
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const sellBtn=document.getElementById('building-sell-btn');
       const assignBtn=document.getElementById('building-assign-btn');
+      const mottoBtn=document.getElementById('building-motto-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
+      const userRank=(currentUser&&currentUser.rank)||1;
+      if(mottoBtn){
+        if(isOwnLand&&currentUser){
+          mottoBtn.style.display='block';
+          mottoBtn.hidden=false;
+          mottoBtn.disabled=false;
+          mottoBtn.style.opacity='1';
+          mottoBtn.textContent=userRank<2
+            ?(isJa?'💬 格言・過去詳細を申請（Rank 2以上）':'💬 Motto / Past (Rank 2+)')
+            :(isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past');
+        }else{
+          mottoBtn.style.display='none';
+          mottoBtn.hidden=true;
+        }
+      }
       if(isOwnLand){
         sellBtn.style.display='block';
         sellBtn.hidden=false;

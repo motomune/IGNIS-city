@@ -1235,7 +1235,7 @@
         </div>
       </div>
       <div class="profile-section">
-        <div class="profile-section-title" id="profile-s2-title">② 何を得ましたか？または得ようとしていますか？（複数選択可）</div>
+        <div class="profile-section-title" id="profile-s2-title">② その後、何を得ましたか？または得ようとしてますか？（複数選択可）</div>
         <div class="profile-chips" id="chips-gained"></div>
         <div id="chips-gained-other-wrap" class="profile-other-wrap">
           <input type="text" class="profile-other-input" id="chips-gained-other-input" maxlength="15" placeholder="その他の内容を入力（15文字以内）" autocomplete="off">
@@ -1348,7 +1348,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v65';
+    const IGNIS_BUILD='2026-06-04-v66';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2462,17 +2462,26 @@
       await loadCoinHistory();
     }
     let xRewardsLoadPromise=null;
-    function loadXRewardsPanel(){
+    function resetXRewardsPanelCache(){
+      const body=document.getElementById('x-rewards-body');
+      if(!body)return;
+      delete body.dataset.loaded;
+      delete body.dataset.lang;
+      xRewardsLoadPromise=null;
+    }
+    function loadXRewardsPanel(force){
       const body=document.getElementById('x-rewards-body');
       if(!body)return Promise.resolve();
-      if(body.dataset.loaded==='1')return Promise.resolve();
+      const lang=currentLang==='ja'?'ja':'en';
+      if(!force&&body.dataset.loaded==='1'&&body.dataset.lang===lang)return Promise.resolve();
       if(xRewardsLoadPromise)return xRewardsLoadPromise;
-      const isJa=currentLang==='ja';
+      const isJa=lang==='ja';
       body.innerHTML='<div id="x-rewards-loading">'+(isJa?'読み込み中...':'Loading...')+'</div>';
       xRewardsLoadPromise=(async()=>{
         try{
           const base=getIgnisAdAssetBase();
-          const res=await fetch(base+'x_rewards_infographic.html?embed=1&v='+encodeURIComponent(IGNIS_BUILD));
+          const page=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
+          const res=await fetch(base+page+'?embed=1&v='+encodeURIComponent(IGNIS_BUILD));
           if(!res.ok)throw new Error('HTTP '+res.status);
           const html=await res.text();
           const doc=new DOMParser().parseFromString(html,'text/html');
@@ -2485,6 +2494,7 @@
           if(wrap)body.appendChild(wrap.cloneNode(true));
           else body.innerHTML='<div class="wrap"><p style="padding:24px;color:#fff;">'+(isJa?'ルールを読み込めませんでした':'Failed to load rules')+'</p></div>';
           body.dataset.loaded='1';
+          body.dataset.lang=lang;
         }catch(e){
           console.warn('[IGNIS] X rewards load',e);
           body.innerHTML='<div class="wrap"><p style="padding:24px;color:#ffcc80;">'+(isJa?'ルールの読み込みに失敗しました。通信環境を確認して再度お試しください。':'Failed to load rules. Check your connection and try again.')+'</p></div>';
@@ -2999,6 +3009,10 @@
       const extendBtn=document.getElementById('staff-extend-btn');
       if(extendBtn)extendBtn.textContent=isJa?`任期を3か月延長（${STAFF_EXTEND_COST_PER}コイン/人）`:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
       applyProfileI18n();
+      resetXRewardsPanelCache();
+      if(document.getElementById('x-rewards-overlay')?.classList.contains('open')){
+        loadXRewardsPanel(true);
+      }
     }
     function localViewStorageKey(){
       if(!currentUser)return null;
@@ -3971,7 +3985,7 @@
         profileMottoLimit:'最大30文字',
         profileInputBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号がわかる表記・ビジネス宣伝・勧誘・募集などの案内',
         profileS1:'① 何を失いましたか？（複数選択可）',
-        profileS2:'② 何を得ましたか？または得ようとしていますか？（複数選択可）',
+        profileS2:'② その後、何を得ましたか？または得ようとしてますか？（複数選択可）',
         profileS3:'③ 背景と経緯の詳細（300文字以内）',
         profileS3Hint:'①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください',
         profileS4:'④ 読者に伝えたいこと',
@@ -3992,7 +4006,7 @@
         profileMottoLimit:'Max 30 characters',
         profileInputBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, identifiable company/shop names, ads, solicitation, or recruitment',
         profileS1:'① What did you lose? (multi-select)',
-        profileS2:'② What did you gain or are pursuing? (multi-select)',
+        profileS2:'② After that, what did you gain or are trying to gain? (multi-select)',
         profileS3:'③ Background & story (max 300 chars)',
         profileS3Hint:'Based on ①②, describe what happened, what you did next, and hardships',
         profileS4:'④ Message to readers',
@@ -4779,7 +4793,7 @@
       else if(notesEl)notesEl.style.display='none';
       clearBuildingPastModal();
       const bmlLost=document.getElementById('bml-past-lost');if(bmlLost)bmlLost.textContent=isJa?'① 失ったもの':'① What was lost';
-      const bmlGained=document.getElementById('bml-past-gained');if(bmlGained)bmlGained.textContent=isJa?'② 得たもの・得ようとしているもの':'② Gained / pursuing';
+      const bmlGained=document.getElementById('bml-past-gained');if(bmlGained)bmlGained.textContent=isJa?'② その後、得たもの・得ようとしているもの':'② After that — gained / pursuing';
       const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 背景と経緯の詳細':'③ Background & story';
       const bmlMsg=document.getElementById('bml-past-message');if(bmlMsg)bmlMsg.textContent=isJa?'④ 読者へのメッセージ':'④ Message to readers';
       document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
@@ -5075,6 +5089,26 @@
         [[0,0,20,'square',0],[10,5,35,'triangle',30],[-8,12,15,'square',100],[15,-10,50,'cylinder',300]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));
       }
     }
+    function trimOrphanBuildingsHalf(){
+      const orphans=[];
+      buildings.forEach(b=>{
+        const key=b.landKey||landKey(b.x,b.z);
+        if(!landMap[key])orphans.push(b);
+      });
+      if(orphans.length===0)return;
+      const removeCount=Math.floor(orphans.length/2);
+      if(removeCount<=0)return;
+      const removeSet=new Set(orphans.slice(0,removeCount));
+      removeSet.forEach(b=>{
+        if(b.mesh){b.mesh.dispose();}
+        const key=b.landKey||landKey(b.x,b.z);
+        delete buildingMap[key];
+      });
+      for(let i=buildings.length-1;i>=0;i--){
+        if(removeSet.has(buildings[i]))buildings.splice(i,1);
+      }
+      document.getElementById('building-count').textContent=buildings.length;
+    }
     async function loadBuildingsAndLands(){
       try{
         await withTimeout((async()=>{
@@ -5082,6 +5116,7 @@
           await loadLands();
           buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
           try{await withTimeout(loadApprovedProfiles(),5000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
+          trimOrphanBuildingsHalf();
           patchOwnerCenterBuilding();
           drawMinimap();
         })(),isCoarseMobile()?9000:12000,'bootstrapLoad');

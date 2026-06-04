@@ -725,13 +725,15 @@
     #coin-history-loading.show { display: block; }
     #coin-history-updated { font-size:11px;color:rgba(255,255,255,0.25);text-align:right;margin-top:16px;padding-bottom:8px; }
     /* X報酬ルール（ゲーム内オーバーレイ） */
-    #x-rewards-overlay { display:none;position:fixed;inset:0;z-index:255;background:rgba(4,6,14,0.98);backdrop-filter:blur(16px);flex-direction:column;overflow:hidden; }
+    #x-rewards-overlay { display:none;position:fixed;inset:0;z-index:380;background:rgba(4,6,14,0.98);backdrop-filter:blur(16px);flex-direction:column;overflow:hidden;pointer-events:auto; }
     #x-rewards-overlay.open { display:flex; }
     #x-rewards-header { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;flex-shrink:0;border-bottom:1px solid rgba(95,214,255,0.2);background:linear-gradient(to bottom,rgba(8,16,34,0.9),transparent); }
     #x-rewards-title { font-size:16px;font-weight:900;letter-spacing:0.06em;background:linear-gradient(135deg,#5fd6ff,#5b8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
     #x-rewards-close { background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all 0.2s; }
     #x-rewards-close:hover { background:rgba(255,255,255,0.18);color:#fff; }
-    #x-rewards-frame { flex:1;width:100%;border:none;background:#02040a; }
+    #x-rewards-body { flex:1;overflow-y:auto;overflow-x:hidden;background:#02040a;-webkit-overflow-scrolling:touch; }
+    #x-rewards-body .wrap { max-width:1180px;margin:0 auto;padding:24px 16px 48px; }
+    #x-rewards-loading { text-align:center;padding:48px 20px;color:rgba(255,255,255,0.5);font-size:14px;font-weight:700; }
     /* ビルプロフィール入力モーダル */
     #profile-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:350;align-items:center;justify-content:center; }
     #profile-modal.open { display: flex; }
@@ -1219,11 +1221,11 @@
       <button id="profile-modal-close" onclick="closeProfileModal()">×</button>
       <div id="profile-title">🏢 ビルプロフィール申請</div>
       <div id="profile-subtitle">格言と過去の記録を申請できます</div>
+      <div id="profile-input-ban-note" class="profile-alert-note profile-ban-note"></div>
       <div class="custom-label" id="profile-motto-label">💬 格言（ビルの壁に縦表示）</div>
       <div id="profile-motto-limit">最大30文字</div>
       <textarea class="profile-textarea" id="profile-motto-input" rows="2" maxlength="30" placeholder="皆さんに伝えたい一言..."></textarea>
       <div class="profile-counter"><span id="profile-motto-counter">0</span>/30</div>
-      <div id="profile-motto-ban" class="profile-rule-note profile-alert-note"></div>
       <div class="profile-section">
         <div class="profile-section-title" id="profile-s1-title">① 何を失いましたか？（複数選択可）</div>
         <div class="profile-chips" id="chips-lost"></div>
@@ -1245,7 +1247,6 @@
         <div id="profile-s3-hint" style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;"></div>
         <textarea class="profile-textarea" id="profile-detail-input" rows="5" maxlength="300" placeholder=""></textarea>
         <div class="profile-counter"><span id="profile-detail-counter">0</span>/300</div>
-        <div id="profile-s3-ban" class="profile-alert-note profile-ban-note"></div>
       </div>
       <div class="profile-section">
         <div class="profile-section-title" id="profile-s4-title">④ 読者に伝えたいこと<span class="profile-optional-tag" id="profile-s4-optional"></span></div>
@@ -1284,7 +1285,7 @@
       <div id="x-rewards-title">📘 X連携コイン報酬</div>
       <button id="x-rewards-close" type="button" onclick="closeXRewardsRules()">✕ 閉じる</button>
     </div>
-    <iframe id="x-rewards-frame" title="X報酬ルール"></iframe>
+    <div id="x-rewards-body"><div id="x-rewards-loading">読み込み中...</div></div>
   </div>
   <div id="toast"></div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
@@ -1346,7 +1347,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v63';
+    const IGNIS_BUILD='2026-06-04-v64';
+    /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
+    const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
@@ -1619,15 +1622,16 @@
         label:'Retro Game BGM',
         volume:0.65,
         sources:(()=>{
-          const files=['レトロゲームBGM.mp3','レトロゲームbgm.mp3','retro-game-bgm.mp3'];
-          const bases=[getIgnisAdAssetBase(),IGNIS_AD_RAW,'https://motomune.github.io/IGNIS-city/'];
+          const enc=encodeURIComponent(IGNIS_RETRO_BGM_FILE);
+          const bases=[
+            IGNIS_AD_RAW,
+            'https://motomune.github.io/IGNIS-city/',
+            getIgnisAdAssetBase()
+          ];
           const out=[],seen=new Set();
-          files.forEach(f=>{
-            const enc=encodeURIComponent(f);
-            bases.forEach(b=>{
-              const u=b+enc;
-              if(!seen.has(u)){seen.add(u);out.push(u);}
-            });
+          bases.forEach(b=>{
+            const u=b+enc;
+            if(!seen.has(u)){seen.add(u);out.push(u);}
           });
           return out;
         })()
@@ -2389,22 +2393,53 @@
       document.getElementById('coin-history-overlay').classList.add('open');
       await loadCoinHistory();
     }
-    function openXRewardsRules(){
+    let xRewardsLoadPromise=null;
+    function loadXRewardsPanel(){
+      const body=document.getElementById('x-rewards-body');
+      if(!body)return Promise.resolve();
+      if(body.dataset.loaded==='1')return Promise.resolve();
+      if(xRewardsLoadPromise)return xRewardsLoadPromise;
+      const isJa=currentLang==='ja';
+      body.innerHTML='<div id="x-rewards-loading">'+(isJa?'読み込み中...':'Loading...')+'</div>';
+      xRewardsLoadPromise=(async()=>{
+        try{
+          const base=getIgnisAdAssetBase();
+          const res=await fetch(base+'x_rewards_infographic.html?embed=1&v='+encodeURIComponent(IGNIS_BUILD));
+          if(!res.ok)throw new Error('HTTP '+res.status);
+          const html=await res.text();
+          const doc=new DOMParser().parseFromString(html,'text/html');
+          body.innerHTML='';
+          const style=doc.querySelector('style');
+          if(style)body.appendChild(style.cloneNode(true));
+          const particles=doc.querySelector('.particles');
+          if(particles)body.appendChild(particles.cloneNode(true));
+          const wrap=doc.querySelector('.wrap');
+          if(wrap)body.appendChild(wrap.cloneNode(true));
+          else body.innerHTML='<div class="wrap"><p style="padding:24px;color:#fff;">'+(isJa?'ルールを読み込めませんでした':'Failed to load rules')+'</p></div>';
+          body.dataset.loaded='1';
+        }catch(e){
+          console.warn('[IGNIS] X rewards load',e);
+          body.innerHTML='<div class="wrap"><p style="padding:24px;color:#ffcc80;">'+(isJa?'ルールの読み込みに失敗しました。通信環境を確認して再度お試しください。':'Failed to load rules. Check your connection and try again.')+'</p></div>';
+        }finally{
+          xRewardsLoadPromise=null;
+        }
+      })();
+      return xRewardsLoadPromise;
+    }
+    async function openXRewardsRules(){
       try{IgnisAudio.playClick();}catch(e){}
       const ov=document.getElementById('x-rewards-overlay');
-      const frame=document.getElementById('x-rewards-frame');
       if(!ov)return;
-      if(frame){
-        const base=getIgnisAdAssetBase();
-        const want=base+'x_rewards_infographic.html?embed=1';
-        if(frame.dataset.loaded!=='1'||!frame.src||!frame.src.includes('x_rewards_infographic')){
-          frame.src=want;
-          frame.dataset.loaded='1';
-        }
-      }
       ov.classList.add('open');
       document.body.style.overflow='hidden';
-      if(!IgnisAudio.muted)IgnisAudio.playBgmTrack('retro').catch(()=>{});
+      loadXRewardsPanel();
+      if(!IgnisAudio.muted){
+        try{
+          IgnisAudio.init();
+          await IgnisAudio.ensure();
+          await IgnisAudio.playBgmTrack('retro');
+        }catch(e){console.warn('[IGNIS] retro BGM',e);}
+      }
     }
     function closeXRewardsRules(){
       const ov=document.getElementById('x-rewards-overlay');
@@ -3867,12 +3902,11 @@
         profileSubtitle:'格言と過去の記録を申請できます',
         profileMottoLabel:'💬 格言（ビルの壁に縦表示）',
         profileMottoLimit:'最大30文字',
-        profileMottoBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・ビジネス宣伝・勧誘',
+        profileInputBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号などビジネスがわかる表記・ビジネス宣伝・勧誘・募集などの案内',
         profileS1:'① 何を失いましたか？（複数選択可）',
         profileS2:'② 何を得ましたか？または得ようとしていますか？（複数選択可）',
         profileS3:'③ 背景と経緯の詳細（300文字以内）',
         profileS3Hint:'①②を踏まえて、どんな経緯だったか、その後の取り組みや苦労を書いてください',
-        profileS3Ban:'※ <strong>入力禁止</strong>：会社名・屋号などビジネスがわかる表記／ビジネス宣伝／勧誘・募集などの案内',
         profileS4:'④ 読者に伝えたいこと',
         profileS4Opt:'（任意・50文字以内）',
         profileApproval:'📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます',
@@ -3889,12 +3923,11 @@
         profileSubtitle:'Apply a motto and your past story',
         profileMottoLabel:'💬 Motto (shown vertically on the building)',
         profileMottoLimit:'Max 30 characters',
-        profileMottoBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, business ads, or solicitation',
+        profileInputBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, business-identifying names, ads, solicitation, or recruitment',
         profileS1:'① What did you lose? (multi-select)',
         profileS2:'② What did you gain or are pursuing? (multi-select)',
         profileS3:'③ Background & story (max 300 chars)',
         profileS3Hint:'Based on ①②, describe what happened, what you did next, and hardships',
-        profileS3Ban:'※ <strong>Do not enter</strong>: business-identifying names, ads, or solicitation/recruitment',
         profileS4:'④ Message to readers',
         profileS4Opt:' (optional, max 50 chars)',
         profileApproval:'📋 <strong>Note</strong>: An admin will review your submission. You will be notified when approved or rejected.',
@@ -3913,12 +3946,11 @@
       setT('profile-subtitle',L.profileSubtitle);
       setT('profile-motto-label',L.profileMottoLabel);
       setT('profile-motto-limit',L.profileMottoLimit);
-      setH('profile-motto-ban',L.profileMottoBan);
+      setH('profile-input-ban-note',L.profileInputBan);
       setT('profile-s1-title',L.profileS1);
       setT('profile-s2-title',L.profileS2);
       setT('profile-s3-title',L.profileS3);
       setT('profile-s3-hint',L.profileS3Hint);
-      setH('profile-s3-ban',L.profileS3Ban);
       const s4opt=document.getElementById('profile-s4-optional');
       if(s4opt)s4opt.textContent=L.profileS4Opt;
       setT('profile-s4-title',L.profileS4);
@@ -5234,6 +5266,8 @@
         finishLoading();
       }
     })();
+    window.openXRewardsRules=openXRewardsRules;
+    window.closeXRewardsRules=closeXRewardsRules;
   </script>
 </body>
 </html>

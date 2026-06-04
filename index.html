@@ -11,16 +11,36 @@
     #renderCanvas { width: 100vw; height: 100vh; touch-action: none; }
     #ui { position: fixed; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10; }
     #header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: auto auto;
+      align-items: start;
       padding: 16px 24px;
+      padding-top: max(16px, env(safe-area-inset-top, 0px));
+      padding-left: max(24px, env(safe-area-inset-left, 0px));
+      padding-right: max(24px, env(safe-area-inset-right, 0px));
       background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 12px 16px;
     }
+    #header-left {
+      grid-column: 1; grid-row: 1;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+      pointer-events: all; min-width: 0;
+    }
+    #header-right {
+      grid-column: 2; grid-row: 1;
+      display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+      pointer-events: all; flex-shrink: 0;
+      overflow: visible;
+      z-index: 11;
+      min-width: 118px;
+    }
+    #logged-in-area[style*="display: none"] #task-toggle-btn { display: none !important; }
+    #logged-in-area #task-toggle-btn { display: block; }
     #header-start {
       display: flex; align-items: center; gap: 8px; flex-shrink: 0;
     }
-    #ad-slot-wrap { width: 100%; display:flex; justify-content:flex-start; pointer-events:all; margin-top:4px; }
+    #ad-slot-wrap { grid-column: 1 / -1; grid-row: 2; width: 100%; display:flex; justify-content:flex-start; pointer-events:all; margin-top:4px; }
     #ad-slot {
       width: 270px; height: 198px; flex-shrink: 0;
       background: rgba(255,255,255,0.06);
@@ -49,14 +69,21 @@
       color: rgba(255,255,255,0.85); pointer-events: none;
     }
     #ad-slot .ad-carousel-slide.is-video-playing .ad-video-placeholder { display: none; }
-    #logo {
-      font-size: 20px; font-weight: 900; letter-spacing: 0.2em;
-      background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    #header-start, #logo { display: none; }
+    #stats { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(255,255,255,0.78); line-height: 1.4; }
+    #stats .stat-row { white-space: nowrap; }
+    #stats .stat-secondary { font-size: 12px; color: rgba(255,255,255,0.58); }
+    #stats span.stat-value, #stats #building-count, #stats #coin-count, #stats #emp-total-count, #stats #emp-bench-count { font-weight: 700; color: #ff6a00; }
+    #header-util { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    #header-util-primary { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; }
+    #header-util-primary #x-rewards-btn, #header-util-primary #lang-btn { flex-shrink: 0; }
+    #logged-in-area { display: flex; flex-direction: column; gap: 6px; align-items: stretch; width: 100%; }
+    #logged-in-area > button, #login-btn-header { width: 100%; min-width: 112px; box-sizing: border-box; }
+    .header-action-btn {
+      border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
+      padding: 8px 14px; line-height: 1.25; text-align: center; white-space: nowrap;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     }
-    #stats { display: flex; gap: 24px; font-size: 13px; color: rgba(255,255,255,0.7); }
-    #stats span { font-weight: 700; color: #ff6a00; }
-    #user-area { display: flex; align-items: center; gap: 10px; pointer-events: all; }
     #lang-btn {
       background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
       padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
@@ -505,7 +532,7 @@
       padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;
       display:inline-flex;align-items:center;gap:4px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
     }
-    #task-panel { position:fixed;top:80px;right:24px;background:rgba(6,6,16,0.95);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:16px 20px;min-width:240px;z-index:15;pointer-events:all;display:none;backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.6); }
+    #task-panel { position:fixed;top:max(148px,calc(env(safe-area-inset-top,0px) + 132px));right:max(24px,env(safe-area-inset-right,0px));background:rgba(6,6,16,0.95);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:16px 20px;min-width:240px;z-index:15;pointer-events:all;display:none;backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.6); }
     #task-panel.open { display: block; }
     #task-panel-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px; }
     #task-panel-title { font-size:11px;font-weight:800;color:#ff6a00;letter-spacing:0.15em;text-transform:uppercase; }
@@ -518,8 +545,6 @@
     .task-row.task-done .task-label { color:rgba(255,255,255,0.3);text-decoration:line-through; }
     #task-toggle-btn {
       background:rgba(255,106,0,0.15);border:1px solid rgba(255,106,0,0.4);color:#ff6a00;
-      padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;
-      pointer-events:all;flex-shrink:0;white-space:nowrap;
       position: relative;
     }
     #task-toggle-btn:hover { background:rgba(255,106,0,0.28); }
@@ -560,12 +585,43 @@
     .notice-item-time { font-size:10px;color:rgba(255,255,255,0.45); }
     .notice-item-text { font-size:12px;line-height:1.45;color:rgba(255,255,255,0.9); }
     #notice-empty { font-size:12px;color:rgba(255,255,255,0.55);padding:10px 4px; }
-    #building-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:150;align-items:center;justify-content:center; }
-    #building-modal.open { display: flex; }
-    #building-box { background:#0a0a14;border:1px solid rgba(255,106,0,0.4);border-radius:22px;padding:28px 28px 24px;width:340px;max-width:94vw;position:relative;box-shadow:0 0 60px rgba(255,106,0,0.1),0 20px 60px rgba(0,0,0,0.8);animation:modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-    @keyframes modalPop { from{transform:scale(0.88) translateY(10px);opacity:0;} to{transform:scale(1) translateY(0);opacity:1;} }
-    #building-modal-close { position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer; }
-    #building-modal-close:hover { color: #fff; }
+    #building-modal {
+      display:none;position:fixed;inset:0;z-index:150;
+      background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);
+      overflow:hidden;
+      padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+    }
+    #building-modal.open { display:block; }
+    #building-box {
+      background:#0a0a14;border:1px solid rgba(255,106,0,0.4);border-radius:22px;
+      width:min(400px,calc(100vw - 24px));max-width:100%;
+      position:fixed;left:50%;top:max(8px,env(safe-area-inset-top,0px));
+      transform:translateX(-50%);transform-origin:top center;margin:0;
+      max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);max-height:calc(100svh - 16px);
+      overflow:hidden;
+      display:flex;flex-direction:column;
+      box-shadow:0 0 60px rgba(255,106,0,0.1),0 20px 60px rgba(0,0,0,0.8);
+      animation:modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    @keyframes modalPop { from{transform:translateX(-50%) scale(0.94);opacity:0;} to{transform:translateX(-50%) scale(1);opacity:1;} }
+    .building-modal-toolbar {
+      flex-shrink:0;display:flex;justify-content:flex-end;align-items:center;
+      padding:10px 12px 6px;
+      background:rgba(10,10,20,0.98);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    #building-modal-close {
+      background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);
+      border-radius:10px;color:#fff !important;font-size:13px;font-weight:800;
+      min-width:88px;height:40px;padding:0 14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;line-height:1;
+      flex-shrink:0;
+    }
+    #building-modal-close:hover { background:rgba(255,255,255,0.28); }
+    .building-modal-body {
+      overflow-y:auto;-webkit-overflow-scrolling:touch;
+      padding:4px 18px 22px;flex:1;min-height:0;
+    }
     #building-modal-icon { font-size:48px;text-align:center;margin-bottom:10px; }
     #building-modal-rank { font-size:22px;font-weight:900;text-align:center;letter-spacing:0.08em;margin-bottom:4px; }
     #building-modal-floors { font-size:13px;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:20px; }
@@ -680,6 +736,11 @@
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     }
     #coin-history-btn:hover { opacity: 0.85; }
+    #ranking-btn {
+      background: linear-gradient(135deg, rgba(245,158,11,0.55), rgba(238,9,121,0.55));
+      border: 1px solid rgba(255,255,255,0.16); color: #fff;
+    }
+    #ranking-btn:hover, #coin-history-btn:hover, #task-toggle-btn:hover { opacity: 0.88; }
     #coin-count {
       cursor: pointer; padding: 0 4px; border-radius: 6px; transition: background 0.2s;
     }
@@ -791,7 +852,23 @@
     @keyframes profile-flash-fade{0%{opacity:0;}25%{opacity:1;}100%{opacity:0;}}
     @keyframes profile-box-in{0%{opacity:0;transform:scale(0.9) translateY(18px);}100%{opacity:1;transform:scale(1) translateY(0);}}
     #profile-box.profile-entrance { animation:profile-box-in 0.5s cubic-bezier(0.34,1.45,0.64,1); }
-    #building-modal-motto { font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:10px 14px;border-radius:10px;display:none;letter-spacing:0.06em;background:rgba(255,255,255,0.04); }
+    #building-modal-motto {
+      font-size:15px;font-weight:800;text-align:center;margin-bottom:8px;padding:12px 14px;border-radius:10px;
+      display:none;letter-spacing:0.04em;line-height:1.6;
+      background:rgba(255,255,255,0.04);
+      word-break:break-word;white-space:pre-wrap;
+    }
+    #motto-wall-labels { position:fixed;inset:0;pointer-events:none;z-index:12;overflow:hidden; }
+    body.building-modal-open { overflow:hidden; }
+    .motto-wall-label {
+      position:fixed;writing-mode:vertical-rl;text-orientation:mixed;
+      background:rgba(12,8,22,0.94);border:2px solid rgba(255,180,100,0.45);
+      color:#fcd34d;padding:10px 8px;border-radius:10px;
+      font-size:13px;font-weight:900;line-height:1.4;letter-spacing:0.08em;
+      transform:translate(-50%,-50%);max-height:min(44vh,300px);
+      box-shadow:0 6px 24px rgba(0,0,0,0.55);white-space:nowrap;
+      display:none;
+    }
     #building-modal-motto.rank-5 { color:#ee0979;border-left:4px solid #ee0979;background:rgba(238,9,121,0.1); }
     #building-modal-motto.rank-4 { color:#f59e0b;border-left:4px solid #f59e0b;background:rgba(245,158,11,0.1); }
     #building-modal-motto.rank-3 { color:#3b82f6;border-left:4px solid #3b82f6;background:rgba(59,130,246,0.1); }
@@ -802,6 +879,7 @@
     /* 3D格言ラベル */
     .motto-pending-badge { display:inline-block;font-size:10px;background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);color:rgba(255,165,0,0.8);padding:2px 8px;border-radius:6px;margin-left:6px; }
     #building-modal-past { margin:12px 0;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;display:none; }
+    .bm-past-text { font-size:13px;line-height:1.75;color:rgba(255,255,255,0.82);white-space:pre-wrap;word-break:break-word; }
     .bm-past-title { font-size:11px;font-weight:800;color:rgba(255,255,255,0.45);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
     .bm-past-label { font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin:8px 0 4px; }
     .bm-past-chips { display:flex;flex-wrap:wrap;gap:5px; }
@@ -811,18 +889,17 @@
     /* スマホ・タブレット */
     @media (max-width: 768px) {
       #header {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-rows: auto auto;
         padding: 8px 10px;
         padding-top: max(8px, env(safe-area-inset-top, 0px));
-        gap: 4px 6px;
-        align-items: center;
+        padding-left: max(10px, env(safe-area-inset-left, 0px));
+        padding-right: max(10px, env(safe-area-inset-right, 0px));
+        gap: 8px 8px;
       }
-      #header-start { grid-column: 1; grid-row: 1; gap: 5px; min-width: 0; }
+      #header-left { gap: 8px; }
+      #header-right { min-width: 108px; max-width: 132px; }
       #ad-slot { width: 144px; height: 116px; }
-      #logo { font-size: 14px; letter-spacing: 0.1em; min-width: 0; }
-      #stats { font-size: 10px; grid-column: 1 / -1; grid-row: 2; line-height: 1.4; margin: 0; }
+      #stats { font-size: 11px; }
+      #stats .stat-secondary { font-size: 10px; }
       #ad-slot-wrap {
         position: fixed;
         left: max(8px, env(safe-area-inset-left, 0px));
@@ -830,6 +907,8 @@
         z-index: 12;
         margin: 0;
         width: auto;
+        grid-column: auto;
+        grid-row: auto;
       }
       #minimap-wrap {
         left: max(8px, env(safe-area-inset-left, 0px));
@@ -837,23 +916,37 @@
         z-index: 14;
       }
       #minimap-toggle { min-width: 34px; height: 34px; font-size: 13px; top: -12px; right: -12px; }
-      #emp-stats { font-size: 9px !important; }
-      #user-area {
-        grid-column: 2; grid-row: 1;
-        gap: 4px; flex-wrap: nowrap; justify-content: flex-end;
-        max-width: none; align-self: center;
+      #header-util-primary { gap: 5px; }
+      #lang-btn, #sound-toggle, #x-rewards-btn { padding: 6px 10px; font-size: 11px; min-height: 36px; }
+      #login-btn-header, .header-action-btn, #logged-in-area > button {
+        padding: 9px 11px; font-size: 12px; min-height: 40px; min-width: 0;
       }
-      #lang-btn, #sound-toggle, #x-rewards-btn { padding: 4px 8px; font-size: 10px; min-height: 32px; }
-      #login-btn-header { padding: 4px 10px; font-size: 10px; }
-      #logged-in-area { gap: 3px; flex-wrap: wrap; max-width: min(52vw, 200px); justify-content: flex-end; }
-      #user-name { display: none !important; }
-      #task-toggle-btn, #ranking-btn, #coin-history-btn, #logout-btn, .task-utility-btn {
-        padding: 4px 7px; font-size: 9px; max-width: 100%; white-space: normal; line-height: 1.2; text-align: center;
+      #task-toggle-btn {
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        padding: 11px 13px !important;
+        min-height: 46px !important;
+        letter-spacing: 0.02em;
       }
-      #task-toggle-btn { order: 0; }
-      #ranking-btn { font-size: 9px !important; }
-      #task-panel { top: 52px; right: 8px; min-width: 220px; padding: 12px 14px; }
-      #notice-panel { top: 52px; right: 8px; width: min(340px,94vw); }
+      #header-right { min-width: 136px; }
+      #logged-in-area { gap: 6px !important; }
+      #task-panel {
+        top: max(168px, calc(env(safe-area-inset-top, 0px) + 152px));
+        right: max(8px, env(safe-area-inset-right, 0px));
+        left: 8px; width: auto; min-width: 0; max-width: none; padding: 14px 16px;
+      }
+      #task-utility-actions { gap: 6px; margin-top: 10px; }
+      .task-utility-btn {
+        padding: 12px 14px;
+        font-size: 13px;
+        min-height: 44px;
+        border-radius: 12px;
+      }
+      #notice-panel {
+        top: max(168px, calc(env(safe-area-inset-top, 0px) + 152px));
+        right: max(8px, env(safe-area-inset-right, 0px));
+        width: min(340px,94vw);
+      }
       .fly-joystick { width: 106px; height: 106px; }
       .fly-stick-knob { width: 46px; height: 46px; }
       #bottom-btns {
@@ -869,11 +962,13 @@
       #zukan-float-btn { width: 100%; padding: 12px 8px; font-size: 12px; border-radius: 22px; }
       #minimap-canvas { width: 100px; height: 100px; }
       #minimap-label { font-size: 8px; }
-      #fly-hint { top: 68px; font-size: 11px; padding: 6px 14px; max-width: 92vw; white-space: normal; text-align: center; }
+      #fly-hint { top: max(120px, calc(env(safe-area-inset-top, 0px) + 108px)); font-size: 11px; padding: 6px 14px; max-width: 92vw; white-space: normal; text-align: center; }
       #toast { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; max-width: 90vw; white-space: normal; text-align: center; }
       #land-panel { bottom: calc(120px + env(safe-area-inset-bottom, 0px)); padding: 16px 18px; min-width: 0; width: calc(100% - 20px); }
       .land-panel-btn { font-size: 13px; padding: 11px; }
-      #gacha-box, #build-box, #building-box, #auth-box, #profile-box { width: min(340px, 94vw); padding: 18px 14px; max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      #gacha-box, #build-box, #auth-box, #profile-box { width: min(340px, 94vw); padding: 18px 14px; max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      #building-box { width: min(340px, calc(100vw - 20px)); padding: 0; max-height: min(calc(100dvh - 12px), calc(100vh - 12px)); overflow: hidden; }
+      .building-modal-body { padding: 4px 14px 18px; }
       #profile-box { padding: 20px 14px 16px; }
       #profile-submit-btn, #profile-skip-btn { font-size: 12px; padding: 12px 10px; }
       #building-motto-btn, #building-assign-btn, #building-sell-btn { font-size: 12px; padding: 11px 10px; }
@@ -891,15 +986,15 @@
       #book-result-build, #book-result-city, #book-result-retry { font-size: 13px; padding: 11px 18px; }
       #audio-unlock-btn { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; padding: 10px 18px; }
     }
-    #gacha-modal-close,#build-modal-close,#auth-close,#building-modal-close,#profile-modal-close,#land-panel-close {
+    #gacha-modal-close,#build-modal-close,#auth-close,#profile-modal-close,#land-panel-close {
       background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);border-radius:10px;
       color:#fff !important; width:34px;height:34px; display:flex;align-items:center;justify-content:center; line-height:1;
     }
     @media (max-width: 380px) {
-      #logo { font-size: 13px; }
       #stats { font-size: 10px; }
-      #ranking-btn { padding: 6px 9px !important; font-size: 0 !important; line-height: 1; }
-      #ranking-btn::after { content: '🏆'; font-size: 14px; }
+      #header-right { min-width: 104px; max-width: none; }
+      #login-btn-header, .header-action-btn, #logged-in-area > button { font-size: 11px; padding: 8px 9px; min-height: 40px; }
+      #task-toggle-btn { font-size: 12px !important; min-height: 42px !important; }
       #build-btn .acq-icons { font-size: 18px; }
       #build-btn #build-btn-text { font-size: 13px; }
     }
@@ -940,35 +1035,42 @@
   </div>
   <div id="ui">
     <div id="header">
-      <div id="header-start">
-        <div id="logo">IGNIS CITY</div>
-      </div>
-      <div id="stats">
-        <div>
-          <span data-i18n="buildings">ビル数</span>&nbsp;<span id="building-count">0</span><span data-i18n="buildings-unit">棟</span>
-          &nbsp;|&nbsp;
-          <span data-i18n="coins">コイン</span>&nbsp;<span id="coin-count" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
+      <div id="header-left">
+        <div id="stats">
+          <div class="stat-row stat-primary">
+            <span data-i18n="buildings">所有ビル</span>&nbsp;<span id="building-count" class="stat-value">0</span><span data-i18n="buildings-unit">棟</span>
+          </div>
+          <div class="stat-row stat-primary">
+            <span data-i18n="coins">所持コイン</span>&nbsp;<span id="coin-count" class="stat-value" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
+          </div>
+          <div id="emp-stats-block" style="display:none;" title="合計=自分の土地の配属+休職中">
+            <div class="stat-row stat-secondary">
+              <span data-i18n="emp-total">契約社員総数</span>&nbsp;<span id="emp-total-count" class="stat-value">0</span><span data-i18n="emp-unit">人</span>
+            </div>
+            <div class="stat-row stat-secondary">
+              <span data-i18n="emp-bench">休職中</span>&nbsp;<span id="emp-bench-count" class="stat-value">0</span><span data-i18n="emp-unit2">人</span>
+            </div>
+          </div>
         </div>
-        <div id="emp-stats" style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;display:none;" title="合計=自分の土地の配属+休職中">
-          <span data-i18n="emp-total">契約社員総数</span>&nbsp;<span id="emp-total-count">0</span><span data-i18n="emp-unit">人</span>
-          &nbsp;|&nbsp;
-          <span data-i18n="emp-bench">休職中</span>&nbsp;<span id="emp-bench-count">0</span><span data-i18n="emp-unit2">人</span>
+        <div id="header-util">
+          <div id="header-util-primary">
+            <button id="x-rewards-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
+            <button id="lang-btn" type="button" onclick="toggleLang()" title="言語切替">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span id="lang-label">EN</span>
+            </button>
+          </div>
+          <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
         </div>
       </div>
-      <div id="user-area">
-        <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
-        <button id="x-rewards-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
-        <button id="lang-btn" onclick="toggleLang()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          <span id="lang-label">EN</span>
-        </button>
-        <button id="login-btn-header" onclick="openAuthModal()">ログイン / 登録</button>
-        <div id="logged-in-area" style="display:none; align-items:center; gap:12px;">
-          <button id="task-toggle-btn" onclick="toggleTaskPanel()" style="display:none;">📋 タスク<span id="task-notice-badge">0</span></button>
+      <div id="header-right">
+        <button id="login-btn-header" class="header-action-btn" onclick="openAuthModal()">ログイン / 登録</button>
+        <div id="logged-in-area" style="display:none;">
+          <button id="ranking-btn" class="header-action-btn" type="button" onclick="openRanking()">🏆 ランキング</button>
+          <button id="task-toggle-btn" class="header-action-btn" type="button" onclick="toggleTaskPanel()">📋 タスク<span id="task-notice-badge">0</span></button>
           <span id="user-name" style="display:none;" aria-hidden="true"></span>
-          <button id="ranking-btn" onclick="openRanking()" style="background:linear-gradient(135deg,rgba(245,158,11,0.55),rgba(238,9,121,0.55));border:1px solid rgba(255,255,255,0.16);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">🏆 ランキング</button>
-          <button id="coin-history-btn" onclick="openCoinHistory()">💰 履歴</button>
-          <button id="logout-btn" onclick="handleLogout()">ログアウト</button>
+          <button id="coin-history-btn" class="header-action-btn" type="button" onclick="openCoinHistory()">💰 履歴</button>
+          <button id="logout-btn" class="header-action-btn" type="button" onclick="handleLogout()">ログアウト</button>
         </div>
       </div>
       <div id="ad-slot-wrap">
@@ -1013,9 +1115,13 @@
     <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
     <div id="minimap-label">MINIMAP</div>
   </div>
-  <div id="building-modal">
+  <div id="motto-wall-labels" aria-hidden="true"></div>
+  <div id="building-modal" onclick="if(event.target===this)closeBuildingModal()">
     <div id="building-box">
-      <button id="building-modal-close" onclick="closeBuildingModal()">×</button>
+      <div class="building-modal-toolbar">
+        <button id="building-modal-close" type="button" onclick="closeBuildingModal()">✕ 閉じる</button>
+      </div>
+      <div class="building-modal-body">
       <div id="building-modal-icon">🏢</div>
       <div id="building-modal-rank"></div>
       <div id="building-modal-floors"></div>
@@ -1047,6 +1153,7 @@
       <button id="building-motto-btn" type="button" onclick="openProfileFromBuildingModal()" style="display:none;">💬 格言・過去詳細を申請</button>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
+      </div>
     </div>
   </div>
   <div id="grid-legend">
@@ -1232,6 +1339,7 @@
       <button id="profile-modal-close" onclick="closeProfileModal()">×</button>
       <div id="profile-title">🏢 ビルプロフィール申請</div>
       <div id="profile-subtitle">格言と過去の記録を申請できます</div>
+      <div id="profile-resubmit-hint" class="profile-brevity-hint" style="display:none;color:#7dd3fc;font-weight:700;"></div>
       <div id="profile-input-ban-note" class="profile-alert-note profile-ban-note"></div>
       <div class="custom-label" id="profile-motto-label">💬 格言（ビルの壁に縦表示）</div>
       <div id="profile-motto-hint" class="profile-brevity-hint"></div>
@@ -1357,7 +1465,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-04-v67';
+    const IGNIS_BUILD='2026-06-05-v81';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -1781,8 +1889,7 @@
         }
         if(event==='SIGNED_OUT'){
           currentUser=null;
-          document.getElementById('login-btn-header').style.display='block';
-          document.getElementById('logged-in-area').style.display='none';
+          setAuthHeaderLoggedIn(false);
         }
       });
     }
@@ -2830,9 +2937,9 @@
       const isJa=currentLang==='ja';
       document.getElementById('lang-label').textContent=isJa?'EN':'JP';
       document.getElementById('auth-lang-label').textContent=isJa?'EN':'JP';
-      document.querySelector('[data-i18n="buildings"]').textContent=isJa?'ビル数':'Buildings';
+      document.querySelector('[data-i18n="buildings"]').textContent=isJa?'所有ビル':'Owned Buildings';
       document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
-      document.querySelector('[data-i18n="coins"]').textContent=isJa?'コイン':'Coins';
+      const coinsLabel=document.querySelector('[data-i18n="coins"]');if(coinsLabel)coinsLabel.textContent=isJa?'所持コイン':'Coins';
       document.getElementById('coin-count').title=isJa?'クリックでコイン履歴を表示':'Click to view coin history';
       const xRewardsBtn=document.getElementById('x-rewards-btn');
       if(xRewardsBtn){
@@ -2874,7 +2981,6 @@
       if(xRewardsClose)xRewardsClose.textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
       document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
-      document.getElementById('task-toggle-btn').textContent=isJa?'📋 タスク':'📋 Tasks';
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
       const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'🔔 通知':'🔔 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
@@ -3001,6 +3107,7 @@
       set('x-setup-save',isJa?'保存':'Save');
       set('bml-views',isJa?'閲覧回数':'Views');
       set('building-modal-notes-label',isJa?'📝 備考':'📝 Notes');
+      set('building-modal-close',isJa?'✕ 閉じる':'✕ Close');
       const xLabel=document.getElementById('x-username-label');
       if(xLabel)xLabel.innerHTML=isJa?'X（Twitter）アカウント名 <span style="color:#ff6a00;">*</span>':'X (Twitter) username <span style="color:#ff6a00;">*</span>';
       const xInput=document.getElementById('input-x-username');
@@ -3065,6 +3172,18 @@
       const n=await getTodayUniqueViewCount();
       if(task&&n>=task.goal)await completeTask('view');
     }
+    function setAuthHeaderLoggedIn(loggedIn){
+      const loginBtn=document.getElementById('login-btn-header');
+      const loggedArea=document.getElementById('logged-in-area');
+      const taskBtn=document.getElementById('task-toggle-btn');
+      if(loginBtn)loginBtn.style.display=loggedIn?'none':'block';
+      if(loggedArea)loggedArea.style.display=loggedIn?'flex':'none';
+      if(taskBtn)taskBtn.style.display=loggedIn?'block':'none';
+      if(!loggedIn){
+        document.getElementById('task-panel')?.classList.remove('open');
+        document.getElementById('emp-stats-block').style.display='none';
+      }
+    }
     // ========================================
     // デイリータスク
     // ========================================
@@ -3080,7 +3199,7 @@
       renderTaskUI();
       await refreshTaskUI();
       await updateViewTaskProgressLabel();
-      document.getElementById('task-toggle-btn').style.display='block';
+      setAuthHeaderLoggedIn(true);
     }
     async function completeTask(taskType){
       if(!currentUser)return;
@@ -3357,15 +3476,15 @@
           }
         }
         currentUser.xUsername=xName;
-        document.getElementById('emp-stats').style.display='block';
-        document.getElementById('login-btn-header').style.display='none';
-        document.getElementById('logged-in-area').style.display='flex';
+        document.getElementById('emp-stats-block').style.display='block';
+        setAuthHeaderLoggedIn(true);
         const nameEl=document.getElementById('user-name');
         nameEl.textContent=xName?`@${xName}`:(isJa?'X未登録':'X not set');
         nameEl.style.cursor=xName?'default':'pointer';
         nameEl.title=xName?'':(isJa?'クリックしてX名を登録':'Click to set X username');
         nameEl.onclick=xName?null:()=>openXSetupModal();
         redrawAllTiles();
+        loadApprovedProfiles().then(()=>scheduleMottoRefresh()).catch(e=>console.warn('[IGNIS] motto reload',e.message));
         if(!restoring){
           showToast(xName?(isJa?`👋 おかえり、@${xName}！`:`👋 Welcome back, @${xName}!`):(isJa?'👋 おかえり！':'👋 Welcome back!'));
         }
@@ -3410,15 +3529,11 @@
     }
     async function handleLogout(){
       await db.auth.signOut();currentUser=null;
-      document.getElementById('login-btn-header').style.display='block';
-      document.getElementById('logged-in-area').style.display='none';
+      setAuthHeaderLoggedIn(false);
       document.getElementById('user-name').textContent='';
       document.getElementById('coin-count').textContent='0';
-      document.getElementById('emp-stats').style.display='none';
       document.getElementById('emp-total-count').textContent='0';
       document.getElementById('emp-bench-count').textContent='0';
-      document.getElementById('task-toggle-btn').style.display='none';
-      document.getElementById('task-panel').classList.remove('open');
       document.getElementById('coin-history-overlay').classList.remove('open');
       closeXRewardsRules();
       coinHistoryData=[];
@@ -4008,7 +4123,9 @@
         otherHint:'💡 その他を選んだときだけ入力。短くまとめてください',
         submit:'申請する',
         skip:'スキップ',
-        mottoBtn:'💬 格言・過去詳細を申請'
+        mottoBtn:'💬 格言・過去詳細を申請',
+        mottoBtnEdit:'💬 格言・過去詳細を修正して再申請',
+        profileResubmitHint:'✏️ 承認済みの内容が入力されています。続きから修正して再申請できます'
       }:{
         profileTitle:'🏢 Building Profile',
         profileSubtitle:'Apply a motto and your past story',
@@ -4030,12 +4147,21 @@
         otherHint:'💡 Only when Other is selected — write briefly',
         submit:'Submit',
         skip:'Skip',
-        mottoBtn:'💬 Apply Motto / Past'
+        mottoBtn:'💬 Apply Motto / Past',
+        mottoBtnEdit:'💬 Edit & resubmit motto / past',
+        profileResubmitHint:'✏️ Approved content is pre-filled. Edit and resubmit anytime.'
       };
       const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
       const setH=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
       setT('profile-title',L.profileTitle);
       setT('profile-subtitle',L.profileSubtitle);
+      const resubmitHint=document.getElementById('profile-resubmit-hint');
+      if(resubmitHint){
+        if(profileState.hasApproved){
+          resubmitHint.textContent=L.profileResubmitHint;
+          resubmitHint.style.display='block';
+        }else resubmitHint.style.display='none';
+      }
       setT('profile-motto-label',L.profileMottoLabel);
       setT('profile-motto-hint',L.profileMottoHint);
       setH('profile-input-ban-note',L.profileInputBan);
@@ -4067,7 +4193,7 @@
       setT('profile-skip-btn',L.skip);
       const mottoBtn=document.getElementById('building-motto-btn');
       if(mottoBtn&&mottoBtn.style.display!=='none'){
-        mottoBtn.textContent=L.mottoBtn;
+        mottoBtn.textContent=profileState.buildingHasApproved?L.mottoBtnEdit:L.mottoBtn;
       }
       if(document.getElementById('profile-modal')?.classList.contains('open')){
         const lostSel=getSelectedChips('chips-lost');
@@ -4091,7 +4217,7 @@
         box.classList.add('profile-entrance');
       }
     }
-    let profileState={gx:0,gz:0};
+    let profileState={gx:0,gz:0,hasApproved:false,buildingHasApproved:false};
     function chipGroupKey(containerId){return containerId==='chips-lost'?'lost':'gained';}
     function formatChipDisplayLabel(v){
       const isJa=currentLang==='ja';
@@ -4123,6 +4249,7 @@
             if(!this.classList.contains('active')&&inp)inp.value='';
             syncProfileOtherWrap(containerId);
           }
+          if(typeof saveProfileDraft==='function')saveProfileDraft();
         });
       });
       const inp=document.getElementById(`chips-${key}-other-input`);
@@ -4152,8 +4279,93 @@
       }
       return true;
     }
-    function openProfileModal(gx,gz,opts){
+    // ===== 申請フォームの下書き（未送信でも前回の続きから編集できる） =====
+    function profileDraftKey(gx,gz){
+      const uid=(currentUser&&currentUser.id)||'anon';
+      return`ignis_profile_draft_${uid}_${gx}_${gz}`;
+    }
+    function saveProfileDraft(){
+      try{
+        if(profileState.gx==null||profileState.gz==null)return;
+        const draft={
+          motto:(document.getElementById('profile-motto-input')||{}).value||'',
+          detail:(document.getElementById('profile-detail-input')||{}).value||'',
+          message:(document.getElementById('profile-message-input')||{}).value||'',
+          lost:getSelectedChips('chips-lost'),
+          gained:getSelectedChips('chips-gained'),
+          ts:Date.now()
+        };
+        const empty=!draft.motto&&!draft.detail&&!draft.message&&!draft.lost.length&&!draft.gained.length;
+        if(empty){localStorage.removeItem(profileDraftKey(profileState.gx,profileState.gz));return;}
+        localStorage.setItem(profileDraftKey(profileState.gx,profileState.gz),JSON.stringify(draft));
+      }catch(e){/* localStorage 不可環境は黙ってスキップ */}
+    }
+    function loadProfileDraft(gx,gz){
+      try{const s=localStorage.getItem(profileDraftKey(gx,gz));return s?JSON.parse(s):null;}catch(e){return null;}
+    }
+    function clearProfileDraft(gx,gz){try{localStorage.removeItem(profileDraftKey(gx,gz));}catch(e){}}
+    let profileDraftListenersReady=false;
+    function ensureProfileDraftListeners(){
+      if(profileDraftListenersReady)return;
+      profileDraftListenersReady=true;
+      ['profile-motto-input','profile-detail-input','profile-message-input',
+       'chips-lost-other-input','chips-gained-other-input'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.addEventListener('input',saveProfileDraft);
+      });
+    }
+    async function prefillProfileFormFromStorage(gx,gz){
+      profileState.hasApproved=false;
+      ensureProfileDraftListeners();
+      if(!db||!currentUser)return;
+      try{
+        const uid=currentUser.id;
+        const{data:approvedProf}=await db.from('building_profiles')
+          .select('motto_text,notes_text')
+          .eq('building_x',gx).eq('building_z',gz).eq('status','approved').maybeSingle();
+        const{data:pendingProf}=await db.from('building_profiles')
+          .select('motto_text,notes_text')
+          .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','pending').maybeSingle();
+        const prof=approvedProf||pendingProf;
+        if(prof&&prof.motto_text){
+          document.getElementById('profile-motto-input').value=prof.motto_text;
+          if(approvedProf)profileState.hasApproved=true;
+        }
+        const{data:approvedPast}=await db.from('building_past_details')
+          .select('lost_items,gained_items,background_detail,current_positive')
+          .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','approved').maybeSingle();
+        const{data:pendingPast}=await db.from('building_past_details')
+          .select('lost_items,gained_items,background_detail,current_positive')
+          .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','pending').maybeSingle();
+        const past=approvedPast||pendingPast;
+        if(past){
+          if(approvedPast)profileState.hasApproved=true;
+          buildProfileChips('chips-lost',past.lost_items||[]);
+          buildProfileChips('chips-gained',past.gained_items||[]);
+          const detailIn=document.getElementById('profile-detail-input');
+          const msgIn=document.getElementById('profile-message-input');
+          if(detailIn)detailIn.value=past.background_detail||'';
+          if(msgIn)msgIn.value=past.current_positive||'';
+        }
+        // 未送信の下書きがあれば、それを最優先で復元（＝前回の続きから編集）
+        applyProfileDraftOverlay(gx,gz);
+      }catch(e){console.warn('prefillProfileFormFromStorage:',e.message);}
+    }
+    function applyProfileDraftOverlay(gx,gz){
+      const d=loadProfileDraft(gx,gz);
+      if(!d)return;
+      const setVal=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null&&v!=='')el.value=v;};
+      setVal('profile-motto-input',d.motto);
+      setVal('profile-detail-input',d.detail);
+      setVal('profile-message-input',d.message);
+      if((d.lost&&d.lost.length)||(d.gained&&d.gained.length)){
+        if(d.lost&&d.lost.length)buildProfileChips('chips-lost',d.lost);
+        if(d.gained&&d.gained.length)buildProfileChips('chips-gained',d.gained);
+      }
+    }
+    async function openProfileModal(gx,gz,opts){
       profileState.gx=gx;profileState.gz=gz;
+      profileState.hasApproved=false;
       applyProfileI18n();
       buildProfileChips('chips-lost',[]);
       buildProfileChips('chips-gained',[]);
@@ -4164,11 +4376,16 @@
       document.getElementById('profile-motto-input').value='';
       document.getElementById('profile-detail-input').value='';
       document.getElementById('profile-message-input').value='';
+      const resubmitHint=document.getElementById('profile-resubmit-hint');
+      if(resubmitHint)resubmitHint.style.display='none';
+      await prefillProfileFormFromStorage(gx,gz);
       const submitBtn=document.getElementById('profile-submit-btn');
       document.querySelectorAll('#profile-box textarea').forEach(el=>{el.disabled=false;});
       document.querySelectorAll('#profile-box .profile-chip').forEach(el=>{el.style.pointerEvents='';el.style.opacity='';});
       submitBtn.disabled=false;submitBtn.style.opacity='1';
-      submitBtn.textContent=currentLang==='ja'?'申請する':'Submit';
+      submitBtn.textContent=profileState.hasApproved
+        ?(currentLang==='ja'?'修正して再申請':'Resubmit edits')
+        :(currentLang==='ja'?'申請する':'Submit');
       applyProfileI18n();
       document.getElementById('profile-modal').classList.add('open');
       if(opts&&opts.fromBuilding)playProfileApplyEntrance();
@@ -4178,7 +4395,7 @@
       }
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
-    function openProfileFromBuildingModal(){
+    async function openProfileFromBuildingModal(){
       if(!currentModalBuilding)return;
       const b=currentModalBuilding;
       const btn=document.getElementById('building-motto-btn');
@@ -4188,7 +4405,7 @@
         btn.classList.add('motto-btn-ripple');
       }
       closeBuildingModal();
-      openProfileModal(b.x,b.z,{fromBuilding:true});
+      await openProfileModal(b.x,b.z,{fromBuilding:true});
     }
     async function submitBuildingProfile(){
       if(!currentUser)return;
@@ -4222,91 +4439,240 @@
           },{onConflict:'building_x,building_z'});
           if(e2)throw e2;
         }
+        clearProfileDraft(profileState.gx,profileState.gz);
         closeProfileModal();
-        showToast('📨 申請しました。確認後に公開されます');
+        const isJa=currentLang==='ja';
+        showToast(isJa?'📨 再申請しました。確認後に公開されます':'📨 Resubmitted. It will publish after review.');
+        // 申請直後に、自分の壁へ格言プレビューを反映
+        if(motto)loadApprovedProfiles().catch(()=>{});
       }catch(e){
         console.warn('profile submit error:',e.message);
-        showToast('申請に失敗しました');
-        btn.disabled=false;btn.textContent=currentLang==='ja'?'申請する':'Submit';
+        const isJa=currentLang==='ja';
+        showToast(isJa?'申請に失敗しました':'Submit failed');
+        btn.disabled=false;
+        btn.textContent=profileState.hasApproved
+          ?(isJa?'修正して再申請':'Resubmit edits')
+          :(isJa?'申請する':'Submit');
       }
     }
     // 承認済みプロフィールのキャッシュ
     let approvedProfiles={};
+    const MOTTO_WALL_MAX_CHARS=18;
     async function loadApprovedProfiles(){
       if(!db)return;
       try{
-        const{data,error}=await db.from('building_profiles').select('building_x,building_z,motto_text,notes_text').eq('status','approved');
+        const{data,error}=await db.from('building_profiles').select('building_x,building_z,motto_text,notes_text,status,user_id').eq('status','approved');
         if(error)throw error;
-        approvedProfiles={};
-        (data||[]).forEach(p=>{approvedProfiles[landKey(p.building_x,p.building_z)]=p;});
-        applyApprovedMottosToScene();
+        const next={};
+        (data||[]).forEach(p=>{next[landKey(p.building_x,p.building_z)]=Object.assign({},p,{own:false,pending:false});});
+        // 自分の申請中（pending）格言は、本人にだけ壁にプレビュー表示する
+        if(currentUser&&currentUser.id){
+          try{
+            const{data:mine}=await db.from('building_profiles')
+              .select('building_x,building_z,motto_text,notes_text,status,user_id')
+              .eq('user_id',currentUser.id).eq('status','pending');
+            (mine||[]).forEach(p=>{
+              const k=landKey(p.building_x,p.building_z);
+              if(!next[k])next[k]=Object.assign({},p,{own:true,pending:true});
+            });
+          }catch(e){console.warn('[IGNIS] own pending mottos',e.message);}
+        }
+        approvedProfiles=next;
+        console.warn('[IGNIS] mottos loaded:',Object.keys(approvedProfiles).length);
+        scheduleMottoRefresh();
       }catch(e){console.warn('loadApprovedProfiles error:',e.message);}
     }
-    function applyApprovedMottosToScene(){
-      if(!scene)return;
+    function getBuildingForLandKey(key){
+      const list=buildings.filter(b=>{
+        const k=b.landKey||landKey(b.x,b.z);
+        return k===key&&b.mesh&&!b.mesh.isDisposed();
+      });
+      if(list.length){
+        return list.reduce((best,b)=>{
+          const tf=b.totalFloors||b.baseFloors||0;
+          const tb=best.totalFloors||best.baseFloors||0;
+          return tf>tb?b:best;
+        });
+      }
+      const mapped=buildingMap[key];
+      return mapped&&mapped.mesh&&!mapped.mesh.isDisposed()?mapped:null;
+    }
+    function applyMottoForLandKey(key){
+      // 壁の格言は、常にカメラを向き地上の高さに出る DOM ラベル（updateMottoWallLabels）で表示する。
+      // 旧バージョンが生成した 3D プレートが残っていれば除去（重複表示・高所表示の防止）。
+      if(scene){const old=scene.getMeshByName('motto_'+key);if(old)old.dispose();}
+    }
+    function scheduleMottoRefresh(){
+      [0,400,1000,2200,4000,6500].forEach(ms=>setTimeout(()=>applyApprovedMottosToScene(),ms));
+    }
+    const mottoLabelEls=new Map();
+    let mottoLabelObserver=null;
+    function projectWorldToScreen(world){
+      const cam=scene&&scene.activeCamera;
+      const eng=scene&&scene.getEngine();
+      if(!cam||!eng||!window.BABYLON)return null;
+      const canvas=eng.getRenderingCanvas();
+      if(!canvas)return null;
+      const rect=canvas.getBoundingClientRect();
+      const vw=eng.getRenderWidth(),vh=eng.getRenderHeight();
+      const trans=scene.getTransformMatrix();
+      const viewport=cam.viewport.toGlobal(vw,vh);
+      const p=BABYLON.Vector3.Project(world,BABYLON.Matrix.Identity(),trans,viewport);
+      const scaleX=rect.width/vw,scaleY=rect.height/vh;
+      return{
+        x:rect.left+p.x*scaleX,
+        y:rect.top+p.y*scaleY,
+        z:p.z,
+        visible:p.z>0.001&&p.z<=1.05
+      };
+    }
+    function updateMottoWallLabels(){
+      const layer=document.getElementById('motto-wall-labels');
+      if(!layer||!scene||!window.BABYLON)return;
+      const cam=scene.activeCamera;
+      const eng=scene.getEngine();
+      if(!cam||!eng){layer.querySelectorAll('.motto-wall-label').forEach(el=>{el.style.display='none';});return;}
+      const active=new Set();
       Object.entries(approvedProfiles).forEach(([key,p])=>{
         if(!p.motto_text)return;
-        const b=buildingMap[key];if(!b)return;
-        addMottoMesh(b.x,b.z,p.motto_text,b.floors);
+        const b=getBuildingForLandKey(key);
+        if(!b||!b.mesh||b.mesh.isDisposed())return;
+        const chars=splitMottoChars(p.motto_text);
+        const {localPos}=getMottoWallPlacementLocal(b,chars.length);
+        const world=BABYLON.Vector3.TransformCoordinates(localPos,b.mesh.getWorldMatrix());
+        const coord=projectWorldToScreen(world);
+        if(!coord||!coord.visible)return;
+        active.add(key);
+        let el=mottoLabelEls.get(key);
+        if(!el){
+          el=document.createElement('div');
+          el.className='motto-wall-label';
+          layer.appendChild(el);
+          mottoLabelEls.set(key,el);
+        }
+        el.textContent=chars.join('');
+        el.style.left=Math.round(coord.x)+'px';
+        el.style.top=Math.round(coord.y)+'px';
+        el.style.display='block';
+        const star=getStarByFloors(b.totalFloors||b.baseFloors||1);
+        el.style.color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
+        // 自分の申請中（pending）は半透明＋点線枠でプレビュー表示
+        el.style.opacity=p.pending?'0.6':'1';
+        el.style.borderStyle=p.pending?'dashed':'solid';
+        el.title=p.pending?'審査中（あなたにだけ表示）':'';
+      });
+      mottoLabelEls.forEach((el,key)=>{if(!active.has(key))el.style.display='none';});
+    }
+    function ensureMottoLabelLoop(){
+      if(mottoLabelObserver||!scene)return;
+      mottoLabelObserver=scene.onBeforeRenderObservable.add(()=>{
+        if(Object.keys(approvedProfiles).length)updateMottoWallLabels();
       });
     }
-    // 会員証ランク仕様：5=伝説(レインボー演出)、4=エピック(金演出)、3-1=グレー統一
-    function hexToRgba(hex,a){const h=hex.replace('#','');const r=parseInt(h.substring(0,2),16),g=parseInt(h.substring(2,4),16),b=parseInt(h.substring(4,6),16);return `rgba(${r},${g},${b},${a})`;}
-    const animatedMottos=new Map();
-    let mottoAnimObserver=null;
-    function ensureMottoAnimation(){
-      if(mottoAnimObserver||!scene)return;
-      mottoAnimObserver=scene.onBeforeRenderObservable.add(()=>{
-        const t=performance.now();
-        animatedMottos.forEach((entry)=>{
-          if(t-entry.lastDraw<66)return;
-          entry.lastDraw=t;drawMottoTexture(entry,t);
-        });
+    function applyApprovedMottosToScene(){
+      if(!scene||!window.BABYLON)return;
+      let n=0;
+      Object.keys(approvedProfiles).forEach(key=>{
+        try{applyMottoForLandKey(key);}catch(e){console.warn('[IGNIS] motto mesh',key,e.message);}
+        if(getBuildingForLandKey(key))n++;
       });
+      try{updateMottoWallLabels();}catch(e){console.warn('[IGNIS] motto labels',e.message);}
+      ensureMottoLabelLoop();
+      console.warn('[IGNIS] motto wall labels:',n,'/',Object.keys(approvedProfiles).length);
     }
-    function drawRoundedRectPath(ctx,w,h,r){
-      ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(w-r,0);ctx.quadraticCurveTo(w,0,w,r);
-      ctx.lineTo(w,h-r);ctx.quadraticCurveTo(w,h,w-r,h);
-      ctx.lineTo(r,h);ctx.quadraticCurveTo(0,h,0,h-r);
-      ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
+    function getMottoWallPlacementLocal(b,charCount){
+      const prism=normalizePrism(b.shape||'square');
+      const w=PRISMS[prism]?.w||5.5;
+      const height=Math.max((b.totalFloors||b.baseFloors||1)*0.5,2);
+      const pos=b.mesh.getAbsolutePosition();
+      const cam=scene.activeCamera;
+      const camPos=cam?cam.position:new BABYLON.Vector3(0,40,-70);
+      const toCamX=camPos.x-pos.x,toCamZ=camPos.z-pos.z;
+      let lx=0,lz=w/2+0.58,rotY=0;
+      if(Math.abs(toCamX)>=Math.abs(toCamZ)){
+        const sign=toCamX>=0?1:-1;
+        lx=sign*(w/2+0.58);lz=0;rotY=sign>0?-Math.PI/2:Math.PI/2;
+      }else{
+        const sign=toCamZ>=0?1:-1;
+        lz=sign*(w/2+0.58);lx=0;rotY=sign>0?0:Math.PI;
+      }
+      // 高層ビルでも地上の目線の高さで読めるよう、壁の下部に固定表示する
+      const cc=Math.max(1,charCount||6);
+      const planeH=Math.min(Math.max(cc*0.62+0.6,3),Math.min(height*0.9,15));
+      const bottomY=Math.min(2,height*0.15);
+      const centerWorldY=Math.max(planeH/2,Math.min(bottomY+planeH/2,height-planeH/2-0.3));
+      const localY=centerWorldY-height/2; // mesh中心基準のローカルYに変換
+      return{localPos:new BABYLON.Vector3(lx,localY,lz),rotY,height,w,planeH,centerWorldY};
     }
-    const MOTTO_CARD_COLORS={5:'#ee0979',4:'#f59e0b',3:'#3b82f6',2:'#22c55e',1:'#94a3b8'};
-    function drawMottoTexture(entry,t){
-      const{tex,text,star,fontSize,texW,texH}=entry;
-      const color=MOTTO_CARD_COLORS[star]||'#94a3b8';
+    const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
+    function splitMottoChars(text){
+      const raw=Array.from(String(text||'').replace(/\s+/g,'').trim()).filter(Boolean);
+      if(raw.length<=MOTTO_WALL_MAX_CHARS)return raw;
+      return raw.slice(0,MOTTO_WALL_MAX_CHARS).concat(['…']);
+    }
+    function drawMottoWallTexture(entry){
+      const{tex,chars,color,fontSize,texW,texH}=entry;
       const ctx=tex.getContext();
       ctx.clearRect(0,0,texW,texH);
-      drawRoundedRectPath(ctx,texW,texH,18);
-      ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fill();
-      ctx.strokeStyle=hexToRgba(color,0.8);ctx.lineWidth=3;ctx.stroke();
-      ctx.shadowColor=hexToRgba(color,0.85);ctx.shadowBlur=12;
+      ctx.fillStyle='#120a1c';
+      ctx.fillRect(0,0,texW,texH);
+      ctx.strokeStyle='rgba(255,200,120,0.55)';
+      ctx.lineWidth=2;
+      ctx.strokeRect(1,1,texW-2,texH-2);
       ctx.fillStyle=color;
-      ctx.font=`bold ${fontSize}px "Noto Sans JP",sans-serif`;
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(text,texW/2,texH/2);
-      ctx.shadowColor='transparent';ctx.shadowBlur=0;
-      tex.update();
+      ctx.font=`bold ${fontSize}px "Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif`;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.85)';
+      ctx.shadowBlur=6;
+      const step=texH/(chars.length+1);
+      chars.forEach((ch,i)=>{ctx.fillText(ch,texW/2,step*(i+1));});
+      ctx.shadowBlur=0;
+      tex.update(false);
     }
-    function addMottoMesh(x,z,text,floors){
+    function addMottoMesh(building,text){
+      if(!scene||!building||!building.mesh||!text)return;
+      const x=building.x,z=building.z;
+      const chars=splitMottoChars(text);
+      if(!chars.length)return;
       const meshId='motto_'+x+'_'+z;
-      const old=scene.getMeshByName(meshId);if(old){old.dispose();animatedMottos.delete(meshId);}
-      const star=getStarByFloors(floors);
-      const planeH=1.4;const planeW=Math.min(text.length*0.8+1,7);
-      const plane=BABYLON.MeshBuilder.CreatePlane(meshId,{width:planeW,height:planeH},scene);
-      const yPos=Math.max(floors*0.5*0.7,2);
-      plane.position=new BABYLON.Vector3(x,yPos,z+3.3);
+      const old=scene.getMeshByName(meshId);if(old)old.dispose();
+      const totalFloors=Math.max(1,Number(building.totalFloors||building.baseFloors)||1);
+      const star=getStarByFloors(totalFloors);
+      const color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
+      const charCount=chars.length;
+      const{localPos,rotY,height}=getMottoWallPlacementLocal(building);
+      const planeW=Math.min(3.2,0.85+charCount*0.07);
+      const planeH=Math.min(Math.max(charCount*0.78+0.8,3.2),height*0.95);
+      const side=BABYLON.Mesh.DOUBLESIDE||2;
+      const plane=BABYLON.MeshBuilder.CreatePlane(meshId,{width:planeW,height:planeH,sideOrientation:side},scene);
+      const worldPos=BABYLON.Vector3.TransformCoordinates(localPos,building.mesh.getWorldMatrix());
+      plane.parent=null;
+      plane.position.copyFrom(worldPos);
+      const euler=building.mesh.rotationQuaternion
+        ?building.mesh.rotationQuaternion.toEulerAngles()
+        :building.mesh.rotation;
+      plane.rotation=new BABYLON.Vector3(0,euler.y+rotY,0);
       plane.isPickable=false;
-      const texW=512;const texH=128;
-      const tex=new BABYLON.DynamicTexture('mottotex_'+x+'_'+z,{width:texW,height:texH},scene,false);
-      tex.hasAlpha=true;
-      const fontSize=Math.min(56,Math.floor(texW/(text.length+0.5)));
-      const entry={mesh:plane,tex,text,star,fontSize,texW,texH,lastDraw:0};
-      drawMottoTexture(entry,performance.now());
+      plane.renderingGroupId=2;
+      plane.alwaysSelectAsActiveMesh=false;
+      const texW=128;
+      const texH=Math.min(1024,Math.max(240,charCount*84));
+      const fontSize=Math.min(58,Math.max(20,Math.floor(texH/(charCount+1.3))));
+      const tex=new BABYLON.DynamicTexture('mottotex_'+x+'_'+z,{width:texW,height:texH},scene,true);
+      drawMottoWallTexture({tex,chars,color,fontSize,texW,texH});
       const mat=new BABYLON.StandardMaterial('mottomat_'+x+'_'+z,scene);
-      mat.diffuseTexture=tex;mat.emissiveColor=new BABYLON.Color3(1,1,1);
-      mat.backFaceCulling=false;mat.disableLighting=true;
+      mat.diffuseTexture=tex;
+      mat.emissiveTexture=tex;
+      mat.backFaceCulling=false;
+      mat.disableLighting=true;
+      mat.specularColor=new BABYLON.Color3(0,0,0);
+      mat.emissiveColor=new BABYLON.Color3(1,1,1);
+      mat.diffuseColor=new BABYLON.Color3(1,1,1);
+      mat.transparencyMode=BABYLON.Material.MATERIAL_OPAQUE;
+      mat.disableDepthWrite=true;
+      mat.zOffset=-4;
       plane.material=mat;
-      plane.onDisposeObservable.add(()=>{animatedMottos.delete(meshId);});
     }
     // ========================================
     // ビル詳細モーダル
@@ -4531,7 +4897,7 @@
     // ========================================
     async function refreshEmployeeHeader(){
       if(!currentUser){
-        document.getElementById('emp-stats').style.display='none';
+        document.getElementById('emp-stats-block').style.display='none';
         return;
       }
       const isJa=currentLang==='ja';
@@ -4544,8 +4910,8 @@
         const total=assigned+bench;
         document.getElementById('emp-total-count').textContent=total.toLocaleString();
         document.getElementById('emp-bench-count').textContent=bench.toLocaleString();
-        document.getElementById('emp-stats').title=isJa?'契約社員総数=自分の土地の配属+休職中。休職中=採用・売却・閲覧で貯まった未配属の人':'Total contract staff = assigned on your land + bench. Bench = unassigned pool';
-        document.getElementById('emp-stats').style.display='block';
+        document.getElementById('emp-stats-block').title=isJa?'契約社員総数=自分の土地の配属+休職中。休職中=採用・売却・閲覧で貯まった未配属の人':'Total contract staff = assigned on your land + bench. Bench = unassigned pool';
+        document.getElementById('emp-stats-block').style.display='block';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
     function getSellCoinMultiplier(employees){
@@ -4708,18 +5074,35 @@
       document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
+      const profile=approvedProfiles[key];
       const sellBtn=document.getElementById('building-sell-btn');
       const assignBtn=document.getElementById('building-assign-btn');
       const mottoBtn=document.getElementById('building-motto-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
       if(mottoBtn){
         if(isOwnLand&&currentUser){
+          const hasApprovedMotto=!!(profile&&profile.motto_text);
+          profileState.buildingHasApproved=hasApprovedMotto;
           mottoBtn.style.display='block';
           mottoBtn.hidden=false;
           mottoBtn.disabled=false;
           mottoBtn.style.opacity='1';
           mottoBtn.classList.add('motto-btn-attn');
-          mottoBtn.textContent=isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past';
+          mottoBtn.textContent=hasApprovedMotto
+            ?(isJa?'💬 格言・過去詳細を修正して再申請':'💬 Edit & resubmit motto / past')
+            :(isJa?'💬 格言・過去詳細を申請':'💬 Apply Motto / Past');
+          if(db&&!hasApprovedMotto){
+            db.from('building_past_details').select('status')
+              .eq('building_x',buildingData.x).eq('building_z',buildingData.z).eq('user_id',currentUser.id)
+              .eq('status','approved').maybeSingle()
+              .then(({data})=>{
+                if(!data)return;
+                profileState.buildingHasApproved=true;
+                if(mottoBtn.style.display!=='none'){
+                  mottoBtn.textContent=isJa?'💬 格言・過去詳細を修正して再申請':'💬 Edit & resubmit motto / past';
+                }
+              }).catch(()=>{});
+          }
         }else{
           mottoBtn.style.display='none';
           mottoBtn.hidden=true;
@@ -4758,7 +5141,6 @@
         else if(ownerName){const xHandle=ownerName.replace(/^@/,'');ownerEl.innerHTML=`👤 <a class="owner-x-link" href="https://x.com/${encodeURIComponent(xHandle)}" target="_blank" rel="noopener">@${xHandle}</a>`;}
         else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
       } else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
-      const profile=approvedProfiles[key];
       const mottoEl=document.getElementById('building-modal-motto');
       const notesEl=document.getElementById('building-modal-notes');
       const notesTextEl=document.getElementById('building-modal-notes-text');
@@ -4779,11 +5161,14 @@
       document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
       document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
       document.getElementById('building-modal').classList.add('open');
+      document.body.classList.add('building-modal-open');
       loadBuildingPastDetails(buildingData.x,buildingData.z,isOwnLand);
+      if(profile&&profile.motto_text)applyMottoForLandKey(key);
       recordBuildingView(buildingData);
     }
     function closeBuildingModal(){
       document.getElementById('building-modal').classList.remove('open');
+      document.body.classList.remove('building-modal-open');
       clearBuildingPastModal();
       currentModalBuilding=null;
     }
@@ -4834,6 +5219,7 @@
         document.getElementById('building-count').textContent=buildings.length;
         buildingMap[key]=updated;
         currentModalBuilding=updated;
+        applyMottoForLandKey(key);
         await refreshEmployeeHeader();
         openBuildingModal(updated);
         drawMinimap();
@@ -5091,12 +5477,13 @@
     async function loadBuildingsAndLands(){
       try{
         await withTimeout((async()=>{
-          await loadBuildings();
           await loadLands();
+          await loadBuildings();
           buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
-          try{await withTimeout(loadApprovedProfiles(),5000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
           trimOrphanBuildingsHalf();
           patchOwnerCenterBuilding();
+          try{await withTimeout(loadApprovedProfiles(),8000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
+          scheduleMottoRefresh();
           drawMinimap();
         })(),isCoarseMobile()?9000:12000,'bootstrapLoad');
       }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}

@@ -1560,7 +1560,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-06-v89';
+    const IGNIS_BUILD='2026-06-06-v90';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3660,6 +3660,14 @@
     const engine=window.BABYLON?new BABYLON.Engine(canvas,true):{runRenderLoop:function(){},resize:function(){}};
     const scene=window.BABYLON?new BABYLON.Scene(engine):{onPointerObservable:{add:function(){}},activeCamera:null};
     scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
+    // 重さ対策：ポインタ移動ごとの全メッシュ・レイキャストを停止（ホバー演出は無いので不要）。
+    // これがカメラドラッグの「硬さ・数秒の遅延」の主因。タップ時のpickは別途行うので影響なし。
+    if(window.BABYLON){
+      scene.skipPointerMovePicking=true;
+      scene.constantlyUpdateMeshUnderPointer=false;
+      // 高DPI端末（スマホ等）は描画解像度を抑えて軽くする
+      try{const dpr=window.devicePixelRatio||1;if(dpr>1.5)engine.setHardwareScalingLevel(dpr/1.5);}catch(e){}
+    }
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
     arcCamera.lowerRadiusLimit=10;arcCamera.upperRadiusLimit=170;arcCamera.upperBetaLimit=Math.PI/2.2;
@@ -4681,7 +4689,6 @@
           }catch(e){console.warn('[IGNIS] own pending mottos',e.message);}
         }
         approvedProfiles=next;
-        console.warn('[IGNIS] mottos loaded:',Object.keys(approvedProfiles).length);
         scheduleMottoRefresh();
       }catch(e){console.warn('loadApprovedProfiles error:',e.message);}
     }
@@ -4787,7 +4794,6 @@
       });
       try{updateMottoWallLabels();}catch(e){console.warn('[IGNIS] motto labels',e.message);}
       ensureMottoLabelLoop();
-      console.warn('[IGNIS] motto wall labels:',n,'/',Object.keys(approvedProfiles).length);
     }
     function getMottoWallPlacementLocal(b,charCount){
       const prism=normalizePrism(b.shape||'square');

@@ -1019,9 +1019,30 @@
       #build-btn .acq-icons { font-size: 18px; }
       #build-btn #build-btn-text { font-size: 13px; }
     }
+    /* スマホ縦画面 → 横画面を促すオーバーレイ（PCでは出ない） */
+    #rotate-prompt {
+      display:none; position:fixed; inset:0; z-index:99999;
+      flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; padding:32px;
+      background:radial-gradient(ellipse at center,#12122a 0%,#06060f 100%); color:#fff;
+    }
+    /* タッチ端末が縦向きのときだけ表示（PC・横向きでは出ない） */
+    @media (orientation: portrait) and (pointer: coarse) {
+      #rotate-prompt { display:flex; }
+    }
+    #rotate-prompt .rp-icon { font-size:72px; animation:rp-spin 1.9s ease-in-out infinite; }
+    @keyframes rp-spin { 0%,18%{transform:rotate(0deg)} 50%,68%{transform:rotate(-90deg)} 100%{transform:rotate(-90deg)} }
+    #rotate-prompt .rp-title { font-size:22px; font-weight:800; margin-top:22px; letter-spacing:0.02em;
+      background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    #rotate-prompt .rp-sub { font-size:13px; color:rgba(255,255,255,0.6); margin-top:10px; line-height:1.6; }
   </style>
 </head>
 <body>
+  <div id="rotate-prompt" aria-hidden="true">
+    <div class="rp-icon">📱</div>
+    <div class="rp-title">横画面でプレイしてください</div>
+    <div class="rp-sub">スマホを横向きにすると操作しやすくなります<br>Please rotate your device to landscape</div>
+  </div>
   <script>
     window.__ignisStatus=function(msg){
       var el=document.getElementById('loading-status');
@@ -1504,7 +1525,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-05-v82';
+    const IGNIS_BUILD='2026-06-05-v83';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3855,11 +3876,9 @@
         }else{buildingEl.textContent=isJa?'ビルなし':'No building';}
         if(isMe){
           buyBtn.style.display='none';
-          // 自分の土地：形・階数を選んで直接設置（無料）。ガチャは別途残す。
-          placeBtn.style.display='block';
-          placeBtn.textContent=building
-            ?(isJa?'🏗 ビルを建て替え（形・階数を選ぶ・無料）':'🏗 Rebuild (pick shape/floors · free)')
-            :(isJa?'🏗 ビルを設置（形・階数を選ぶ・無料）':'🏗 Place a building (pick shape/floors · free)');
+          // 「設置」ボタンは在庫（獲得済み・未設置のガチャビル）から選ぶ方式に作り直すまで一時非表示。
+          // ※ 無料で任意の高さを建てられる旧仕様は階数ランキングを壊すため停止中。
+          placeBtn.style.display='none';
           if(building){gachaBtn.style.display='none';rebuildBtn.style.display='block';}
           else{gachaBtn.style.display='block';rebuildBtn.style.display='none';}
         }else{

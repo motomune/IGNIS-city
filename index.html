@@ -1532,7 +1532,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-05-v84';
+    const IGNIS_BUILD='2026-06-05-v85';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3141,7 +3141,9 @@
     }
     function applyGameI18n(){
       const isJa=currentLang==='ja';
-      const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=isJa?ja:en;};
+      // 2引数（既に言語解決済みの値）でも3引数（ja/en別指定）でも正しく動くように。
+      // en 省略時は ja をそのまま使う（旧コードは EN 時に undefined→空文字でテキストが消えていた）
+      const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=(en===undefined?ja:(isJa?ja:en));};
       set('gacha-title','📖 ビルスクラッチ','📖 Building Scratch');
       const costEl=document.getElementById('gacha-cost-info');
       if(costEl)costEl.innerHTML=isJa?`消費コイン：<span>${GACHA_COST}</span>コイン`:`Cost: <span>${GACHA_COST}</span> coins`;

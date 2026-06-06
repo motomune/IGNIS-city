@@ -277,6 +277,19 @@
     #place-confirm-btn { width:100%; margin-top:18px; background:linear-gradient(135deg,#22c55e,#10b981); color:#04140a; border:none; padding:13px; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; transition:opacity 0.2s; }
     #place-confirm-btn:hover { opacity:0.9; }
     #place-confirm-btn:disabled { opacity:0.45; cursor:not-allowed; }
+    /* 在庫リスト（未設置ビルから選ぶ） */
+    #inv-list { display:flex; flex-direction:column; gap:9px; max-height:52vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+    .inv-loading { font-size:13px; color:rgba(255,255,255,0.5); text-align:center; padding:18px 0; }
+    .inv-card { display:flex; align-items:center; gap:12px; width:100%; padding:12px 14px; border-radius:14px; border:1px solid rgba(34,197,94,0.3); background:rgba(34,197,94,0.06); color:#eaffef; cursor:pointer; transition:all 0.15s; text-align:left; }
+    .inv-card:hover { border-color:#22c55e; background:rgba(34,197,94,0.14); transform:translateY(-1px); }
+    .inv-card.placing { opacity:0.5; cursor:wait; }
+    .inv-card .inv-ico { font-size:26px; flex-shrink:0; }
+    .inv-card .inv-info { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+    .inv-card .inv-floors { font-size:16px; font-weight:800; }
+    .inv-card .inv-shape { font-size:12px; color:rgba(255,255,255,0.6); }
+    .inv-card .inv-star { font-size:13px; letter-spacing:1px; flex-shrink:0; }
+    .inv-card .inv-go { font-size:12px; font-weight:700; color:#22c55e; flex-shrink:0; }
+    #inv-empty { font-size:13px; color:rgba(255,255,255,0.6); line-height:1.7; text-align:center; padding:24px 8px; }
     #gacha-overlay {
       display: none; position: fixed; inset: 0; z-index: 300;
       background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a0f 100%);
@@ -1311,7 +1324,7 @@
         <div id="book-result-detail-main">—</div>
       </div>
       <div id="book-result-actions">
-        <button id="book-result-build" type="button" onclick="onGachaResultClose()">建設する →</button>
+        <button id="book-result-build" type="button" onclick="onGachaResultBackToCity()">🎒 在庫に受け取る</button>
         <button id="book-result-city" type="button" onclick="onGachaResultBackToCity()">🏙 IGNIS Cityへ戻る</button>
         <button id="book-result-retry" type="button" onclick="onGachaResultRetry()">🔁 もう一度スクラッチ</button>
       </div>
@@ -1335,17 +1348,11 @@
   <div id="place-modal">
     <div id="place-box">
       <button id="place-modal-close" onclick="closePlaceModal()">×</button>
-      <div id="place-modal-title">🏗 ビルを設置</div>
+      <div id="place-modal-title">🏗 在庫からビルを設置</div>
       <div id="place-land-info">📍 —</div>
-      <div class="place-label" id="place-shape-label">形を選ぶ</div>
-      <div id="place-shape-row">
-        <button type="button" class="place-shape" data-shape="square" onclick="selectPlaceShape('square')"><span class="ps-ico">🟧</span><span class="ps-txt">正四角柱</span></button>
-        <button type="button" class="place-shape" data-shape="triangle" onclick="selectPlaceShape('triangle')"><span class="ps-ico">🔺</span><span class="ps-txt">三角柱</span></button>
-        <button type="button" class="place-shape" data-shape="cylinder" onclick="selectPlaceShape('cylinder')"><span class="ps-ico">🛢</span><span class="ps-txt">円柱</span></button>
-      </div>
-      <div class="place-label"><span id="place-floors-label">階数</span>：<span id="place-floors-val">5</span><span id="place-floors-unit">階</span></div>
-      <input id="place-floors-input" type="range" min="1" max="50" value="5" step="1" oninput="onPlaceFloorsInput(this.value)">
-      <button id="place-confirm-btn" onclick="handlePlaceConfirm()">🏢 このビルを設置する（無料）</button>
+      <div class="place-label" id="inv-list-label">獲得済み（未設置）のビル</div>
+      <div id="inv-list"></div>
+      <div id="inv-empty" style="display:none;">在庫がありません。<br>画面下の「獲得」でスクラッチするとビルが手に入ります。</div>
     </div>
   </div>
   <!-- ランキング -->
@@ -1525,7 +1532,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-05-v83';
+    const IGNIS_BUILD='2026-06-05-v84';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3876,11 +3883,14 @@
         }else{buildingEl.textContent=isJa?'ビルなし':'No building';}
         if(isMe){
           buyBtn.style.display='none';
-          // 「設置」ボタンは在庫（獲得済み・未設置のガチャビル）から選ぶ方式に作り直すまで一時非表示。
-          // ※ 無料で任意の高さを建てられる旧仕様は階数ランキングを壊すため停止中。
-          placeBtn.style.display='none';
-          if(building){gachaBtn.style.display='none';rebuildBtn.style.display='block';}
-          else{gachaBtn.style.display='block';rebuildBtn.style.display='none';}
+          // ガチャ（獲得）は画面下部の「獲得」ボタンに集約。土地では在庫から設置する。
+          gachaBtn.style.display='none';rebuildBtn.style.display='none';
+          if(building){
+            placeBtn.style.display='none'; // ビルあり：建て替えは未対応（売却してから在庫を設置）
+          }else{
+            placeBtn.style.display='block';
+            placeBtn.textContent=isJa?'🏗 在庫からビルを設置':'🏗 Place from inventory';
+          }
         }else{
           buyBtn.style.display='block';buyBtn.textContent=isJa?'🔒 購入済みの土地です':'🔒 Already owned';buyBtn.disabled=true;
           placeBtn.style.display='none';gachaBtn.style.display='none';rebuildBtn.style.display='none';
@@ -3894,78 +3904,91 @@
       showHighlight(gx,gz);document.getElementById('land-panel').classList.add('open');
     }
     function closeLandPanel(){document.getElementById('land-panel').classList.remove('open');hideHighlight();selectedLandKey=null;}
-    // ===== ビル直接設置（形・階数を自分で選ぶ・無料）=====
-    let placeState={shape:'square',floors:5,isRebuild:false,landKey:null};
-    function selectPlaceShape(shape){
-      placeState.shape=normalizePrism(shape);
-      document.querySelectorAll('#place-shape-row .place-shape').forEach(b=>b.classList.toggle('active',b.dataset.shape===placeState.shape));
-    }
-    function onPlaceFloorsInput(v){
-      const n=Math.max(1,Math.min(GACHA_MAX_FLOOR,parseInt(v,10)||1));
-      placeState.floors=n;
-      const valEl=document.getElementById('place-floors-val');if(valEl)valEl.textContent=n;
-    }
-    function openPlaceModal(){
+    // ===== 在庫からビルを設置（獲得済み・未設置のガチャビルを選んで配置）=====
+    let placeState={landKey:null};
+    let placeBusy=false;
+    function closePlaceModal(){document.getElementById('place-modal').classList.remove('open');}
+    async function openPlaceModal(){
       if(!currentUser){openAuthModal();return;}
       if(!selectedLandKey)return;
       const land=landMap[selectedLandKey];
       const isJa=currentLang==='ja';
       if(!land||!(currentUser&&land.owner_id===currentUser.id)){showToast(isJa?'⚠️ 自分の土地にのみ設置できます':'⚠️ You can only build on your own land');return;}
+      if(buildingMap[selectedLandKey]){showToast(isJa?'⚠️ 既にビルがあります（売却してから設置）':'⚠️ A building already exists here');return;}
       placeState.landKey=selectedLandKey;
-      placeState.isRebuild=!!buildingMap[selectedLandKey];
-      placeState.shape='square';placeState.floors=5;
       const{gx,gz}=keyToCoord(selectedLandKey);
-      document.getElementById('place-modal-title').textContent=placeState.isRebuild?(isJa?'🏗 ビルを建て替え':'🏗 Rebuild'):(isJa?'🏗 ビルを設置':'🏗 Place a building');
+      document.getElementById('place-modal-title').textContent=isJa?'🏗 在庫からビルを設置':'🏗 Place from inventory';
       document.getElementById('place-land-info').textContent=isJa?`📍 設置先：X:${gx} / Z:${gz}`:`📍 At: X:${gx} / Z:${gz}`;
-      document.getElementById('place-shape-label').textContent=isJa?'形を選ぶ':'Choose shape';
-      document.getElementById('place-floors-label').textContent=isJa?'階数':'Floors';
-      document.getElementById('place-floors-unit').textContent=isJa?'階':'F';
-      const shapeTxt={square:isJa?'正四角柱':'Square',triangle:isJa?'三角柱':'Triangle',cylinder:isJa?'円柱':'Cylinder'};
-      document.querySelectorAll('#place-shape-row .place-shape').forEach(b=>{const t=b.querySelector('.ps-txt');if(t)t.textContent=shapeTxt[b.dataset.shape]||b.dataset.shape;});
-      selectPlaceShape('square');
-      const fin=document.getElementById('place-floors-input');if(fin)fin.value=5;
-      onPlaceFloorsInput(5);
-      const btn=document.getElementById('place-confirm-btn');btn.disabled=false;btn.textContent=isJa?'🏢 このビルを設置する（無料）':'🏢 Place this building (free)';
+      document.getElementById('inv-list-label').textContent=isJa?'獲得済み（未設置）のビル':'Your unplaced buildings';
+      document.getElementById('inv-empty').innerHTML=isJa?'在庫がありません。<br>画面下の「獲得」でスクラッチするとビルが手に入ります。':'No buildings yet.<br>Use “Acquire” at the bottom to scratch for one.';
       closeLandPanel();
       document.getElementById('place-modal').classList.add('open');
+      await renderInventoryList();
     }
-    function closePlaceModal(){document.getElementById('place-modal').classList.remove('open');}
-    async function handlePlaceConfirm(){
+    async function renderInventoryList(){
+      const isJa=currentLang==='ja';
+      const listEl=document.getElementById('inv-list');
+      const emptyEl=document.getElementById('inv-empty');
+      const labelEl=document.getElementById('inv-list-label');
+      emptyEl.style.display='none';
+      listEl.innerHTML=`<div class="inv-loading">${isJa?'読み込み中...':'Loading...'}</div>`;
+      try{
+        const{data,error}=await db.from('building_inventory')
+          .select('id,prism,floors,star')
+          .eq('user_id',currentUser.id)
+          .order('created_at',{ascending:false});
+        if(error)throw error;
+        if(!data||!data.length){listEl.innerHTML='';labelEl.style.display='none';emptyEl.style.display='block';return;}
+        labelEl.style.display='block';
+        listEl.innerHTML='';
+        data.forEach(row=>{
+          const prism=normalizePrism(row.prism);
+          const star=row.star||1;
+          const card=document.createElement('button');
+          card.type='button';
+          card.className='inv-card';
+          card.innerHTML=`<span class="inv-ico">${PRISM_ICONS[prism]||'🏢'}</span>`
+            +`<span class="inv-info"><span class="inv-floors">${row.floors}${isJa?'階':'F'}</span>`
+            +`<span class="inv-shape">${getPrismLabel(prism,isJa)}</span></span>`
+            +`<span class="inv-star" style="color:${BOOK_STAR_COLORS[star]||'#fff'}">${'★'.repeat(star)}</span>`
+            +`<span class="inv-go">${isJa?'設置 →':'Place →'}</span>`;
+          card.onclick=()=>placeFromInventory(row.id,prism,row.floors,card);
+          listEl.appendChild(card);
+        });
+      }catch(e){
+        console.warn('[IGNIS] inventory load',e.message);
+        listEl.innerHTML=`<div class="inv-loading">${isJa?'在庫の読み込みに失敗しました':'Failed to load inventory'}</div>`;
+      }
+    }
+    async function placeFromInventory(invId,prism,floors,cardEl){
+      if(placeBusy)return;
       if(!currentUser){openAuthModal();return;}
       const key=placeState.landKey;if(!key)return;
       const land=landMap[key];
       const isJa=currentLang==='ja';
       if(!land||!(currentUser&&land.owner_id===currentUser.id)){showToast(isJa?'⚠️ 自分の土地にのみ設置できます':'⚠️ Your own land only');return;}
+      if(buildingMap[key]){showToast(isJa?'⚠️ 既にビルがあります':'⚠️ A building already exists here');return;}
+      placeBusy=true;
+      if(cardEl){cardEl.disabled=true;cardEl.classList.add('placing');}
       const{gx,gz}=keyToCoord(key);
-      const prism=normalizePrism(placeState.shape);
-      const floors=Math.max(1,Math.min(GACHA_MAX_FLOOR,parseInt(placeState.floors,10)||1));
-      const btn=document.getElementById('place-confirm-btn');
-      btn.disabled=true;btn.textContent=isJa?'設置中...':'Placing...';
+      const buildPrism=normalizePrism(prism);
+      const fl=Math.max(1,Math.min(GACHA_MAX_FLOOR,parseInt(floors,10)||1));
       try{
-        let employees=0;
-        const existing=buildingMap[key];
-        if(placeState.isRebuild&&existing){
-          employees=existing.employees||0;
-          if(existing.mesh){existing.mesh.dispose();existing.mesh=null;}
-          buildings=buildings.filter(b=>b.landKey!==key);
-          delete buildingMap[key];
-          const oldMotto=scene.getMeshByName('motto_'+gx+'_'+gz);if(oldMotto)oldMotto.dispose();
-          document.getElementById('building-count').textContent=buildings.length;
-          await db.from('buildings').delete().eq('x',gx).eq('z',gz);
-        }
-        const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${prism}_place`,owner_id:currentUser.id,employees});
+        const{error}=await db.from('buildings').insert({x:gx,z:gz,floors:fl,style:`${buildPrism}_inv`,owner_id:currentUser.id,employees:0});
         if(error)throw error;
-        addBuilding(gx,gz,floors,prism,employees,false,key,0,currentUser.id);
+        // 在庫から消費（配置済み）
+        await db.from('building_inventory').delete().eq('id',invId);
+        addBuilding(gx,gz,fl,buildPrism,0,false,key,0,currentUser.id);
         refreshTile(key);
         await completeTask('build');
         closePlaceModal();
-        showToast(isJa?`🏢 ${floors}階の${getPrismLabel(prism,true)}を設置！`:`🏢 Placed a ${floors}F ${getPrismLabel(prism,false)}!`);
+        showToast(isJa?`🏢 ${fl}階の${getPrismLabel(buildPrism,true)}を設置！`:`🏢 Placed a ${fl}F ${getPrismLabel(buildPrism,false)}!`);
         openProfileModal(gx,gz);
       }catch(e){
-        console.warn('place error:',e.message);
+        console.warn('[IGNIS] place from inventory',e.message);
         showToast(isJa?'設置に失敗しました':'Placement failed');
-        btn.disabled=false;btn.textContent=isJa?'🏢 このビルを設置する（無料）':'🏢 Place this building (free)';
-      }
+        if(cardEl){cardEl.disabled=false;cardEl.classList.remove('placing');}
+      }finally{placeBusy=false;}
     }
     async function handleLandBuy(){
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
@@ -4007,8 +4030,7 @@
       gachaState.isRebuild=isRebuild;gachaState.landKey=selectedLandKey;
       const isJa=currentLang==='ja';
       const infoEl=document.getElementById('gacha-land-info');
-      if(selectedLandKey){const{gx,gz}=keyToCoord(selectedLandKey);infoEl.textContent=isJa?`対象：X:${gx} / Z:${gz}`:`Target: X:${gx} / Z:${gz}`;}
-      else{infoEl.textContent='';}
+      infoEl.textContent=isJa?'🎒 獲得したビルは在庫に入ります（土地をタップ→「設置」で配置）':'🎒 New buildings go to your inventory — place them from a land tile';
       applyGameI18n();
       closeLandPanel();document.getElementById('gacha-modal').classList.add('open');
       refreshStaffTermPanel();
@@ -4033,6 +4055,13 @@
       document.getElementById('coin-count').textContent=newCoins;
       await recordCoin(-GACHA_COST,'gacha_spin');
       const result=rollGacha();gachaState.result=result;
+      // 獲得したビルを「未設置の在庫」に保存（土地の「設置」から後で配置）
+      try{
+        const{error:invErr}=await db.from('building_inventory').insert({
+          user_id:currentUser.id,prism:normalizePrism(result.prism),floors:result.floors,star:result.star
+        });
+        if(invErr)throw invErr;
+      }catch(e){console.warn('[IGNIS] inventory insert',e.message);showToast(isJa?'⚠️ 在庫保存に失敗しました（管理者に連絡）':'⚠️ Failed to save to inventory');}
       closeGachaModal(true);
       playGachaAnimation(result);
       btn.disabled=false;btn.textContent=currentLang==='ja'?'📖 スクラッチする':'📖 Scratch';
@@ -4111,7 +4140,7 @@
       const bb=document.getElementById('book-result-build');
       const bc=document.getElementById('book-result-city');
       const br=document.getElementById('book-result-retry');
-      if(bb)bb.textContent=isJa?'建設する →':'Build →';
+      if(bb)bb.textContent=isJa?'🎒 在庫に受け取る':'🎒 Add to inventory';
       if(bc)bc.textContent=isJa?'🏙 IGNIS Cityへ戻る':'🏙 Return to IGNIS City';
       if(br)br.textContent=isJa?'🔁 もう一度スクラッチ':'🔁 Scratch Again';
     }

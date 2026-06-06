@@ -1047,7 +1047,7 @@
     @keyframes rp-spin { 0%,18%{transform:rotate(0deg)} 50%,68%{transform:rotate(-90deg)} 100%{transform:rotate(-90deg)} }
     #rotate-prompt .rp-title { font-size:22px; font-weight:800; margin-top:22px; letter-spacing:0.02em;
       background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-    #rotate-prompt .rp-sub { font-size:13px; color:rgba(255,255,255,0.6); margin-top:10px; line-height:1.6; }
+    #rotate-prompt .rp-sub { font-size:14px; color:rgba(255,255,255,0.92); margin-top:12px; line-height:1.7; font-weight:600; }
   </style>
 </head>
 <body>
@@ -1532,7 +1532,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-05-v85';
+    const IGNIS_BUILD='2026-06-05-v86';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -5090,7 +5090,7 @@
     }
     function calcSellCoinReward(floors,employees){
       const f=Math.max(0,Number(floors)||0);
-      return Math.round(f*getSellCoinMultiplier(employees))+100;
+      return Math.round(f*getSellCoinMultiplier(employees));
     }
     function getBuildingSellFloors(building){
       if(!building)return 0;
@@ -5110,7 +5110,7 @@
       const mult=getSellCoinMultiplier(employees);
       const f=Math.max(0,floors||0);
       const tier=mult>=8? (isJa?'レインボー×8.0':'Rainbow ×8.0') : mult>=6.6? (isJa?'ゴールド×6.6':'Gold ×6.6') : (isJa?'標準×6.0':'Standard ×6.0');
-      return isJa?`${f}階×${mult}+100（${tier}）`:`${f}F×${mult}+100 (${tier})`;
+      return isJa?`${f}階×${mult}（${tier}）`:`${f}F×${mult} (${tier})`;
     }
     function isOwnLandBuilding(buildingData){
       if(!currentUser||!buildingData)return false;
@@ -5294,8 +5294,8 @@
         const benchBack=quote.emp;
         const mul=getSellCoinMultiplier(quote.emp);
         sellBtn.textContent=isJa
-          ?`💰 売却 +${quote.coins}コイン\n休職へ${benchBack}人（${quote.floors}階×${mul}+100）`
-          :`💰 Sell +${quote.coins} coins\n${benchBack} staff to bench (${quote.floors}F×${mul}+100)`;
+          ?`💰 売却 +${quote.coins}コイン\n休職へ${benchBack}人（${quote.floors}階×${mul}）`
+          :`💰 Sell +${quote.coins} coins\n${benchBack} staff to bench (${quote.floors}F×${mul})`;
       } else {
         sellBtn.style.display='none';
         sellBtn.hidden=true;
@@ -5448,8 +5448,8 @@
       const isJa=currentLang==='ja';
       const formula=sellRewardLabel(quote.floors,quote.emp,isJa);
       const msg=isJa
-        ?`このビル（総${quote.floors}階・配属${quote.emp}人）を売却しますか？\n\n獲得コイン: ${quote.coins}\n（${formula}）\n※表示階数×倍率+100。配属${quote.emp}人は休職中へ戻ります。`
-        :`Sell this building (${quote.floors}F total, ${quote.emp} assigned)?\n\nCoins: ${quote.coins}\n(${formula})\nUses displayed floors × multiplier + 100. Staff return to bench.`;
+        ?`このビル（総${quote.floors}階・配属${quote.emp}人）を売却しますか？\n\n獲得コイン: ${quote.coins}\n（${formula}）\n※表示階数×倍率。配属${quote.emp}人は休職中へ戻ります。`
+        :`Sell this building (${quote.floors}F total, ${quote.emp} assigned)?\n\nCoins: ${quote.coins}\n(${formula})\nDisplayed floors × multiplier. Staff return to bench.`;
       if(!confirm(msg))return;
       try{
         const{data,error}=await db.rpc('sell_building',{bx:b.x,bz:b.z});

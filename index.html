@@ -254,8 +254,29 @@
     .land-panel-btn:hover { opacity: 0.88; transform: scale(1.01); }
     .land-panel-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
     #land-buy-btn { background: linear-gradient(135deg, rgba(255,106,0,0.55), rgba(238,9,121,0.55)); }
+    #land-place-btn { background: linear-gradient(135deg, rgba(34,197,94,0.55), rgba(16,185,129,0.55)); }
     #land-gacha-btn { background: linear-gradient(135deg, rgba(168,85,247,0.52), rgba(99,102,241,0.52)); }
     #land-rebuild-btn { background: linear-gradient(135deg, rgba(245,158,11,0.55), rgba(239,68,68,0.55)); }
+    /* ビル直接設置モーダル */
+    #place-modal { display:none; position:fixed; inset:0; z-index:356; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); align-items:center; justify-content:center; }
+    #place-modal.open { display:flex; }
+    #place-box { position:relative; background:#0a0a14; border:1px solid rgba(34,197,94,0.4); border-radius:22px; padding:26px 24px 22px; width:min(380px,94vw); max-height:90vh; overflow-y:auto; box-shadow:0 0 60px rgba(34,197,94,0.18),0 20px 60px rgba(0,0,0,0.8); }
+    #place-modal-close { position:absolute; top:14px; right:16px; background:none; border:none; color:rgba(255,255,255,0.4); font-size:22px; cursor:pointer; }
+    #place-modal-close:hover { color:#fff; }
+    #place-modal-title { font-size:19px; font-weight:800; color:#eaffef; margin-bottom:6px; }
+    #place-land-info { font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:16px; }
+    .place-label { font-size:13px; font-weight:700; color:rgba(255,255,255,0.7); margin:14px 0 8px; }
+    #place-shape-row { display:flex; gap:8px; }
+    .place-shape { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 6px; border-radius:12px; border:2px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.8); cursor:pointer; transition:all 0.15s; }
+    .place-shape .ps-ico { font-size:24px; }
+    .place-shape .ps-txt { font-size:11px; font-weight:600; }
+    .place-shape:hover { border-color:rgba(34,197,94,0.5); }
+    .place-shape.active { border-color:#22c55e; background:rgba(34,197,94,0.16); color:#7CFFB0; }
+    #place-floors-input { width:100%; accent-color:#22c55e; margin:2px 0 4px; cursor:pointer; }
+    #place-floors-val { color:#22c55e; font-weight:900; font-size:16px; }
+    #place-confirm-btn { width:100%; margin-top:18px; background:linear-gradient(135deg,#22c55e,#10b981); color:#04140a; border:none; padding:13px; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; transition:opacity 0.2s; }
+    #place-confirm-btn:hover { opacity:0.9; }
+    #place-confirm-btn:disabled { opacity:0.45; cursor:not-allowed; }
     #gacha-overlay {
       display: none; position: fixed; inset: 0; z-index: 300;
       background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a0f 100%);
@@ -1169,6 +1190,7 @@
     <div id="land-panel-owner"></div>
     <div id="land-panel-building"></div>
     <button id="land-buy-btn" class="land-panel-btn" onclick="handleLandBuy()">🔥 この土地を取得（100コイン）</button>
+    <button id="land-place-btn" class="land-panel-btn" onclick="openPlaceModal()" style="display:none;">🏗 ビルを設置（形・階数を選ぶ・無料）</button>
     <button id="land-gacha-btn" class="land-panel-btn" onclick="openGachaModal(false)" style="display:none;">📖 スクラッチでビルを建てる（50コイン）</button>
     <button id="land-rebuild-btn" class="land-panel-btn" onclick="openGachaModal(true)" style="display:none;">🔄 スクラッチで建て替える（50コイン）</button>
   </div>
@@ -1286,6 +1308,23 @@
       <div id="build-land-select">📍 土地未選択 — 建設後に土地をタップして配置先を選んでください</div>
       <button id="build-confirm-btn" onclick="handleBuildConfirm()">🏢 このビルを建設する</button>
       <button id="build-scratch-again-btn" type="button" onclick="onBuildModalScratchAgain()">🔁 もう一度スクラッチ（50コイン）</button>
+    </div>
+  </div>
+  <!-- ビル直接設置（形・階数を選ぶ・無料） -->
+  <div id="place-modal">
+    <div id="place-box">
+      <button id="place-modal-close" onclick="closePlaceModal()">×</button>
+      <div id="place-modal-title">🏗 ビルを設置</div>
+      <div id="place-land-info">📍 —</div>
+      <div class="place-label" id="place-shape-label">形を選ぶ</div>
+      <div id="place-shape-row">
+        <button type="button" class="place-shape" data-shape="square" onclick="selectPlaceShape('square')"><span class="ps-ico">🟧</span><span class="ps-txt">正四角柱</span></button>
+        <button type="button" class="place-shape" data-shape="triangle" onclick="selectPlaceShape('triangle')"><span class="ps-ico">🔺</span><span class="ps-txt">三角柱</span></button>
+        <button type="button" class="place-shape" data-shape="cylinder" onclick="selectPlaceShape('cylinder')"><span class="ps-ico">🛢</span><span class="ps-txt">円柱</span></button>
+      </div>
+      <div class="place-label"><span id="place-floors-label">階数</span>：<span id="place-floors-val">5</span><span id="place-floors-unit">階</span></div>
+      <input id="place-floors-input" type="range" min="1" max="50" value="5" step="1" oninput="onPlaceFloorsInput(this.value)">
+      <button id="place-confirm-btn" onclick="handlePlaceConfirm()">🏢 このビルを設置する（無料）</button>
     </div>
   </div>
   <!-- ランキング -->
@@ -1465,7 +1504,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-05-v81';
+    const IGNIS_BUILD='2026-06-05-v82';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3802,6 +3841,7 @@
       const ownerEl=document.getElementById('land-panel-owner');
       const buildingEl=document.getElementById('land-panel-building');
       const buyBtn=document.getElementById('land-buy-btn');
+      const placeBtn=document.getElementById('land-place-btn');
       const gachaBtn=document.getElementById('land-gacha-btn');
       const rebuildBtn=document.getElementById('land-rebuild-btn');
       const building=buildingMap[selectedLandKey];
@@ -3815,21 +3855,99 @@
         }else{buildingEl.textContent=isJa?'ビルなし':'No building';}
         if(isMe){
           buyBtn.style.display='none';
+          // 自分の土地：形・階数を選んで直接設置（無料）。ガチャは別途残す。
+          placeBtn.style.display='block';
+          placeBtn.textContent=building
+            ?(isJa?'🏗 ビルを建て替え（形・階数を選ぶ・無料）':'🏗 Rebuild (pick shape/floors · free)')
+            :(isJa?'🏗 ビルを設置（形・階数を選ぶ・無料）':'🏗 Place a building (pick shape/floors · free)');
           if(building){gachaBtn.style.display='none';rebuildBtn.style.display='block';}
           else{gachaBtn.style.display='block';rebuildBtn.style.display='none';}
         }else{
           buyBtn.style.display='block';buyBtn.textContent=isJa?'🔒 購入済みの土地です':'🔒 Already owned';buyBtn.disabled=true;
-          gachaBtn.style.display='none';rebuildBtn.style.display='none';
+          placeBtn.style.display='none';gachaBtn.style.display='none';rebuildBtn.style.display='none';
         }
       }else{
         ownerEl.textContent=isJa?'空き地（未取得）':'Empty land';buildingEl.textContent='';
         buyBtn.style.display='block';
         buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
-        buyBtn.disabled=false;gachaBtn.style.display='none';rebuildBtn.style.display='none';
+        buyBtn.disabled=false;placeBtn.style.display='none';gachaBtn.style.display='none';rebuildBtn.style.display='none';
       }
       showHighlight(gx,gz);document.getElementById('land-panel').classList.add('open');
     }
     function closeLandPanel(){document.getElementById('land-panel').classList.remove('open');hideHighlight();selectedLandKey=null;}
+    // ===== ビル直接設置（形・階数を自分で選ぶ・無料）=====
+    let placeState={shape:'square',floors:5,isRebuild:false,landKey:null};
+    function selectPlaceShape(shape){
+      placeState.shape=normalizePrism(shape);
+      document.querySelectorAll('#place-shape-row .place-shape').forEach(b=>b.classList.toggle('active',b.dataset.shape===placeState.shape));
+    }
+    function onPlaceFloorsInput(v){
+      const n=Math.max(1,Math.min(GACHA_MAX_FLOOR,parseInt(v,10)||1));
+      placeState.floors=n;
+      const valEl=document.getElementById('place-floors-val');if(valEl)valEl.textContent=n;
+    }
+    function openPlaceModal(){
+      if(!currentUser){openAuthModal();return;}
+      if(!selectedLandKey)return;
+      const land=landMap[selectedLandKey];
+      const isJa=currentLang==='ja';
+      if(!land||!(currentUser&&land.owner_id===currentUser.id)){showToast(isJa?'⚠️ 自分の土地にのみ設置できます':'⚠️ You can only build on your own land');return;}
+      placeState.landKey=selectedLandKey;
+      placeState.isRebuild=!!buildingMap[selectedLandKey];
+      placeState.shape='square';placeState.floors=5;
+      const{gx,gz}=keyToCoord(selectedLandKey);
+      document.getElementById('place-modal-title').textContent=placeState.isRebuild?(isJa?'🏗 ビルを建て替え':'🏗 Rebuild'):(isJa?'🏗 ビルを設置':'🏗 Place a building');
+      document.getElementById('place-land-info').textContent=isJa?`📍 設置先：X:${gx} / Z:${gz}`:`📍 At: X:${gx} / Z:${gz}`;
+      document.getElementById('place-shape-label').textContent=isJa?'形を選ぶ':'Choose shape';
+      document.getElementById('place-floors-label').textContent=isJa?'階数':'Floors';
+      document.getElementById('place-floors-unit').textContent=isJa?'階':'F';
+      const shapeTxt={square:isJa?'正四角柱':'Square',triangle:isJa?'三角柱':'Triangle',cylinder:isJa?'円柱':'Cylinder'};
+      document.querySelectorAll('#place-shape-row .place-shape').forEach(b=>{const t=b.querySelector('.ps-txt');if(t)t.textContent=shapeTxt[b.dataset.shape]||b.dataset.shape;});
+      selectPlaceShape('square');
+      const fin=document.getElementById('place-floors-input');if(fin)fin.value=5;
+      onPlaceFloorsInput(5);
+      const btn=document.getElementById('place-confirm-btn');btn.disabled=false;btn.textContent=isJa?'🏢 このビルを設置する（無料）':'🏢 Place this building (free)';
+      closeLandPanel();
+      document.getElementById('place-modal').classList.add('open');
+    }
+    function closePlaceModal(){document.getElementById('place-modal').classList.remove('open');}
+    async function handlePlaceConfirm(){
+      if(!currentUser){openAuthModal();return;}
+      const key=placeState.landKey;if(!key)return;
+      const land=landMap[key];
+      const isJa=currentLang==='ja';
+      if(!land||!(currentUser&&land.owner_id===currentUser.id)){showToast(isJa?'⚠️ 自分の土地にのみ設置できます':'⚠️ Your own land only');return;}
+      const{gx,gz}=keyToCoord(key);
+      const prism=normalizePrism(placeState.shape);
+      const floors=Math.max(1,Math.min(GACHA_MAX_FLOOR,parseInt(placeState.floors,10)||1));
+      const btn=document.getElementById('place-confirm-btn');
+      btn.disabled=true;btn.textContent=isJa?'設置中...':'Placing...';
+      try{
+        let employees=0;
+        const existing=buildingMap[key];
+        if(placeState.isRebuild&&existing){
+          employees=existing.employees||0;
+          if(existing.mesh){existing.mesh.dispose();existing.mesh=null;}
+          buildings=buildings.filter(b=>b.landKey!==key);
+          delete buildingMap[key];
+          const oldMotto=scene.getMeshByName('motto_'+gx+'_'+gz);if(oldMotto)oldMotto.dispose();
+          document.getElementById('building-count').textContent=buildings.length;
+          await db.from('buildings').delete().eq('x',gx).eq('z',gz);
+        }
+        const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${prism}_place`,owner_id:currentUser.id,employees});
+        if(error)throw error;
+        addBuilding(gx,gz,floors,prism,employees,false,key,0,currentUser.id);
+        refreshTile(key);
+        await completeTask('build');
+        closePlaceModal();
+        showToast(isJa?`🏢 ${floors}階の${getPrismLabel(prism,true)}を設置！`:`🏢 Placed a ${floors}F ${getPrismLabel(prism,false)}!`);
+        openProfileModal(gx,gz);
+      }catch(e){
+        console.warn('place error:',e.message);
+        showToast(isJa?'設置に失敗しました':'Placement failed');
+        btn.disabled=false;btn.textContent=isJa?'🏢 このビルを設置する（無料）':'🏢 Place this building (free)';
+      }
+    }
     async function handleLandBuy(){
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
@@ -5292,10 +5410,13 @@
         const mottoMesh=scene.getMeshByName('motto_'+b.x+'_'+b.z);if(mottoMesh)mottoMesh.dispose();
         buildings=buildings.filter(x=>!(x.x===b.x&&x.z===b.z));
         delete buildingMap[b.landKey];
+        // 土地ごと売却 → 所有タイル（色付き）を消して空き地表示へ戻す
+        // （landMap を消す前にタイルを破棄しないと refreshTile が早期 return して色が残る）
+        if(landMap[b.landKey]&&landMap[b.landKey].tile)landMap[b.landKey].tile.dispose();
+        const soldTileMesh=scene.getMeshByName('lt_'+b.landKey);if(soldTileMesh)soldTileMesh.dispose();
         delete landMap[b.landKey];
         delete approvedProfiles[b.landKey];
         document.getElementById('building-count').textContent=buildings.length;
-        refreshTile(b.landKey);
         drawMinimap();
         closeBuildingModal();
         if(data.bench_employees!==undefined){

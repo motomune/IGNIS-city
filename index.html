@@ -1560,7 +1560,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-05-v88';
+    const IGNIS_BUILD='2026-06-06-v89';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4811,7 +4811,10 @@
       const bottomY=Math.min(2,height*0.15);
       const centerWorldY=Math.max(planeH/2,Math.min(bottomY+planeH/2,height-planeH/2-0.3));
       const localY=centerWorldY-height/2; // mesh中心基準のローカルYに変換
-      return{localPos:new BABYLON.Vector3(lx,localY,lz),rotY,height,w,planeH,centerWorldY};
+      // DOMラベルは画面オーバーレイ。壁面に横オフセットすると横にズレて見えるので、
+      // ビルの中心軸（lx=0,lz=0）に重ねて、ビル本体の上にぴったり乗せる。
+      void lx;void lz;
+      return{localPos:new BABYLON.Vector3(0,localY,0),rotY,height,w,planeH,centerWorldY};
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
     function splitMottoChars(text){

@@ -126,9 +126,12 @@
     }
     #zukan-float-btn:hover { transform: scale(1.06); box-shadow: 0 8px 26px rgba(0,0,0,0.32); filter: brightness(1.06); }
     #bottom-btns {
-      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 12px; align-items: center; pointer-events: all; z-index: 10;
+      position: fixed; bottom: 24px; right: max(20px, env(safe-area-inset-right, 0px)); left: auto; transform: none;
+      display: flex; flex-direction: column; gap: 10px; align-items: stretch; pointer-events: all; z-index: 10;
+      width: 168px;
     }
+    #bottom-btns > button { width: 100%; box-sizing: border-box; justify-content: center; }
+    #bottom-btns #build-btn { padding: 12px 16px; font-size: 14px; }
     #build-btn {
       background: linear-gradient(135deg, rgba(255,106,0,0.58), rgba(238,9,121,0.58));
       color: #fff; border: 1px solid rgba(255,255,255,0.16);
@@ -988,15 +991,15 @@
       .fly-stick-knob { width: 46px; height: 46px; }
       #bottom-btns {
         bottom: max(14px, env(safe-area-inset-bottom, 14px));
-        left: 50%; transform: translateX(-50%);
-        width: calc(100% - 20px); max-width: 340px;
-        display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+        right: max(12px, env(safe-area-inset-right, 0px)); left: auto; transform: none;
+        width: 150px; max-width: 46vw;
+        display: flex; flex-direction: column; gap: 8px;
       }
-      #build-btn { width: 100%; padding: 12px 10px; font-size: 14px; border-radius: 22px; }
-      #build-btn .acq-icons { font-size: 22px; }
-      #build-btn #build-btn-text { font-size: 14px; font-weight: 800; }
-      #mode-btn { width: 100%; padding: 12px 8px; font-size: 12px; border-radius: 22px; }
-      #zukan-float-btn { width: 100%; padding: 12px 8px; font-size: 12px; border-radius: 22px; }
+      #build-btn { width: 100%; padding: 11px 10px; font-size: 13px; border-radius: 18px; }
+      #build-btn .acq-icons { font-size: 18px; }
+      #build-btn #build-btn-text { font-size: 13px; font-weight: 800; }
+      #mode-btn { width: 100%; padding: 11px 8px; font-size: 12px; border-radius: 18px; }
+      #zukan-float-btn { width: 100%; padding: 11px 8px; font-size: 12px; border-radius: 18px; }
       #minimap-canvas { width: 100px; height: 100px; }
       #minimap-label { font-size: 8px; }
       #fly-hint { top: max(120px, calc(env(safe-area-inset-top, 0px) + 108px)); font-size: 11px; padding: 6px 14px; max-width: 92vw; white-space: normal; text-align: center; }
@@ -1046,7 +1049,7 @@
       #ad-slot { width: 112px; height: 90px; }
       #ad-slot-wrap { bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
       /* 下部ボタン：小さく・枠内余白を減らす */
-      #bottom-btns { gap: 6px; width: calc(100% - 16px); max-width: 300px; bottom: max(8px, env(safe-area-inset-bottom, 8px)); }
+      #bottom-btns { gap: 6px; width: 138px; max-width: 30vw; right: max(10px, env(safe-area-inset-right, 0px)); left: auto; transform: none; bottom: max(8px, env(safe-area-inset-bottom, 8px)); }
       #build-btn, #mode-btn, #zukan-float-btn { padding: 7px 6px !important; font-size: 12px !important; border-radius: 14px !important; min-height: 0 !important; }
       #build-btn .acq-icons { font-size: 16px; }
       #build-btn #build-btn-text { font-size: 12px; }
@@ -1057,6 +1060,18 @@
     #screen-backdrop { display:none; position:fixed; inset:0; z-index:14;
       background:radial-gradient(ellipse at top,#0c0c1e 0%,#06060f 100%); }
     body.screen-overlay-on #screen-backdrop { display:block; }
+    /* スマホ：全画面オーバーレイ（X報酬/ランキング/履歴）の中身を小さめにして見やすく */
+    @media (max-width: 768px) {
+      #ranking-title, #coin-history-title { font-size: 14px; letter-spacing: 0.06em; }
+      #x-rewards-title { font-size: 13px; }
+      #ranking-header, #coin-history-header, #x-rewards-header { padding: 9px 12px; }
+      #ranking-body, #coin-history-body { padding: 14px 12px; }
+      #coin-history-summary { grid-template-columns: 1fr 1fr; gap: 8px; }
+      #x-rewards-body .wrap { padding: 12px 12px 36px !important; }
+      #x-rewards-body h1 { font-size: 24px !important; line-height: 1.2 !important; }
+      #x-rewards-body .hero .lead, #x-rewards-body .lead { font-size: 13.5px !important; }
+      #x-rewards-body .card { padding: 16px 14px !important; }
+    }
     /* スマホ縦画面 → 横画面を促すオーバーレイ（PCでは出ない） */
     #rotate-prompt {
       display:none; position:fixed; inset:0; z-index:99999;
@@ -1560,7 +1575,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-06-v90';
+    const IGNIS_BUILD='2026-06-06-v91';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3386,12 +3401,8 @@
       await updateViewTaskProgressLabel();
     }
     function toggleTaskPanel(){
-      const panel=document.getElementById('task-panel');
-      const opening=!panel.classList.contains('open');
-      panel.classList.toggle('open');
-      // 全画面ビュー扱い：3D描画を止めて軽くし、背景を覆う（#4=A）
-      document.body.classList.toggle('screen-overlay-on',opening);
-      if(typeof setScenePaused==='function')setScenePaused(opening);
+      // タスクパネルを開いても3Dの街は表示したままにする（ユーザー要望で復帰）
+      document.getElementById('task-panel').classList.toggle('open');
     }
     // ========================================
     // 火の粉

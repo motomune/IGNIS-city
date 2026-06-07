@@ -1653,7 +1653,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-07-v97';
+    const IGNIS_BUILD='2026-06-08-v98';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4949,10 +4949,10 @@
       return{localPos:new BABYLON.Vector3(lx,localY,lz),rotY,height,w};
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
-    // 横書き格言のサイズ設定
-    const MOTTO_CHAR_W=1.7;     // 1文字の大きさ（世界座標）＝従来比で約2倍
-    const MOTTO_LINE_GAP=1.2;   // 行間係数
-    const MOTTO_CPL=4;          // 1行あたりの文字数（横書き）
+    // 縦1列格言のサイズ設定（横1マス・上→下に縦へ続く）
+    const MOTTO_CHAR_W=1.7;     // 1文字の大きさ（世界座標）
+    const MOTTO_LINE_GAP=1.2;   // 文字間（縦方向）係数
+    const MOTTO_CPL=1;          // 1行あたりの文字数（=列数）。1で縦一列。
     function mottoLines(chars){
       const out=[];
       for(let i=0;i<chars.length;i+=MOTTO_CPL)out.push(chars.slice(i,i+MOTTO_CPL));
@@ -4988,7 +4988,7 @@
       ctx.textBaseline='middle';
       ctx.shadowColor='rgba(0,0,0,0.9)';
       ctx.shadowBlur=7;
-      // 横書き：各行を左→右、行は上→下に並べる
+      // 縦1列：各文字を上→下に並べる
       lines.forEach((line,r)=>{
         const y=lineCellH*(r+0.5);
         const lineW=line.length*cellW;
@@ -5013,7 +5013,7 @@
       const totalFloors=Math.max(1,Number(building.totalFloors||building.baseFloors)||1);
       const star=getStarByFloors(totalFloors);
       const color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
-      // 横書きに折り返し（4文字/行）
+      // 縦1列（1文字/行で上→下へ）
       const lines=mottoLines(chars);
       const planeW=MOTTO_CPL*MOTTO_CHAR_W;
       const planeH=lines.length*MOTTO_CHAR_W*MOTTO_LINE_GAP;

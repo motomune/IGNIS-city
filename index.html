@@ -569,7 +569,7 @@
       padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;
       display:inline-flex;align-items:center;gap:4px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
     }
-    #task-panel { position:fixed;top:max(148px,calc(env(safe-area-inset-top,0px) + 132px));right:max(24px,env(safe-area-inset-right,0px));bottom:max(24px,env(safe-area-inset-bottom,0px));background:rgba(6,6,16,0.95);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:16px 20px;min-width:240px;z-index:15;pointer-events:all;display:none;backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.6);overflow-y:auto;-webkit-overflow-scrolling:touch; }
+    #task-panel { position:fixed;top:max(148px,calc(env(safe-area-inset-top,0px) + 132px));right:max(24px,env(safe-area-inset-right,0px));bottom:auto;max-height:min(56vh,460px);width:260px;background:rgba(6,6,16,0.95);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:12px 14px;min-width:0;z-index:15;pointer-events:all;display:none;backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.6);overflow-y:auto;-webkit-overflow-scrolling:touch; }
     #task-panel.open { display: block; }
     #task-panel-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px; }
     #task-panel-title { font-size:11px;font-weight:800;color:#ff6a00;letter-spacing:0.15em;text-transform:uppercase; }
@@ -971,9 +971,9 @@
       #task-panel {
         top: max(168px, calc(env(safe-area-inset-top, 0px) + 152px));
         right: max(8px, env(safe-area-inset-right, 0px));
-        left: 8px; width: auto; min-width: 0; max-width: none; padding: 14px 16px;
-        /* 下部ボタンに被らない位置で下端を止め、はみ出る分はスクロール */
-        bottom: max(86px, calc(env(safe-area-inset-bottom, 0px) + 74px));
+        /* 画面いっぱいに広げず、約1/3サイズ（幅を絞り高さは内容ぶん＋上限） */
+        left: auto; width: min(240px, 62vw); min-width: 0; max-width: none; padding: 10px 12px;
+        bottom: auto; max-height: min(52vh, calc(100dvh - 220px));
       }
       #task-utility-actions { gap: 5px; margin-top: 8px; }
       .task-utility-btn {
@@ -1056,7 +1056,7 @@
       #build-btn .acq-icons { font-size: 16px; }
       #build-btn #build-btn-text { font-size: 12px; }
       /* タスクパネルを短い画面に収める（はみ出しはスクロール） */
-      #task-panel { top: max(54px, calc(env(safe-area-inset-top,0px) + 46px)); bottom: max(70px, calc(env(safe-area-inset-bottom,0px) + 62px)); padding: 10px 12px; }
+      #task-panel { top: max(54px, calc(env(safe-area-inset-top,0px) + 46px)); bottom: auto; max-height: calc(100dvh - 86px); width: min(240px, 42vw); padding: 10px 12px; }
     }
     /* タスク等の全画面ビュー時に3D（フリーズ画面）を覆う背景 */
     #screen-backdrop { display:none; position:fixed; inset:0; z-index:14;
@@ -1115,7 +1115,7 @@
       z-index:12; display:flex; flex-direction:column; gap:8px; width:142px; align-items:stretch; pointer-events:none; }
     #right-rail .rail-btn { width:100%; }
     /* 左列（ログアウト）。ステータスの下に置く */
-    #left-rail { position:fixed; left:max(14px,env(safe-area-inset-left,0px)); top:max(150px,calc(env(safe-area-inset-top,0px) + 138px));
+    #left-rail { position:fixed; left:max(14px,env(safe-area-inset-left,0px)); top:max(104px,calc(env(safe-area-inset-top,0px) + 92px));
       z-index:12; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
     #left-rail .rail-btn { font-size:12px; padding:8px 14px; color:rgba(255,255,255,0.88); }
     /* ログイン状態の表示切替 */
@@ -1144,7 +1144,7 @@
     @media (orientation: landscape) and (max-height: 500px) {
       #right-rail { width:118px; gap:6px; top:max(8px,env(safe-area-inset-top,0px)); }
       #right-rail .rail-btn { padding:6px 9px; font-size:11px; }
-      #left-rail { top:max(96px,calc(env(safe-area-inset-top,0px) + 88px)); }
+      #left-rail { top:max(72px,calc(env(safe-area-inset-top,0px) + 64px)); }
       #left-rail .rail-btn { padding:6px 11px; font-size:11px; }
       #ad-slot { width:104px !important; height:84px !important; }
       #ad-slot-wrap { bottom:calc(120px + env(safe-area-inset-bottom,0px)) !important; }
@@ -1653,7 +1653,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-08-v99';
+    const IGNIS_BUILD='2026-06-08-v100';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4950,8 +4950,8 @@
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
     // 縦1列格言のサイズ設定（横1マス・上→下に縦へ続く）
-    const MOTTO_CHAR_W=1.7;     // 1文字の大きさ（世界座標）
-    const MOTTO_LINE_GAP=1.2;   // 文字間（縦方向）係数
+    const MOTTO_CHAR_W=2.0;     // 1文字の大きさ（世界座標）
+    const MOTTO_LINE_GAP=1.05;  // 文字間（縦方向）係数
     const MOTTO_CPL=1;          // 1行あたりの文字数（=列数）。1で縦一列。
     function mottoLines(chars){
       const out=[];
@@ -4961,8 +4961,11 @@
     function mottoMaxCharsForBuilding(b){
       const fl=(b&&(b.totalFloors||b.baseFloors))||1;
       const height=Math.max(fl*0.5,2);
-      const maxLines=Math.max(2,Math.floor((height*0.82)/(MOTTO_CHAR_W*MOTTO_LINE_GAP)));
-      return Math.max(MOTTO_CPL,Math.min(40,MOTTO_CPL*maxLines));
+      // 壁の足元〜上端までフル活用して入る文字数を出す（上の余白を残さない）
+      const bottomY=Math.min(1.8,height*0.12);
+      const availH=Math.max(2,(height-0.3)-bottomY);
+      const maxLines=Math.max(2,Math.floor(availH/(MOTTO_CHAR_W*MOTTO_LINE_GAP)));
+      return Math.min(40,maxLines);
     }
     function splitMottoChars(text,maxChars){
       const lim=Math.max(2,maxChars||MOTTO_WALL_MAX_CHARS);
@@ -5040,7 +5043,7 @@
       const lineCellH=Math.round(cell*MOTTO_LINE_GAP);
       const texW=MOTTO_CPL*cell;
       const texH=Math.min(4096,lines.length*lineCellH);
-      const fontSize=Math.floor(cell*0.74);
+      const fontSize=Math.floor(cell*0.86);
       const tex=new BABYLON.DynamicTexture('mottotex_'+x+'_'+z,{width:texW,height:texH},scene,true);
       tex.hasAlpha=true;
       tex.vScale=-1;tex.vOffset=1; // 行が下→上に反転するのを上→下に直す

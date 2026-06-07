@@ -975,13 +975,15 @@
         /* 下部ボタンに被らない位置で下端を止め、はみ出る分はスクロール */
         bottom: max(86px, calc(env(safe-area-inset-bottom, 0px) + 74px));
       }
-      #task-utility-actions { gap: 6px; margin-top: 10px; }
+      #task-utility-actions { gap: 5px; margin-top: 8px; }
       .task-utility-btn {
-        padding: 12px 14px;
-        font-size: 13px;
-        min-height: 44px;
-        border-radius: 12px;
+        padding: 7px 10px;
+        font-size: 11px;
+        min-height: 32px;
+        border-radius: 9px;
       }
+      .task-row { font-size: 12px; padding: 6px 0; }
+      #task-panel-title { font-size: 10px; }
       #notice-panel {
         top: max(168px, calc(env(safe-area-inset-top, 0px) + 152px));
         right: max(8px, env(safe-area-inset-right, 0px));
@@ -1095,7 +1097,9 @@
     /* ========================================================= */
     #header { display:block !important; background:none !important;
       padding:max(12px,env(safe-area-inset-top,0px)) 0 0 max(16px,env(safe-area-inset-left,0px)) !important; pointer-events:none; }
-    #stats { pointer-events:all; display:flex; flex-direction:column; gap:3px; }
+    /* ステータスは横並び（右へ順に）。縦に積むとログアウトボタンと重なるため。 */
+    #stats { pointer-events:all; display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; column-gap:14px; row-gap:2px; }
+    #emp-stats-block { flex-direction:row; gap:14px; align-items:center; }
     /* 共通レールボタン */
     .rail-btn { box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:6px;
       padding:9px 12px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;
@@ -1178,6 +1182,23 @@
       console.warn('[IGNIS BOOT] 手動/強制でロード画面を閉じました');
     };
     __ignisStatus('1) HTML loaded');
+    // スマホ：縦→横に回転した瞬間に再読み込み（3Dキャンバスが圧縮されて
+    // ビルが潰れて見える不具合を、正しいサイズで作り直すことで防ぐ）
+    (function(){
+      try{
+        if(!window.matchMedia)return;
+        if(!window.matchMedia('(pointer: coarse)').matches)return; // タッチ端末のみ
+        var land=window.matchMedia('(orientation: landscape)');
+        var wasPortrait=!land.matches;
+        function onOri(e){
+          var isLand=e.matches;
+          if(isLand&&wasPortrait){location.reload();return;}
+          wasPortrait=!isLand;
+        }
+        if(land.addEventListener)land.addEventListener('change',onOri);
+        else if(land.addListener)land.addListener(onOri);
+      }catch(_){}
+    })();
   </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
@@ -1632,7 +1653,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-07-v96';
+    const IGNIS_BUILD='2026-06-07-v97';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3645,7 +3666,7 @@
           }
         }
         currentUser.xUsername=xName;
-        document.getElementById('emp-stats-block').style.display='block';
+        document.getElementById('emp-stats-block').style.display='flex';
         setAuthHeaderLoggedIn(true);
         const nameEl=document.getElementById('user-name');
         nameEl.textContent=xName?`@${xName}`:(isJa?'X未登録':'X not set');
@@ -4702,12 +4723,33 @@
         btn.disabled=true;btn.textContent=currentLang==='ja'?'申請中...':'Submitting...';
       try{
         if(motto){
-          const{error:e1}=await db.from('building_profiles').upsert({
-            user_id:currentUser.id,building_x:profileState.gx,building_z:profileState.gz,
-            motto_text:motto,notes_text:null,status:'pending',
-            created_at:new Date().toISOString()
-          },{onConflict:'building_x,building_z'});
-          if(e1)throw e1;
+          // 既存行を確認：承認済み格言があれば「修正申請」として保留カラムへ退避し、
+          // 管理者が承認するまで元の承認済み格言を壁に出し続ける（未承認の修正は壁に出さない）。
+          let existing=null;
+          try{
+            const{data}=await db.from('building_profiles')
+              .select('status,motto_text')
+              .eq('building_x',profileState.gx).eq('building_z',profileState.gz)
+              .maybeSingle();
+            existing=data;
+          }catch(_){}
+          if(existing&&existing.status==='approved'&&existing.motto_text){
+            // 承認済み格言の修正 → 元の格言(motto_text/status)は維持、修正本文だけ保留
+            const{error:e1}=await db.from('building_profiles').update({
+              pending_motto_text:motto,
+              pending_submitted_at:new Date().toISOString()
+            }).eq('building_x',profileState.gx).eq('building_z',profileState.gz);
+            if(e1)throw e1;
+          }else{
+            // 新規申請 or 未承認の再申請 → 従来どおり pending で申請
+            const{error:e1}=await db.from('building_profiles').upsert({
+              user_id:currentUser.id,building_x:profileState.gx,building_z:profileState.gz,
+              motto_text:motto,notes_text:null,status:'pending',
+              pending_motto_text:null,pending_submitted_at:null,
+              created_at:new Date().toISOString()
+            },{onConflict:'building_x,building_z'});
+            if(e1)throw e1;
+          }
         }
         const hasPastDetail=lostItems.length||gainedItems.length||detail||message;
         if(hasPastDetail){
@@ -5246,7 +5288,7 @@
         document.getElementById('emp-total-count').textContent=total.toLocaleString();
         document.getElementById('emp-bench-count').textContent=bench.toLocaleString();
         document.getElementById('emp-stats-block').title=isJa?'契約社員総数=自分の土地の配属+休職中。休職中=採用・売却・閲覧で貯まった未配属の人':'Total contract staff = assigned on your land + bench. Bench = unassigned pool';
-        document.getElementById('emp-stats-block').style.display='block';
+        document.getElementById('emp-stats-block').style.display='flex';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
     function getSellCoinMultiplier(employees){

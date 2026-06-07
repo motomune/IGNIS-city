@@ -195,15 +195,19 @@
       document.getElementById('list-container').innerHTML='<div class="loading">読み込み中...</div>';
       try{
         const[mottoRes,pastRes]=await Promise.all([
-          db.from('building_profiles').select('id,user_id,building_x,building_z,motto_text,status,created_at,reviewed_at').order('created_at',{ascending:false}),
+          db.from('building_profiles').select('id,user_id,building_x,building_z,motto_text,pending_motto_text,pending_submitted_at,status,created_at,reviewed_at').order('created_at',{ascending:false}),
           db.from('building_past_details').select('id,user_id,building_x,building_z,lost_items,gained_items,background_detail,current_positive,status,created_at,updated_at').order('updated_at',{ascending:false}),
         ]);
         if(mottoRes.error)throw mottoRes.error;
         if(pastRes.error)throw pastRes.error;
-        const allItems=[
-          ...(mottoRes.data||[]).map(p=>({...p,_type:'motto'})),
-          ...(pastRes.data||[]).map(p=>({...p,created_at:p.updated_at||p.created_at,_type:'past'})),
-        ];
+        const mottoItems=(mottoRes.data||[]).map(p=>{
+          // 承認済み格言に修正申請(pending_motto_text)が付いている＝「修正の承認待ち」
+          const isEdit=p.status==='approved'&&!!p.pending_motto_text;
+          return{...p,_type:'motto',_isEdit:isEdit,_reviewState:isEdit?'pending':p.status,
+            created_at:isEdit?(p.pending_submitted_at||p.created_at):p.created_at};
+        });
+        const pastItems=(pastRes.data||[]).map(p=>({...p,created_at:p.updated_at||p.created_at,_type:'past',_isEdit:false,_reviewState:p.status}));
+        const allItems=[...mottoItems,...pastItems];
         const userIds=[...new Set(allItems.map(p=>p.user_id))];
         let userMap={};
         if(userIds.length){
@@ -240,11 +244,11 @@
 
     function renderList(){
       const counts={pending:0,approved:0,rejected:0};
-      profiles.forEach(p=>{if(counts[p.status]!==undefined)counts[p.status]++;});
+      profiles.forEach(p=>{if(counts[p._reviewState]!==undefined)counts[p._reviewState]++;});
       document.getElementById('badge-pending').textContent=counts.pending;
       document.getElementById('badge-approved').textContent=counts.approved;
       document.getElementById('badge-rejected').textContent=counts.rejected;
-      const filtered=profiles.filter(p=>p.status===currentTab);
+      const filtered=profiles.filter(p=>p._reviewState===currentTab);
       const container=document.getElementById('list-container');
       if(!filtered.length){container.innerHTML=`<div class="empty">該当する申請はありません</div>`;return;}
       container.innerHTML='<div class="list">'+filtered.map(p=>renderCard(p)).join('')+'</div>';
@@ -257,13 +261,22 @@
       const xName=u.x_username||'';
       const ownerHtml=xName?`<a href="https://x.com/${encodeURIComponent(xName)}" target="_blank" rel="noopener">@${xName}</a>`:(u.username||'(unknown)');
       const typeBadge=p._type==='motto'
-        ?`<span class="type-badge motto">💬 格言</span>`
+        ?(p._isEdit?`<span class="type-badge motto">✏️ 格言修正</span>`:`<span class="type-badge motto">💬 格言</span>`)
         :`<span class="type-badge past">📖 過去詳細</span>`;
       let bodyHtml='';
       if(p._type==='motto'){
-        bodyHtml=p.motto_text
-          ?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.motto_text)}</div>`
-          :'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+        if(p._isEdit){
+          // 修正申請：現在の承認済み格言と、修正後（承認待ち）を並べて表示
+          bodyHtml=`
+            <div class="past-section">現在の格言（壁に表示中）</div>
+            <div class="motto-text ${rankClass(star)}" style="opacity:0.6;">💬 ${escapeHtml(p.motto_text||'')}</div>
+            <div class="past-section" style="margin-top:8px;color:#ffab40;">修正後（承認待ち）</div>
+            <div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.pending_motto_text||'')}</div>`;
+        }else{
+          bodyHtml=p.motto_text
+            ?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.motto_text)}</div>`
+            :'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+        }
       } else {
         bodyHtml=`
           <div class="past-section">① 失ったもの</div><div class="chip-row">${chipsHtml(p.lost_items)}</div>
@@ -272,33 +285,68 @@
           ${p.current_positive?`<div class="past-section" style="margin-top:8px;">④ 読者へのメッセージ</div><div class="past-text">${escapeHtml(p.current_positive)}</div>`:''}`;
       }
       let actions='';
-      if(p.status==='pending'){
+      if(p._isEdit){
+        actions=`
+          <button class="action-btn btn-approve" onclick="approveMottoEdit('${p.id}')">✅ 修正を承認</button>
+          <button class="action-btn btn-reject" onclick="rejectMottoEdit('${p.id}')">❌ 修正を却下</button>`;
+      } else if(p._reviewState==='pending'){
         actions=`
           <button class="action-btn btn-approve" onclick="updateStatus('${p.id}','${p._type}','approved')">✅ 承認</button>
           <button class="action-btn btn-reject" onclick="updateStatus('${p.id}','${p._type}','rejected')">❌ 却下</button>`;
       } else {
         actions=`<button class="action-btn btn-revert" onclick="updateStatus('${p.id}','${p._type}','pending')">↩ 差し戻し</button>`;
       }
-      const reviewedAt=p._type==='motto'?p.reviewed_at:p.updated_at;
+      const reviewedAt=p._isEdit?null:(p._type==='motto'?p.reviewed_at:p.updated_at);
       const reviewedLine=reviewedAt?` ／ 審査: ${fmtTime(reviewedAt)}`:'';
+      const submitLabel=p._isEdit?'修正申請':'申請';
       return `
-        <div class="card ${p.status}">
+        <div class="card ${p._reviewState}">
           <div class="rank-icon" title="${STAR_LABELS[star]}">${icon}</div>
           <div class="card-body">
             <div class="card-row">
               <span class="owner">👤 ${ownerHtml}</span>${typeBadge}
               <span class="coord">座標 ${p.building_x},${p.building_z}</span>
               <span class="floors">${p._floors||'?'}F / ${STAR_LABELS[star]}</span>
-              <span class="status-badge ${p.status}">${p.status}</span>
+              <span class="status-badge ${p._reviewState}">${p._reviewState}</span>
             </div>
             ${bodyHtml}
-            <div class="meta">申請: ${fmtTime(p.created_at)}${reviewedLine}</div>
+            <div class="meta">${submitLabel}: ${fmtTime(p.created_at)}${reviewedLine}</div>
           </div>
           <div class="actions">${actions}</div>
         </div>`;
     }
 
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+    // 承認済み格言への「修正申請」を承認＝修正本文を本採用
+    async function approveMottoEdit(id){
+      const item=profiles.find(p=>p.id===id&&p._type==='motto');
+      if(!item||!item.pending_motto_text){showToast('対象が見つかりません');return;}
+      try{
+        const{error}=await db.from('building_profiles').update({
+          motto_text:item.pending_motto_text,
+          pending_motto_text:null,
+          pending_submitted_at:null,
+          reviewed_at:new Date().toISOString()
+        }).eq('id',id);
+        if(error)throw error;
+        showToast('✓ 修正を承認しました');
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
+    }
+    // 修正申請を却下＝元の承認済み格言を維持し、修正本文を破棄
+    async function rejectMottoEdit(id){
+      if(!confirm('この修正申請を却下しますか？（元の格言はそのまま残ります）'))return;
+      try{
+        const{error}=await db.from('building_profiles').update({
+          pending_motto_text:null,
+          pending_submitted_at:null
+        }).eq('id',id);
+        if(error)throw error;
+        showToast('✓ 修正を却下しました');
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
+    }
 
     async function updateStatus(id,type,newStatus){
       const ok=newStatus==='rejected'?confirm('この申請を却下しますか？'):true;

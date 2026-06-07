@@ -1089,6 +1089,70 @@
       background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
     #rotate-prompt .rp-en { font-size:19px; font-weight:800; margin-top:14px; color:#ff8a3d; letter-spacing:0.01em; text-shadow:0 0 18px rgba(255,106,0,0.4); }
     #rotate-prompt .rp-sub { font-size:13px; color:rgba(255,255,255,0.85); margin-top:10px; line-height:1.6; font-weight:600; }
+
+    /* ========================================================= */
+    /* v96 ボタン配置リニューアル（上=ステータス / 右=縦列 / 左 / 下） */
+    /* ========================================================= */
+    #header { display:block !important; background:none !important;
+      padding:max(12px,env(safe-area-inset-top,0px)) 0 0 max(16px,env(safe-area-inset-left,0px)) !important; pointer-events:none; }
+    #stats { pointer-events:all; display:flex; flex-direction:column; gap:3px; }
+    /* 共通レールボタン */
+    .rail-btn { box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:6px;
+      padding:9px 12px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;
+      border:1px solid rgba(255,255,255,0.16); background:rgba(18,18,30,0.82); color:#fff; backdrop-filter:blur(6px);
+      transition:opacity 0.15s, transform 0.12s; pointer-events:all; line-height:1.1; }
+    .rail-btn:hover { opacity:0.92; transform:scale(1.02); }
+    .rail-login { background:linear-gradient(135deg,#ff6a00,#ee0979) !important; border:none !important; font-weight:800; }
+    #sound-toggle.rail-btn { background:linear-gradient(135deg,rgba(163,230,53,0.6),rgba(134,239,172,0.66)); border-color:rgba(190,242,100,0.5); color:#12411b; }
+    #sound-toggle.rail-btn.muted { opacity:0.45; }
+    #x-rewards-btn.rail-btn { background:linear-gradient(135deg,rgba(96,210,255,0.55),rgba(91,140,255,0.55)); }
+    /* 右列 */
+    #right-rail { position:fixed; top:max(14px,env(safe-area-inset-top,0px)); right:max(14px,env(safe-area-inset-right,0px));
+      z-index:12; display:flex; flex-direction:column; gap:8px; width:142px; align-items:stretch; pointer-events:none; }
+    #right-rail .rail-btn { width:100%; }
+    /* 左列（ログアウト）。ステータスの下に置く */
+    #left-rail { position:fixed; left:max(14px,env(safe-area-inset-left,0px)); top:max(150px,calc(env(safe-area-inset-top,0px) + 138px));
+      z-index:12; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    #left-rail .rail-btn { font-size:12px; padding:8px 14px; color:rgba(255,255,255,0.88); }
+    /* ログイン状態の表示切替 */
+    .li-only { display:none !important; }
+    body.logged-in .li-only { display:flex !important; }
+    body.logged-in #login-btn-header { display:none !important; }
+    /* 広告：左側（マップの上） */
+    #ad-slot-wrap { position:fixed !important; left:max(14px,env(safe-area-inset-left,0px)) !important;
+      bottom:calc(190px + env(safe-area-inset-bottom,0px)) !important; top:auto !important; right:auto !important;
+      margin:0 !important; z-index:10; grid-column:auto !important; grid-row:auto !important; width:auto !important; }
+    #ad-slot { width:150px !important; height:120px !important; }
+    /* マップ：左下 */
+    #minimap-wrap { bottom:max(14px,env(safe-area-inset-bottom,0px)) !important; left:max(14px,env(safe-area-inset-left,0px)) !important; }
+    /* 下：獲得 / 飛行モード / 図鑑（中央・横並び） */
+    #bottom-btns { position:fixed; left:50% !important; right:auto !important; transform:translateX(-50%) !important;
+      bottom:max(18px,env(safe-area-inset-bottom,0px)); display:flex !important; flex-direction:row !important; gap:10px;
+      width:auto !important; max-width:none !important; align-items:stretch; z-index:11; }
+    #bottom-btns > button { width:auto !important; white-space:nowrap !important; flex:0 0 auto; }
+    #bottom-btns #build-btn { padding:12px 20px !important; font-size:14px !important; }
+    #bottom-btns #mode-btn, #bottom-btns #zukan-float-btn { padding:12px 18px !important; font-size:13px !important; border-radius:24px !important; }
+    /* 飛行モード＝音ボタンと同じ緑 */
+    #mode-btn { background:linear-gradient(135deg,rgba(163,230,53,0.62),rgba(134,239,172,0.68)) !important;
+      border:1px solid rgba(190,242,100,0.5) !important; color:#12411b !important; font-weight:800; }
+    #mode-btn.fly-active { filter:brightness(1.1); }
+    /* 横向きスマホ：レール/ボタンをコンパクトに */
+    @media (orientation: landscape) and (max-height: 500px) {
+      #right-rail { width:118px; gap:6px; top:max(8px,env(safe-area-inset-top,0px)); }
+      #right-rail .rail-btn { padding:6px 9px; font-size:11px; }
+      #left-rail { top:max(96px,calc(env(safe-area-inset-top,0px) + 88px)); }
+      #left-rail .rail-btn { padding:6px 11px; font-size:11px; }
+      #ad-slot { width:104px !important; height:84px !important; }
+      #ad-slot-wrap { bottom:calc(120px + env(safe-area-inset-bottom,0px)) !important; }
+      #minimap-canvas { width:88px !important; height:88px !important; }
+      #bottom-btns { gap:6px; bottom:max(8px,env(safe-area-inset-bottom,0px)); }
+      #bottom-btns #build-btn { padding:9px 14px !important; font-size:12px !important; }
+      #mode-btn, #zukan-float-btn { padding:9px 12px !important; font-size:12px !important; }
+    }
+    @media (max-width: 480px) {
+      #right-rail { width:124px; }
+      #ad-slot { width:120px !important; height:96px !important; }
+    }
   </style>
 </head>
 <body>
@@ -1133,47 +1197,40 @@
   </div>
   <div id="ui">
     <div id="header">
-      <div id="header-left">
-        <div id="stats">
-          <div class="stat-row stat-primary">
-            <span data-i18n="buildings">所有ビル</span>&nbsp;<span id="building-count" class="stat-value">0</span><span data-i18n="buildings-unit">棟</span>
+      <div id="stats">
+        <div class="stat-row stat-primary">
+          <span data-i18n="buildings">所有ビル</span>&nbsp;<span id="building-count" class="stat-value">0</span><span data-i18n="buildings-unit">棟</span>
+        </div>
+        <div id="emp-stats-block" style="display:none;" title="合計=自分の土地の配属+休職中">
+          <div class="stat-row stat-secondary">
+            <span data-i18n="emp-total">契約社員総数</span>&nbsp;<span id="emp-total-count" class="stat-value">0</span><span data-i18n="emp-unit">人</span>
           </div>
-          <div class="stat-row stat-primary">
-            <span data-i18n="coins">所持コイン</span>&nbsp;<span id="coin-count" class="stat-value" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
-          </div>
-          <div id="emp-stats-block" style="display:none;" title="合計=自分の土地の配属+休職中">
-            <div class="stat-row stat-secondary">
-              <span data-i18n="emp-total">契約社員総数</span>&nbsp;<span id="emp-total-count" class="stat-value">0</span><span data-i18n="emp-unit">人</span>
-            </div>
-            <div class="stat-row stat-secondary">
-              <span data-i18n="emp-bench">休職中</span>&nbsp;<span id="emp-bench-count" class="stat-value">0</span><span data-i18n="emp-unit2">人</span>
-            </div>
+          <div class="stat-row stat-secondary">
+            <span data-i18n="emp-bench">休職中</span>&nbsp;<span id="emp-bench-count" class="stat-value">0</span><span data-i18n="emp-unit2">人</span>
           </div>
         </div>
-        <div id="header-util">
-          <div id="header-util-primary">
-            <button id="x-rewards-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
-            <button id="lang-btn" type="button" onclick="toggleLang()" title="言語切替">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <span id="lang-label">EN</span>
-            </button>
-          </div>
-          <button id="sound-toggle" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
+        <div class="stat-row stat-primary">
+          <span data-i18n="coins">所持コイン</span>&nbsp;<span id="coin-count" class="stat-value" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
         </div>
       </div>
-      <div id="header-right">
-        <button id="login-btn-header" class="header-action-btn" onclick="openAuthModal()">ログイン / 登録</button>
-        <div id="logged-in-area" style="display:none;">
-          <button id="ranking-btn" class="header-action-btn" type="button" onclick="openRanking()">🏆 ランキング</button>
-          <button id="task-toggle-btn" class="header-action-btn" type="button" onclick="toggleTaskPanel()">📋 タスク<span id="task-notice-badge">0</span></button>
-          <span id="user-name" style="display:none;" aria-hidden="true"></span>
-          <button id="coin-history-btn" class="header-action-btn" type="button" onclick="openCoinHistory()">💰 履歴</button>
-          <button id="logout-btn" class="header-action-btn" type="button" onclick="handleLogout()">ログアウト</button>
-        </div>
-      </div>
-      <div id="ad-slot-wrap">
-        <div id="ad-slot" aria-label="広告枠"></div>
-      </div>
+    </div>
+    <!-- 右側の縦並びボタン列 -->
+    <div id="right-rail">
+      <button id="login-btn-header" class="rail-btn rail-login" onclick="openAuthModal()">ログイン / 登録</button>
+      <button id="coin-history-btn" class="rail-btn li-only" type="button" onclick="openCoinHistory()">💰 履歴</button>
+      <button id="lang-btn" class="rail-btn" type="button" onclick="toggleLang()" title="言語切替">🌐 <span id="lang-label">EN</span></button>
+      <button id="task-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleTaskPanel()">📋 タスク<span id="task-notice-badge">0</span></button>
+      <button id="ranking-btn" class="rail-btn li-only" type="button" onclick="openRanking()">🏆 ランキング</button>
+      <button id="sound-toggle" class="rail-btn" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
+      <button id="x-rewards-btn" class="rail-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
+      <span id="user-name" style="display:none;" aria-hidden="true"></span>
+    </div>
+    <!-- 左側 -->
+    <div id="left-rail">
+      <button id="logout-btn" class="rail-btn li-only" type="button" onclick="handleLogout()">↩ ログアウト</button>
+    </div>
+    <div id="ad-slot-wrap">
+      <div id="ad-slot" aria-label="広告枠"></div>
     </div>
   </div>
   <div id="fly-hint">🕊 矢印で移動・Shift上昇・Ctrl下降</div>
@@ -1575,7 +1632,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-07-v95';
+    const IGNIS_BUILD='2026-06-07-v96';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3285,12 +3342,9 @@
       if(task&&n>=task.goal)await completeTask('view');
     }
     function setAuthHeaderLoggedIn(loggedIn){
-      const loginBtn=document.getElementById('login-btn-header');
-      const loggedArea=document.getElementById('logged-in-area');
-      const taskBtn=document.getElementById('task-toggle-btn');
-      if(loginBtn)loginBtn.style.display=loggedIn?'none':'block';
-      if(loggedArea)loggedArea.style.display=loggedIn?'flex':'none';
-      if(taskBtn)taskBtn.style.display=loggedIn?'block':'none';
+      // ログイン状態で .li-only ボタン（履歴/タスク/ランキング/ログアウト）と
+      // ログインボタンの表示を CSS で切り替える
+      document.body.classList.toggle('logged-in',!!loggedIn);
       if(!loggedIn){
         document.getElementById('task-panel')?.classList.remove('open');
         document.getElementById('emp-stats-block').style.display='none';

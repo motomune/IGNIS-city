@@ -1575,7 +1575,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-06-v92';
+    const IGNIS_BUILD='2026-06-07-v93';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3676,8 +3676,8 @@
     if(window.BABYLON){
       scene.skipPointerMovePicking=true;
       scene.constantlyUpdateMeshUnderPointer=false;
-      // 高DPI端末（スマホ等）は描画解像度を抑えて軽くする
-      try{const dpr=window.devicePixelRatio||1;if(dpr>1.5)engine.setHardwareScalingLevel(dpr/1.5);}catch(e){}
+      // 端末の解像度に合わせて描画（スマホでもくっきり）。重さ対策はDOM廃止とpick停止で対応済み。
+      try{const dpr=window.devicePixelRatio||1;engine.setHardwareScalingLevel(1/Math.min(dpr,2));}catch(e){}
     }
     const arcCamera=new BABYLON.ArcRotateCamera('arcCam',-Math.PI/4,Math.PI/3.5,60,BABYLON.Vector3.Zero(),scene);
     arcCamera.attachControl(canvas,true);
@@ -4821,7 +4821,7 @@
         if(!plane)return;
         const b=getBuildingForLandKey(key);
         if(!b||!b.mesh||b.mesh.isDisposed())return;
-        const chars=splitMottoChars(p.motto_text);
+        const chars=splitMottoChars(p.motto_text,mottoMaxCharsForBuilding(b));
         const{localPos,rotY}=getMottoWallPlacementLocal(b,chars.length);
         const worldPos=BABYLON.Vector3.TransformCoordinates(localPos,b.mesh.getWorldMatrix());
         plane.position.copyFrom(worldPos);
@@ -4838,28 +4838,39 @@
       const cam=scene.activeCamera;
       const camPos=cam?cam.position:new BABYLON.Vector3(0,40,-70);
       const toCamX=camPos.x-pos.x,toCamZ=camPos.z-pos.z;
-      const off=w/2+0.12; // 壁面のすぐ外側
+      const off=w/2+0.1; // 壁面のすぐ外側
       let lx=0,lz=0,rotY=0;
+      // プレートの文字面（前面）を壁の外＝カメラ側へ向ける（逆さ／裏返り防止）
       if(Math.abs(toCamX)>=Math.abs(toCamZ)){
         const sign=toCamX>=0?1:-1;
-        lx=sign*off;rotY=sign>0?-Math.PI/2:Math.PI/2;
+        lx=sign*off;rotY=sign>0?Math.PI/2:-Math.PI/2;
       }else{
         const sign=toCamZ>=0?1:-1;
         lz=sign*off;rotY=sign>0?0:Math.PI;
       }
+      // 文字数に応じて縦に伸ばし、ビルの高さを活かす（足元から上へ）
       const cc=Math.max(1,charCount||6);
-      const planeH=Math.min(Math.max(cc*0.62+0.6,3),Math.min(height*0.9,15));
-      const bottomY=Math.min(2,height*0.15);
-      const centerWorldY=Math.max(planeH/2,Math.min(bottomY+planeH/2,height-planeH/2-0.3));
+      const planeH=Math.min(Math.max(cc*1.15+0.5,2.6),height*0.9);
+      const bottomY=Math.min(1.6,height*0.12);
+      let centerWorldY=bottomY+planeH/2;
+      const maxTop=height-0.3;
+      if(centerWorldY+planeH/2>maxTop)centerWorldY=Math.max(planeH/2,maxTop-planeH/2);
       const localY=centerWorldY-height/2; // mesh中心基準のローカルY
-      const planeW=Math.min(2.4,planeH*0.16+0.5);
-      return{localPos:new BABYLON.Vector3(lx,localY,lz),rotY,height,w,planeW,planeH};
+      return{localPos:new BABYLON.Vector3(lx,localY,lz),rotY,height,w,planeH};
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
-    function splitMottoChars(text){
+    function mottoMaxCharsForBuilding(b){
+      const fl=(b&&(b.totalFloors||b.baseFloors))||1;
+      const height=Math.max(fl*0.5,2);
+      // 1文字≈0.85ユニット。ビル高さの約80%まで文字に使う＝高いビルほど多く出せる。
+      const n=Math.floor((height*0.8)/1.15);
+      return Math.max(4,Math.min(40,n));
+    }
+    function splitMottoChars(text,maxChars){
+      const lim=Math.max(2,maxChars||MOTTO_WALL_MAX_CHARS);
       const raw=Array.from(String(text||'').replace(/\s+/g,'').trim()).filter(Boolean);
-      if(raw.length<=MOTTO_WALL_MAX_CHARS)return raw;
-      return raw.slice(0,MOTTO_WALL_MAX_CHARS).concat(['…']);
+      if(raw.length<=lim)return raw;
+      return raw.slice(0,lim).concat(['…']);
     }
     function drawMottoWallTexture(entry){
       const{tex,chars,color,fontSize,texW,texH,pending}=entry;
@@ -4887,7 +4898,7 @@
     function addMottoMesh(building,text,pending){
       if(!scene||!building||!building.mesh||!text)return;
       const x=building.x,z=building.z;
-      const chars=splitMottoChars(text);
+      const chars=splitMottoChars(text,mottoMaxCharsForBuilding(building));
       if(!chars.length)return;
       const meshId='motto_'+x+'_'+z;
       const sig=chars.join('')+'|'+(pending?'p':'a');
@@ -4900,7 +4911,13 @@
       const star=getStarByFloors(totalFloors);
       const color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
       const charCount=chars.length;
-      const{localPos,rotY,planeW,planeH}=getMottoWallPlacementLocal(building,charCount);
+      const{localPos,rotY,planeH}=getMottoWallPlacementLocal(building,charCount);
+      // 高解像度の縦書きテクスチャ（はっきり読める）
+      const texW=128;
+      const texH=Math.min(4096,Math.max(320,charCount*128));
+      const fontSize=Math.min(104,Math.max(34,Math.floor(texH/(charCount+0.4))));
+      // プレートをテクスチャと同じ縦横比にして文字が歪まないようにする
+      const planeW=planeH*texW/texH;
       const side=BABYLON.Mesh.DOUBLESIDE||2;
       const plane=BABYLON.MeshBuilder.CreatePlane(meshId,{width:planeW,height:planeH,sideOrientation:side},scene);
       plane.metadata={mottoSig:sig};
@@ -4911,10 +4928,7 @@
         :building.mesh.rotation;
       plane.rotation=new BABYLON.Vector3(0,euler.y+rotY,0);
       plane.isPickable=false;
-      plane.renderingGroupId=2;
-      const texW=128;
-      const texH=Math.min(1024,Math.max(240,charCount*84));
-      const fontSize=Math.min(58,Math.max(20,Math.floor(texH/(charCount+1.3))));
+      // ビル本体と同じ描画グループ＋深度判定で、手前のビルにきちんと隠れる
       const tex=new BABYLON.DynamicTexture('mottotex_'+x+'_'+z,{width:texW,height:texH},scene,true);
       tex.hasAlpha=true;
       drawMottoWallTexture({tex,chars,color,fontSize,texW,texH,pending});
@@ -4928,8 +4942,7 @@
       mat.emissiveColor=new BABYLON.Color3(1,1,1);
       mat.diffuseColor=new BABYLON.Color3(1,1,1);
       mat.alpha=pending?0.72:1;
-      mat.disableDepthWrite=true;
-      mat.zOffset=-4;
+      mat.zOffset=-1; // 自分の壁とのZファイト防止（手前ビルには隠れる程度の最小バイアス）
       plane.material=mat;
     }
     // ========================================

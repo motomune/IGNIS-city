@@ -664,7 +664,7 @@
     #building-modal-floors { font-size:13px;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:20px; }
     .bm-stat-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px; }
     .bm-stat { background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px; }
-    .bm-stat-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
+    .bm-stat-label { font-size:10px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
     .bm-stat-value { font-size:16px;font-weight:900;color:#fff; }
     .bm-stat-value.emp-rainbow { background:linear-gradient(135deg,#ff6a00,#a855f7,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
     .bm-stat-value.emp-gold { color: #f59e0b; }
@@ -912,13 +912,13 @@
     #building-modal-motto.rank-2 { color:#22c55e;border-left:4px solid #22c55e;background:rgba(34,197,94,0.1); }
     #building-modal-motto.rank-1 { color:#94a3b8;border-left:4px solid #94a3b8;background:rgba(148,163,184,0.1); }
     #building-modal-notes { font-size:12px;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.6;display:none; }
-    #building-modal-notes-label { font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
+    #building-modal-notes-label { font-size:10px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
     /* 3D格言ラベル */
     .motto-pending-badge { display:inline-block;font-size:10px;background:rgba(255,165,0,0.2);border:1px solid rgba(255,165,0,0.4);color:rgba(255,165,0,0.8);padding:2px 8px;border-radius:6px;margin-left:6px; }
     #building-modal-past { margin:12px 0;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;display:none; }
     .bm-past-text { font-size:13px;line-height:1.75;color:rgba(255,255,255,0.82);white-space:pre-wrap;word-break:break-word; }
-    .bm-past-title { font-size:11px;font-weight:800;color:rgba(255,255,255,0.45);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
-    .bm-past-label { font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin:8px 0 4px; }
+    .bm-past-title { font-size:11px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
+    .bm-past-label { font-size:11px;font-weight:800;color:#ff8a3d;margin:8px 0 4px; }
     .bm-past-chips { display:flex;flex-wrap:wrap;gap:5px; }
     .bm-past-chip { font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.75); }
     .bm-past-text { font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;white-space:pre-wrap;margin-top:4px; }
@@ -1575,7 +1575,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-07-v93';
+    const IGNIS_BUILD='2026-06-07-v94';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4539,39 +4539,44 @@
     async function prefillProfileFormFromStorage(gx,gz){
       profileState.hasApproved=false;
       ensureProfileDraftListeners();
-      if(!db||!currentUser)return;
-      try{
+      if(db&&currentUser){
         const uid=currentUser.id;
-        const{data:approvedProf}=await db.from('building_profiles')
-          .select('motto_text,notes_text')
-          .eq('building_x',gx).eq('building_z',gz).eq('status','approved').maybeSingle();
-        const{data:pendingProf}=await db.from('building_profiles')
-          .select('motto_text,notes_text')
-          .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','pending').maybeSingle();
-        const prof=approvedProf||pendingProf;
-        if(prof&&prof.motto_text){
-          document.getElementById('profile-motto-input').value=prof.motto_text;
-          if(approvedProf)profileState.hasApproved=true;
-        }
-        const{data:approvedPast}=await db.from('building_past_details')
-          .select('lost_items,gained_items,background_detail,current_positive')
-          .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','approved').maybeSingle();
-        const{data:pendingPast}=await db.from('building_past_details')
-          .select('lost_items,gained_items,background_detail,current_positive')
-          .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','pending').maybeSingle();
-        const past=approvedPast||pendingPast;
-        if(past){
-          if(approvedPast)profileState.hasApproved=true;
-          buildProfileChips('chips-lost',past.lost_items||[]);
-          buildProfileChips('chips-gained',past.gained_items||[]);
-          const detailIn=document.getElementById('profile-detail-input');
-          const msgIn=document.getElementById('profile-message-input');
-          if(detailIn)detailIn.value=past.background_detail||'';
-          if(msgIn)msgIn.value=past.current_positive||'';
-        }
-        // 未送信の下書きがあれば、それを最優先で復元（＝前回の続きから編集）
-        applyProfileDraftOverlay(gx,gz);
-      }catch(e){console.warn('prefillProfileFormFromStorage:',e.message);}
+        // 格言（building_profiles）— 失敗しても過去詳細・下書き復元を止めない
+        try{
+          const{data:approvedProf}=await db.from('building_profiles')
+            .select('motto_text,notes_text')
+            .eq('building_x',gx).eq('building_z',gz).eq('status','approved').maybeSingle();
+          const{data:pendingProf}=await db.from('building_profiles')
+            .select('motto_text,notes_text')
+            .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','pending').maybeSingle();
+          const prof=approvedProf||pendingProf;
+          if(prof&&prof.motto_text){
+            document.getElementById('profile-motto-input').value=prof.motto_text;
+            if(approvedProf)profileState.hasApproved=true;
+          }
+        }catch(e){console.warn('[IGNIS] prefill motto:',e.message);}
+        // 過去詳細（building_past_details）— 失った/得た/詳細/メッセージも引き継ぐ
+        try{
+          const{data:approvedPast}=await db.from('building_past_details')
+            .select('lost_items,gained_items,background_detail,current_positive')
+            .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','approved').maybeSingle();
+          const{data:pendingPast}=await db.from('building_past_details')
+            .select('lost_items,gained_items,background_detail,current_positive')
+            .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','pending').maybeSingle();
+          const past=approvedPast||pendingPast;
+          if(past){
+            if(approvedPast)profileState.hasApproved=true;
+            buildProfileChips('chips-lost',past.lost_items||[]);
+            buildProfileChips('chips-gained',past.gained_items||[]);
+            const detailIn=document.getElementById('profile-detail-input');
+            const msgIn=document.getElementById('profile-message-input');
+            if(detailIn)detailIn.value=past.background_detail||'';
+            if(msgIn)msgIn.value=past.current_positive||'';
+          }
+        }catch(e){console.warn('[IGNIS] prefill past:',e.message);}
+      }
+      // 未送信の下書きは常に最優先で復元（サーバ読込が失敗しても全項目を引き継ぐ）
+      try{applyProfileDraftOverlay(gx,gz);}catch(e){console.warn('[IGNIS] draft overlay:',e.message);}
     }
     function applyProfileDraftOverlay(gx,gz){
       const d=loadProfileDraft(gx,gz);
@@ -4850,7 +4855,7 @@
       }
       // 文字数に応じて縦に伸ばし、ビルの高さを活かす（足元から上へ）
       const cc=Math.max(1,charCount||6);
-      const planeH=Math.min(Math.max(cc*1.15+0.5,2.6),height*0.9);
+      const planeH=Math.min(Math.max(cc*1.4+0.5,2.8),height*0.9);
       const bottomY=Math.min(1.6,height*0.12);
       let centerWorldY=bottomY+planeH/2;
       const maxTop=height-0.3;
@@ -4863,7 +4868,7 @@
       const fl=(b&&(b.totalFloors||b.baseFloors))||1;
       const height=Math.max(fl*0.5,2);
       // 1文字≈0.85ユニット。ビル高さの約80%まで文字に使う＝高いビルほど多く出せる。
-      const n=Math.floor((height*0.8)/1.15);
+      const n=Math.floor((height*0.8)/1.4);
       return Math.max(4,Math.min(40,n));
     }
     function splitMottoChars(text,maxChars){
@@ -4912,12 +4917,11 @@
       const color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
       const charCount=chars.length;
       const{localPos,rotY,planeH}=getMottoWallPlacementLocal(building,charCount);
-      // 高解像度の縦書きテクスチャ（はっきり読める）
-      const texW=128;
+      // 帯を少し広く・文字を大きく・高解像度で（150:128≈帯1.65:文字高さ1.4 と一致＝歪まない）
+      const planeW=1.65;
+      const texW=150;
       const texH=Math.min(4096,Math.max(320,charCount*128));
-      const fontSize=Math.min(104,Math.max(34,Math.floor(texH/(charCount+0.4))));
-      // プレートをテクスチャと同じ縦横比にして文字が歪まないようにする
-      const planeW=planeH*texW/texH;
+      const fontSize=Math.min(112,Math.max(38,Math.floor(texH/(charCount+0.3))));
       const side=BABYLON.Mesh.DOUBLESIDE||2;
       const plane=BABYLON.MeshBuilder.CreatePlane(meshId,{width:planeW,height:planeH,sideOrientation:side},scene);
       plane.metadata={mottoSig:sig};
@@ -4931,6 +4935,7 @@
       // ビル本体と同じ描画グループ＋深度判定で、手前のビルにきちんと隠れる
       const tex=new BABYLON.DynamicTexture('mottotex_'+x+'_'+z,{width:texW,height:texH},scene,true);
       tex.hasAlpha=true;
+      tex.vScale=-1;tex.vOffset=1; // 縦書きが下→上に反転していたのを上→下に直す
       drawMottoWallTexture({tex,chars,color,fontSize,texW,texH,pending});
       const mat=new BABYLON.StandardMaterial('mottomat_'+x+'_'+z,scene);
       mat.diffuseTexture=tex;

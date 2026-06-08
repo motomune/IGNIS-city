@@ -331,7 +331,7 @@
           reviewed_at:new Date().toISOString()
         }).eq('id',id);
         if(error)throw error;
-        translateMottoIds([id]).catch(()=>{}); // 採用された格言を英訳してDBへ
+        translatePending({ids:[id]}).catch(()=>{}); // 採用された格言を英訳してDBへ
         showToast('✓ 修正を承認しました');
         await loadProfiles();
       }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
@@ -361,7 +361,7 @@
           :{status:newStatus,updated_at:now};
         const{error}=await db.from(table).update(payload).eq('id',id);
         if(error)throw error;
-        if(type==='motto'&&newStatus==='approved')translateMottoIds([id]).catch(()=>{}); // 承認した格言を英訳
+        if(newStatus==='approved')translatePending(type==='motto'?{ids:[id]}:{pastIds:[id]}).catch(()=>{}); // 承認した内容を英訳
         const label=newStatus==='approved'?'承認':newStatus==='rejected'?'却下':'差し戻し';
         showToast(`✓ ${label}しました`);
         await loadProfiles();
@@ -369,8 +369,8 @@
     }
 
     // ===== DeepL 英訳（Edge Function translate-motto 経由）=====
-    // ids=配列 → 指定の格言を英訳 / ids=null → 未翻訳を全件英訳。キーはサーバー側シークレット。
-    async function translateMottoIds(ids){
+    // payload: {ids:[..]}=格言 / {pastIds:[..]}=過去詳細 / {}=未翻訳を全件。キーはサーバー側シークレット。
+    async function translatePending(payload){
       try{
         const{data:{session}}=await db.auth.getSession();
         const token=session&&session.access_token;
@@ -378,7 +378,7 @@
         const res=await fetch(`${SUPABASE_URL}/functions/v1/translate-motto`,{
           method:'POST',
           headers:{'Authorization':`Bearer ${token}`,'apikey':SUPABASE_ANON_KEY,'Content-Type':'application/json'},
-          body:JSON.stringify(ids&&ids.length?{ids}:{})
+          body:JSON.stringify(payload||{})
         });
         return await res.json();
       }catch(e){console.warn('translate-motto error',e);return null;}
@@ -386,9 +386,9 @@
     async function backfillMottoEn(){
       const btn=document.getElementById('translate-all-btn');
       if(btn){btn.disabled=true;btn.textContent='英訳中...';}
-      const r=await translateMottoIds(null);
+      const r=await translatePending({});
       if(btn){btn.disabled=false;btn.textContent='🌐 未翻訳を一括英訳';}
-      if(r&&r.ok)showToast(`✓ ${r.translated}/${r.total}件を英訳しました`);
+      if(r&&r.ok)showToast(`✓ 英訳：格言${r.motto}件／過去詳細${r.past}件`);
       else showToast('英訳に失敗（関数とDEEPL_API_KEYの設定を確認）: '+((r&&r.error)||''));
     }
 

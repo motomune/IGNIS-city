@@ -1653,7 +1653,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-08-v102';
+    const IGNIS_BUILD='2026-06-08-v103';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3220,9 +3220,8 @@
       applyGameI18n();
       if(gachaState.result)renderBuildModalPrize();
       updateViewTaskProgressLabel();
-      // 壁の格言：言語に合わせて即再描画＋（英語なら）翻訳を取得
+      // 壁の格言：言語に合わせて即再描画（英訳はDBの motto_text_en を使用）
       if(typeof applyApprovedMottosToScene==='function')applyApprovedMottosToScene();
-      if(typeof ensureMottoTranslations==='function')ensureMottoTranslations();
     }
     const STAR_LABELS_GACHA={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
     const STAR_LABELS_GACHA_EN={5:'★★★★★ Legendary',4:'★★★★ Epic',3:'★★ Rare',2:'★★ Uncommon',1:'★ Common'};
@@ -4784,39 +4783,13 @@
     // 承認済みプロフィールのキャッシュ
     let approvedProfiles={};
     const MOTTO_WALL_MAX_CHARS=18;
-    // ===== 壁格言の英語自動翻訳（クライアント側・キー不要のMyMemory／端末ローカルキャッシュ）=====
-    // ENボタンで英語モードのとき、壁の格言を機械翻訳で英語表示する。専用サーバー不要。
-    let mottoEnCache={};
-    try{mottoEnCache=JSON.parse(localStorage.getItem('motto_en_cache')||'{}')||{};}catch(e){mottoEnCache={};}
-    function saveMottoEnCache(){try{localStorage.setItem('motto_en_cache',JSON.stringify(mottoEnCache));}catch(e){}}
-    // 壁に表示する文字列：英語モードかつ翻訳済みなら英訳、なければ原文
+    // ===== 壁格言の英語表示 =====
+    // 翻訳は DeepL に統一（承認時＋毎日のCronでDBの motto_text_en に保存済み）。
+    // 英語モードで翻訳がまだ無い格言は、英訳が入るまで原文（日本語）のまま表示する。
     function mottoDisplayText(p){
       if(!p||!p.motto_text)return '';
-      if(currentLang==='en'){
-        if(p.motto_text_en)return p.motto_text_en;                      // DeepL（DB・全員共有）優先
-        if(mottoEnCache[p.motto_text])return mottoEnCache[p.motto_text]; // MyMemoryフォールバック
-      }
+      if(currentLang==='en'&&p.motto_text_en)return p.motto_text_en;
       return p.motto_text;
-    }
-    let _mottoTransRunning=false;
-    async function ensureMottoTranslations(){
-      if(currentLang!=='en'||_mottoTransRunning)return;
-      const texts=[...new Set(Object.values(approvedProfiles).map(p=>(p&&!p.motto_text_en)?p.motto_text:null).filter(t=>t&&!mottoEnCache[t]))];
-      if(!texts.length)return;
-      _mottoTransRunning=true;
-      let changed=false;
-      for(const t of texts){
-        if(currentLang!=='en')break; // 途中で日本語へ戻したら中断
-        try{
-          const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(t)+'&langpair=ja|en';
-          const res=await fetch(url);
-          const j=await res.json();
-          const en=j&&j.responseData&&j.responseData.translatedText;
-          if(en&&typeof en==='string'){mottoEnCache[t]=en;changed=true;}
-        }catch(e){/* 失敗時は原文のまま表示 */}
-      }
-      _mottoTransRunning=false;
-      if(changed){saveMottoEnCache();applyApprovedMottosToScene();}
     }
     async function loadApprovedProfiles(){
       if(!db)return;
@@ -4832,7 +4805,6 @@
         (data||[]).forEach(p=>{next[landKey(p.building_x,p.building_z)]=Object.assign({},p,{own:false,pending:false});});
         approvedProfiles=next;
         scheduleMottoRefresh();
-        ensureMottoTranslations(); // motto_text_en が無い分だけ MyMemory でフォールバック翻訳
       }catch(e){console.warn('loadApprovedProfiles error:',e.message);}
     }
     function getBuildingForLandKey(key){
@@ -5411,17 +5383,23 @@
         let lost=[],gained=[],detail='',message='',status='';
         let showDetail=false,showLock=false;
         if(isOwn){
-          const{data:row,error}=await db.from('building_past_details')
-            .select('lost_items,gained_items,background_detail,current_positive,status')
+          let pdRes=await db.from('building_past_details')
+            .select('lost_items,gained_items,background_detail,current_positive,background_detail_en,current_positive_en,status')
             .eq('building_x',bx).eq('building_z',bz).maybeSingle();
-          if(error)throw error;
+          if(pdRes.error){ // _en 列が未作成でも壊れないよう従来列で再取得
+            pdRes=await db.from('building_past_details')
+              .select('lost_items,gained_items,background_detail,current_positive,status')
+              .eq('building_x',bx).eq('building_z',bz).maybeSingle();
+          }
+          if(pdRes.error)throw pdRes.error;
+          const row=pdRes.data;
           if(!row)return;
           status=row.status||'';
           if(status!=='approved'&&status!=='pending')return;
           lost=row.lost_items||[];
           gained=row.gained_items||[];
-          detail=row.background_detail||'';
-          message=row.current_positive||'';
+          detail=(!isJa&&row.background_detail_en)?row.background_detail_en:(row.background_detail||'');
+          message=(!isJa&&row.current_positive_en)?row.current_positive_en:(row.current_positive||'');
           showDetail=true;
         }else{
           const{data:preview,error:pErr}=await db.rpc('get_past_detail_preview',{bx,bz});
@@ -5432,8 +5410,8 @@
           if(currentUser.isSubscribed){
             const{data:full,error:fErr}=await db.rpc('get_past_detail_full',{bx,bz});
             if(!fErr&&full&&!full.error){
-              detail=full.background_detail||'';
-              message=full.current_positive||'';
+              detail=(!isJa&&full.background_detail_en)?full.background_detail_en:(full.background_detail||'');
+              message=(!isJa&&full.current_positive_en)?full.current_positive_en:(full.current_positive||'');
               showDetail=true;
             }
           }else{

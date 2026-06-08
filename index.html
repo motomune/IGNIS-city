@@ -831,6 +831,9 @@
     #x-rewards-close:hover { background:rgba(255,255,255,0.18);color:#fff; }
     #x-rewards-body { flex:1;overflow-y:auto;overflow-x:hidden;background:#02040a;-webkit-overflow-scrolling:touch; }
     #x-rewards-body .wrap { max-width:1180px;margin:0 auto;padding:24px 16px 48px; }
+    /* PCレイアウトのインフォグラフィックを固定幅iframeで読み込み、画面幅に合わせて縮小表示する */
+    #x-rewards-scaler { position:relative;margin:0 auto; }
+    #x-rewards-frame { display:block;border:0;background:#02040a;transform-origin:top left; }
     #x-rewards-loading { text-align:center;padding:48px 20px;color:rgba(255,255,255,0.5);font-size:14px;font-weight:700; }
     /* ビルプロフィール入力モーダル */
     #profile-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:350;align-items:center;justify-content:center; }
@@ -1653,7 +1656,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v104';
+    const IGNIS_BUILD='2026-06-09-v105';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2773,30 +2776,56 @@
       delete body.dataset.lang;
       xRewardsLoadPromise=null;
     }
+    const XREWARDS_DESIGN_W=1180; // PC版インフォグラフィックの設計幅
+    function fitXRewardsFrame(){
+      const body=document.getElementById('x-rewards-body');
+      const scaler=document.getElementById('x-rewards-scaler');
+      const frame=document.getElementById('x-rewards-frame');
+      if(!body||!scaler||!frame)return;
+      let contentH=1600;
+      try{const d=frame.contentDocument;if(d){contentH=Math.max(d.body?d.body.scrollHeight:0,d.documentElement?d.documentElement.scrollHeight:0)||contentH;}}catch(e){}
+      const avail=Math.max(1,body.clientWidth); // スクロールバー差を考慮した内側幅
+      const scale=Math.min(1,avail/XREWARDS_DESIGN_W);
+      frame.style.width=XREWARDS_DESIGN_W+'px';
+      frame.style.height=contentH+'px';
+      frame.style.transform='scale('+scale+')';
+      scaler.style.width=(XREWARDS_DESIGN_W*scale)+'px';
+      scaler.style.height=(contentH*scale)+'px';
+    }
+    let _xRewardsResizeBound=false;
     function loadXRewardsPanel(force){
       const body=document.getElementById('x-rewards-body');
       if(!body)return Promise.resolve();
       const lang=currentLang==='ja'?'ja':'en';
-      if(!force&&body.dataset.loaded==='1'&&body.dataset.lang===lang)return Promise.resolve();
+      if(!force&&body.dataset.loaded==='1'&&body.dataset.lang===lang){fitXRewardsFrame();return Promise.resolve();}
       if(xRewardsLoadPromise)return xRewardsLoadPromise;
       const isJa=lang==='ja';
       body.innerHTML='<div id="x-rewards-loading">'+(isJa?'読み込み中...':'Loading...')+'</div>';
+      if(!_xRewardsResizeBound){
+        _xRewardsResizeBound=true;
+        window.addEventListener('resize',()=>{
+          if(document.getElementById('x-rewards-overlay')?.classList.contains('open'))fitXRewardsFrame();
+        });
+      }
       xRewardsLoadPromise=(async()=>{
         try{
           const base=getIgnisAdAssetBase();
           const page=isJa?'x_rewards_infographic.html':'x_rewards_infographic_en.html';
-          const res=await fetch(base+page+'?embed=1&v='+encodeURIComponent(IGNIS_BUILD));
-          if(!res.ok)throw new Error('HTTP '+res.status);
-          const html=await res.text();
-          const doc=new DOMParser().parseFromString(html,'text/html');
+          const src=base+page+'?embed=1&v='+encodeURIComponent(IGNIS_BUILD);
           body.innerHTML='';
-          const style=doc.querySelector('style');
-          if(style)body.appendChild(style.cloneNode(true));
-          const particles=doc.querySelector('.particles');
-          if(particles)body.appendChild(particles.cloneNode(true));
-          const wrap=doc.querySelector('.wrap');
-          if(wrap)body.appendChild(wrap.cloneNode(true));
-          else body.innerHTML='<div class="wrap"><p style="padding:24px;color:#fff;">'+(isJa?'ルールを読み込めませんでした':'Failed to load rules')+'</p></div>';
+          const scaler=document.createElement('div');
+          scaler.id='x-rewards-scaler';
+          const frame=document.createElement('iframe');
+          frame.id='x-rewards-frame';
+          frame.setAttribute('title',isJa?'X連携コイン報酬':'X Coin Rewards');
+          frame.setAttribute('scrolling','no');
+          frame.src=src;
+          scaler.appendChild(frame);
+          body.appendChild(scaler);
+          await new Promise((resolve)=>{frame.onload=resolve;frame.onerror=resolve;setTimeout(resolve,4000);});
+          fitXRewardsFrame();
+          // フォント/パーティクル反映後の高さズレを数回補正
+          [250,800,1800].forEach(ms=>setTimeout(fitXRewardsFrame,ms));
           body.dataset.loaded='1';
           body.dataset.lang=lang;
         }catch(e){

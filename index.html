@@ -685,6 +685,12 @@
     .bm-stat-value.emp-gold { color: #f59e0b; }
     .bm-stat-value.emp-red { color: #ef4444; }
     #building-modal-owner { font-size:13px;color:rgba(255,255,255,0.5);text-align:center;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px; }
+    #building-candle { display:none;align-items:center;justify-content:center;gap:12px;margin:10px 0 4px; }
+    #candle-btn { background:linear-gradient(135deg,rgba(255,170,40,0.85),rgba(255,106,0,0.85));border:none;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px; }
+    #candle-btn.lit { background:linear-gradient(135deg,#ff6a00,#ee0979);box-shadow:0 0 14px rgba(255,106,0,0.5); }
+    #candle-btn:hover { opacity:0.92; }
+    #candle-btn:disabled { opacity:0.5;cursor:not-allowed; }
+    #candle-count { font-size:14px;font-weight:800;color:#ffb84d; }
     #building-modal-owner .owner-name { color:#1d9bf0;font-weight:800; }
     #minimap-wrap { position:fixed;bottom:90px;left:16px;z-index:10;pointer-events:all; }
     #minimap-canvas { width:140px;height:140px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(6,6,16,0.9);box-shadow:0 4px 20px rgba(0,0,0,0.5);cursor:pointer;display:block; }
@@ -1345,6 +1351,10 @@
       </div>
       <div id="building-modal-notes" style="display:none;"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
+      <div id="building-candle" style="display:none;">
+        <button id="candle-btn" type="button" onclick="toggleCandle()">🕯️ 蝋燭を灯す</button>
+        <span id="candle-count" title="このビルに灯された蝋燭の数">🕯️ 0</span>
+      </div>
       <button id="building-motto-btn" type="button" onclick="openProfileFromBuildingModal()" style="display:none;">💬 格言・過去詳細を申請</button>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
@@ -1503,6 +1513,7 @@
         <button class="ranking-tab active" id="rtab-coins" onclick="switchRankingTab('coins')">💰 コイン</button>
         <button class="ranking-tab" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員</button>
         <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">🏢 階数</button>
+        <button class="ranking-tab" id="rtab-candles" onclick="switchRankingTab('candles')">🕯️ 蝋燭</button>
       </div>
       <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
     </div>
@@ -1511,6 +1522,7 @@
       <div id="ranking-coins-list"></div>
       <div id="ranking-emp-list" style="display:none;"></div>
       <div id="ranking-floors-list" style="display:none;"></div>
+      <div id="ranking-candles-list" style="display:none;"></div>
     </div>
   </div>
   <!-- 図鑑 -->
@@ -1672,7 +1684,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v108';
+    const IGNIS_BUILD='2026-06-09-v109';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3196,10 +3208,13 @@
       const rtabCoins=document.getElementById('rtab-coins');if(rtabCoins)rtabCoins.textContent=isJa?'💰 コイン':'💰 Coins';
       const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'👥 従業員':'👥 Staff';
       const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'🏢 階数':'🏢 Floors';
+      const rtabCandles=document.getElementById('rtab-candles');if(rtabCandles)rtabCandles.textContent=isJa?'🕯️ 蝋燭':'🕯️ Candles';
       document.getElementById('ranking-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('ranking-overlay').classList.contains('open')&&rankingCache.emp){
+        renderRankingList('ranking-coins-list',rankingCache.coins,'coins');
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
-        renderRankingList('ranking-buildings-list',rankingCache.buildings,'buildings');
+        renderRankingList('ranking-floors-list',rankingCache.floors,'floors');
+        renderRankingList('ranking-candles-list',rankingCache.candles,'candles');
       }
       // コイン履歴
       document.getElementById('coin-history-btn').textContent=isJa?'💰 履歴':'💰 History';
@@ -5692,8 +5707,63 @@
       loadBuildingPastDetails(buildingData.x,buildingData.z,isOwnLand);
       if(profile&&profile.motto_text)applyMottoForLandKey(key);
       recordBuildingView(buildingData);
+      loadCandleState(buildingData.x,buildingData.z,isOwnLand);
       bindBuildingScrollbar();
       [0,120,400,1000].forEach(ms=>setTimeout(updateBuildingScrollbar,ms)); // 内容(過去詳細など)読込後も追従
+    }
+    // ===== 蝋燭（他人のビルに感銘を受けたら灯す。ビルごとに数を表示）=====
+    let candleState={x:null,z:null,count:0,lit:false,isOwn:false};
+    async function loadCandleState(bx,bz,isOwn){
+      candleState={x:bx,z:bz,count:0,lit:false,isOwn:!!isOwn};
+      const wrap=document.getElementById('building-candle');
+      if(wrap)wrap.style.display='flex';
+      try{
+        const{count}=await db.from('building_candles').select('id',{count:'exact',head:true}).eq('building_x',bx).eq('building_z',bz);
+        candleState.count=count||0;
+        if(currentUser){
+          const{data:mine}=await db.from('building_candles').select('id').eq('building_x',bx).eq('building_z',bz).eq('user_id',currentUser.id).maybeSingle();
+          candleState.lit=!!mine;
+        }
+      }catch(e){/* テーブル未作成等は0表示 */}
+      renderCandleUI();
+    }
+    function renderCandleUI(){
+      const wrap=document.getElementById('building-candle');
+      const btn=document.getElementById('candle-btn');
+      const cnt=document.getElementById('candle-count');
+      if(!wrap)return;
+      const isJa=currentLang==='ja';
+      if(cnt)cnt.textContent='🕯️ '+candleState.count;
+      if(btn){
+        if(candleState.isOwn||!currentUser){btn.style.display='none';}
+        else{
+          btn.style.display='inline-flex';
+          btn.classList.toggle('lit',candleState.lit);
+          btn.textContent='🕯️ '+(candleState.lit?(isJa?'灯した（取り消す）':'Lit (undo)'):(isJa?'蝋燭を灯す':'Light a candle'));
+        }
+      }
+    }
+    async function toggleCandle(){
+      if(!currentUser||candleState.x===null)return;
+      const isJa=currentLang==='ja';
+      const btn=document.getElementById('candle-btn');if(btn)btn.disabled=true;
+      try{
+        const{data,error}=await db.rpc('toggle_candle',{bx:candleState.x,bz:candleState.z});
+        if(error)throw error;
+        if(data&&data.ok){
+          candleState.count=data.count;candleState.lit=data.lit;
+          renderCandleUI();
+          if(data.lit)showToast(isJa?'🕯️ 蝋燭を灯しました':'🕯️ Candle lit');
+          else showToast(isJa?'蝋燭を消しました':'Candle removed');
+        }else{
+          const r=data&&data.reason;
+          if(r==='own_building')showToast(isJa?'自分のビルには灯せません':'You can\'t candle your own building');
+          else if(r==='subscription_required')showToast(isJa?'蝋燭はサブスク会員限定です':'Candles are subscriber-only');
+          else if(r==='not_authenticated')showToast(isJa?'ログインが必要です':'Login required');
+          else showToast(isJa?'灯せませんでした':'Could not light');
+        }
+      }catch(e){console.warn('toggleCandle',e.message);showToast(isJa?'エラーが発生しました':'Error');}
+      finally{if(btn)btn.disabled=false;}
     }
     // ビル詳細の常時表示スクロールバー（下にまだ続きがある合図）
     function updateBuildingScrollbar(){
@@ -5725,6 +5795,7 @@
     function closeBuildingModal(){
       document.getElementById('building-modal').classList.remove('open');
       document.body.classList.remove('building-modal-open');
+      const cw=document.getElementById('building-candle');if(cw)cw.style.display='none';
       clearBuildingPastModal();
       currentModalBuilding=null;
     }
@@ -6172,7 +6243,7 @@
     // ========================================
     // ランキング
     // ========================================
-    let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null};
+    let rankingTab='coins',rankingCache={coins:null,emp:null,floors:null,candles:null};
     function rankingNameHash(uid,dayKey){
       let h=0;const s=`${uid}:${dayKey}`;
       for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i)|0;
@@ -6211,7 +6282,7 @@
     function closeRanking(){document.getElementById('ranking-overlay').classList.remove('open');}
     function switchRankingTab(tab){
       rankingTab=tab;
-      ['coins','emp','floors'].forEach(t=>{
+      ['coins','emp','floors','candles'].forEach(t=>{
         const tabEl=document.getElementById('rtab-'+t);
         if(tabEl)tabEl.classList.toggle('active',tab===t);
         const listEl=document.getElementById('ranking-'+t+'-list');
@@ -6220,31 +6291,39 @@
     }
     async function loadRanking(){
       const loadingEl=document.getElementById('ranking-loading-msg');loadingEl.classList.add('show');
-      ['ranking-coins-list','ranking-emp-list','ranking-floors-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+      ['ranking-coins-list','ranking-emp-list','ranking-floors-list','ranking-candles-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
       try{
-        const[{data:users,error:uErr},{data:buildings,error:bErr}]=await Promise.all([
+        const[{data:users,error:uErr},{data:buildings,error:bErr},candleRes]=await Promise.all([
           db.from('users').select('id,username,x_username,coin_column,bench_employees'),
-          db.from('buildings').select('owner_id,floors,employees')
+          db.from('buildings').select('owner_id,floors,employees,x,z'),
+          db.from('building_candles').select('building_x,building_z')
         ]);
         if(uErr)throw uErr;
         if(bErr)throw bErr;
         const userMap={};
         (users||[]).forEach(u=>{
-          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0};
+          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0,candles:0};
         });
+        const buildingOwner={};
         (buildings||[]).forEach(b=>{
+          buildingOwner[`${b.x}_${b.z}`]=b.owner_id;
           const uid=b.owner_id;if(!uid||!userMap[uid])return;
           userMap[uid].assigned+=(b.employees||0);
           userMap[uid].totalFloors+=Math.min(b.floors||0,MAX_BUILDING_FLOORS);
           userMap[uid].buildingCount+=1;
         });
+        // 蝋燭：ビル所有者ごとに合計（自分のビルが受け取った蝋燭の総数）
+        const candleRows=(candleRes&&!candleRes.error)?(candleRes.data||[]):[];
+        candleRows.forEach(c=>{const oid=buildingOwner[`${c.building_x}_${c.building_z}`];if(oid&&userMap[oid])userMap[oid].candles+=1;});
         const list=Object.values(userMap).map(u=>({...u,totalEmp:u.assigned+u.bench}));
         rankingCache.coins=[...list].sort((a,b)=>b.coins-a.coins).slice(0,50);
         rankingCache.emp=[...list].sort((a,b)=>b.totalEmp-a.totalEmp).slice(0,50);
         rankingCache.floors=[...list].sort((a,b)=>b.totalFloors-a.totalFloors).slice(0,50);
+        rankingCache.candles=[...list].sort((a,b)=>b.candles-a.candles).slice(0,50);
         renderRankingList('ranking-coins-list',rankingCache.coins,'coins');
         renderRankingList('ranking-emp-list',rankingCache.emp,'emp');
         renderRankingList('ranking-floors-list',rankingCache.floors,'floors');
+        renderRankingList('ranking-candles-list',rankingCache.candles,'candles');
         switchRankingTab(rankingTab);
       }catch(e){
         console.warn('ranking load error:',e.message);
@@ -6266,10 +6345,12 @@
         let value,unit,subText;
         if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
+        else if(type==='candles'){value=(u.candles||0).toLocaleString();unit='🕯️';subText=isJa?`🏢 ${u.totalFloors.toLocaleString()}階 · 👥 ${u.totalEmp.toLocaleString()}人`:`🏢 ${u.totalFloors}F · 👥 ${u.totalEmp}`;}
         else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';
         if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}
         else if(type==='coins'){if(rank===1)valueColor='#f59e0b';else if(rank===2)valueColor='#94a3b8';else if(rank===3)valueColor='#b4783c';}
+        else if(type==='candles'){valueColor='#ffb84d';}
         const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
         html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="${nameClass}">${masked}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
       });

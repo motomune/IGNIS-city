@@ -580,6 +580,10 @@
     .task-label { flex:1;color:rgba(255,255,255,0.75); }
     .task-reward { font-size:12px;color:#ff6a00;font-weight:700; }
     .task-row.task-done .task-label { color:rgba(255,255,255,0.3);text-decoration:line-through; }
+    .share-act-btn { background:linear-gradient(135deg,rgba(29,155,240,0.85),rgba(91,140,255,0.85));border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin:4px 6px 0 0; }
+    .share-act-btn:hover { opacity:0.9; }
+    .share-view-link { display:inline-block;margin-top:4px;font-size:11px;color:#5fd6ff;text-decoration:underline;cursor:pointer; }
+    .share-note { display:block;margin-top:3px;font-size:10px;color:rgba(255,255,255,0.4); }
     #task-toggle-btn {
       background:rgba(255,106,0,0.15);border:1px solid rgba(255,106,0,0.4);color:#ff6a00;
       position: relative;
@@ -1656,7 +1660,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v105';
+    const IGNIS_BUILD='2026-06-09-v106';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3221,7 +3225,7 @@
         if(!row)return;
         const labelEl=row.querySelector('.task-label');
         if(t.type==='share'){
-          labelEl.textContent=isJa?t.label:t.labelEn;
+          // renderTaskUI() で言語対応済み（ボタン入りのリッチ表示なので textContent で上書きしない）
         }else if(t.type!=='view'){
           labelEl.textContent=isJa?t.label:t.labelEn;
         }
@@ -3414,10 +3418,51 @@
           {onConflict:'user_id,task_date,task_type',ignoreDuplicates:true}
         )
       ));
+      await loadCreatorShareState();
       renderTaskUI();
       await refreshTaskUI();
+      await checkShareEngagement(); // 創設者投稿への反応が確認済みならシェアタスク完了に
       await updateViewTaskProgressLabel();
       setAuthHeaderLoggedIn(true);
+    }
+    // ===== シェアタスク：創設者の最新投稿へのリプライ/リポストで達成 =====
+    // 達成判定の根拠（share_engagements）は Edge Function (share-sync) がサーバー側で記録する。
+    let latestCreatorPost=null;
+    let activeCreatorPostIds=[];
+    async function loadCreatorShareState(){
+      try{
+        const cutoff=new Date(Date.now()-48*3600*1000).toISOString();
+        const{data,error}=await db.from('creator_posts').select('tweet_id,url,text,posted_at').gte('posted_at',cutoff).order('posted_at',{ascending:false});
+        if(error)throw error;
+        activeCreatorPostIds=(data||[]).map(p=>p.tweet_id);
+        latestCreatorPost=(data&&data[0])||null;
+        if(!latestCreatorPost){ // 48h以内が無ければ表示用に最新1件
+          const{data:d2}=await db.from('creator_posts').select('tweet_id,url,text,posted_at').order('posted_at',{ascending:false}).limit(1);
+          latestCreatorPost=(d2&&d2[0])||null;
+        }
+      }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
+    }
+    function openShareReply(){
+      if(!latestCreatorPost){handleShare();return;}
+      try{IgnisAudio.playClick();}catch(e){}
+      window.open(`https://twitter.com/intent/tweet?in_reply_to=${encodeURIComponent(latestCreatorPost.tweet_id)}`,'_blank');
+      showToast(currentLang==='ja'?'リプライ後、最大12時間以内に達成へ反映されます':'After replying, it completes within ~12h');
+    }
+    function openShareRepost(){
+      if(!latestCreatorPost){handleShare();return;}
+      try{IgnisAudio.playClick();}catch(e){}
+      window.open(`https://twitter.com/intent/retweet?tweet_id=${encodeURIComponent(latestCreatorPost.tweet_id)}`,'_blank');
+      showToast(currentLang==='ja'?'リポスト後、最大12時間以内に達成へ反映されます':'After reposting, it completes within ~12h');
+    }
+    async function checkShareEngagement(){
+      if(!currentUser||!activeCreatorPostIds.length)return;
+      try{
+        const today=new Date().toISOString().slice(0,10);
+        const{data:dt}=await db.from('daily_tasks').select('completed').eq('user_id',currentUser.id).eq('task_date',today).eq('task_type','share').single();
+        if(dt&&dt.completed)return;
+        const{data:eng}=await db.from('share_engagements').select('tweet_id').eq('user_id',currentUser.id).in('tweet_id',activeCreatorPostIds).limit(1);
+        if(eng&&eng.length)await completeTask('share');
+      }catch(e){/* テーブル未作成等は無視 */}
     }
     async function completeTask(taskType){
       if(!currentUser)return;
@@ -3476,8 +3521,20 @@
         row.className='task-row';
         row.id='task-row-'+task.type;
         if(task.type==='share'){
-          // シェアタスクはタップで handleShare() を呼ぶ
-          row.innerHTML=`<span class="task-status">⬜</span><span class="task-label" style="cursor:pointer;color:#1d9bf0;text-decoration:underline;" onclick="handleShare()">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
+          if(latestCreatorPost){
+            // 創設者の最新投稿へリプライ/リポストで達成（判定は share-sync が記録）
+            row.innerHTML=`<span class="task-status">⬜</span>`+
+              `<span class="task-label">${isJa?'創設者の最新投稿に反応':'React to founder\'s latest post'}`+
+                `<button class="share-act-btn" onclick="openShareReply()">💬 ${isJa?'リプライ':'Reply'}</button>`+
+                `<button class="share-act-btn" onclick="openShareRepost()">🔁 ${isJa?'リポスト':'Repost'}</button>`+
+                `<a class="share-view-link" href="${latestCreatorPost.url}" target="_blank" rel="noopener">${isJa?'投稿を見る':'View post'}</a>`+
+                `<span class="share-note">${isJa?'達成は最大12時間以内に反映されます':'Completion reflects within ~12h'}</span>`+
+              `</span>`+
+              `<span class="task-reward">+${task.reward}</span>`;
+          }else{
+            // フォールバック（creator_posts 未取得時）：従来のシェア
+            row.innerHTML=`<span class="task-status">⬜</span><span class="task-label" style="cursor:pointer;color:#1d9bf0;text-decoration:underline;" onclick="handleShare()">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
+          }
         }else{
           row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
         }

@@ -49,6 +49,13 @@ GRANT EXECUTE ON FUNCTION get_past_detail_full(integer, integer) TO authenticate
 --    ※ pg_cron / pg_net が未有効ならダッシュボード(Database > Extensions)で有効化。
 --    ※ ダッシュボードの Edge Functions > Cron からスケジュールしてもOK（その場合は下は不要）。
 --
+-- 【重要】関数の JWT 検証が既定(ON)のままだと、Authorization 無しの呼び出しは
+--   ゲートウェイで 401 になる。対策は次のどちらか:
+--     (A) 関数を JWT 検証なしで再デプロイ:  supabase functions deploy translate-motto --no-verify-jwt
+--         → その場合、下の Authorization/apikey ヘッダは無くてもよい（x-cron-secret だけで可）。
+--     (B) 下のように匿名キーを Authorization/apikey に付ける（再デプロイ不要）。
+--   いずれにせよ x-cron-secret は CRON_SECRET と完全一致させること。
+--
 -- create extension if not exists pg_cron;
 -- create extension if not exists pg_net;
 --
@@ -60,6 +67,8 @@ GRANT EXECUTE ON FUNCTION get_past_detail_full(integer, integer) TO authenticate
 --     url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/translate-motto',
 --     headers := jsonb_build_object(
 --                  'Content-Type','application/json',
+--                  'Authorization','Bearer <SUPABASE_ANON_KEY>',  -- 方法(A)で再デプロイ済みなら不要
+--                  'apikey','<SUPABASE_ANON_KEY>',                -- 方法(A)で再デプロイ済みなら不要
 --                  'x-cron-secret','<CRON_SECRET>'
 --                ),
 --     body    := '{}'::jsonb

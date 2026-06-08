@@ -1653,7 +1653,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-08-v103';
+    const IGNIS_BUILD='2026-06-09-v104';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4986,6 +4986,11 @@
       if(raw.length<=lim)return raw;
       return raw.slice(0,lim).concat(['…']);
     }
+    // 縦書きで正立させる文字（日本語：かな・漢字・全角・約物など）。
+    // 英字・数字・半角記号などは false（=90°右回転して横倒しで読みやすくする）。
+    function isMottoUprightChar(ch){
+      return /[　-〿぀-ヿㇰ-ㇿ㐀-鿿豈-﫿＀-￯]/.test(ch);
+    }
     function drawMottoWallTexture(entry){
       const{tex,lines,color,fontSize,texW,texH,cellW,lineCellH,pending}=entry;
       const ctx=tex.getContext();
@@ -5004,7 +5009,8 @@
       ctx.textBaseline='middle';
       ctx.shadowColor='rgba(0,0,0,0.9)';
       ctx.shadowBlur=7;
-      // 縦1列：各文字を上→下に並べる。各文字は90°右（時計回り）に回転して描く。
+      // 縦1列：各文字を上→下に並べる。
+      // 日本語（かな・漢字・全角）は正立のまま縦書き。英字・数字・記号は90°右回転して横倒し表示。
       lines.forEach((line,r)=>{
         const y=lineCellH*(r+0.5);
         const lineW=line.length*cellW;
@@ -5013,7 +5019,7 @@
           const cx=startX+cellW*(c+0.5);
           ctx.save();
           ctx.translate(cx,y);
-          ctx.rotate(Math.PI/2); // 90°右回転
+          if(!isMottoUprightChar(ch))ctx.rotate(Math.PI/2); // 英字等は90°右回転、日本語は正立
           ctx.fillText(ch,0,0);
           ctx.restore();
         });

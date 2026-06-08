@@ -1653,7 +1653,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-08-v101';
+    const IGNIS_BUILD='2026-06-08-v102';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4792,13 +4792,16 @@
     // 壁に表示する文字列：英語モードかつ翻訳済みなら英訳、なければ原文
     function mottoDisplayText(p){
       if(!p||!p.motto_text)return '';
-      if(currentLang==='en'&&mottoEnCache[p.motto_text])return mottoEnCache[p.motto_text];
+      if(currentLang==='en'){
+        if(p.motto_text_en)return p.motto_text_en;                      // DeepL（DB・全員共有）優先
+        if(mottoEnCache[p.motto_text])return mottoEnCache[p.motto_text]; // MyMemoryフォールバック
+      }
       return p.motto_text;
     }
     let _mottoTransRunning=false;
     async function ensureMottoTranslations(){
       if(currentLang!=='en'||_mottoTransRunning)return;
-      const texts=[...new Set(Object.values(approvedProfiles).map(p=>p&&p.motto_text).filter(t=>t&&!mottoEnCache[t]))];
+      const texts=[...new Set(Object.values(approvedProfiles).map(p=>(p&&!p.motto_text_en)?p.motto_text:null).filter(t=>t&&!mottoEnCache[t]))];
       if(!texts.length)return;
       _mottoTransRunning=true;
       let changed=false;
@@ -4820,13 +4823,16 @@
       try{
         // 承認済み（approved）の格言だけを壁に表示する。
         // 申請中（pending）は管理者が承認するまで壁に出さない。
-        const{data,error}=await db.from('building_profiles').select('building_x,building_z,motto_text,notes_text,status,user_id').eq('status','approved');
+        let{data,error}=await db.from('building_profiles').select('building_x,building_z,motto_text,motto_text_en,notes_text,status,user_id').eq('status','approved');
+        if(error){ // motto_text_en 列が未作成などの場合は従来列で再取得（壊れない）
+          ({data,error}=await db.from('building_profiles').select('building_x,building_z,motto_text,notes_text,status,user_id').eq('status','approved'));
+        }
         if(error)throw error;
         const next={};
         (data||[]).forEach(p=>{next[landKey(p.building_x,p.building_z)]=Object.assign({},p,{own:false,pending:false});});
         approvedProfiles=next;
         scheduleMottoRefresh();
-        ensureMottoTranslations(); // 英語モードなら英訳を取得して反映
+        ensureMottoTranslations(); // motto_text_en が無い分だけ MyMemory でフォールバック翻訳
       }catch(e){console.warn('loadApprovedProfiles error:',e.message);}
     }
     function getBuildingForLandKey(key){

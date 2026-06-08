@@ -1672,7 +1672,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v107';
+    const IGNIS_BUILD='2026-06-09-v108';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2792,7 +2792,7 @@
       delete body.dataset.lang;
       xRewardsLoadPromise=null;
     }
-    const XREWARDS_DESIGN_W=900; // PC版インフォグラフィックの設計幅（小さめ＝縮小率が緩く中身が大きく見える。880超でPCレイアウト維持）
+    const XREWARDS_DESIGN_W=700; // インフォグラフィックの設計幅（小さめ＝縮小率が緩く中身が大きく見える）
     function fitXRewardsFrame(){
       const body=document.getElementById('x-rewards-body');
       const scaler=document.getElementById('x-rewards-scaler');
@@ -3965,21 +3965,21 @@
         flyCamera.cameraRotation.x+=rs.y*0.125*dt; // 右スティック上倒し＝視点も上（上下反転を修正）
         const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
         const right=flyCamera.getDirection(BABYLON.Axis.X);
-        const moveScale=8.5*dt;
+        const moveScale=5*dt;
         flyCamera.cameraDirection.addInPlace(fwd.scale(-ls.y*moveScale));
         flyCamera.cameraDirection.addInPlace(right.scale(ls.x*moveScale*0.9));
         const lift=(touchFlyState.rise?1:0)-(touchFlyState.fall?1:0);
-        if(lift!==0)flyCamera.position.y+=lift*20*dt;
+        if(lift!==0)flyCamera.position.y+=lift*13*dt;
       }else{
         const fwd=flyCamera.getDirection(BABYLON.Axis.Z);
         const right=flyCamera.getDirection(BABYLON.Axis.X);
-        const moveScale=26*dt;
+        const moveScale=15*dt;
         if(flyKeyState.up)flyCamera.cameraDirection.addInPlace(fwd.scale(moveScale));
         if(flyKeyState.down)flyCamera.cameraDirection.addInPlace(fwd.scale(-moveScale));
         if(flyKeyState.left)flyCamera.cameraDirection.addInPlace(right.scale(-moveScale*0.8));
         if(flyKeyState.right)flyCamera.cameraDirection.addInPlace(right.scale(moveScale*0.8));
         const lift=(flyKeyState.rise?1:0)-(flyKeyState.fall?1:0);
-        if(lift!==0)flyCamera.position.y+=lift*18*dt;
+        if(lift!==0)flyCamera.position.y+=lift*12*dt;
       }
     });
     function toggleFlyMode(){isFlying=!isFlying;setFlyMode(isFlying);}
@@ -5050,12 +5050,13 @@
         const sign=toCamZ>=0?1:-1;
         lz=sign*off;rotY=sign>0?0:Math.PI;
       }
-      // 渡された planeH を使って高さ位置を決める（足元から上へ）
+      // 渡された planeH を使って高さ位置を決める（上端に寄せる＝上部の余白を使う）
       const ph=Math.max(planeH||4,2);
-      const bottomY=Math.min(1.8,height*0.12);
-      let centerWorldY=bottomY+ph/2;
-      const maxTop=height-0.3;
-      if(centerWorldY+ph/2>maxTop)centerWorldY=Math.max(ph/2,maxTop-ph/2);
+      const topMargin=Math.min(1.2,height*0.05); // 屋上のすぐ下から開始
+      const maxTop=height-topMargin;
+      let centerWorldY=maxTop-ph/2;            // プレート上端を建物上部に合わせる
+      const minBottom=Math.min(1.2,height*0.06);
+      if(centerWorldY-ph/2<minBottom)centerWorldY=minBottom+ph/2; // 下に収まらない時だけ持ち上げ
       const localY=centerWorldY-height/2; // mesh中心基準のローカルY
       return{localPos:new BABYLON.Vector3(lx,localY,lz),rotY,height,w};
     }
@@ -5483,6 +5484,15 @@
       if(!db||!currentUser)return;
       const pastEl=document.getElementById('building-modal-past');
       const isJa=currentLang==='ja';
+      let pastRendered=false;
+      // 即「確認中」を表示（読み込みの時間差で過去詳細が無いと誤解されないように）
+      if(pastEl){
+        pastEl.style.display='block';
+        let ld=document.getElementById('bm-past-loading');
+        if(!ld){ld=document.createElement('div');ld.id='bm-past-loading';ld.style.cssText='font-size:12px;color:rgba(255,255,255,0.45);padding:6px 2px;';pastEl.appendChild(ld);}
+        ld.textContent=isJa?'過去詳細を確認中…':'Checking past details…';
+        ld.style.display='block';
+      }
       try{
         let lost=[],gained=[],detail='',message='',status='';
         let showDetail=false,showLock=false;
@@ -5526,6 +5536,8 @@
         const has34=detail||message;
         if(!has12&&!has34&&!showLock)return;
         pastEl.style.display='block';
+        const ld0=document.getElementById('bm-past-loading');if(ld0)ld0.style.display='none';
+        pastRendered=true;
         renderPastChips('bm-past-lost',lost);
         renderPastChips('bm-past-gained',gained);
         const statusEl=document.getElementById('bm-past-status');
@@ -5561,6 +5573,10 @@
           }
         }
       }catch(e){console.warn('loadBuildingPastDetails',e.message);}
+      finally{
+        const ld=document.getElementById('bm-past-loading');if(ld)ld.style.display='none';
+        if(!pastRendered&&pastEl)pastEl.style.display='none'; // 過去詳細が無ければ畳む
+      }
     }
     function openBuildingModal(buildingData){
       currentModalBuilding=buildingData;

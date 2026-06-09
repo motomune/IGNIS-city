@@ -77,6 +77,10 @@
     .access-denied{max-width:420px;margin:80px auto;text-align:center;background:#0a0a14;border:1px solid rgba(239,68,68,0.4);border-radius:18px;padding:40px;}
     .access-denied h2{color:#ef4444;font-size:20px;margin-bottom:12px;}
     .access-denied p{color:rgba(255,255,255,0.5);font-size:13px;line-height:1.7;}
+    #admin-stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+    .stat-card{background:#0a0a14;border:1px solid rgba(255,106,0,0.25);border-radius:12px;padding:14px 20px;min-width:150px;}
+    .stat-num{font-size:26px;font-weight:900;color:#ff6a00;line-height:1.1;}
+    .stat-lbl{font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;letter-spacing:0.04em;}
     @media(max-width:680px){.card{grid-template-columns:1fr;gap:12px;}.actions{flex-direction:row;}}
   </style>
 </head>
@@ -118,6 +122,10 @@
         <div>logged in as <span class="uname" id="admin-uname">-</span></div>
         <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
       </div>
+    </div>
+    <div id="admin-stats">
+      <div class="stat-card"><div class="stat-num" id="stat-total">–</div><div class="stat-lbl">総ユーザー数</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-mau">–</div><div class="stat-lbl">直近30日ログイン（実人数）</div></div>
     </div>
     <div class="tabs">
       <button class="tab active" data-tab="pending" onclick="switchTab('pending')">📨 申請中 <span class="badge" id="badge-pending">0</span></button>
@@ -183,7 +191,18 @@
       const display=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:user.email;
       document.getElementById('admin-uname').textContent=display;
       showScreen('admin');
+      loadAdminStats();
       await loadProfiles();
+    }
+    async function loadAdminStats(){
+      try{
+        const{data,error}=await db.rpc('get_admin_stats');
+        if(error)throw error;
+        if(data&&!data.error){
+          document.getElementById('stat-total').textContent=(data.total_users??'–').toLocaleString?data.total_users.toLocaleString():data.total_users;
+          document.getElementById('stat-mau').textContent=(data.mau_30d??'–').toLocaleString?data.mau_30d.toLocaleString():data.mau_30d;
+        }
+      }catch(e){console.warn('admin stats',e);}
     }
 
     async function handleLogout(){

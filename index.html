@@ -1684,7 +1684,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v109';
+    const IGNIS_BUILD='2026-06-09-v110';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2770,6 +2770,7 @@
       random_build:  {ja:'ビル建設ボーナス',      en:'Build Bonus',         icon:'🏢'},
       hire_employee: {ja:'会社員採用',           en:'Hire Office Worker',       icon:'👷'},
       extend_staff_terms: {ja:'任期延長',        en:'Term Extension',          icon:'📋'},
+      candle_give:   {ja:'蝋燭を灯した報酬',      en:'Candle Reward',           icon:'🕯️'},
     };
     function getReasonInfo(reason){
       if(COIN_REASONS[reason])return COIN_REASONS[reason];
@@ -5735,7 +5736,8 @@
       const isJa=currentLang==='ja';
       if(cnt)cnt.textContent='🕯️ '+candleState.count;
       if(btn){
-        if(candleState.isOwn||!currentUser){btn.style.display='none';}
+        // 灯せるのはサブスク会員のみ・自分のビル以外・ログイン時
+        if(candleState.isOwn||!currentUser||!currentUser.isSubscribed){btn.style.display='none';}
         else{
           btn.style.display='inline-flex';
           btn.classList.toggle('lit',candleState.lit);
@@ -5753,8 +5755,17 @@
         if(data&&data.ok){
           candleState.count=data.count;candleState.lit=data.lit;
           renderCandleUI();
-          if(data.lit)showToast(isJa?'🕯️ 蝋燭を灯しました':'🕯️ Candle lit');
-          else showToast(isJa?'蝋燭を消しました':'Candle removed');
+          if(data.lit&&data.reward){
+            // 当日初回：コイン+5・従業員+1
+            const cc=document.getElementById('coin-count');
+            if(cc){const cur=parseInt(cc.textContent.replace(/[^0-9]/g,'')||'0',10)||0;cc.textContent=cur+5;}
+            if(typeof refreshEmployeeHeader==='function')refreshEmployeeHeader();
+            showToast(isJa?'🕯️ 蝋燭を灯しました（+5コイン・従業員+1）':'🕯️ Candle lit (+5 coins, +1 staff)');
+          }else if(data.lit){
+            showToast(isJa?'🕯️ 蝋燭を灯しました（本日の報酬は受取済み）':'🕯️ Candle lit (daily reward already claimed)');
+          }else{
+            showToast(isJa?'蝋燭を消しました':'Candle removed');
+          }
         }else{
           const r=data&&data.reason;
           if(r==='own_building')showToast(isJa?'自分のビルには灯せません':'You can\'t candle your own building');

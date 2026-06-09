@@ -124,12 +124,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ---- 過去詳細 (background_detail / current_positive -> *_en) ----
+    // ---- 過去詳細（③背景/④対応/⑤結果/⑥学び -> *_en）----
     if (all || pastIds) {
-      let q = admin
-        .from("building_past_details")
-        .select("id,background_detail,background_detail_en,current_positive,current_positive_en,status")
-        .eq("status", "approved");
+      // 翻訳対象フィールド: [元列, 英訳列]
+      const PAST_FIELDS: [string, string][] = [
+        ["background_detail", "background_detail_en"],
+        ["how_handled", "how_handled_en"],
+        ["what_happened_after", "what_happened_after_en"],
+        ["journey_to_now", "journey_to_now_en"],
+      ];
+      const cols = "id,status," + PAST_FIELDS.flat().join(",");
+      let q = admin.from("building_past_details").select(cols).eq("status", "approved");
       if (pastIds && pastIds.length) q = q.in("id", pastIds);
       const { data: rows, error } = await q;
       if (error) throw error;
@@ -137,15 +142,12 @@ Deno.serve(async (req) => {
         const row = r as any;
         const patch: Record<string, string> = {};
         try {
-          // 指定IDモードは（再申請で内容が変わり得るため）常に翻訳し直す。
-          // 全件モードは未翻訳(NULL)のみ。
-          if (row.background_detail && (pastIds ? true : !row.background_detail_en)) {
-            const en = await deeplTranslate(DEEPL_KEY, row.background_detail);
-            if (en) patch.background_detail_en = en;
-          }
-          if (row.current_positive && (pastIds ? true : !row.current_positive_en)) {
-            const en = await deeplTranslate(DEEPL_KEY, row.current_positive);
-            if (en) patch.current_positive_en = en;
+          for (const [src, dst] of PAST_FIELDS) {
+            // 指定IDモードは（再申請で内容が変わり得るため）常に訳し直す。全件モードは未翻訳(NULL)のみ。
+            if (row[src] && (pastIds ? true : !row[dst])) {
+              const en = await deeplTranslate(DEEPL_KEY, row[src]);
+              if (en) patch[dst] = en;
+            }
           }
           if (Object.keys(patch).length) {
             const { error: upErr } = await admin

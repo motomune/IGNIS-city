@@ -1352,12 +1352,20 @@
         <div class="bm-past-label" id="bml-past-gained">② 得たもの・得ようとしているもの</div>
         <div id="bm-past-gained" class="bm-past-chips"></div>
         <div id="bm-past-detail-wrap" style="display:none;">
-          <div class="bm-past-label" id="bml-past-detail">③ 詳細</div>
+          <div class="bm-past-label" id="bml-past-detail">③ 出来事が起きるまでの背景と経緯</div>
           <div id="bm-past-detail" class="bm-past-text"></div>
         </div>
         <div id="bm-past-message-wrap" style="display:none;">
-          <div class="bm-past-label" id="bml-past-message">④ 読者へのメッセージ</div>
+          <div class="bm-past-label" id="bml-past-message">④ 自身の対応</div>
           <div id="bm-past-message" class="bm-past-text"></div>
+        </div>
+        <div id="bm-past-after-wrap" style="display:none;">
+          <div class="bm-past-label" id="bml-past-after">⑤ どうなったか</div>
+          <div id="bm-past-after" class="bm-past-text"></div>
+        </div>
+        <div id="bm-past-reborn-wrap" style="display:none;">
+          <div class="bm-past-label" id="bml-past-reborn">⑥ もし生まれ変わったら、どう気をつけたいか</div>
+          <div id="bm-past-reborn" class="bm-past-text"></div>
         </div>
         <div id="bm-past-locked" class="bm-past-locked" style="display:none;"></div>
       </div>
@@ -1592,14 +1600,24 @@
         </div>
       </div>
       <div class="profile-section">
-        <div class="profile-section-title" id="profile-s3-title">③ 背景と経緯の詳細</div>
+        <div class="profile-section-title" id="profile-s3-title">③ 出来事が起きるまでの背景と経緯</div>
         <div id="profile-s3-hint" class="profile-brevity-hint"></div>
-        <textarea class="profile-textarea" id="profile-detail-input" rows="5" placeholder=""></textarea>
+        <textarea class="profile-textarea" id="profile-detail-input" rows="4" placeholder=""></textarea>
       </div>
       <div class="profile-section">
-        <div class="profile-section-title" id="profile-s4-title">④ 読者に伝えたいこと<span class="profile-optional-tag" id="profile-s4-optional"></span></div>
+        <div class="profile-section-title" id="profile-s4-title">④ 自身の対応</div>
         <div id="profile-s4-hint" class="profile-brevity-hint"></div>
-        <textarea class="profile-textarea" id="profile-message-input" rows="2" placeholder=""></textarea>
+        <textarea class="profile-textarea" id="profile-message-input" rows="3" placeholder=""></textarea>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title" id="profile-s5-title">⑤ どうなったか</div>
+        <div id="profile-s5-hint" class="profile-brevity-hint"></div>
+        <textarea class="profile-textarea" id="profile-after-input" rows="3" placeholder=""></textarea>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title" id="profile-s6-title">⑥ もし生まれ変わったら、どう気をつけたいか</div>
+        <div id="profile-s6-hint" class="profile-brevity-hint"></div>
+        <textarea class="profile-textarea" id="profile-reborn-input" rows="3" placeholder=""></textarea>
       </div>
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
@@ -1696,7 +1714,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-10-v115';
+    const IGNIS_BUILD='2026-06-10-v116';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4525,7 +4543,7 @@
     function getProfileChipOptions(){
       const isJa=currentLang==='ja';
       return [
-        {v:'money',l:isJa?'お金':'Money'},{v:'trust',l:isJa?'信用':'Trust'},{v:'friend',l:isJa?'友人':'Friends'},{v:'partner',l:isJa?'恋人':'Partner'},
+        {v:'money',l:isJa?'お金':'Money'},{v:'trust',l:isJa?'信用':'Trust'},{v:'reliance',l:isJa?'信頼':'Reliance'},{v:'friend',l:isJa?'友人':'Friends'},{v:'partner',l:isJa?'恋人':'Partner'},
         {v:'family',l:isJa?'家族':'Family'},{v:'health',l:isJa?'健康':'Health'},{v:'workplace',l:isJa?'職場の居場所':'Workplace'},{v:'other',l:isJa?'その他':'Other'}
       ];
     }
@@ -4539,15 +4557,21 @@
         profileInputBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号がわかる表記・ビジネス宣伝・勧誘・募集などの案内',
         profileS1:'① 何を失いましたか？（複数選択可）',
         profileS2:'② その後、何を得ましたか？または得ようとしてますか？（複数選択可）',
-        profileS3:'③ 背景と経緯の詳細',
-        profileS3Hint:'①②を踏まえた経緯・取り組み・苦労を、できるだけ簡潔に',
-        profileS4:'④ 読者に伝えたいこと',
-        profileS4Opt:'（任意）',
-        profileS4Hint:'💡 書かなくても申請できます。伝えるときは短めに',
+        profileS3:'③ 出来事が起きるまでの背景と経緯',
+        profileS3Hint:'①②に至るまでの背景・経緯を、できるだけ簡潔に',
+        profileS4:'④ 自身の対応',
+        profileS4Opt:'',
+        profileS4Hint:'💡 そのとき自分がどう動いた／対応したか',
+        profileS5:'⑤ どうなったか',
+        profileS5Hint:'💡 対応の結果、その後どうなったか',
+        profileS6:'⑥ もし生まれ変わったら、どう気をつけたいか',
+        profileS6Hint:'💡 同じ状況をもう一度迎えるなら、どう備える／気をつけるか',
         profileApproval:'📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます',
         mottoPh:'皆さんに伝えたい一言...',
-        detailPh:'背景・経緯・取り組み・苦労まで...',
-        messagePh:'書かなくても申請できます（任意）',
+        detailPh:'出来事が起きるまでの背景・経緯...',
+        messagePh:'そのとき自分がどう対応したか...',
+        afterPh:'対応の結果、どうなったか...',
+        rebornPh:'もう一度なら、どう気をつけたいか...',
         otherPh:'その他の内容（短めに）',
         otherHint:'💡 その他を選んだときだけ入力。短くまとめてください',
         submit:'申請する',
@@ -4563,15 +4587,21 @@
         profileInputBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, identifiable company/shop names, ads, solicitation, or recruitment',
         profileS1:'① What did you lose? (multi-select)',
         profileS2:'② After that, what did you gain or are trying to gain? (multi-select)',
-        profileS3:'③ Background & story',
-        profileS3Hint:'Based on ①② — keep your story concise',
-        profileS4:'④ Message to readers',
-        profileS4Opt:' (optional)',
-        profileS4Hint:'💡 Optional. If you write one, keep it brief',
+        profileS3:'③ Background & circumstances leading up to it',
+        profileS3Hint:'The background/lead-up to ①② — keep it concise',
+        profileS4:'④ How you responded',
+        profileS4Opt:'',
+        profileS4Hint:'💡 What you did / how you handled it at the time',
+        profileS5:'⑤ What happened',
+        profileS5Hint:'💡 The outcome of your response and what followed',
+        profileS6:'⑥ If reborn, how would you be careful',
+        profileS6Hint:'💡 If you faced it again, how would you prepare / be careful',
         profileApproval:'📋 <strong>Note</strong>: An admin will review your submission. You will be notified when approved or rejected.',
         mottoPh:'A message for everyone...',
-        detailPh:'Background, story, efforts, hardships...',
-        messagePh:'Optional — you can submit without this',
+        detailPh:'Background and lead-up to the event...',
+        messagePh:'How you responded at the time...',
+        afterPh:'The outcome and what followed...',
+        rebornPh:'If you faced it again, how would you be careful...',
         otherPh:'Other (keep it short)',
         otherHint:'💡 Only when Other is selected — write briefly',
         submit:'Submit',
@@ -4598,10 +4628,12 @@
       setT('profile-s2-title',L.profileS2);
       setT('profile-s3-title',L.profileS3);
       setT('profile-s3-hint',L.profileS3Hint);
-      const s4opt=document.getElementById('profile-s4-optional');
-      if(s4opt)s4opt.textContent=L.profileS4Opt;
       setT('profile-s4-hint',L.profileS4Hint);
       setT('profile-s4-title',L.profileS4);
+      setT('profile-s5-title',L.profileS5);
+      setT('profile-s5-hint',L.profileS5Hint);
+      setT('profile-s6-title',L.profileS6);
+      setT('profile-s6-hint',L.profileS6Hint);
       setH('profile-approval-note',L.profileApproval);
       const mottoIn=document.getElementById('profile-motto-input');
       if(mottoIn)mottoIn.placeholder=L.mottoPh;
@@ -4609,6 +4641,10 @@
       if(detailIn)detailIn.placeholder=L.detailPh;
       const msgIn=document.getElementById('profile-message-input');
       if(msgIn)msgIn.placeholder=L.messagePh;
+      const afterIn=document.getElementById('profile-after-input');
+      if(afterIn)afterIn.placeholder=L.afterPh;
+      const rebornIn=document.getElementById('profile-reborn-input');
+      if(rebornIn)rebornIn.placeholder=L.rebornPh;
       ['lost','gained'].forEach(k=>{
         const inp=document.getElementById(`chips-${k}-other-input`);
         if(inp)inp.placeholder=L.otherPh;
@@ -4720,11 +4756,13 @@
           motto:(document.getElementById('profile-motto-input')||{}).value||'',
           detail:(document.getElementById('profile-detail-input')||{}).value||'',
           message:(document.getElementById('profile-message-input')||{}).value||'',
+          after:(document.getElementById('profile-after-input')||{}).value||'',
+          reborn:(document.getElementById('profile-reborn-input')||{}).value||'',
           lost:getSelectedChips('chips-lost'),
           gained:getSelectedChips('chips-gained'),
           ts:Date.now()
         };
-        const empty=!draft.motto&&!draft.detail&&!draft.message&&!draft.lost.length&&!draft.gained.length;
+        const empty=!draft.motto&&!draft.detail&&!draft.message&&!draft.after&&!draft.reborn&&!draft.lost.length&&!draft.gained.length;
         if(empty){localStorage.removeItem(profileDraftKey(profileState.gx,profileState.gz));return;}
         localStorage.setItem(profileDraftKey(profileState.gx,profileState.gz),JSON.stringify(draft));
       }catch(e){/* localStorage 不可環境は黙ってスキップ */}
@@ -4737,7 +4775,7 @@
     function ensureProfileDraftListeners(){
       if(profileDraftListenersReady)return;
       profileDraftListenersReady=true;
-      ['profile-motto-input','profile-detail-input','profile-message-input',
+      ['profile-motto-input','profile-detail-input','profile-message-input','profile-after-input','profile-reborn-input',
        'chips-lost-other-input','chips-gained-other-input'].forEach(id=>{
         const el=document.getElementById(id);
         if(el)el.addEventListener('input',saveProfileDraft);
@@ -4764,21 +4802,23 @@
         }catch(e){console.warn('[IGNIS] prefill motto:',e.message);}
         // 過去詳細（building_past_details）— 失った/得た/詳細/メッセージも引き継ぐ
         try{
+          const pastCols='lost_items,gained_items,background_detail,how_handled,what_happened_after,journey_to_now';
           const{data:approvedPast}=await db.from('building_past_details')
-            .select('lost_items,gained_items,background_detail,current_positive')
+            .select(pastCols)
             .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','approved').maybeSingle();
           const{data:pendingPast}=await db.from('building_past_details')
-            .select('lost_items,gained_items,background_detail,current_positive')
+            .select(pastCols)
             .eq('building_x',gx).eq('building_z',gz).eq('user_id',uid).eq('status','pending').maybeSingle();
           const past=approvedPast||pendingPast;
           if(past){
             if(approvedPast)profileState.hasApproved=true;
             buildProfileChips('chips-lost',past.lost_items||[]);
             buildProfileChips('chips-gained',past.gained_items||[]);
-            const detailIn=document.getElementById('profile-detail-input');
-            const msgIn=document.getElementById('profile-message-input');
-            if(detailIn)detailIn.value=past.background_detail||'';
-            if(msgIn)msgIn.value=past.current_positive||'';
+            const setV=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+            setV('profile-detail-input',past.background_detail);   // ③
+            setV('profile-message-input',past.how_handled);        // ④
+            setV('profile-after-input',past.what_happened_after);  // ⑤
+            setV('profile-reborn-input',past.journey_to_now);      // ⑥
           }
         }catch(e){console.warn('[IGNIS] prefill past:',e.message);}
       }
@@ -4792,6 +4832,8 @@
       setVal('profile-motto-input',d.motto);
       setVal('profile-detail-input',d.detail);
       setVal('profile-message-input',d.message);
+      setVal('profile-after-input',d.after);
+      setVal('profile-reborn-input',d.reborn);
       if((d.lost&&d.lost.length)||(d.gained&&d.gained.length)){
         if(d.lost&&d.lost.length)buildProfileChips('chips-lost',d.lost);
         if(d.gained&&d.gained.length)buildProfileChips('chips-gained',d.gained);
@@ -4810,6 +4852,7 @@
       document.getElementById('profile-motto-input').value='';
       document.getElementById('profile-detail-input').value='';
       document.getElementById('profile-message-input').value='';
+      ['profile-after-input','profile-reborn-input'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       const resubmitHint=document.getElementById('profile-resubmit-hint');
       if(resubmitHint)resubmitHint.style.display='none';
       await prefillProfileFormFromStorage(gx,gz);
@@ -4845,11 +4888,13 @@
       if(!currentUser)return;
       if(!validateProfileOtherChips())return;
       const motto=document.getElementById('profile-motto-input').value.trim();
-      const detail=document.getElementById('profile-detail-input').value.trim();
-      const message=document.getElementById('profile-message-input').value.trim();
+      const detail=document.getElementById('profile-detail-input').value.trim();      // ③ 背景と経緯
+      const handled=document.getElementById('profile-message-input').value.trim();     // ④ 自身の対応
+      const after=document.getElementById('profile-after-input').value.trim();         // ⑤ どうなったか
+      const reborn=document.getElementById('profile-reborn-input').value.trim();       // ⑥ 生まれ変わったら
       const lostItems=getSelectedChips('chips-lost');
       const gainedItems=getSelectedChips('chips-gained');
-      const hasAnything=motto||detail||message||lostItems.length||gainedItems.length;
+      const hasAnything=motto||detail||handled||after||reborn||lostItems.length||gainedItems.length;
       if(!hasAnything){closeProfileModal();return;}
       const btn=document.getElementById('profile-submit-btn');
         btn.disabled=true;btn.textContent=currentLang==='ja'?'申請中...':'Submitting...';
@@ -4883,13 +4928,16 @@
             if(e1)throw e1;
           }
         }
-        const hasPastDetail=lostItems.length||gainedItems.length||detail||message;
+        const hasPastDetail=lostItems.length||gainedItems.length||detail||handled||after||reborn;
         if(hasPastDetail){
           const{error:e2}=await db.from('building_past_details').upsert({
             user_id:currentUser.id,building_x:profileState.gx,building_z:profileState.gz,
             lost_items:lostItems,gained_items:gainedItems,
-            background_detail:detail||null,
-            current_positive:message||null,
+            background_detail:detail||null,   // ③
+            how_handled:handled||null,        // ④
+            what_happened_after:after||null,  // ⑤
+            journey_to_now:reborn||null,      // ⑥
+            current_positive:null,
             status:'pending',updated_at:new Date().toISOString()
           },{onConflict:'building_x,building_z'});
           if(e2)throw e2;
@@ -5516,7 +5564,7 @@
       return land&&land.owner_id?land.owner_id:null;
     }
     let currentModalBuilding=null;
-    const VIEW_CHIP_LABELS={money:'お金',trust:'信用',friend:'友人',partner:'恋人',family:'家族',health:'健康',workplace:'職場の居場所',other:'その他'};
+    const VIEW_CHIP_LABELS={money:'お金',trust:'信用',reliance:'信頼',friend:'友人',partner:'恋人',family:'家族',health:'健康',workplace:'職場の居場所',other:'その他'};
     function renderPastChips(containerId,arr){
       const el=document.getElementById(containerId);
       if(!el)return;
@@ -5528,7 +5576,7 @@
       if(pastEl)pastEl.style.display='none';
       renderPastChips('bm-past-lost',[]);
       renderPastChips('bm-past-gained',[]);
-      ['bm-past-detail-wrap','bm-past-message-wrap','bm-past-locked'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+      ['bm-past-detail-wrap','bm-past-message-wrap','bm-past-after-wrap','bm-past-reborn-wrap','bm-past-locked'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
       const st=document.getElementById('bm-past-status');if(st)st.style.display='none';
     }
     async function loadBuildingPastDetails(bx,bz,isOwn){
@@ -5546,16 +5594,15 @@
         ld.style.display='block';
       }
       try{
-        let lost=[],gained=[],detail='',message='',status='';
+        let lost=[],gained=[],detail='',message='',after='',reborn='',status='';
         let showDetail=false,showLock=false;
+        const pick=(row,ja,en)=>(!isJa&&row[en])?row[en]:(row[ja]||'');
         if(isOwn){
-          let pdRes=await db.from('building_past_details')
-            .select('lost_items,gained_items,background_detail,current_positive,background_detail_en,current_positive_en,status')
-            .eq('building_x',bx).eq('building_z',bz).maybeSingle();
+          const colsEn='lost_items,gained_items,background_detail,how_handled,what_happened_after,journey_to_now,background_detail_en,how_handled_en,what_happened_after_en,journey_to_now_en,status';
+          const colsBase='lost_items,gained_items,background_detail,how_handled,what_happened_after,journey_to_now,status';
+          let pdRes=await db.from('building_past_details').select(colsEn).eq('building_x',bx).eq('building_z',bz).maybeSingle();
           if(pdRes.error){ // _en 列が未作成でも壊れないよう従来列で再取得
-            pdRes=await db.from('building_past_details')
-              .select('lost_items,gained_items,background_detail,current_positive,status')
-              .eq('building_x',bx).eq('building_z',bz).maybeSingle();
+            pdRes=await db.from('building_past_details').select(colsBase).eq('building_x',bx).eq('building_z',bz).maybeSingle();
           }
           if(pdRes.error)throw pdRes.error;
           const row=pdRes.data;
@@ -5564,8 +5611,10 @@
           if(status!=='approved'&&status!=='pending')return;
           lost=row.lost_items||[];
           gained=row.gained_items||[];
-          detail=(!isJa&&row.background_detail_en)?row.background_detail_en:(row.background_detail||'');
-          message=(!isJa&&row.current_positive_en)?row.current_positive_en:(row.current_positive||'');
+          detail=pick(row,'background_detail','background_detail_en');
+          message=pick(row,'how_handled','how_handled_en');
+          after=pick(row,'what_happened_after','what_happened_after_en');
+          reborn=pick(row,'journey_to_now','journey_to_now_en');
           showDetail=true;
         }else{
           const{data:preview,error:pErr}=await db.rpc('get_past_detail_preview',{bx,bz});
@@ -5576,8 +5625,10 @@
           if(currentUser.isSubscribed){
             const{data:full,error:fErr}=await db.rpc('get_past_detail_full',{bx,bz});
             if(!fErr&&full&&!full.error){
-              detail=(!isJa&&full.background_detail_en)?full.background_detail_en:(full.background_detail||'');
-              message=(!isJa&&full.current_positive_en)?full.current_positive_en:(full.current_positive||'');
+              detail=pick(full,'background_detail','background_detail_en');
+              message=pick(full,'how_handled','how_handled_en');
+              after=pick(full,'what_happened_after','what_happened_after_en');
+              reborn=pick(full,'journey_to_now','journey_to_now_en');
               showDetail=true;
             }
           }else{
@@ -5585,7 +5636,7 @@
           }
         }
         const has12=lost.length||gained.length;
-        const has34=detail||message;
+        const has34=detail||message||after||reborn;
         if(!has12&&!has34&&!showLock)return;
         pastEl.style.display='block';
         const ld0=document.getElementById('bm-past-loading');if(ld0)ld0.style.display='none';
@@ -5599,29 +5650,25 @@
             statusEl.style.display='inline-block';
           }else{statusEl.style.display='none';}
         }
-        const detailWrap=document.getElementById('bm-past-detail-wrap');
-        const msgWrap=document.getElementById('bm-past-message-wrap');
         const lockedEl=document.getElementById('bm-past-locked');
+        const setSec=(wrapId,textId,val)=>{
+          const w=document.getElementById(wrapId);const t=document.getElementById(textId);
+          if(w)w.style.display=val?'block':'none';
+          if(t)t.textContent=val||'';
+        };
         if(showDetail){
-          if(detailWrap){
-            detailWrap.style.display=detail?'block':'none';
-            const dEl=document.getElementById('bm-past-detail');
-            if(dEl)dEl.textContent=detail;
-          }
-          if(msgWrap){
-            msgWrap.style.display=message?'block':'none';
-            const mEl=document.getElementById('bm-past-message');
-            if(mEl)mEl.textContent=message;
-          }
+          setSec('bm-past-detail-wrap','bm-past-detail',detail);     // ③
+          setSec('bm-past-message-wrap','bm-past-message',message);  // ④
+          setSec('bm-past-after-wrap','bm-past-after',after);        // ⑤
+          setSec('bm-past-reborn-wrap','bm-past-reborn',reborn);     // ⑥
           if(lockedEl)lockedEl.style.display='none';
         }else if(showLock){
-          if(detailWrap)detailWrap.style.display='none';
-          if(msgWrap)msgWrap.style.display='none';
+          ['bm-past-detail-wrap','bm-past-message-wrap','bm-past-after-wrap','bm-past-reborn-wrap'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
           if(lockedEl){
             lockedEl.style.display='block';
             lockedEl.textContent=isJa
-              ?'③ 背景と経緯の詳細・④ 読者へのメッセージはサブスク会員のみ閲覧できます'
-              :'Sections ③–④ are available to subscribers only';
+              ?'③〜⑥（背景・対応・結果・学び）はサブスク会員のみ閲覧できます'
+              :'Sections ③–⑥ are available to subscribers only';
           }
         }
       }catch(e){console.warn('loadBuildingPastDetails',e.message);}
@@ -5744,8 +5791,10 @@
       clearBuildingPastModal();
       const bmlLost=document.getElementById('bml-past-lost');if(bmlLost)bmlLost.textContent=isJa?'① 失ったもの':'① What was lost';
       const bmlGained=document.getElementById('bml-past-gained');if(bmlGained)bmlGained.textContent=isJa?'② その後、得たもの・得ようとしているもの':'② After that — gained / pursuing';
-      const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 背景と経緯の詳細':'③ Background & story';
-      const bmlMsg=document.getElementById('bml-past-message');if(bmlMsg)bmlMsg.textContent=isJa?'④ 読者へのメッセージ':'④ Message to readers';
+      const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 出来事が起きるまでの背景と経緯':'③ Background & lead-up';
+      const bmlMsg=document.getElementById('bml-past-message');if(bmlMsg)bmlMsg.textContent=isJa?'④ 自身の対応':'④ How you responded';
+      const bmlAfter=document.getElementById('bml-past-after');if(bmlAfter)bmlAfter.textContent=isJa?'⑤ どうなったか':'⑤ What happened';
+      const bmlReborn=document.getElementById('bml-past-reborn');if(bmlReborn)bmlReborn.textContent=isJa?'⑥ もし生まれ変わったら、どう気をつけたいか':'⑥ If reborn, how to be careful';
       document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
       document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
       document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';

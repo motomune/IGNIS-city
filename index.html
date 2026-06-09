@@ -73,7 +73,7 @@
     #stats { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(255,255,255,0.78); line-height: 1.4; }
     #stats .stat-row { white-space: nowrap; }
     #stats .stat-secondary { font-size: 12px; color: rgba(255,255,255,0.58); }
-    #stats span.stat-value, #stats #building-count, #stats #coin-count, #stats #emp-total-count, #stats #emp-bench-count { font-weight: 700; color: #ff6a00; }
+    #stats span.stat-value, #stats #building-count, #stats #coin-count, #stats #emp-total-count, #stats #emp-bench-count, #stats #candle-stat-count { font-weight: 700; color: #ff6a00; }
     #header-util { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
     #header-util-primary { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; }
     #header-util-primary #x-rewards-btn, #header-util-primary #lang-btn { flex-shrink: 0; }
@@ -1261,6 +1261,9 @@
         <div class="stat-row stat-primary">
           <span data-i18n="coins">所持コイン</span>&nbsp;<span id="coin-count" class="stat-value" onclick="openCoinHistory()" title="クリックでコイン履歴を表示">0</span>
         </div>
+        <div class="stat-row stat-primary" title="自分のビルが受け取った蝋燭の合計">
+          <span data-i18n="candles-stat">🕯️ 蝋燭</span>&nbsp;<span id="candle-stat-count" class="stat-value">0</span><span data-i18n="candles-unit">本</span>
+        </div>
       </div>
     </div>
     <!-- 右側の縦並びボタン列 -->
@@ -1692,7 +1695,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v112';
+    const IGNIS_BUILD='2026-06-09-v113';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3192,6 +3195,7 @@
       document.getElementById('lang-label').textContent=isJa?'EN':'JP';
       document.getElementById('auth-lang-label').textContent=isJa?'EN':'JP';
       document.querySelector('[data-i18n="buildings"]').textContent=isJa?'所有ビル':'Owned Buildings';
+      {const cs=document.querySelector('[data-i18n="candles-stat"]');if(cs)cs.textContent=isJa?'🕯️ 蝋燭':'🕯️ Candles';const cu=document.querySelector('[data-i18n="candles-unit"]');if(cu)cu.textContent=isJa?'本':'';}
       document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
       const coinsLabel=document.querySelector('[data-i18n="coins"]');if(coinsLabel)coinsLabel.textContent=isJa?'所持コイン':'Coins';
       document.getElementById('coin-count').title=isJa?'クリックでコイン履歴を表示':'Click to view coin history';
@@ -5149,10 +5153,19 @@
       ctx.shadowBlur=0;
       tex.update(false);
     }
+    // プレートが収まる壁の縦幅（getMottoWallPlacementLocal の余白計算と一致させる）
+    function mottoAvailHeight(b){
+      const height=Math.max((b.totalFloors||b.baseFloors||1)*0.5,2);
+      const topMargin=Math.min(1.2,height*0.05);
+      const minBottom=Math.min(1.2,height*0.06);
+      return Math.max(2,(height-topMargin)-minBottom);
+    }
+    const MOTTO_HARD_MAX=60; // 文字数の絶対上限（暴走防止）
     function addMottoMesh(building,text,pending){
       if(!scene||!building||!building.mesh||!text)return;
       const x=building.x,z=building.z;
-      const chars=splitMottoChars(text,mottoMaxCharsForBuilding(building));
+      // 格言は基本「全文」を貼る。入り切らない時だけ縮小して全部収める（余白を使い切る）。
+      const chars=splitMottoChars(text,MOTTO_HARD_MAX);
       if(!chars.length)return;
       const meshId='motto_'+x+'_'+z;
       const sig=chars.join('')+'|'+(pending?'p':'a');
@@ -5166,8 +5179,13 @@
       const color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
       // 縦1列（1文字/行で上→下へ）
       const lines=mottoLines(chars);
-      const planeW=MOTTO_CPL*MOTTO_CHAR_W;
-      const planeH=lines.length*MOTTO_CHAR_W*MOTTO_LINE_GAP;
+      // 全文が壁に収まるよう、必要なら1文字サイズを縮小（短い格言は基準サイズのまま大きく）
+      const n=Math.max(1,lines.length);
+      const availH=mottoAvailHeight(building);
+      const cellH=Math.min(MOTTO_CHAR_W*MOTTO_LINE_GAP, availH/n);
+      const charW=cellH/MOTTO_LINE_GAP;
+      const planeW=charW;
+      const planeH=n*cellH;
       const{localPos,rotY}=getMottoWallPlacementLocal(building,planeH);
       const side=BABYLON.Mesh.DOUBLESIDE||2;
       const plane=BABYLON.MeshBuilder.CreatePlane(meshId,{width:planeW,height:planeH,sideOrientation:side},scene);
@@ -6148,6 +6166,19 @@
       if(!subscriberIds||!subscriberIds.size)return;
       buildings.forEach(b=>{if(b.ownerId&&subscriberIds.has(b.ownerId))addSubscriberLamp(b);});
     }
+    // 自分のビルが受け取った蝋燭の合計をステータスに表示
+    async function loadMyCandleCount(){
+      const el=document.getElementById('candle-stat-count');
+      if(!el)return;
+      if(!db||!currentUser){el.textContent='0';return;}
+      try{
+        const myCoords=new Set(buildings.filter(b=>b.ownerId===currentUser.id).map(b=>`${b.x}_${b.z}`));
+        if(!myCoords.size){el.textContent='0';return;}
+        const{data}=await db.from('building_candles').select('building_x,building_z');
+        let c=0;(data||[]).forEach(r=>{if(myCoords.has(`${r.building_x}_${r.building_z}`))c++;});
+        el.textContent=c;
+      }catch(e){/* テーブル未作成等は0のまま */}
+    }
     function trimOrphanBuildingsHalf(){
       const orphans=[];
       buildings.forEach(b=>{
@@ -6179,6 +6210,7 @@
           try{await withTimeout(loadApprovedProfiles(),8000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
           scheduleMottoRefresh();
           try{await loadSubscriberSet();applySubscriberLamps();}catch(e){console.warn('[IGNIS] lamps',e.message);}
+          loadMyCandleCount().catch(()=>{});
           drawMinimap();
         })(),isCoarseMobile()?9000:12000,'bootstrapLoad');
       }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}

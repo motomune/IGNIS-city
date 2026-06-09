@@ -1279,6 +1279,7 @@
     </div>
     <!-- 左側 -->
     <div id="left-rail">
+      <button id="xname-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleShowXName()" title="ビル詳細・ランキングでのXユーザー名の表示/非表示">🪪 X名: 表示</button>
       <button id="logout-btn" class="rail-btn li-only" type="button" onclick="handleLogout()">↩ ログアウト</button>
     </div>
     <div id="ad-slot-wrap">
@@ -1695,7 +1696,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v113';
+    const IGNIS_BUILD='2026-06-09-v114';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3240,7 +3241,8 @@
       const xRewardsClose=document.getElementById('x-rewards-close');
       if(xRewardsClose)xRewardsClose.textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
-      document.getElementById('logout-btn').textContent=isJa?'ログアウト':'Logout';
+      document.getElementById('logout-btn').textContent=isJa?'↩ ログアウト':'↩ Logout';
+      updateXNameToggleBtn();
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
       const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'🔔 通知':'🔔 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
@@ -3770,7 +3772,7 @@
       try{
         if(!usernameOverride){
           const{data}=await withTimeout(
-            db.from('users').select('username,x_username,coin_column,rank,bench_employees,is_subscribed').eq('id',user.id).single(),
+            db.from('users').select('username,x_username,coin_column,rank,bench_employees,is_subscribed,show_x_username').eq('id',user.id).single(),
             8000,'loadUserProfile'
           );
           if(data){
@@ -3779,21 +3781,24 @@
             currentUser.rank=data.rank||1;
             currentUser.benchEmployees=data.bench_employees||0;
             currentUser.isSubscribed=!!data.is_subscribed;
+            currentUser.showXName=data.show_x_username!==false;
           }
         }else{
           const{data:rd}=await withTimeout(
-            db.from('users').select('rank,bench_employees,coin_column,is_subscribed').eq('id',user.id).single(),
+            db.from('users').select('rank,bench_employees,coin_column,is_subscribed,show_x_username').eq('id',user.id).single(),
             6000,'loadUserRank'
           );
           if(rd){
             currentUser.rank=rd.rank||1;
             currentUser.benchEmployees=rd.bench_employees||0;
             currentUser.isSubscribed=!!rd.is_subscribed;
+            currentUser.showXName=rd.show_x_username!==false;
             if(rd.coin_column!=null)document.getElementById('coin-count').textContent=rd.coin_column;
           }
         }
         currentUser.xUsername=xName;
         document.getElementById('emp-stats-block').style.display='flex';
+        updateXNameToggleBtn();
         setAuthHeaderLoggedIn(true);
         const nameEl=document.getElementById('user-name');
         nameEl.textContent=xName?`@${xName}`:(isJa?'X未登録':'X not set');
@@ -5706,7 +5711,17 @@
         const isMe=currentUser&&land.owner_id===currentUser.id;
         const ownerName=land.owner_display||'';
         if(isMe){ownerEl.innerHTML=`👤 <span class="owner-name">${isJa?'あなたのビル':'Your building'}</span>`;}
-        else if(ownerName){const xHandle=ownerName.replace(/^@/,'');ownerEl.innerHTML=`👤 <a class="owner-x-link" href="https://x.com/${encodeURIComponent(xHandle)}" target="_blank" rel="noopener">@${xHandle}</a>`;}
+        else if(ownerName){
+          const xHandle=ownerName.replace(/^@/,'');
+          const hasX=ownerName.startsWith('@');
+          // 公開条件: (サブスク/創設者/無課金1位) かつ 本人が表示ON
+          const reveal=hasX&&isNameRevealable(land.owner_id)&&(userShowName.get(land.owner_id)!==false);
+          if(reveal){
+            ownerEl.innerHTML=`👤 <a class="owner-x-link" href="https://x.com/${encodeURIComponent(xHandle)}" target="_blank" rel="noopener">@${xHandle}</a>`;
+          }else{
+            ownerEl.innerHTML=`👤 <span class="owner-name" style="letter-spacing:2px;color:rgba(255,255,255,0.4);" title="${isJa?'非公開（課金 or ランキング上位で公開）':'Hidden (subscriber or top-ranked to reveal)'}">${maskName(xHandle)}</span>`;
+          }
+        }
         else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
       } else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
       const mottoEl=document.getElementById('building-modal-motto');
@@ -6179,6 +6194,67 @@
         el.textContent=c;
       }catch(e){/* テーブル未作成等は0のまま */}
     }
+    // 蝋燭HUDのリアルタイム更新（自分のビルに灯される/消されると即増減）
+    let _candleRealtimeCh=null;
+    function bumpCandleStat(d){
+      const el=document.getElementById('candle-stat-count');if(!el)return;
+      const cur=parseInt(el.textContent,10)||0;el.textContent=Math.max(0,cur+d);
+    }
+    function subscribeCandleRealtime(){
+      if(!db||!currentUser||_candleRealtimeCh)return;
+      try{
+        const mine=()=>new Set(buildings.filter(b=>b.ownerId===currentUser.id).map(b=>`${b.x}_${b.z}`));
+        _candleRealtimeCh=db.channel('candles-hud-'+currentUser.id)
+          .on('postgres_changes',{event:'INSERT',schema:'public',table:'building_candles'},(p)=>{const r=p.new;if(r&&mine().has(`${r.building_x}_${r.building_z}`))bumpCandleStat(1);})
+          .on('postgres_changes',{event:'DELETE',schema:'public',table:'building_candles'},(p)=>{const r=p.old;if(r&&mine().has(`${r.building_x}_${r.building_z}`))bumpCandleStat(-1);})
+          .subscribe();
+      }catch(e){console.warn('candle realtime',e.message);}
+    }
+    // ===== Xユーザー名のモザイク出し分け =====
+    // 表示できる条件: (サブスク or 創設者 or 無課金ランキング各項目1位) かつ 本人が表示ONにしている。
+    let revealedFreeUserIds=new Set();
+    let userShowName=new Map(); // uid -> 表示する(true)
+    function maskName(s){
+      const chars='█▓▒░■□▄▀';
+      const base=String(s||'').replace(/^@/,'');
+      const n=Math.max(4,Math.min(10,base.length||6));
+      let out='';for(let i=0;i<n;i++)out+=chars[i%chars.length];
+      return out;
+    }
+    function computeRevealSets(){
+      if(!rankingList)return;
+      userShowName=new Map(rankingList.map(u=>[u.uid,u.show!==false]));
+      revealedFreeUserIds=new Set();
+      const free=rankingList.filter(u=>!isSubForRanking(u));
+      ['coins','emp','floors','candles'].forEach(t=>{
+        const s=[...free].sort((a,b)=>rankingSortVal(b,t)-rankingSortVal(a,t));
+        if(s.length&&rankingSortVal(s[0],t)>0)revealedFreeUserIds.add(s[0].uid);
+      });
+    }
+    function isNameRevealable(uid){
+      return subscriberIds.has(uid)||uid===RANK_OWNER_ID||revealedFreeUserIds.has(uid);
+    }
+    async function ensureRevealData(){
+      if(rankingList){computeRevealSets();return;}
+      try{await loadRanking();}catch(e){/* ランキング取得失敗時はモザイクのまま */}
+    }
+    function updateXNameToggleBtn(){
+      const btn=document.getElementById('xname-toggle-btn');if(!btn)return;
+      const isJa=currentLang==='ja';
+      const on=!currentUser||currentUser.showXName!==false;
+      btn.textContent=on?(isJa?'🪪 X名: 表示':'🪪 X name: ON'):(isJa?'🪪 X名: 非表示':'🪪 X name: OFF');
+    }
+    async function toggleShowXName(){
+      if(!currentUser||!db)return;
+      const next=!(currentUser.showXName!==false); // 表示中なら非表示へ
+      currentUser.showXName=next;
+      updateXNameToggleBtn();
+      userShowName.set(currentUser.id,next);
+      try{await db.from('users').update({show_x_username:next}).eq('id',currentUser.id);}catch(e){console.warn('show_x_username',e.message);}
+      if(document.getElementById('ranking-overlay').classList.contains('open'))renderCurrentRanking();
+      const isJa=currentLang==='ja';
+      showToast(next?(isJa?'Xユーザー名を表示にしました':'X name now visible'):(isJa?'Xユーザー名を非表示にしました':'X name now hidden'));
+    }
     function trimOrphanBuildingsHalf(){
       const orphans=[];
       buildings.forEach(b=>{
@@ -6211,6 +6287,8 @@
           scheduleMottoRefresh();
           try{await loadSubscriberSet();applySubscriberLamps();}catch(e){console.warn('[IGNIS] lamps',e.message);}
           loadMyCandleCount().catch(()=>{});
+          subscribeCandleRealtime();
+          ensureRevealData().catch(()=>{}); // 名前モザイク用データ（無課金1位/表示設定）を先読み
           drawMinimap();
         })(),isCoarseMobile()?9000:12000,'bootstrapLoad');
       }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}
@@ -6364,11 +6442,12 @@
     }
     function maskRankingDisplayName(u,rank){
       const raw=u.x_username?`@${u.x_username}`:(u.username||'?');
-      if(rank===1&&u.x_username){
+      const canShow=(rank===1)&&(u.show!==false); // 1位かつ本人が表示ON
+      if(canShow&&u.x_username){
         const handle=encodeURIComponent(u.x_username.replace(/^@/,''));
         return `<a class="rank-x-link" href="https://x.com/${handle}" target="_blank" rel="noopener">@${u.x_username.replace(/^@/,'')}</a>`;
       }
-      if(rank===1)return raw;
+      if(canShow)return raw;
       const chars='█▓▒░▄▀■□';
       const seed=rankingNameHash(u.uid,new Date().toISOString().slice(0,10));
       let out='';
@@ -6406,7 +6485,7 @@
       ['ranking-coins-list','ranking-emp-list','ranking-floors-list','ranking-candles-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
       try{
         const[{data:users,error:uErr},{data:buildings,error:bErr},candleRes]=await Promise.all([
-          db.from('users').select('id,username,x_username,coin_column,bench_employees,is_subscribed'),
+          db.from('users').select('id,username,x_username,coin_column,bench_employees,is_subscribed,show_x_username'),
           db.from('buildings').select('owner_id,floors,employees,x,z'),
           db.from('building_candles').select('building_x,building_z')
         ]);
@@ -6414,7 +6493,7 @@
         if(bErr)throw bErr;
         const userMap={};
         (users||[]).forEach(u=>{
-          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0,candles:0,is_subscribed:!!u.is_subscribed};
+          userMap[u.id]={uid:u.id,username:u.username||'?',x_username:u.x_username||'',coins:u.coin_column||0,bench:u.bench_employees||0,assigned:0,totalFloors:0,buildingCount:0,candles:0,is_subscribed:!!u.is_subscribed,show:u.show_x_username!==false};
         });
         const buildingOwner={};
         (buildings||[]).forEach(b=>{
@@ -6428,6 +6507,7 @@
         const candleRows=(candleRes&&!candleRes.error)?(candleRes.data||[]):[];
         candleRows.forEach(c=>{const oid=buildingOwner[`${c.building_x}_${c.building_z}`];if(oid&&userMap[oid])userMap[oid].candles+=1;});
         rankingList=Object.values(userMap).map(u=>({...u,totalEmp:u.assigned+u.bench}));
+        computeRevealSets(); // 名前公開対象（無課金1位）＋表示ON/OFFを更新
         ['coins','emp','floors','candles'].forEach(t=>{const el=document.getElementById('rtab-'+t);if(el)el.classList.toggle('active',t===rankingTab);});
         switchRankingGroup(rankingGroup); // グループのアクティブ設定＋現在タブを描画
       }catch(e){

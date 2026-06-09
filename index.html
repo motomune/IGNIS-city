@@ -1340,6 +1340,10 @@
         <div class="bm-stat"><div class="bm-stat-label" id="bml-views">閲覧回数</div><div class="bm-stat-value" id="bm-views-val">-</div></div>
         <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
+      <div id="building-candle" style="display:none;">
+        <button id="candle-btn" type="button" onclick="toggleCandle()">🕯️ 蝋燭を灯す</button>
+        <span id="candle-count" title="このビルに灯された蝋燭の数">🕯️ 0</span>
+      </div>
       <div id="building-modal-motto"></div>
       <div id="building-modal-past">
         <div class="bm-past-title">📖 過去詳細 <span id="bm-past-status" class="motto-pending-badge" style="display:none;"></span></div>
@@ -1359,10 +1363,6 @@
       </div>
       <div id="building-modal-notes" style="display:none;"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
-      <div id="building-candle" style="display:none;">
-        <button id="candle-btn" type="button" onclick="toggleCandle()">🕯️ 蝋燭を灯す</button>
-        <span id="candle-count" title="このビルに灯された蝋燭の数">🕯️ 0</span>
-      </div>
       <button id="building-motto-btn" type="button" onclick="openProfileFromBuildingModal()" style="display:none;">💬 格言・過去詳細を申請</button>
       <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
       <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
@@ -1696,7 +1696,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-09-v114';
+    const IGNIS_BUILD='2026-06-10-v115';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -5094,7 +5094,7 @@
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
     // 縦1列格言のサイズ設定（横1マス・上→下に縦へ続く）
-    const MOTTO_CHAR_W=2.6;     // 1文字の大きさ（世界座標）
+    const MOTTO_CHAR_W=2.8;     // 1文字の大きさ（世界座標）
     const MOTTO_LINE_GAP=1.05;  // 文字間（縦方向）係数
     const MOTTO_CPL=1;          // 1行あたりの文字数（=列数）。1で縦一列。
     function mottoLines(chars){
@@ -5165,7 +5165,7 @@
       const minBottom=Math.min(1.2,height*0.06);
       return Math.max(2,(height-topMargin)-minBottom);
     }
-    const MOTTO_HARD_MAX=60; // 文字数の絶対上限（暴走防止）
+    const MOTTO_HARD_MAX=120; // 文字数の絶対上限（暴走防止）。長文でも切らず全文表示
     function addMottoMesh(building,text,pending){
       if(!scene||!building||!building.mesh||!text)return;
       const x=building.x,z=building.z;
@@ -5203,10 +5203,16 @@
       plane.rotation=new BABYLON.Vector3(0,euler.y+rotY,0);
       plane.isPickable=false;
       // 高解像度テクスチャ（セル=正方形・行間ぶん縦に余裕）。プレートと同じ縦横比＝歪み無し
-      const cell=128;
-      const lineCellH=Math.round(cell*MOTTO_LINE_GAP);
+      // 文字数が多い時はセルを縮めて全文をテクスチャ内（最大4096px）に収める＝下が切れない
+      const MAX_TEX=4096;
+      let cell=128;
+      let lineCellH=Math.round(cell*MOTTO_LINE_GAP);
+      if(n*lineCellH>MAX_TEX){
+        lineCellH=Math.max(8,Math.floor(MAX_TEX/n));
+        cell=Math.max(8,Math.floor(lineCellH/MOTTO_LINE_GAP));
+      }
       const texW=MOTTO_CPL*cell;
-      const texH=Math.min(4096,lines.length*lineCellH);
+      const texH=Math.min(MAX_TEX,n*lineCellH);
       const fontSize=Math.floor(cell*0.94);
       const tex=new BABYLON.DynamicTexture('mottotex_'+x+'_'+z,{width:texW,height:texH},scene,true);
       tex.hasAlpha=true;

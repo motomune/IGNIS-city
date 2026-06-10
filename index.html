@@ -1718,7 +1718,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-10-v117';
+    const IGNIS_BUILD='2026-06-11-v118';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3318,6 +3318,8 @@
       updateViewTaskProgressLabel();
       // 壁の格言：言語に合わせて即再描画（英訳はDBの motto_text_en を使用）
       if(typeof applyApprovedMottosToScene==='function')applyApprovedMottosToScene();
+      // 開いているビル詳細モーダルの格言・過去詳細も新しい言語で出し直す
+      if(typeof refreshBuildingModalLang==='function')refreshBuildingModalLang();
     }
     const STAR_LABELS_GACHA={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
     const STAR_LABELS_GACHA_EN={5:'★★★★★ Legendary',4:'★★★★ Epic',3:'★★ Rare',2:'★★ Uncommon',1:'★ Common'};
@@ -4071,12 +4073,56 @@
     const groundMat=new BABYLON.StandardMaterial('groundMat',scene);
     groundMat.diffuseColor=new BABYLON.Color3(0.06,0.06,0.1);groundMat.specularColor=new BABYLON.Color3(0,0,0);
     ground.material=groundMat;
+    ground.freezeWorldMatrix();
+    // 世界の「縁」が見えないように、プレイ範囲の外側にも同じ夜色の床を地平線まで敷く（1メッシュ＝ほぼ無コスト）
+    const farGround=BABYLON.MeshBuilder.CreateGround('farGround',{width:1600,height:1600,subdivisions:1},scene);
+    farGround.position.y=-0.05;farGround.material=groundMat;farGround.isPickable=false;farGround.freezeWorldMatrix();
     const lineMat=new BABYLON.StandardMaterial('lineMat',scene);
     lineMat.emissiveColor=new BABYLON.Color3(0.15,0.1,0.2);
-    for(let i=-GRID_HALF;i<=GRID_HALF;i+=CELL){
-      const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);hL.position=new BABYLON.Vector3(0,0.01,i);hL.material=lineMat;hL.isPickable=false;
-      const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);vL.material=lineMat;vL.isPickable=false;
+    // グリッド線は42本のボックスを1メッシュに結合（ドローコール削減）
+    {
+      const lineParts=[];
+      for(let i=-GRID_HALF;i<=GRID_HALF;i+=CELL){
+        const hL=BABYLON.MeshBuilder.CreateBox('hl',{width:200,height:0.02,depth:0.05},scene);hL.position=new BABYLON.Vector3(0,0.01,i);
+        const vL=BABYLON.MeshBuilder.CreateBox('vl',{width:0.05,height:0.02,depth:200},scene);vL.position=new BABYLON.Vector3(i,0.01,0);
+        lineParts.push(hL,vL);
+      }
+      const gridMesh=BABYLON.Mesh.MergeMeshes(lineParts,true,true);
+      if(gridMesh){gridMesh.material=lineMat;gridMesh.isPickable=false;gridMesh.freezeWorldMatrix();}
+      else lineParts.forEach(m=>{m.material=lineMat;m.isPickable=false;});
     }
+    // うっすら夜霧：遠景ほど背景色に溶け、世界が地平線まで続いて見える（ズームアウト時も街は見える距離設定）
+    // ※マテリアルのfreeze()より先に設定しないと霧が反映されないので、この位置で設定する
+    scene.fogMode=BABYLON.Scene.FOGMODE_LINEAR;
+    scene.fogColor=new BABYLON.Color3(0.04,0.04,0.06);
+    scene.fogStart=230;scene.fogEnd=950;
+    // 遠景スカイライン：街の外周にシルエットのビル群を配置し、大都市の中にいる奥行きを出す。
+    // 固定シードの疑似乱数なので全員同じ景色。全棟を1メッシュに結合して描画コストはビル1棟分。
+    (function buildFarSkyline(){
+      try{
+        const silMat=new BABYLON.StandardMaterial('skylineMat',scene);
+        silMat.diffuseColor=new BABYLON.Color3(0.02,0.02,0.045);
+        silMat.emissiveColor=new BABYLON.Color3(0.055,0.045,0.10);
+        silMat.specularColor=new BABYLON.Color3(0,0,0);
+        let seed=20260611;
+        const rnd=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648;};
+        const parts=[];
+        for(let k=0;k<150;k++){
+          const ang=rnd()*Math.PI*2;
+          const dist=190+rnd()*420;            // プレイ範囲(±105)の十分外側
+          const w=6+rnd()*16,d=6+rnd()*16;
+          const h=(10+rnd()*60)*(1.05-dist/750); // 遠いほど低く＝自然な遠近感
+          if(h<4)continue;
+          const b=BABYLON.MeshBuilder.CreateBox('sil',{width:w,depth:d,height:h},scene);
+          b.position.set(Math.cos(ang)*dist,h/2,Math.sin(ang)*dist);
+          parts.push(b);
+        }
+        const m=BABYLON.Mesh.MergeMeshes(parts,true,true);
+        if(m){m.material=silMat;m.isPickable=false;m.freezeWorldMatrix();}
+        silMat.freeze();
+      }catch(e){console.warn('skyline skipped',e);}
+    })();
+    groundMat.freeze();lineMat.freeze();
     // ========================================
     // 土地管理
     // ========================================
@@ -5692,6 +5738,31 @@
         if(!pastRendered&&pastEl)pastEl.style.display='none'; // 過去詳細が無ければ畳む
       }
     }
+    function applyBuildingModalLabels(isJa){
+      const bmlLost=document.getElementById('bml-past-lost');if(bmlLost)bmlLost.textContent=isJa?'① 失ったもの':'① What was lost';
+      const bmlGained=document.getElementById('bml-past-gained');if(bmlGained)bmlGained.textContent=isJa?'② その後、得たもの・得ようとしているもの':'② After that — gained / pursuing';
+      const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 出来事が起きるまでの背景と経緯':'③ Background & lead-up';
+      const bmlMsg=document.getElementById('bml-past-message');if(bmlMsg)bmlMsg.textContent=isJa?'④ 自身の対応':'④ How you responded';
+      const bmlAfter=document.getElementById('bml-past-after');if(bmlAfter)bmlAfter.textContent=isJa?'⑤ どうなったか':'⑤ What happened';
+      const bmlReborn=document.getElementById('bml-past-reborn');if(bmlReborn)bmlReborn.textContent=isJa?'⑥ もし生まれ変わったら、どう気をつけたいか':'⑥ If reborn, how to be careful';
+      const bmlFloors=document.getElementById('bml-floors');if(bmlFloors)bmlFloors.textContent=isJa?'総階数':'Floors';
+      const bmlEmp=document.getElementById('bml-emp');if(bmlEmp)bmlEmp.textContent=isJa?'従業員':'Employees';
+      const bmlCoord=document.getElementById('bml-coord');if(bmlCoord)bmlCoord.textContent=isJa?'座標':'Coords';
+    }
+    // 言語切替時：開いているビル詳細モーダルの格言・ラベル・過去詳細も新しい言語で出し直す
+    function refreshBuildingModalLang(){
+      const modal=document.getElementById('building-modal');
+      if(!modal||!modal.classList.contains('open')||!currentModalBuilding)return;
+      const isJa=currentLang==='ja';
+      applyBuildingModalLabels(isJa);
+      const key=currentModalBuilding.landKey||landKey(currentModalBuilding.x,currentModalBuilding.z);
+      const p=approvedProfiles[key];
+      const mEl=document.getElementById('building-modal-motto');
+      if(p&&p.motto_text&&mEl)mEl.textContent='💬 '+mottoDisplayText(p);
+      const land=landMap[key];
+      const isOwn=!!(currentUser&&land&&land.owner_id===currentUser.id);
+      loadBuildingPastDetails(currentModalBuilding.x,currentModalBuilding.z,isOwn);
+    }
     function openBuildingModal(buildingData){
       currentModalBuilding=buildingData;
       const ownerId=getBuildingOwnerId(buildingData);
@@ -5796,7 +5867,7 @@
       const notesEl=document.getElementById('building-modal-notes');
       const notesTextEl=document.getElementById('building-modal-notes-text');
       if(profile&&profile.motto_text){
-        mottoEl.textContent='💬 '+profile.motto_text;
+        mottoEl.textContent='💬 '+mottoDisplayText(profile); // ENモードでは英訳(motto_text_en)を表示
         mottoEl.classList.remove('rank-1','rank-2','rank-3','rank-4','rank-5');
         mottoEl.classList.add('rank-'+star);
         mottoEl.style.display='block';
@@ -5804,15 +5875,7 @@
       if(profile&&profile.notes_text){notesTextEl.textContent=profile.notes_text;notesEl.style.display='block';}
       else if(notesEl)notesEl.style.display='none';
       clearBuildingPastModal();
-      const bmlLost=document.getElementById('bml-past-lost');if(bmlLost)bmlLost.textContent=isJa?'① 失ったもの':'① What was lost';
-      const bmlGained=document.getElementById('bml-past-gained');if(bmlGained)bmlGained.textContent=isJa?'② その後、得たもの・得ようとしているもの':'② After that — gained / pursuing';
-      const bmlDetail=document.getElementById('bml-past-detail');if(bmlDetail)bmlDetail.textContent=isJa?'③ 出来事が起きるまでの背景と経緯':'③ Background & lead-up';
-      const bmlMsg=document.getElementById('bml-past-message');if(bmlMsg)bmlMsg.textContent=isJa?'④ 自身の対応':'④ How you responded';
-      const bmlAfter=document.getElementById('bml-past-after');if(bmlAfter)bmlAfter.textContent=isJa?'⑤ どうなったか':'⑤ What happened';
-      const bmlReborn=document.getElementById('bml-past-reborn');if(bmlReborn)bmlReborn.textContent=isJa?'⑥ もし生まれ変わったら、どう気をつけたいか':'⑥ If reborn, how to be careful';
-      document.getElementById('bml-floors').textContent=isJa?'総階数':'Floors';
-      document.getElementById('bml-emp').textContent=isJa?'従業員':'Employees';
-      document.getElementById('bml-coord').textContent=isJa?'座標':'Coords';
+      applyBuildingModalLabels(isJa);
       document.getElementById('building-modal').classList.add('open');
       document.body.classList.add('building-modal-open');
       loadBuildingPastDetails(buildingData.x,buildingData.z,isOwnLand);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -342,18 +342,19 @@
 
     // 承認済み格言への「修正申請」を承認＝修正本文を本採用
     async function approveMottoEdit(id){
-      const item=profiles.find(p=>p.id===id&&p._type==='motto');
-      if(!item||!item.pending_motto_text){showToast('対象が見つかりません');return;}
+      // idはonclickから文字列で渡る。DBのid型と揺れても一致するよう文字列同士で比較する
+      const item=profiles.find(p=>String(p.id)===String(id)&&p._type==='motto');
+      if(!item||!item.pending_motto_text){showToast('対象が見つかりません（リロードして再試行してください）');return;}
       try{
         const{error}=await db.from('building_profiles').update({
           motto_text:item.pending_motto_text,
           pending_motto_text:null,
           pending_submitted_at:null,
           reviewed_at:new Date().toISOString()
-        }).eq('id',id);
+        }).eq('id',item.id);
         if(error)throw error;
-        translatePending({ids:[id]}).catch(()=>{}); // 採用された格言を英訳してDBへ
         showToast('✓ 修正を承認しました');
+        notifyTranslateResult(translatePending({ids:[item.id]})); // 採用された格言を英訳してDBへ
         await loadProfiles();
       }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
     }
@@ -382,9 +383,9 @@
           :{status:newStatus,updated_at:now};
         const{error}=await db.from(table).update(payload).eq('id',id);
         if(error)throw error;
-        if(newStatus==='approved')translatePending(type==='motto'?{ids:[id]}:{pastIds:[id]}).catch(()=>{}); // 承認した内容を英訳
         const label=newStatus==='approved'?'承認':newStatus==='rejected'?'却下':'差し戻し';
         showToast(`✓ ${label}しました`);
+        if(newStatus==='approved')notifyTranslateResult(translatePending(type==='motto'?{ids:[id]}:{pastIds:[id]})); // 承認した内容を英訳
         await loadProfiles();
       }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
     }
@@ -403,6 +404,13 @@
         });
         return await res.json();
       }catch(e){console.warn('translate-motto error',e);return null;}
+    }
+    // 承認時の自動英訳は裏で走らせつつ、失敗したら気づけるよう結果をトーストで知らせる
+    function notifyTranslateResult(promise){
+      promise.then(r=>{
+        if(r&&r.ok)showToast(`🌐 英訳完了（格言${r.motto}件／過去詳細${r.past}件）`);
+        else showToast('⚠ 自動英訳に失敗: '+((r&&r.error)||'translate-motto応答なし')+'（後で「未翻訳を一括英訳」で再試行できます）');
+      }).catch(()=>{showToast('⚠ 自動英訳に失敗（後で「未翻訳を一括英訳」で再試行できます）');});
     }
     async function backfillMottoEn(){
       const btn=document.getElementById('translate-all-btn');

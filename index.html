@@ -1619,6 +1619,10 @@
         <div id="profile-s6-hint" class="profile-brevity-hint"></div>
         <textarea class="profile-textarea" id="profile-reborn-input" rows="3" placeholder=""></textarea>
       </div>
+      <label id="profile-agree-wrap" style="display:flex;gap:8px;align-items:flex-start;margin:12px 0 10px;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.85);cursor:pointer;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 12px;">
+        <input type="checkbox" id="profile-agree-check" style="margin-top:2px;flex-shrink:0;width:18px;height:18px;">
+        <span id="profile-agree-label">上記の禁止事項（個人や事業所が特定できる表記・宣伝・勧誘など）を理解し、含めないことに同意します</span>
+      </label>
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
       <div id="profile-approval-note" class="profile-alert-note">📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます</div>
@@ -1714,7 +1718,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-10-v116';
+    const IGNIS_BUILD='2026-06-10-v117';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4554,7 +4558,8 @@
         profileSubtitle:'格言と過去の記録を申請できます',
         profileMottoLabel:'💬 格言（ビルの壁に縦表示）',
         profileMottoHint:'💡 縦書きで壁に表示されます。できるだけ短い一言で',
-        profileInputBan:'※ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号がわかる表記・ビジネス宣伝・勧誘・募集などの案内',
+        profileInputBan:'⚠️ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号がわかる表記・ビジネス宣伝・勧誘・募集などの案内',
+        profileAgree:'上記の禁止事項（個人や事業所が特定できる表記・宣伝・勧誘など）を理解し、含めないことに同意します',
         profileS1:'① 何を失いましたか？（複数選択可）',
         profileS2:'② その後、何を得ましたか？または得ようとしてますか？（複数選択可）',
         profileS3:'③ 出来事が起きるまでの背景と経緯',
@@ -4584,7 +4589,8 @@
         profileSubtitle:'Apply a motto and your past story',
         profileMottoLabel:'💬 Motto (shown vertically on the building)',
         profileMottoHint:'💡 Shown vertically on the wall — keep it short',
-        profileInputBan:'※ <strong>Do not enter</strong>: SNS handles, identifiable personal info, identifiable company/shop names, ads, solicitation, or recruitment',
+        profileInputBan:'⚠️ <strong>Do not enter</strong>: SNS handles, identifiable personal info, identifiable company/shop names, ads, solicitation, or recruitment',
+        profileAgree:'I understand the prohibited content (anything identifying a person or business, ads, solicitation) and agree not to include it',
         profileS1:'① What did you lose? (multi-select)',
         profileS2:'② After that, what did you gain or are trying to gain? (multi-select)',
         profileS3:'③ Background & circumstances leading up to it',
@@ -4624,6 +4630,7 @@
       setT('profile-motto-label',L.profileMottoLabel);
       setT('profile-motto-hint',L.profileMottoHint);
       setH('profile-input-ban-note',L.profileInputBan);
+      setT('profile-agree-label',L.profileAgree);
       setT('profile-s1-title',L.profileS1);
       setT('profile-s2-title',L.profileS2);
       setT('profile-s3-title',L.profileS3);
@@ -4853,6 +4860,7 @@
       document.getElementById('profile-detail-input').value='';
       document.getElementById('profile-message-input').value='';
       ['profile-after-input','profile-reborn-input'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      const agreeChk=document.getElementById('profile-agree-check');if(agreeChk)agreeChk.checked=false; // 申請ごとに再確認
       const resubmitHint=document.getElementById('profile-resubmit-hint');
       if(resubmitHint)resubmitHint.style.display='none';
       await prefillProfileFormFromStorage(gx,gz);
@@ -4886,6 +4894,13 @@
     }
     async function submitBuildingProfile(){
       if(!currentUser)return;
+      const agree=document.getElementById('profile-agree-check');
+      if(agree&&!agree.checked){
+        const isJa=currentLang==='ja';
+        showToast(isJa?'禁止事項の確認にチェックしてください':'Please check the confirmation box first');
+        try{document.getElementById('profile-agree-wrap').scrollIntoView({block:'center',behavior:'smooth'});}catch(_){}
+        return;
+      }
       if(!validateProfileOtherChips())return;
       const motto=document.getElementById('profile-motto-input').value.trim();
       const detail=document.getElementById('profile-detail-input').value.trim();      // ③ 背景と経緯
@@ -5142,7 +5157,7 @@
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
     // 縦1列格言のサイズ設定（横1マス・上→下に縦へ続く）
-    const MOTTO_CHAR_W=2.8;     // 1文字の大きさ（世界座標）
+    const MOTTO_CHAR_W=3.2;     // 1文字の大きさ（世界座標）
     const MOTTO_LINE_GAP=1.05;  // 文字間（縦方向）係数
     const MOTTO_CPL=1;          // 1行あたりの文字数（=列数）。1で縦一列。
     function mottoLines(chars){
@@ -6412,9 +6427,18 @@
     async function loadZukanBuildings(){
       const loadingEl=document.getElementById('zukan-loading');loadingEl.classList.add('show');
       try{
-        const{data,error}=await db.from('buildings').select('*').eq('owner_id',currentUser.id).order('floors',{ascending:false});
-        if(error)throw error;
-        zukanBuildings=data||[];renderZukanOwned();renderZukanRarity();
+        // メモリ上の自分のビルから即構築（DB往復なし＝高速）
+        const mine=buildings.filter(b=>b.ownerId===currentUser.id);
+        if(mine.length){
+          zukanBuildings=mine.map(b=>({x:b.x,z:b.z,floors:b.baseFloors,employees:b.employees||0,style:b.shape||'square'}))
+            .sort((a,b)=>b.floors-a.floors);
+          renderZukanOwned();renderZukanRarity();
+        }else{
+          // 念のためのフォールバック（メモリが空のとき）
+          const{data,error}=await db.from('buildings').select('*').eq('owner_id',currentUser.id).order('floors',{ascending:false});
+          if(error)throw error;
+          zukanBuildings=data||[];renderZukanOwned();renderZukanRarity();
+        }
       }catch(e){console.warn('zukan load error:',e.message);showToast('図鑑の読み込みに失敗しました');}
       finally{loadingEl.classList.remove('show');}
     }

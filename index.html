@@ -960,6 +960,23 @@
     #premium-track a { color:#ffd54f;text-decoration:none; }
     #premium-track a:hover { text-decoration:underline; }
     @keyframes premiumScroll { 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+    /* 常時表示スクロールバー（タスク/X報酬/スクラッチ/図鑑。下にまだ続きがある合図） */
+    .auto-sb-track { position:fixed;width:5px;background:rgba(255,255,255,0.10);border-radius:3px;z-index:300;pointer-events:none;display:none; }
+    .auto-sb-thumb { width:100%;background:rgba(255,255,255,0.45);border-radius:3px; }
+    /* ローディング中スピナー（過去詳細の確認中など） */
+    .mini-spinner { display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,0.2);border-top-color:#ff8a3d;border-radius:50%;animation:miniSpin 0.8s linear infinite;vertical-align:-2px;margin-right:6px; }
+    @keyframes miniSpin { to{transform:rotate(360deg);} }
+    /* 全画面ミニマップ */
+    #bigmap-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.82);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:80; }
+    #bigmap-overlay.open { display:flex; }
+    #bigmap-canvas { width:min(92vw,78vh);height:min(92vw,78vh);border-radius:14px;border:1px solid rgba(255,255,255,0.22);background:rgba(6,6,16,0.95);cursor:pointer; }
+    #bigmap-hint { font-size:11px;color:rgba(255,255,255,0.6); }
+    #minimap-expand {
+      position:absolute;top:-10px;left:-10px;width:34px;height:34px;padding:0;border-radius:10px;
+      background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);color:#fff;
+      font-size:17px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    }
+    #minimap-expand:hover { background:rgba(255,255,255,0.24); }
     /* 街の共同目標HUD（夜明けカウントダウン＋週間クエスト） */
     #city-goals { margin-bottom:6px;background:rgba(6,6,16,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:6px 9px;font-size:10px;line-height:1.7;max-width:170px; }
     #dawn-goal-line { color:#ffab66;font-weight:700; }
@@ -1363,6 +1380,7 @@
       <div id="weekly-goal-line"></div>
     </div>
     <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button" aria-label="Close minimap">×</button>
+    <button id="minimap-expand" onclick="openBigMap()" title="地図を大きく表示" type="button" aria-label="Expand map">⤢</button>
     <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
     <div id="minimap-label">MINIMAP</div>
   </div>
@@ -1465,6 +1483,10 @@
         <button id="staff-extend-btn" type="button" onclick="handleExtendStaffTerms()">任期を3か月延長（5コイン/人）</button>
       </div>
     </div>
+  </div>
+  <div id="bigmap-overlay" onclick="closeBigMap()">
+    <canvas id="bigmap-canvas" width="800" height="800" onclick="bigmapClick(event)"></canvas>
+    <div id="bigmap-hint">タップした場所へ移動（外側タップで閉じる）</div>
   </div>
   <div id="hall-modal">
     <div id="hall-box">
@@ -1777,7 +1799,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-11-v120';
+    const IGNIS_BUILD='2026-06-11-v121';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3582,17 +3604,16 @@
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
     }
+    // どちらも創設者のXプロフィールを開く（投稿画面ではなく、本人のプロフィールから反応してもらう）
     function openShareReply(){
-      if(!latestCreatorPost){handleShare();return;}
       try{IgnisAudio.playClick();}catch(e){}
-      window.open(`https://twitter.com/intent/tweet?in_reply_to=${encodeURIComponent(latestCreatorPost.tweet_id)}`,'_blank');
-      showToast(currentLang==='ja'?'リプライ後、最大12時間以内に達成へ反映されます':'After replying, it completes within ~12h');
+      window.open(`https://x.com/${OWNER_X_HANDLE}`,'_blank');
+      showToast(currentLang==='ja'?'プロフィールの最新投稿にリプライしてください（最大12時間以内に反映）':'Reply to the latest post on the profile (reflects within ~12h)');
     }
     function openShareRepost(){
-      if(!latestCreatorPost){handleShare();return;}
       try{IgnisAudio.playClick();}catch(e){}
-      window.open(`https://twitter.com/intent/retweet?tweet_id=${encodeURIComponent(latestCreatorPost.tweet_id)}`,'_blank');
-      showToast(currentLang==='ja'?'リポスト後、最大12時間以内に達成へ反映されます':'After reposting, it completes within ~12h');
+      window.open(`https://x.com/${OWNER_X_HANDLE}`,'_blank');
+      showToast(currentLang==='ja'?'プロフィールの最新投稿をリポスト（引用も可）してください（最大12時間以内に反映）':'Repost (or quote) the latest post on the profile (reflects within ~12h)');
     }
     async function checkShareEngagement(){
       if(!currentUser||!activeCreatorPostIds.length)return;
@@ -5763,7 +5784,7 @@
         pastEl.style.display='block';
         let ld=document.getElementById('bm-past-loading');
         if(!ld){ld=document.createElement('div');ld.id='bm-past-loading';ld.style.cssText='font-size:12px;color:rgba(255,255,255,0.45);padding:6px 2px;';pastEl.appendChild(ld);}
-        ld.textContent=isJa?'過去詳細を確認中…':'Checking past details…';
+        ld.innerHTML='<span class="mini-spinner"></span>'+(isJa?'過去詳細を確認中…':'Checking past details…');
         ld.style.display='block';
       }
       try{
@@ -6333,6 +6354,33 @@
       const rEl=document.getElementById('hall-reborn');rEl.textContent=reborn||'';rEl.style.display=reborn?'block':'none';
       document.getElementById('hall-modal').classList.add('open');
     }
+    // ===== 汎用：常時表示スクロールバー（タスク/X報酬/スクラッチ/図鑑） =====
+    // 対象が画面に出ている間、右端に細いバーを重ねて「下にまだ続きがある」ことを知らせる
+    function addFixedScrollbar(scrollEl){
+      if(!scrollEl||scrollEl.dataset.sb)return;
+      scrollEl.dataset.sb='1';
+      const track=document.createElement('div');track.className='auto-sb-track';
+      const thumb=document.createElement('div');thumb.className='auto-sb-thumb';
+      track.appendChild(thumb);document.body.appendChild(track);
+      const update=()=>{
+        const r=scrollEl.getBoundingClientRect();
+        const sh=scrollEl.scrollHeight,ch=scrollEl.clientHeight;
+        if(r.width<=0||r.height<=0||sh<=ch+2){track.style.display='none';return;}
+        track.style.display='block';
+        track.style.top=r.top+'px';
+        track.style.left=(r.right-9)+'px';
+        track.style.height=r.height+'px';
+        const th=Math.max(24,r.height*ch/sh);
+        const maxTop=r.height-th;
+        const t=(sh-ch)>0?(scrollEl.scrollTop/(sh-ch))*maxTop:0;
+        thumb.style.height=th+'px';
+        thumb.style.transform='translateY('+t+'px)';
+      };
+      scrollEl.addEventListener('scroll',update,{passive:true});
+      window.addEventListener('resize',update);
+      setInterval(update,500); // モーダルの開閉・内容変化にも追従
+      update();
+    }
     // ビル詳細の常時表示スクロールバー（下にまだ続きがある合図）
     function updateBuildingScrollbar(){
       const body=document.querySelector('.building-modal-body');
@@ -6533,40 +6581,74 @@
       const scaleX=MM_SIZE/rect.width,scaleY=MM_SIZE/rect.height;
       arcCamera.target=new BABYLON.Vector3((e.clientX-rect.left)*scaleX/MM_SIZE*MM_RANGE-MM_RANGE/2,0,(e.clientY-rect.top)*scaleY/MM_SIZE*MM_RANGE-MM_RANGE/2);
     }
-    function drawMinimap(){
-      if(!minimapVisible)return;
-      mmCtx.clearRect(0,0,MM_SIZE,MM_SIZE);
-      mmCtx.fillStyle='rgba(6,6,16,0.95)';mmCtx.fillRect(0,0,MM_SIZE,MM_SIZE);
-      mmCtx.strokeStyle='rgba(255,255,255,0.04)';mmCtx.lineWidth=0.5;
-      const step=CELL/MM_RANGE*MM_SIZE;
-      for(let i=0;i<MM_SIZE;i+=step){mmCtx.beginPath();mmCtx.moveTo(i,0);mmCtx.lineTo(i,MM_SIZE);mmCtx.stroke();mmCtx.beginPath();mmCtx.moveTo(0,i);mmCtx.lineTo(MM_SIZE,i);mmCtx.stroke();}
+    // ミニマップと全画面マップで共通の描画（SIZE=描画先キャンバスの内部解像度）
+    function renderMapCanvas(ctx,SIZE){
+      const R=MM_RANGE;
+      const w2=(wx,wz)=>({px:(wx+R/2)/R*SIZE,py:(wz+R/2)/R*SIZE});
+      ctx.clearRect(0,0,SIZE,SIZE);
+      ctx.fillStyle='rgba(6,6,16,0.95)';ctx.fillRect(0,0,SIZE,SIZE);
+      ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=Math.max(0.5,SIZE/560);
+      const step=CELL/R*SIZE;
+      for(let i=0;i<SIZE;i+=step){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,SIZE);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(SIZE,i);ctx.stroke();}
       Object.entries(landMap).forEach(([key,land])=>{
-        const{gx,gz}=keyToCoord(key);const{px,py}=worldToMM(gx,gz);const sz=step*0.85;
+        const{gx,gz}=keyToCoord(key);const{px,py}=w2(gx,gz);const sz=step*0.85;
         const isMe=currentUser&&land.owner_id===currentUser.id;const hasB=!!buildingMap[key];
         // 共鳴：自分と同じ「失ったもの」を選んだビルは同じ色（ピンク）で灯る
-        if(isMe&&hasB)mmCtx.fillStyle='rgba(255,80,80,0.75)';else if(isMe)mmCtx.fillStyle='rgba(255,140,0,0.7)';else if(resonanceSet.has(key))mmCtx.fillStyle='rgba(255,110,180,0.9)';else if(hasB)mmCtx.fillStyle='rgba(60,100,255,0.75)';else mmCtx.fillStyle='rgba(60,160,255,0.5)';
-        mmCtx.fillRect(px-sz/2,py-sz/2,sz,sz);
+        if(isMe&&hasB)ctx.fillStyle='rgba(255,80,80,0.75)';else if(isMe)ctx.fillStyle='rgba(255,140,0,0.7)';else if(resonanceSet.has(key))ctx.fillStyle='rgba(255,110,180,0.9)';else if(hasB)ctx.fillStyle='rgba(60,100,255,0.75)';else ctx.fillStyle='rgba(60,160,255,0.5)';
+        ctx.fillRect(px-sz/2,py-sz/2,sz,sz);
       });
       buildings.forEach(b=>{
         const key=b.landKey||landKey(b.x,b.z);if(landMap[key])return;
-        const{px,py}=worldToMM(b.x,b.z);
-        if(resonanceSet.has(key)){mmCtx.fillStyle='rgba(255,110,180,0.9)';}
-        else{const ci=getColorByEmployees(b.employees||0);mmCtx.fillStyle=`rgba(${Math.round(ci.r*255)},${Math.round(ci.g*255)},${Math.round(ci.b*255)},0.8)`;}
-        mmCtx.beginPath();mmCtx.arc(px,py,2.5,0,Math.PI*2);mmCtx.fill();
+        const{px,py}=w2(b.x,b.z);
+        if(resonanceSet.has(key)){ctx.fillStyle='rgba(255,110,180,0.9)';}
+        else{const ci=getColorByEmployees(b.employees||0);ctx.fillStyle=`rgba(${Math.round(ci.r*255)},${Math.round(ci.g*255)},${Math.round(ci.b*255)},0.8)`;}
+        ctx.beginPath();ctx.arc(px,py,Math.max(2.5,SIZE/110),0,Math.PI*2);ctx.fill();
       });
       const cam=scene.activeCamera;
       if(cam){
         const tx=cam.target?cam.target.x:(cam.position?cam.position.x:0);
         const tz=cam.target?cam.target.z:(cam.position?cam.position.z:0);
-        const{px,py}=worldToMM(tx,tz);
-        mmCtx.strokeStyle='rgba(255,255,255,0.9)';mmCtx.lineWidth=1.5;
-        mmCtx.beginPath();mmCtx.arc(px,py,5,0,Math.PI*2);mmCtx.stroke();
-        mmCtx.fillStyle='#fff';mmCtx.beginPath();mmCtx.arc(px,py,2,0,Math.PI*2);mmCtx.fill();
+        const{px,py}=w2(tx,tz);
+        ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=Math.max(1.5,SIZE/190);
+        ctx.beginPath();ctx.arc(px,py,Math.max(5,SIZE/56),0,Math.PI*2);ctx.stroke();
+        ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(px,py,Math.max(2,SIZE/140),0,Math.PI*2);ctx.fill();
       }
+    }
+    function drawMinimap(){
+      if(!minimapVisible)return;
+      renderMapCanvas(mmCtx,MM_SIZE);
       // 毎フレーム全再描画はカメラ操作がカクつく原因。約12fpsに間引く。
       clearTimeout(minimapTimer);
       if(scenePaused){minimapAnimId=null;return;}
       minimapTimer=setTimeout(()=>{if(minimapVisible)minimapAnimId=requestAnimationFrame(drawMinimap);},80);
+    }
+    // ===== 全画面マップ（ミニマップの⤢ボタンで開く） =====
+    let bigMapTimer=null;
+    function openBigMap(){
+      const ov=document.getElementById('bigmap-overlay');
+      if(!ov)return;
+      ov.classList.add('open');
+      const hint=document.getElementById('bigmap-hint');
+      if(hint)hint.textContent=currentLang==='ja'?'タップした場所へ移動（外側タップで閉じる）':'Tap to jump there (tap outside to close)';
+      const c=document.getElementById('bigmap-canvas');
+      const render=()=>renderMapCanvas(c.getContext('2d'),c.width);
+      render();
+      clearInterval(bigMapTimer);
+      bigMapTimer=setInterval(render,600);
+    }
+    function closeBigMap(){
+      const ov=document.getElementById('bigmap-overlay');
+      if(ov)ov.classList.remove('open');
+      clearInterval(bigMapTimer);
+    }
+    function bigmapClick(e){
+      e.stopPropagation();
+      const c=document.getElementById('bigmap-canvas');
+      const rect=c.getBoundingClientRect();
+      const x=(e.clientX-rect.left)/rect.width*MM_RANGE-MM_RANGE/2;
+      const z=(e.clientY-rect.top)/rect.height*MM_RANGE-MM_RANGE/2;
+      if(!isFlying&&window.BABYLON)arcCamera.target=new BABYLON.Vector3(x,0,z);
+      closeBigMap();
     }
     function hslToRgb(h,s,l){let r,g,b;if(s===0){r=g=b=l;}else{const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<0.5?l*(1+s):l+s-l*s;const p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return{r,g,b};}
     const animatedBuildingMats=new Map();
@@ -6809,7 +6891,8 @@
           subscribeCandleRealtime();
           ensureRevealData().catch(()=>{}); // 名前モザイク用データ（無課金1位/表示設定）を先読み
           loadResonanceMap().catch(()=>{});   // 共鳴マップ（同じ痛みのビルをミニマップで同色に）
-          loadCityDawn().catch(()=>{});       // 夜明けイベント状態＋HUD＋記念碑
+          buildDawnMonument();                // 夜明けの記念碑（SQL未適用でも0回で建てる）
+          loadCityDawn().catch(()=>{});       // 夜明けイベント状態＋HUD＋記念碑更新
           loadMonthlyHall().catch(()=>{});    // 再生の殿堂（中央上空の金の星）
           notifyMyCandleReplies().catch(()=>{}); // 蝋燭への返事の未読通知
           claimWeeklyQuest().catch(()=>{});   // 週間共同クエストの達成受け取り
@@ -7093,6 +7176,8 @@
     initAdCarousel();
     switchTab('login');
     setupAuthListener();
+    // タスク/X報酬/ビルスクラッチ/図鑑に常時スクロールバーを付ける
+    ['task-panel','x-rewards-body','gacha-box','zukan-body'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
     __ignisStatus('5) Loading data...');
     (async()=>{
       const mobile=isCoarseMobile();

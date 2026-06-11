@@ -129,6 +129,25 @@ Deno.serve(async (req) => {
         await admin.from("creator_posts").update({ reposts_synced_at: new Date().toISOString() }).eq("tweet_id", tweetId);
       } catch (e) { console.warn("reposts", tweetId, String(e)); }
 
+      // ---- 2a') 引用リポスト（quote_tweets）も「リポスト」として記録 ----
+      try {
+        let pageToken: string | undefined;
+        for (let i = 0; i < MAX_PAGES; i++) {
+          let p = `/tweets/${tweetId}/quote_tweets?max_results=100&expansions=author_id&user.fields=username`;
+          if (pageToken) p += `&pagination_token=${pageToken}`;
+          const r = await xGet(p, TOKEN);
+          const usersById = new Map<string, string>();
+          for (const us of (r?.includes?.users || [])) usersById.set(us.id, us.username);
+          for (const tw of (r?.data || [])) {
+            if (tw.author_id === creatorId) continue; // 本人の自己引用は除外
+            const uname = usersById.get(tw.author_id);
+            if (uname) await recordEngagement(uname, tw.author_id, tweetId, "repost");
+          }
+          pageToken = r?.meta?.next_token;
+          if (!pageToken) break;
+        }
+      } catch (e) { console.warn("quotes", tweetId, String(e)); }
+
       // ---- 2b) リプライ（search/recent + since_id で新着のみ） ----
       try {
         const prevSince = (post as any).last_reply_since_id as string | null;

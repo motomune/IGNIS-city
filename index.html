@@ -703,10 +703,11 @@
     #minimap-wrap { position:fixed;bottom:90px;left:16px;z-index:10;pointer-events:all; }
     #minimap-canvas { width:140px;height:140px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(6,6,16,0.9);box-shadow:0 4px 20px rgba(0,0,0,0.5);cursor:pointer;display:block; }
     #minimap-label { font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:0.12em;margin-top:4px;text-transform:uppercase; }
+    /* ×ボタン：ミニマップの右上の角（内側）に重ねる */
     #minimap-toggle {
-      position:absolute;top:-10px;right:-10px;width:34px;height:34px;padding:0;border-radius:10px;
-      background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);color:#fff;
-      font-size:22px;font-weight:400;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      position:absolute;top:3px;right:3px;width:26px;height:26px;padding:0;border-radius:8px;
+      background:rgba(6,6,16,0.75);border:1px solid rgba(255,255,255,0.3);color:#fff;
+      font-size:17px;font-weight:400;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
       transition:all 0.2s;box-shadow:0 2px 10px rgba(0,0,0,0.45);z-index:2;
     }
     #minimap-toggle:hover { background:rgba(255,255,255,0.2);color:#fff; }
@@ -974,16 +975,24 @@
     #bigmap-overlay.open { display:flex; }
     #bigmap-canvas { width:min(92vw,78vh);height:min(92vw,78vh);border-radius:14px;border:1px solid rgba(255,255,255,0.22);background:rgba(6,6,16,0.95);cursor:pointer; }
     #bigmap-hint { font-size:11px;color:rgba(255,255,255,0.6); }
+    /* 拡大ボタン：ミニマップの左上の角（内側）に重ねる */
     #minimap-expand {
-      position:absolute;top:-10px;left:-10px;width:34px;height:34px;padding:0;border-radius:10px;
-      background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);color:#fff;
-      font-size:17px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      position:absolute;top:3px;left:3px;width:26px;height:26px;padding:0;border-radius:8px;
+      background:rgba(6,6,16,0.75);border:1px solid rgba(255,255,255,0.3);color:#fff;
+      font-size:14px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;
     }
     #minimap-expand:hover { background:rgba(255,255,255,0.24); }
-    /* 街の共同目標HUD（夜明けカウントダウン＋週間クエスト） */
-    #city-goals { margin-bottom:6px;background:rgba(6,6,16,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:6px 9px;font-size:10px;line-height:1.7;max-width:170px; }
+    /* 街の共同目標HUD（夜明けカウントダウン＋週間クエスト）
+       広告・X名/ログアウト・ミニマップと被らない「画面上部の中央」に固定（横1列のピル型） */
+    #city-goals { position:fixed;top:max(8px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);
+      display:flex;flex-direction:row;align-items:center;gap:14px;white-space:nowrap;
+      background:rgba(6,6,16,0.85);border:1px solid rgba(255,255,255,0.14);border-radius:999px;
+      padding:5px 16px;font-size:11px;line-height:1.5;z-index:12;pointer-events:none; }
     #dawn-goal-line { color:#ffab66;font-weight:700; }
     #weekly-goal-line { color:#9ecbff;font-weight:700; }
+    @media (orientation: landscape) and (max-height: 500px) {
+      #city-goals { font-size:10px;padding:4px 12px;gap:10px; }
+    }
     /* 蝋燭をくれた人一覧＋定型文返事 */
     #candle-givers { margin:8px 0 4px;display:flex;flex-direction:column;gap:6px; }
     .cg-row { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 10px;font-size:12px;color:rgba(255,255,255,0.85); }
@@ -1039,7 +1048,8 @@
         bottom: calc(108px + 116px + 14px + env(safe-area-inset-bottom, 0px));
         z-index: 14;
       }
-      #minimap-toggle { min-width: 34px; height: 34px; font-size: 13px; top: -12px; right: -12px; }
+      #minimap-toggle { min-width: 26px; width: 26px; height: 26px; font-size: 13px; top: 3px; right: 3px; }
+      #minimap-expand { width: 26px; height: 26px; font-size: 12px; top: 3px; left: 3px; }
       #header-util-primary { gap: 5px; }
       #lang-btn, #sound-toggle, #x-rewards-btn { padding: 6px 10px; font-size: 11px; min-height: 36px; }
       #login-btn-header, .header-action-btn, #logged-in-area > button {
@@ -1377,11 +1387,11 @@
     <div id="notice-list"></div>
     <div id="notice-empty">通知はまだありません</div>
   </div>
+  <div id="city-goals" style="display:none;">
+    <div id="dawn-goal-line"></div>
+    <div id="weekly-goal-line"></div>
+  </div>
   <div id="minimap-wrap">
-    <div id="city-goals" style="display:none;">
-      <div id="dawn-goal-line"></div>
-      <div id="weekly-goal-line"></div>
-    </div>
     <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button" aria-label="Close minimap">×</button>
     <button id="minimap-expand" onclick="openBigMap()" title="地図を大きく表示" type="button" aria-label="Expand map">⤢</button>
     <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
@@ -1803,7 +1813,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-12-v124';
+    const IGNIS_BUILD='2026-06-12-v125';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6367,11 +6377,12 @@
     }
     // ===== 汎用：常時表示スクロールバー（タスク/X報酬/スクラッチ/図鑑） =====
     // 対象が画面に出ている間、右端に細いバーを重ねて「下にまだ続きがある」ことを知らせる
-    function addFixedScrollbar(scrollEl){
+    function addFixedScrollbar(scrollEl,thumbColor){
       if(!scrollEl||scrollEl.dataset.sb)return;
       scrollEl.dataset.sb='1';
       const track=document.createElement('div');track.className='auto-sb-track';
       const thumb=document.createElement('div');thumb.className='auto-sb-thumb';
+      if(thumbColor)thumb.style.background=thumbColor; // 画面ごとに色を変えられる（X報酬は水色）
       track.appendChild(thumb);document.body.appendChild(track);
       const update=()=>{
         const r=scrollEl.getBoundingClientRect();
@@ -7192,8 +7203,9 @@
     initAdCarousel();
     switchTab('login');
     setupAuthListener();
-    // タスク/X報酬/ビルスクラッチ/図鑑に常時スクロールバーを付ける
-    ['task-panel','x-rewards-body','gacha-box','zukan-body'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
+    // タスク/X報酬/ビルスクラッチ/図鑑に常時スクロールバーを付ける（X報酬は水色）
+    addFixedScrollbar(document.getElementById('x-rewards-body'),'rgba(125,216,255,0.85)');
+    ['task-panel','gacha-box','zukan-body'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
     // 画面右下にビルド番号（サポート用：どの版が動いているか一目で分かる）
     {const bb=document.getElementById('build-badge');if(bb)bb.textContent=IGNIS_BUILD.replace(/^\d{4}-\d{2}-\d{2}-/,'');}
     // ===== 自動アップデート =====

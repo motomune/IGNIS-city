@@ -1799,7 +1799,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-12-v122';
+    const IGNIS_BUILD='2026-06-12-v123';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3656,21 +3656,17 @@
         row.id='task-row-'+task.type;
         if(task.type==='share_reply'||task.type==='share_repost'){
           const isReply=task.type==='share_reply';
-          if(latestCreatorPost){
-            // 創設者の最新投稿へのリプライ／リポスト（引用含む）。判定は share-sync が記録
-            row.innerHTML=`<span class="task-status">⬜</span>`+
-              `<span class="task-label">${isJa?task.label:task.labelEn}`+
-                (isReply
-                  ?`<button class="share-act-btn" onclick="openShareReply()">💬 ${isJa?'リプライ':'Reply'}</button>`
-                  :`<button class="share-act-btn" onclick="openShareRepost()">🔁 ${isJa?'リポスト':'Repost'}</button>`)+
-                `<a class="share-view-link" href="${latestCreatorPost.url}" target="_blank" rel="noopener">${isJa?'投稿を見る':'View post'}</a>`+
-                `<span class="share-note">${isJa?'達成は最大12時間以内に反映されます':'Completion reflects within ~12h'}</span>`+
-              `</span>`+
-              `<span class="task-reward">+${task.reward}</span>`;
-          }else{
-            // フォールバック（creator_posts 未取得時）：従来のシェア
-            row.innerHTML=`<span class="task-status">⬜</span><span class="task-label" style="cursor:pointer;color:#1d9bf0;text-decoration:underline;" onclick="handleShare()">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
-          }
+          // 投稿が取得できていなくても、ボタンは常に「創設者のXプロフィール」を開く
+          //（以前はここで旧シェア投稿画面にフォールバックしていたのを廃止）
+          row.innerHTML=`<span class="task-status">⬜</span>`+
+            `<span class="task-label">${isJa?task.label:task.labelEn}`+
+              (isReply
+                ?`<button class="share-act-btn" onclick="openShareReply()">💬 ${isJa?'リプライ':'Reply'}</button>`
+                :`<button class="share-act-btn" onclick="openShareRepost()">🔁 ${isJa?'リポスト':'Repost'}</button>`)+
+              (latestCreatorPost?`<a class="share-view-link" href="${latestCreatorPost.url}" target="_blank" rel="noopener">${isJa?'投稿を見る':'View post'}</a>`:'')+
+              `<span class="share-note">${isJa?'達成は最大12時間以内に反映されます':'Completion reflects within ~12h'}</span>`+
+            `</span>`+
+            `<span class="task-reward">+${task.reward}</span>`;
         }else{
           row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
         }
@@ -6376,11 +6372,16 @@
       const update=()=>{
         const r=scrollEl.getBoundingClientRect();
         const sh=scrollEl.scrollHeight,ch=scrollEl.clientHeight;
-        if(r.width<=0||r.height<=0||sh<=ch+2){track.style.display='none';return;}
+        if(r.width<=0||r.height<=0){track.style.display='none';return;} // 画面に出ていない時だけ隠す
         track.style.display='block';
         track.style.top=r.top+'px';
         track.style.left=(r.right-9)+'px';
         track.style.height=r.height+'px';
+        if(sh<=ch+2){ // スクロール不要：バー全長＝「下に続きは無い」の合図（常時表示）
+          thumb.style.height=r.height+'px';
+          thumb.style.transform='translateY(0)';
+          return;
+        }
         const th=Math.max(24,r.height*ch/sh);
         const maxTop=r.height-th;
         const t=(sh-ch)>0?(scrollEl.scrollTop/(sh-ch))*maxTop:0;

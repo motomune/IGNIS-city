@@ -946,6 +946,26 @@
     #building-modal-past { margin:12px 0;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;display:none; }
     .bm-past-text { font-size:13px;line-height:1.75;color:rgba(255,255,255,0.82);white-space:pre-wrap;word-break:break-word; }
     .bm-past-title { font-size:11px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
+    /* 蝋燭をくれた人一覧＋定型文返事 */
+    #candle-givers { margin:8px 0 4px;display:flex;flex-direction:column;gap:6px; }
+    .cg-row { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 10px;font-size:12px;color:rgba(255,255,255,0.85); }
+    .cg-name { font-weight:700; }
+    .cg-when { opacity:0.5;font-size:10px;margin-left:6px; }
+    .cg-hint { margin-top:4px;font-size:11px;color:rgba(255,255,255,0.5); }
+    .cg-replied { color:#ffd54f;font-size:11px;margin-top:3px; }
+    .cg-phrases { display:flex;flex-wrap:wrap;gap:6px;margin-top:6px; }
+    .cg-phrase-btn { background:linear-gradient(135deg,#ff8a3d,#ff5722);border:none;color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer; }
+    .cg-phrase-btn:active { transform:scale(0.96); }
+    /* 再生の殿堂モーダル */
+    #hall-modal { position:fixed;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;z-index:60; }
+    #hall-modal.open { display:flex; }
+    #hall-box { position:relative;width:min(420px,90vw);max-height:80vh;overflow-y:auto;background:linear-gradient(160deg,#241c06,#120d02);border:1px solid rgba(255,200,60,0.45);border-radius:16px;padding:22px;box-shadow:0 10px 50px rgba(255,180,0,0.25); }
+    #hall-close { position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer; }
+    #hall-title { font-size:16px;font-weight:900;color:#ffd54f;margin-bottom:6px; }
+    #hall-sub { font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:12px; }
+    #hall-motto { font-size:14px;font-weight:700;color:#fff;margin-bottom:12px;line-height:1.6; }
+    #hall-reborn-label { font-size:11px;font-weight:800;color:#ffab40;margin-bottom:4px; }
+    #hall-reborn { font-size:12px;color:rgba(255,255,255,0.85);line-height:1.7;white-space:pre-wrap; }
     .bm-past-label { font-size:11px;font-weight:800;color:#ff8a3d;margin:8px 0 4px; }
     .bm-past-chips { display:flex;flex-wrap:wrap;gap:5px; }
     .bm-past-chip { font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.75); }
@@ -1344,6 +1364,7 @@
         <button id="candle-btn" type="button" onclick="toggleCandle()">🕯️ 蝋燭を灯す</button>
         <span id="candle-count" title="このビルに灯された蝋燭の数">🕯️ 0</span>
       </div>
+      <div id="candle-givers" style="display:none;"></div>
       <div id="building-modal-motto"></div>
       <div id="building-modal-past">
         <div class="bm-past-title">📖 過去詳細 <span id="bm-past-status" class="motto-pending-badge" style="display:none;"></span></div>
@@ -1420,6 +1441,16 @@
         <div id="staff-term-info">—</div>
         <button id="staff-extend-btn" type="button" onclick="handleExtendStaffTerms()">任期を3か月延長（5コイン/人）</button>
       </div>
+    </div>
+  </div>
+  <div id="hall-modal">
+    <div id="hall-box">
+      <button id="hall-close" type="button" onclick="document.getElementById('hall-modal').classList.remove('open')">×</button>
+      <div id="hall-title"></div>
+      <div id="hall-sub"></div>
+      <div id="hall-motto"></div>
+      <div id="hall-reborn-label"></div>
+      <div id="hall-reborn"></div>
     </div>
   </div>
   <div id="hire-stamp-overlay" aria-hidden="true">
@@ -1718,7 +1749,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-11-v118';
+    const IGNIS_BUILD='2026-06-11-v119';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3318,6 +3349,8 @@
       updateViewTaskProgressLabel();
       // 壁の格言：言語に合わせて即再描画（英訳はDBの motto_text_en を使用）
       if(typeof applyApprovedMottosToScene==='function')applyApprovedMottosToScene();
+      // 承認・翻訳がこのページを開いた後に行われていても拾えるよう、キャッシュをDBから取り直してから再描画
+      if(typeof loadApprovedProfiles==='function')loadApprovedProfiles().catch(()=>{});
       // 開いているビル詳細モーダルの格言・過去詳細も新しい言語で出し直す
       if(typeof refreshBuildingModalLang==='function')refreshBuildingModalLang();
     }
@@ -4321,9 +4354,15 @@
         if(cardEl){cardEl.disabled=false;cardEl.classList.remove('placing');}
       }finally{placeBusy=false;}
     }
+    // 中央保護区（再生の殿堂エリア）：中央(0,0)から周囲2マス＝|x|,|z|<=20 は新規購入不可
+    function isReservedZone(gx,gz){return Math.abs(gx)<=20&&Math.abs(gz)<=20;}
     async function handleLandBuy(){
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
+      if(isReservedZone(gx,gz)){
+        showToast(currentLang==='ja'?'⛔ 中央エリアは「再生の殿堂」用に保護されています':'⛔ The central area is reserved for the Hall of Rebirth');
+        return;
+      }
       const buyBtn=document.getElementById('land-buy-btn');
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
@@ -4348,7 +4387,9 @@
         await completeTask('get_land');
         showToast(`🏡 土地を取得！（-${LAND_COST}コイン）`);openLandPanel(gx,gz);
       }catch(e){
-        console.warn('land buy error:',e.message);showToast('取得に失敗しました: '+e.message);
+        console.warn('land buy error:',e.message);
+        if(String(e.message||'').includes('reserved_zone'))showToast(currentLang==='ja'?'⛔ 中央エリアは「再生の殿堂」用に保護されています':'⛔ The central area is reserved for the Hall of Rebirth');
+        else showToast('取得に失敗しました: '+e.message);
         buyBtn.disabled=false;
         buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
       }
@@ -5900,6 +5941,9 @@
         }
       }catch(e){/* テーブル未作成等は0表示 */}
       renderCandleUI();
+      // 自分のビルなら「誰が灯してくれたか＋返事」一覧を表示
+      if(isOwn&&candleState.count>0)loadCandleGivers(bx,bz);
+      else{const w=document.getElementById('candle-givers');if(w){w.style.display='none';w.innerHTML='';}}
     }
     function renderCandleUI(){
       const wrap=document.getElementById('building-candle');
@@ -5939,6 +5983,14 @@
           }else{
             showToast(isJa?'蝋燭を消しました':'Candle removed');
           }
+          // この1本で夜明けの基準に到達 → 24時間の夜明け開始
+          if(data.lit&&data.dawn_started){
+            setTimeout(()=>{
+              applyDawnSky(true);
+              loadCityDawn().catch(()=>{});
+              showToast(isJa?'🌅 蝋燭が基準に達した！街に夜明けが来ました（24時間）':'🌅 The candles reached the goal — dawn breaks over the city! (24h)');
+            },2200);
+          }
         }else{
           const r=data&&data.reason;
           if(r==='own_building')showToast(isJa?'自分のビルには灯せません':'You can\'t candle your own building');
@@ -5948,6 +6000,165 @@
         }
       }catch(e){console.warn('toggleCandle',e.message);showToast(isJa?'エラーが発生しました':'Error');}
       finally{if(btn)btn.disabled=false;}
+    }
+    // ===== 蝋燭への返事（オーナーが定型文で返す。受けた側は従業員+1／日1回）=====
+    const CANDLE_PHRASES={
+      thanks:{ja:'ありがとう',en:'Thank you'},
+      not_alone:{ja:'あなたも一人じゃない',en:'You are not alone either'},
+      warmth:{ja:'あたたかさが届きました',en:'Your warmth reached me'},
+      keep_going:{ja:'お互い、前へ',en:'Keep moving forward, together'}
+    };
+    async function loadCandleGivers(bx,bz){
+      const wrap=document.getElementById('candle-givers');
+      if(!wrap)return;
+      wrap.style.display='none';wrap.innerHTML='';
+      if(!currentUser)return;
+      try{
+        const{data,error}=await db.rpc('get_candle_givers',{bx,bz});
+        if(error||!Array.isArray(data)||!data.length)return;
+        const isJa=currentLang==='ja';
+        wrap.innerHTML=data.map(g=>{
+          const handle=g.x_username||'';
+          const reveal=handle&&g.is_subscribed&&g.show_x_username!==false;
+          const name=reveal?'@'+escapeAttr(handle):(handle?maskName(handle):(isJa?'匿名':'Anonymous'));
+          const when=g.lit_at?new Date(g.lit_at).toLocaleDateString():'';
+          if(g.replied){
+            const ph=CANDLE_PHRASES[g.phrase];
+            return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-replied">✓ ${isJa?'返事済み':'Replied'}：「${ph?(isJa?ph.ja:ph.en):''}」</div></div>`;
+          }
+          const btns=Object.entries(CANDLE_PHRASES).map(([k,v])=>`<button class="cg-phrase-btn" onclick="replyCandle('${g.giver_id}','${k}')">${isJa?v.ja:v.en}</button>`).join('');
+          return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-hint">${isJa?'定型文で返事できます（相手に従業員+1）':'Send a reply (they get +1 staff)'}</div><div class="cg-phrases">${btns}</div></div>`;
+        }).join('');
+        wrap.style.display='flex';
+      }catch(e){console.warn('candle givers',e.message);}
+    }
+    function escapeAttr(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+    async function replyCandle(giverId,phrase){
+      if(!currentUser||candleState.x===null)return;
+      const isJa=currentLang==='ja';
+      try{
+        const{data,error}=await db.rpc('reply_to_candle',{bx:candleState.x,bz:candleState.z,p_giver:giverId,p_phrase:phrase});
+        if(error)throw error;
+        if(data&&data.ok){
+          showToast(isJa?'💌 返事を送りました':'💌 Reply sent');
+          loadCandleGivers(candleState.x,candleState.z);
+        }else{
+          const r=data&&data.reason;
+          if(r==='already_replied')showToast(isJa?'この方には返事済みです':'Already replied');
+          else showToast(isJa?'返事を送れませんでした':'Could not send reply');
+        }
+      }catch(e){console.warn('replyCandle',e.message);showToast(isJa?'エラーが発生しました':'Error');}
+    }
+    // ログイン時：自分宛て（蝋燭をあげた人）の未読返事を知らせる
+    async function notifyMyCandleReplies(){
+      if(!db||!currentUser)return;
+      try{
+        const{data,error}=await db.rpc('get_my_candle_replies');
+        if(error||!Array.isArray(data)||!data.length)return;
+        const isJa=currentLang==='ja';
+        const ph=CANDLE_PHRASES[data[0].phrase];
+        const first=ph?(isJa?ph.ja:ph.en):'';
+        const more=data.length>1?(isJa?` ほか${data.length-1}件`:` +${data.length-1} more`):'';
+        showToast((isJa?`💌 蝋燭への返事が届きました：「${first}」`:`💌 Reply to your candle: "${first}"`)+more);
+        if(typeof refreshEmployeeHeader==='function')refreshEmployeeHeader();
+      }catch(e){/* 未適用なら無視 */}
+    }
+    // ===== 共鳴マップ：自分と同じ「失ったもの」を選んだビルをミニマップで同色表示 =====
+    let resonanceSet=new Set();
+    async function loadResonanceMap(){
+      if(!db||!currentUser)return;
+      try{
+        const{data:mine}=await db.from('building_past_details').select('lost_items').eq('user_id',currentUser.id);
+        const myLost=new Set();
+        (mine||[]).forEach(r=>(r.lost_items||[]).forEach(v=>{if(!String(v).startsWith('other'))myLost.add(v);}));
+        if(!myLost.size){resonanceSet=new Set();return;}
+        const{data:rows,error}=await db.rpc('get_resonance_map');
+        if(error)throw error;
+        const next=new Set();
+        (rows||[]).forEach(r=>{
+          const key=landKey(r.x,r.z);
+          const land=landMap[key];
+          if(land&&land.owner_id===currentUser.id)return; // 自分のビルは対象外
+          if((r.lost||[]).some(v=>myLost.has(v)))next.add(key);
+        });
+        resonanceSet=next;
+      }catch(e){/* RPC未適用なら無視 */}
+    }
+    // ===== 夜明けイベント：蝋燭の合計が基準に達すると24時間だけ空が朝焼けに =====
+    let dawnTimer=null,isDawnActive=false;
+    function applyDawnSky(on){
+      if(!window.BABYLON||!scene)return;
+      isDawnActive=!!on;
+      if(on){
+        scene.clearColor=new BABYLON.Color4(0.14,0.075,0.115,1);
+        scene.fogColor=new BABYLON.Color3(0.42,0.20,0.19);
+        hemiLight.intensity=0.78;dirLight.intensity=0.95;
+        hemiLight.diffuse=new BABYLON.Color3(1.0,0.82,0.7);
+        dirLight.diffuse=new BABYLON.Color3(1.0,0.62,0.42);
+      }else{
+        scene.clearColor=new BABYLON.Color4(0.04,0.04,0.06,1);
+        scene.fogColor=new BABYLON.Color3(0.04,0.04,0.06);
+        hemiLight.intensity=0.6;dirLight.intensity=0.8;
+        hemiLight.diffuse=new BABYLON.Color3(1,1,1);
+        dirLight.diffuse=new BABYLON.Color3(1,1,1);
+      }
+    }
+    async function loadCityDawn(){
+      if(!db||!currentUser)return null;
+      try{
+        const{data,error}=await db.rpc('get_city_dawn');
+        if(error)throw error;
+        if(!data)return null;
+        clearTimeout(dawnTimer);
+        if(data.is_dawn&&data.dawn_until){
+          applyDawnSky(true);
+          const remain=new Date(data.dawn_until).getTime()-Date.now();
+          if(remain>0)dawnTimer=setTimeout(()=>{
+            applyDawnSky(false);
+            showToast(currentLang==='ja'?'🌃 街に夜が戻りました。また皆で夜明けを目指そう':'🌃 Night returns. Toward the next dawn, together.');
+          },Math.min(remain,86400000));
+        }else{
+          applyDawnSky(false);
+        }
+        return data;
+      }catch(e){return null;/* RPC未適用なら通常の夜のまま */}
+    }
+    // ===== 再生の殿堂：当月最多蝋燭のビルを中央上空の金の星として掲げる =====
+    let hallData=null,hallMesh=null,_hallSpinObs=null;
+    async function loadMonthlyHall(){
+      if(!db||!currentUser||!window.BABYLON)return;
+      try{
+        const{data,error}=await db.rpc('get_monthly_hall');
+        if(error)throw error;
+        hallData=data||null;
+        if(hallMesh){hallMesh.dispose();hallMesh=null;}
+        if(!hallData||(!hallData.motto&&!hallData.reborn))return;
+        const mat=new BABYLON.StandardMaterial('hallMat',scene);
+        mat.diffuseColor=new BABYLON.Color3(0.95,0.8,0.1);
+        mat.emissiveColor=new BABYLON.Color3(0.6,0.45,0.05);
+        mat.specularColor=new BABYLON.Color3(0,0,0);
+        hallMesh=BABYLON.MeshBuilder.CreatePolyhedron('hall_star',{type:1,size:2.6},scene);
+        hallMesh.position=new BABYLON.Vector3(0,42,0);
+        hallMesh.material=mat;
+        hallMesh.isPickable=true;
+        animatedBuildingMats.set('hall_star',{mat,type:'gold'});
+        if(typeof ensureBuildingAnimation==='function')ensureBuildingAnimation();
+        if(!_hallSpinObs)_hallSpinObs=scene.onBeforeRenderObservable.add(()=>{if(hallMesh&&!hallMesh.isDisposed())hallMesh.rotation.y+=0.004;});
+      }catch(e){/* RPC未適用なら表示なし */}
+    }
+    function openHallModal(){
+      if(!hallData)return;
+      const isJa=currentLang==='ja';
+      const motto=(!isJa&&hallData.motto_en)?hallData.motto_en:hallData.motto;
+      const reborn=(!isJa&&hallData.reborn_en)?hallData.reborn_en:hallData.reborn;
+      document.getElementById('hall-title').textContent=isJa?'🌟 今月の再生の殿堂':'🌟 Hall of Rebirth — This Month';
+      document.getElementById('hall-sub').textContent=isJa?`今月最も多くの蝋燭が灯ったビル（🕯️ ${hallData.candles}本）`:`Most candles lit this month (🕯️ ${hallData.candles})`;
+      const mEl=document.getElementById('hall-motto');mEl.textContent=motto?('💬 '+motto):'';mEl.style.display=motto?'block':'none';
+      const rl=document.getElementById('hall-reborn-label');
+      rl.textContent=isJa?'⑥ もし生まれ変わったら、どう気をつけたいか':'⑥ If reborn, how to be careful';
+      rl.style.display=reborn?'block':'none';
+      const rEl=document.getElementById('hall-reborn');rEl.textContent=reborn||'';rEl.style.display=reborn?'block':'none';
+      document.getElementById('hall-modal').classList.add('open');
     }
     // ビル詳細の常時表示スクロールバー（下にまだ続きがある合図）
     function updateBuildingScrollbar(){
@@ -6159,13 +6370,15 @@
       Object.entries(landMap).forEach(([key,land])=>{
         const{gx,gz}=keyToCoord(key);const{px,py}=worldToMM(gx,gz);const sz=step*0.85;
         const isMe=currentUser&&land.owner_id===currentUser.id;const hasB=!!buildingMap[key];
-        if(isMe&&hasB)mmCtx.fillStyle='rgba(255,80,80,0.75)';else if(isMe)mmCtx.fillStyle='rgba(255,140,0,0.7)';else if(hasB)mmCtx.fillStyle='rgba(60,100,255,0.75)';else mmCtx.fillStyle='rgba(60,160,255,0.5)';
+        // 共鳴：自分と同じ「失ったもの」を選んだビルは同じ色（ピンク）で灯る
+        if(isMe&&hasB)mmCtx.fillStyle='rgba(255,80,80,0.75)';else if(isMe)mmCtx.fillStyle='rgba(255,140,0,0.7)';else if(resonanceSet.has(key))mmCtx.fillStyle='rgba(255,110,180,0.9)';else if(hasB)mmCtx.fillStyle='rgba(60,100,255,0.75)';else mmCtx.fillStyle='rgba(60,160,255,0.5)';
         mmCtx.fillRect(px-sz/2,py-sz/2,sz,sz);
       });
       buildings.forEach(b=>{
         const key=b.landKey||landKey(b.x,b.z);if(landMap[key])return;
-        const{px,py}=worldToMM(b.x,b.z);const ci=getColorByEmployees(b.employees||0);
-        mmCtx.fillStyle=`rgba(${Math.round(ci.r*255)},${Math.round(ci.g*255)},${Math.round(ci.b*255)},0.8)`;
+        const{px,py}=worldToMM(b.x,b.z);
+        if(resonanceSet.has(key)){mmCtx.fillStyle='rgba(255,110,180,0.9)';}
+        else{const ci=getColorByEmployees(b.employees||0);mmCtx.fillStyle=`rgba(${Math.round(ci.r*255)},${Math.round(ci.g*255)},${Math.round(ci.b*255)},0.8)`;}
         mmCtx.beginPath();mmCtx.arc(px,py,2.5,0,Math.PI*2);mmCtx.fill();
       });
       const cam=scene.activeCamera;
@@ -6422,6 +6635,10 @@
           loadMyCandleCount().catch(()=>{});
           subscribeCandleRealtime();
           ensureRevealData().catch(()=>{}); // 名前モザイク用データ（無課金1位/表示設定）を先読み
+          loadResonanceMap().catch(()=>{});   // 共鳴マップ（同じ痛みのビルをミニマップで同色に）
+          loadCityDawn().catch(()=>{});       // 夜明けイベント状態
+          loadMonthlyHall().catch(()=>{});    // 再生の殿堂（中央上空の金の星）
+          notifyMyCandleReplies().catch(()=>{}); // 蝋燭への返事の未読通知
           drawMinimap();
         })(),isCoarseMobile()?9000:12000,'bootstrapLoad');
       }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}
@@ -6434,6 +6651,7 @@
       if(isFlying&&!pendingBuildMode)return;
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
+      if(pick.pickedMesh.name==='hall_star'){openHallModal();return;} // 再生の殿堂の星
       if(pick.pickedMesh.name.startsWith('b_')){
         let bData=buildings.find(b=>b.mesh===pick.pickedMesh);
         if(!bData&&pick.pickedMesh.metadata&&pick.pickedMesh.metadata.landKey){

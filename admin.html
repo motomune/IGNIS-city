@@ -271,7 +271,111 @@
       const filtered=profiles.filter(p=>p._reviewState===currentTab);
       const container=document.getElementById('list-container');
       if(!filtered.length){container.innerHTML=`<div class="empty">該当する申請はありません</div>`;return;}
-      container.innerHTML='<div class="list">'+filtered.map(p=>renderCard(p)).join('')+'</div>';
+      let html='';
+      if(currentTab==='pending'){
+        // 同じビルの「格言」と「過去詳細」が両方審査待ちなら、1枚のカードにまとめて一括承認できるようにする
+        const byKey={};const order=[];
+        filtered.forEach(p=>{const k=`${p.building_x}_${p.building_z}`;if(!byKey[k]){byKey[k]=[];order.push(k);}byKey[k].push(p);});
+        html=order.map(k=>{
+          const items=byKey[k];
+          const motto=items.find(p=>p._type==='motto');
+          const past=items.find(p=>p._type==='past');
+          if(motto&&past)return renderComboCard(motto,past);
+          return items.map(p=>renderCard(p)).join('');
+        }).join('');
+      }else{
+        html=filtered.map(p=>renderCard(p)).join('');
+      }
+      container.innerHTML='<div class="list">'+html+'</div>';
+    }
+
+    // 格言＋過去詳細をひとつの申請として表示するカード
+    function renderComboCard(m,past){
+      const star=getStarByFloors(m._floors);
+      const icon=BUILDING_ICONS[star]||'🏢';
+      const u=m.users||{};
+      const xName=u.x_username||'';
+      const ownerHtml=xName?`<a href="https://x.com/${encodeURIComponent(xName)}" target="_blank" rel="noopener">@${xName}</a>`:(u.username||'(unknown)');
+      let mottoBody='';
+      if(m._isEdit){
+        mottoBody=`
+          <div class="past-section">現在の格言（壁に表示中）</div>
+          <div class="motto-text ${rankClass(star)}" style="opacity:0.6;">💬 ${escapeHtml(m.motto_text||'')}</div>
+          <div class="past-section" style="margin-top:8px;color:#ffab40;">修正後（承認待ち）</div>
+          <div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(m.pending_motto_text||'')}</div>`;
+      }else{
+        mottoBody=m.motto_text
+          ?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(m.motto_text)}</div>`
+          :'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+      }
+      const pastBody=`
+        <div class="past-section" style="margin-top:10px;">① 失ったもの</div><div class="chip-row">${chipsHtml(past.lost_items)}</div>
+        <div class="past-section" style="margin-top:8px;">② 得たもの・得ようとしているもの</div><div class="chip-row">${chipsHtml(past.gained_items)}</div>
+        ${past.background_detail?`<div class="past-section" style="margin-top:8px;">③ 出来事が起きるまでの背景と経緯</div><div class="past-text">${escapeHtml(past.background_detail)}</div>`:''}
+        ${past.how_handled?`<div class="past-section" style="margin-top:8px;">④ 自身の対応</div><div class="past-text">${escapeHtml(past.how_handled)}</div>`:''}
+        ${past.what_happened_after?`<div class="past-section" style="margin-top:8px;">⑤ どうなったか</div><div class="past-text">${escapeHtml(past.what_happened_after)}</div>`:''}
+        ${past.journey_to_now?`<div class="past-section" style="margin-top:8px;">⑥ もし生まれ変わったら、どう気をつけたいか</div><div class="past-text">${escapeHtml(past.journey_to_now)}</div>`:''}`;
+      const newest=new Date(m.created_at)>new Date(past.created_at)?m.created_at:past.created_at;
+      return `
+        <div class="card pending">
+          <div class="rank-icon" title="${STAR_LABELS[star]}">${icon}</div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="owner">👤 ${ownerHtml}</span>
+              <span class="type-badge motto">${m._isEdit?'✏️ 格言修正':'💬 格言'}＋📖 過去詳細</span>
+              <span class="coord">座標 ${m.building_x},${m.building_z}</span>
+              <span class="floors">${m._floors||'?'}F / ${STAR_LABELS[star]}</span>
+              <span class="status-badge pending">pending</span>
+            </div>
+            ${mottoBody}
+            ${pastBody}
+            <div class="meta">申請: ${fmtTime(newest)}</div>
+          </div>
+          <div class="actions">
+            <button class="action-btn btn-approve" onclick="approveCombo('${m.id}',${m._isEdit?'true':'false'},'${past.id}')">✅ まとめて承認</button>
+            <button class="action-btn btn-reject" onclick="rejectCombo('${m.id}',${m._isEdit?'true':'false'},'${past.id}')">❌ まとめて却下</button>
+          </div>
+        </div>`;
+    }
+
+    // 格言＋過去詳細をまとめて承認（承認後に両方をDeepLで英訳）
+    async function approveCombo(mottoId,isEdit,pastId){
+      try{
+        const now=new Date().toISOString();
+        if(isEdit){
+          const item=profiles.find(p=>String(p.id)===String(mottoId)&&p._type==='motto');
+          if(!item||!item.pending_motto_text)throw new Error('格言修正の対象が見つかりません（リロードして再試行してください）');
+          const{error:e1}=await db.from('building_profiles').update({
+            motto_text:item.pending_motto_text,pending_motto_text:null,pending_submitted_at:null,reviewed_at:now
+          }).eq('id',item.id);
+          if(e1)throw e1;
+        }else{
+          const{error:e1}=await db.from('building_profiles').update({status:'approved',reviewed_at:now}).eq('id',mottoId);
+          if(e1)throw e1;
+        }
+        const{error:e2}=await db.from('building_past_details').update({status:'approved',updated_at:now}).eq('id',pastId);
+        if(e2)throw e2;
+        showToast('✓ 格言と過去詳細をまとめて承認しました');
+        notifyTranslateResult(translatePending({ids:[mottoId],pastIds:[pastId]}));
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('承認に失敗しました: '+e.message);}
+    }
+    async function rejectCombo(mottoId,isEdit,pastId){
+      if(!confirm(isEdit?'この申請（格言修正＋過去詳細）をまとめて却下しますか？（元の格言はそのまま残ります）':'この申請（格言＋過去詳細）をまとめて却下しますか？'))return;
+      try{
+        const now=new Date().toISOString();
+        if(isEdit){
+          const{error:e1}=await db.from('building_profiles').update({pending_motto_text:null,pending_submitted_at:null}).eq('id',mottoId);
+          if(e1)throw e1;
+        }else{
+          const{error:e1}=await db.from('building_profiles').update({status:'rejected',reviewed_at:now}).eq('id',mottoId);
+          if(e1)throw e1;
+        }
+        const{error:e2}=await db.from('building_past_details').update({status:'rejected',updated_at:now}).eq('id',pastId);
+        if(e2)throw e2;
+        showToast('✓ まとめて却下しました');
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('却下に失敗しました: '+e.message);}
     }
 
     function renderCard(p){

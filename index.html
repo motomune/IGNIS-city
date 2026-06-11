@@ -1799,7 +1799,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-11-v121';
+    const IGNIS_BUILD='2026-06-12-v122';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6265,8 +6265,9 @@
         }
       }catch(e){/* RPC未適用なら無視 */}
     }
-    // 夜明けの記念碑：保護区の空きマスに石碑を建て、これまでの夜明け回数を刻む
-    let dawnMonument=null;
+    // 夜明けの広告塔：保護区の空きマスに高い塔を建て、てっぺんの看板に夜明け回数をネオン表示。
+    // 看板はゆっくり回転して街のどこからでも見える。
+    let dawnMonument=null,_dawnAdObs=null;
     function buildDawnMonument(){
       if(!window.BABYLON||!scene)return;
       try{
@@ -6279,29 +6280,39 @@
           if(!buildingMap[k]&&!landMap[k]){px=gx;pz=gz;break outer;}
         }
         const isJa=currentLang==='ja';
-        const mat=new BABYLON.StandardMaterial('dawnMonMat',scene);
-        mat.diffuseColor=new BABYLON.Color3(0.22,0.20,0.26);
-        mat.emissiveColor=new BABYLON.Color3(0.20,0.10,0.07);
-        mat.specularColor=new BABYLON.Color3(0,0,0);
-        dawnMonument=BABYLON.MeshBuilder.CreateBox('dawn_monument',{width:2.4,depth:1.2,height:4.4},scene);
-        dawnMonument.position=new BABYLON.Vector3(px,2.2,pz);
-        dawnMonument.material=mat;
-        // 碑文プレート（夜明け回数）
-        const tex=new BABYLON.DynamicTexture('dawnMonTex',{width:256,height:512},scene,true);
+        // 支柱
+        const polMat=new BABYLON.StandardMaterial('dawnPoleMat',scene);
+        polMat.diffuseColor=new BABYLON.Color3(0.18,0.17,0.22);
+        polMat.emissiveColor=new BABYLON.Color3(0.06,0.05,0.08);
+        polMat.specularColor=new BABYLON.Color3(0,0,0);
+        dawnMonument=BABYLON.MeshBuilder.CreateCylinder('dawn_monument',{diameter:0.9,height:16,tessellation:12},scene);
+        dawnMonument.position=new BABYLON.Vector3(px,8,pz);
+        dawnMonument.material=polMat;
+        // ネオン看板（両面）
+        const tex=new BABYLON.DynamicTexture('dawnAdTex',{width:1024,height:512},scene,true);
         const ctx=tex.getContext();
-        ctx.fillStyle='#171320';ctx.fillRect(0,0,256,512);
-        ctx.strokeStyle='rgba(255,170,90,0.6)';ctx.lineWidth=6;ctx.strokeRect(12,12,232,488);
-        ctx.textAlign='center';ctx.fillStyle='#ffb066';
-        ctx.font='900 64px sans-serif';ctx.fillText('🌅',128,110);
-        ctx.font='900 46px sans-serif';ctx.fillText(isJa?'夜明け':'DAWNS',128,230);
-        ctx.font='900 88px sans-serif';ctx.fillStyle='#ffd54f';ctx.fillText(String(count),128,360);
-        ctx.font='700 34px sans-serif';ctx.fillStyle='#ffb066';if(isJa)ctx.fillText('回',128,430);
+        const grad=ctx.createLinearGradient(0,0,1024,0);
+        grad.addColorStop(0,'#2b1020');grad.addColorStop(0.5,'#180f2e');grad.addColorStop(1,'#2b1020');
+        ctx.fillStyle=grad;ctx.fillRect(0,0,1024,512);
+        ctx.strokeStyle='#ff8a3d';ctx.lineWidth=16;ctx.strokeRect(16,16,992,480);
+        ctx.textAlign='center';
+        ctx.font='900 105px sans-serif';ctx.fillStyle='#ffd54f';
+        ctx.fillText(isJa?'🌅 夜明け':'🌅 DAWNS',512,160);
+        ctx.font='900 240px sans-serif';ctx.fillStyle='#ffffff';
+        ctx.shadowColor='#ff6a00';ctx.shadowBlur=45;
+        ctx.fillText(String(count)+(isJa?'回':''),512,450);
+        ctx.shadowBlur=0;
         tex.update();
-        const pmat=new BABYLON.StandardMaterial('dawnMonPlateMat',scene);
-        pmat.diffuseTexture=tex;pmat.emissiveColor=new BABYLON.Color3(0.55,0.45,0.35);pmat.specularColor=new BABYLON.Color3(0,0,0);
-        const plate=BABYLON.MeshBuilder.CreatePlane('dawn_monument_plate',{width:2.0,height:4.0},scene);
-        plate.parent=dawnMonument;plate.position.z=-0.62;plate.rotation.y=Math.PI;
-        plate.material=pmat;
+        const adMat=new BABYLON.StandardMaterial('dawnAdMat',scene);
+        adMat.diffuseTexture=tex;
+        adMat.emissiveColor=new BABYLON.Color3(0.85,0.72,0.55); // 夜でも光って見える
+        adMat.specularColor=new BABYLON.Color3(0,0,0);
+        adMat.backFaceCulling=false; // 両面表示
+        const board=BABYLON.MeshBuilder.CreatePlane('dawn_monument_plate',{width:7,height:3.5},scene);
+        board.parent=dawnMonument;board.position.y=8.8; // 支柱の真上
+        board.material=adMat;
+        // ゆっくり回転（広告塔らしく）
+        if(!_dawnAdObs)_dawnAdObs=scene.onBeforeRenderObservable.add(()=>{if(dawnMonument&&!dawnMonument.isDisposed())dawnMonument.rotation.y+=0.005;});
       }catch(e){console.warn('monument',e.message);}
     }
     // ===== 再生の殿堂：当月最多蝋燭のビルを中央上空の金の星として掲げる =====
@@ -7178,6 +7189,21 @@
     setupAuthListener();
     // タスク/X報酬/ビルスクラッチ/図鑑に常時スクロールバーを付ける
     ['task-panel','x-rewards-body','gacha-box','zukan-body'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
+    // ===== 自動アップデート =====
+    // version.txt（キャッシュ無効で取得）と自分のビルドを比べ、新しい版が出ていたら自動で再読込する。
+    // GitHub Pagesのキャッシュ(10分)やスマホのキャッシュで古い版が表示され続ける問題への対策。
+    (async()=>{
+      try{
+        const r=await fetch('version.txt?ts='+Date.now(),{cache:'no-store'});
+        if(!r.ok)return;
+        const v=(await r.text()).trim();
+        if(!v||v===IGNIS_BUILD)return;
+        if(sessionStorage.getItem('ignis_autoupdate')===v)return; // 再読込ループ防止（1セッション1回）
+        sessionStorage.setItem('ignis_autoupdate',v);
+        try{showToast(currentLang==='ja'?'🔄 新しいバージョンに更新します…':'🔄 Updating to the latest version…');}catch(_){}
+        setTimeout(()=>{location.replace(location.pathname+'?u='+Date.now());},1200);
+      }catch(_){/* オフライン等は無視 */}
+    })();
     __ignisStatus('5) Loading data...');
     (async()=>{
       const mobile=isCoarseMobile();

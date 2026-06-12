@@ -1813,7 +1813,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-12-v125';
+    const IGNIS_BUILD='2026-06-12-v126';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3670,14 +3670,9 @@
         row.id='task-row-'+task.type;
         if(task.type==='share_reply'||task.type==='share_repost'){
           const isReply=task.type==='share_reply';
-          // 投稿が取得できていなくても、ボタンは常に「創設者のXプロフィール」を開く
-          //（以前はここで旧シェア投稿画面にフォールバックしていたのを廃止）
+          // 項目名そのものがリンク（タップで創設者のXプロフィールを開く）。以前のシェアタスクと同じ見た目
           row.innerHTML=`<span class="task-status">⬜</span>`+
-            `<span class="task-label">${isJa?task.label:task.labelEn}`+
-              (isReply
-                ?`<button class="share-act-btn" onclick="openShareReply()">💬 ${isJa?'リプライ':'Reply'}</button>`
-                :`<button class="share-act-btn" onclick="openShareRepost()">🔁 ${isJa?'リポスト':'Repost'}</button>`)+
-              (latestCreatorPost?`<a class="share-view-link" href="${latestCreatorPost.url}" target="_blank" rel="noopener">${isJa?'投稿を見る':'View post'}</a>`:'')+
+            `<span class="task-label" style="cursor:pointer;color:#1d9bf0;text-decoration:underline;" onclick="${isReply?'openShareReply()':'openShareRepost()'}">${isJa?task.label:task.labelEn}`+
               `<span class="share-note">${isJa?'達成は最大12時間以内に反映されます':'Completion reflects within ~12h'}</span>`+
             `</span>`+
             `<span class="task-reward">+${task.reward}</span>`;

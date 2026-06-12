@@ -1213,10 +1213,11 @@
     .li-only { display:none !important; }
     body.logged-in .li-only { display:flex !important; }
     body.logged-in #login-btn-header { display:none !important; }
-    /* 広告：左側（マップの上） */
+    /* 広告：左側。位置はJS(layoutAdSlot)が「左レールの下端〜ミニマップの上端」の間に自動配置し、
+       ボタン類と絶対に被らないようにする（topはJSが上書きするため!importantにしない） */
     #ad-slot-wrap { position:fixed !important; left:max(14px,env(safe-area-inset-left,0px)) !important;
-      bottom:calc(190px + env(safe-area-inset-bottom,0px)) !important; top:auto !important; right:auto !important;
-      margin:0 !important; z-index:10; grid-column:auto !important; grid-row:auto !important; width:auto !important; }
+      top:200px; bottom:auto; right:auto !important;
+      margin:0 !important; z-index:9; grid-column:auto !important; grid-row:auto !important; width:auto !important; }
     #ad-slot { width:150px !important; height:120px !important; }
     /* マップ：左下 */
     #minimap-wrap { bottom:max(14px,env(safe-area-inset-bottom,0px)) !important; left:max(14px,env(safe-area-inset-left,0px)) !important; }
@@ -1238,7 +1239,6 @@
       #left-rail { top:max(72px,calc(env(safe-area-inset-top,0px) + 64px)); }
       #left-rail .rail-btn { padding:6px 11px; font-size:11px; }
       #ad-slot { width:104px !important; height:84px !important; }
-      #ad-slot-wrap { bottom:calc(120px + env(safe-area-inset-bottom,0px)) !important; }
       #minimap-canvas { width:88px !important; height:88px !important; }
       #bottom-btns { gap:6px; bottom:max(8px,env(safe-area-inset-bottom,0px)); }
       #bottom-btns #build-btn { padding:9px 14px !important; font-size:12px !important; }
@@ -1808,7 +1808,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-12-v128';
+    const IGNIS_BUILD='2026-06-12-v129';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4414,8 +4414,30 @@
         if(cardEl){cardEl.disabled=false;cardEl.classList.remove('placing');}
       }finally{placeBusy=false;}
     }
-    // 中央保護区（再生の殿堂エリア）：中央(0,0)から周囲2マス＝|x|,|z|<=20 は新規購入不可
-    function isReservedZone(gx,gz){return Math.abs(gx)<=20&&Math.abs(gz)<=20;}
+    // 中央特別区域（再生の殿堂エリア）：中央ビル(0,0)を含む4×4＝16マス（-20〜+10）は新規購入・建設不可
+    const SPECIAL_ZONE_MIN=-20,SPECIAL_ZONE_MAX=10;
+    function isReservedZone(gx,gz){return gx>=SPECIAL_ZONE_MIN&&gx<=SPECIAL_ZONE_MAX&&gz>=SPECIAL_ZONE_MIN&&gz<=SPECIAL_ZONE_MAX;}
+    // 特別区域の床をグレーで示す（所有済みマスは元の色のまま）
+    let specialZoneTiles=[];
+    function drawSpecialZoneTiles(){
+      if(!window.BABYLON||!scene)return;
+      specialZoneTiles.forEach(t=>{try{t.dispose();}catch(_){}});
+      specialZoneTiles=[];
+      const mat=new BABYLON.StandardMaterial('szMat',scene);
+      mat.emissiveColor=new BABYLON.Color3(0.45,0.45,0.52);
+      mat.alpha=0.22;
+      mat.specularColor=new BABYLON.Color3(0,0,0);
+      for(let gx=SPECIAL_ZONE_MIN;gx<=SPECIAL_ZONE_MAX;gx+=CELL){
+        for(let gz=SPECIAL_ZONE_MIN;gz<=SPECIAL_ZONE_MAX;gz+=CELL){
+          if(landMap[landKey(gx,gz)])continue;
+          const tile=BABYLON.MeshBuilder.CreateGround('sz_'+gx+'_'+gz,{width:CELL-0.4,height:CELL-0.4},scene);
+          tile.position=new BABYLON.Vector3(gx,0.015,gz);
+          tile.material=mat;
+          tile.isPickable=false;
+          specialZoneTiles.push(tile);
+        }
+      }
+    }
     async function handleLandBuy(){
       if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
       const{gx,gz}=keyToCoord(selectedLandKey);
@@ -6296,7 +6318,7 @@
         if(dawnMonument){dawnMonument.dispose(false,true);dawnMonument=null;}
         const count=(cityDawnData&&cityDawnData.dawn_count)||0;
         let px=5,pz=5; // 空きが無ければマスの交点（ビルと重ならない位置）
-        const cells=[0,10,-10,20,-20];
+        const cells=[-20,-10,0,10]; // 中央特別区域（4×4）の中から空きマスを探す
         outer:for(const gx of cells)for(const gz of cells){
           const k=landKey(gx,gz);
           if(!buildingMap[k]&&!landMap[k]){px=gx;pz=gz;break outer;}
@@ -6629,6 +6651,15 @@
       ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=Math.max(0.5,SIZE/560);
       const step=CELL/R*SIZE;
       for(let i=0;i<SIZE;i+=step){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,SIZE);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(SIZE,i);ctx.stroke();}
+      // 中央特別区域（建設不可）をグレーで表示
+      ctx.fillStyle='rgba(160,160,178,0.45)';
+      for(let gx=SPECIAL_ZONE_MIN;gx<=SPECIAL_ZONE_MAX;gx+=CELL){
+        for(let gz=SPECIAL_ZONE_MIN;gz<=SPECIAL_ZONE_MAX;gz+=CELL){
+          if(landMap[landKey(gx,gz)])continue;
+          const{px,py}=w2(gx,gz);const sz=step*0.85;
+          ctx.fillRect(px-sz/2,py-sz/2,sz,sz);
+        }
+      }
       Object.entries(landMap).forEach(([key,land])=>{
         const{gx,gz}=keyToCoord(key);const{px,py}=w2(gx,gz);const sz=step*0.85;
         const isMe=currentUser&&land.owner_id===currentUser.id;const hasB=!!buildingMap[key];
@@ -6895,14 +6926,13 @@
       const isJa=currentLang==='ja';
       showToast(next?(isJa?'Xユーザー名を表示にしました':'X name now visible'):(isJa?'Xユーザー名を非表示にしました':'X name now hidden'));
     }
-    // 買える土地の範囲内（保護区を除く）にある所有者不明（土地未所有）のビルをすべて取り除く
+    // マップ範囲内の所有者不明（土地未所有）のビルをすべて取り除く（中央特別区域内も含む）
     function trimOrphanBuildings(){
       const removeSet=new Set();
       buildings.forEach(b=>{
         const key=b.landKey||landKey(b.x,b.z);
         if(landMap[key])return;                       // 土地に所有者がいる＝正規のビル
         if(Math.abs(b.x)>GRID_HALF||Math.abs(b.z)>GRID_HALF)return; // 範囲外は対象外
-        if(isReservedZone(b.x,b.z))return;            // 保護区（購入不可）は景観として残す
         removeSet.add(b);
       });
       if(!removeSet.size)return;
@@ -6923,6 +6953,7 @@
           await loadBuildings();
           buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
           trimOrphanBuildings();
+          drawSpecialZoneTiles(); // 中央特別区域（建設不可）をグレー床で表示
           patchOwnerCenterBuilding();
           try{await withTimeout(loadApprovedProfiles(),8000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
           scheduleMottoRefresh();
@@ -7226,6 +7257,29 @@
     {const bb=document.getElementById('build-badge');if(bb)bb.textContent=IGNIS_BUILD.replace(/^\d{4}-\d{2}-\d{2}-/,'');}
     // 全BGMを起動時に先読み（スクラッチ/図鑑へ移動した瞬間に音楽が始まるように）
     IgnisAudio.preloadAllBgm();
+    // 広告を「左レール（X名/ログアウト等）の下端」と「ミニマップの上端」の間に自動配置。
+    // 入り切らない時は縮小して、ボタンと被らないようにする。
+    function layoutAdSlot(){
+      const ad=document.getElementById('ad-slot-wrap');
+      const rail=document.getElementById('left-rail');
+      const mini=document.getElementById('minimap-wrap');
+      const inner=document.getElementById('ad-slot');
+      if(!ad||!rail||!mini||!inner)return;
+      const railBottom=rail.getBoundingClientRect().bottom;
+      const miniTop=mini.getBoundingClientRect().top;
+      const top=railBottom+8;
+      ad.style.top=top+'px';
+      const baseH=inner.offsetHeight||120;
+      const avail=miniTop-8-top;
+      if(avail<=20){ad.style.visibility='hidden';return;} // 置く場所が無いほど狭い画面では非表示
+      ad.style.visibility='visible';
+      const sc=Math.max(0.45,Math.min(1,avail/baseH));
+      inner.style.transformOrigin='top left';
+      inner.style.transform=sc<1?`scale(${sc})`:'';
+    }
+    setInterval(layoutAdSlot,800);
+    window.addEventListener('resize',layoutAdSlot);
+    setTimeout(layoutAdSlot,300);
     // ===== 自動アップデート =====
     // version.txt（キャッシュ無効で取得）と自分のビルドを比べ、新しい版が出ていたら自動で再読込する。
     // GitHub Pagesのキャッシュ(10分)やスマホのキャッシュで古い版が表示され続ける問題への対策。

@@ -998,6 +998,23 @@
     .cg-phrases { display:flex;flex-wrap:wrap;gap:6px;margin-top:6px; }
     .cg-phrase-btn { background:linear-gradient(135deg,#ff8a3d,#ff5722);border:none;color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer; }
     .cg-phrase-btn:active { transform:scale(0.96); }
+    /* サブスク登録モーダル */
+    #sub-modal { position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:70; }
+    #sub-modal.open { display:flex; }
+    #sub-box { position:relative;width:min(420px,92vw);max-height:86vh;overflow-y:auto;background:#0d0a14;border:1px solid rgba(255,213,79,0.4);border-radius:18px;padding:22px;box-shadow:0 10px 50px rgba(255,180,0,0.18); }
+    #sub-close { position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer; }
+    #sub-title { font-size:17px;font-weight:900;color:#ffd54f;margin-bottom:4px; }
+    #sub-sub { font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:14px; }
+    .sub-plan { border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(255,255,255,0.03); }
+    .sub-plan-gold { border-color:rgba(255,213,79,0.55);background:linear-gradient(160deg,rgba(255,200,60,0.08),rgba(255,140,0,0.03)); }
+    .sub-plan-name { font-size:14px;font-weight:900;color:#fff; }
+    .sub-plan-price { font-size:13px;font-weight:800;color:#ffab40;margin:2px 0 8px; }
+    .sub-plan-feats { margin:0 0 10px;padding-left:2px;list-style:none;font-size:11.5px;color:rgba(255,255,255,0.8);line-height:1.9; }
+    .sub-plan-btn { width:100%;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#ff6a00,#ee0979);color:#fff; }
+    .sub-plan-btn-gold { background:linear-gradient(135deg,#b8860b,#ffd54f);color:#3a2a00; }
+    .sub-plan-btn:disabled { opacity:0.6;cursor:wait; }
+    #sub-portal-btn { width:100%;margin-top:2px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer; }
+    #sub-note { margin-top:10px;font-size:10px;color:rgba(255,255,255,0.4);text-align:center;line-height:1.6; }
     /* 再生の殿堂モーダル */
     #hall-modal { position:fixed;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;z-index:60; }
     #hall-modal.open { display:flex; }
@@ -1338,6 +1355,7 @@
       <button id="ranking-btn" class="rail-btn li-only" type="button" onclick="openRanking()">🏆 ランキング</button>
       <button id="sound-toggle" class="rail-btn" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊</button>
       <button id="x-rewards-btn" class="rail-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
+      <button id="sub-btn" class="rail-btn li-only" type="button" onclick="openSubModal()" title="サブスク登録・解約" style="background:linear-gradient(135deg,#b8860b,#ffd54f);color:#3a2a00;font-weight:800;">💎 サブスク</button>
       <div id="premium-bar" style="display:none;" title="プレミアム会員の紹介"><div id="premium-track"></div></div>
       <span id="user-name" style="display:none;" aria-hidden="true"></span>
     </div>
@@ -1496,6 +1514,36 @@
   <div id="bigmap-overlay" onclick="closeBigMap()">
     <canvas id="bigmap-canvas" width="800" height="800" onclick="bigmapClick(event)"></canvas>
     <div id="bigmap-hint">タップした場所へ移動（外側タップで閉じる）</div>
+  </div>
+  <div id="sub-modal">
+    <div id="sub-box">
+      <button id="sub-close" type="button" onclick="closeSubModal()">×</button>
+      <div id="sub-title">💎 サブスクリプション</div>
+      <div id="sub-sub">あなたの応援が、誰かの再生を支えます</div>
+      <div class="sub-plan" id="sub-plan-980">
+        <div class="sub-plan-name" id="sub-plan-980-name">サブスク会員</div>
+        <div class="sub-plan-price" id="sub-plan-980-price">月980円（税込）</div>
+        <ul class="sub-plan-feats" id="sub-plan-980-feats">
+          <li>📖 全ビルの過去詳細③〜⑥が読める</li>
+          <li>🕯️ 蝋燭を灯せる（1日3本・報酬つき）</li>
+          <li>🔴 ビル屋上に赤い点滅ランプ</li>
+          <li>🐦 X報酬（リポスト/リプライ）1.5倍</li>
+          <li>🪪 Xユーザー名をモザイク無しで表示</li>
+        </ul>
+        <button class="sub-plan-btn" id="sub-plan-980-btn" onclick="subscribeCheckout('sub')">登録する</button>
+      </div>
+      <div class="sub-plan sub-plan-gold" id="sub-plan-1980">
+        <div class="sub-plan-name" id="sub-plan-1980-name">プレミアム会員</div>
+        <div class="sub-plan-price" id="sub-plan-1980-price">月1980円（税込）</div>
+        <ul class="sub-plan-feats" id="sub-plan-1980-feats">
+          <li>✨ サブスク会員の特典すべて</li>
+          <li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li>
+        </ul>
+        <button class="sub-plan-btn sub-plan-btn-gold" id="sub-plan-1980-btn" onclick="subscribeCheckout('premium')">登録する</button>
+      </div>
+      <button id="sub-portal-btn" type="button" onclick="openBillingPortal()" style="display:none;">⚙️ プラン変更・解約はこちら</button>
+      <div id="sub-note">決済はStripeの安全なページで行われます。いつでも解約できます。</div>
+    </div>
   </div>
   <div id="hall-modal">
     <div id="hall-box">
@@ -1808,7 +1856,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-12-v129';
+    const IGNIS_BUILD='2026-06-13-v130';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6382,6 +6430,74 @@
         if(!_hallSpinObs)_hallSpinObs=scene.onBeforeRenderObservable.add(()=>{if(hallMesh&&!hallMesh.isDisposed())hallMesh.rotation.y+=0.004;});
       }catch(e){/* RPC未適用なら表示なし */}
     }
+    // ===== サブスク課金（Stripe）=====
+    // 決済ページの作成・解約ポータルはEdge Function (stripe-billing) 経由。キーはサーバー側のみ。
+    function openSubModal(){
+      if(!currentUser){openAuthModal();showToast(currentLang==='ja'?'ログインが必要です':'Login required');return;}
+      const isJa=currentLang==='ja';
+      document.getElementById('sub-title').textContent=isJa?'💎 サブスクリプション':'💎 Subscription';
+      document.getElementById('sub-sub').textContent=isJa?'あなたの応援が、誰かの再生を支えます':'Your support helps someone rebuild';
+      document.getElementById('sub-plan-980-name').textContent=isJa?'サブスク会員':'Subscriber';
+      document.getElementById('sub-plan-980-price').textContent=isJa?'月980円（税込）':'¥980 / month (tax incl.)';
+      document.getElementById('sub-plan-1980-name').textContent=isJa?'プレミアム会員':'Premium';
+      document.getElementById('sub-plan-1980-price').textContent=isJa?'月1980円（税込）':'¥1,980 / month (tax incl.)';
+      document.getElementById('sub-plan-980-btn').textContent=isJa?'登録する':'Subscribe';
+      document.getElementById('sub-plan-1980-btn').textContent=isJa?'登録する':'Subscribe';
+      document.getElementById('sub-note').textContent=isJa?'決済はStripeの安全なページで行われます。いつでも解約できます。':'Payments are handled securely by Stripe. Cancel anytime.';
+      const portal=document.getElementById('sub-portal-btn');
+      portal.textContent=isJa?'⚙️ プラン変更・解約はこちら':'⚙️ Change plan / cancel';
+      portal.style.display=(currentUser&&currentUser.isSubscribed)?'block':'none';
+      document.getElementById('sub-modal').classList.add('open');
+    }
+    function closeSubModal(){document.getElementById('sub-modal').classList.remove('open');}
+    async function callStripeBilling(payload){
+      const{data:{session}}=await db.auth.getSession();
+      const token=session&&session.access_token;
+      if(!token)throw new Error('not logged in');
+      const res=await fetch(`${SUPABASE_URL}/functions/v1/stripe-billing`,{
+        method:'POST',
+        headers:{'Authorization':`Bearer ${token}`,'apikey':SUPABASE_ANON_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      return await res.json();
+    }
+    async function subscribeCheckout(plan){
+      const isJa=currentLang==='ja';
+      const btn=document.getElementById(plan==='premium'?'sub-plan-1980-btn':'sub-plan-980-btn');
+      if(btn){btn.disabled=true;btn.textContent=isJa?'準備中…':'Preparing…';}
+      try{
+        const r=await callStripeBilling({action:'checkout',plan});
+        if(r&&r.url){
+          if(r.portal)showToast(isJa?'すでに登録済みのため、プラン変更ページを開きます':'Already subscribed — opening the plan page');
+          location.href=r.url; // Stripeの決済ページへ
+          return;
+        }
+        showToast((isJa?'決済ページを開けませんでした：':'Could not open checkout: ')+((r&&r.error)||''));
+      }catch(e){console.warn('checkout',e);showToast(isJa?'エラーが発生しました':'Error');}
+      finally{if(btn){btn.disabled=false;btn.textContent=isJa?'登録する':'Subscribe';}}
+    }
+    async function openBillingPortal(){
+      const isJa=currentLang==='ja';
+      try{
+        const r=await callStripeBilling({action:'portal'});
+        if(r&&r.url){location.href=r.url;return;}
+        showToast((isJa?'ポータルを開けませんでした：':'Could not open portal: ')+((r&&r.error)||''));
+      }catch(e){console.warn('portal',e);showToast(isJa?'エラーが発生しました':'Error');}
+    }
+    // 決済ページから戻ってきた時の案内（フラグ反映はWebhookが行うので少し待ってからリロード）
+    (function checkStripeReturn(){
+      try{
+        const q=new URLSearchParams(location.search);
+        if(q.get('sub')==='success'){
+          history.replaceState(null,'',location.pathname);
+          setTimeout(()=>showToast(currentLang==='ja'?'🎉 登録ありがとうございます！特典の反映には数十秒かかることがあります':'🎉 Thank you for subscribing! Perks may take a moment to activate'),1500);
+          setTimeout(()=>location.reload(),12000); // Webhook反映後の状態で再読込
+        }else if(q.get('sub')==='cancel'){
+          history.replaceState(null,'',location.pathname);
+          setTimeout(()=>showToast(currentLang==='ja'?'決済をキャンセルしました':'Checkout canceled'),1500);
+        }
+      }catch(_){}
+    })();
     // プレミアム会員の紹介バー（X報酬ボタンの下を流れるXリンク）
     async function loadPremiumBar(){
       if(!db)return;

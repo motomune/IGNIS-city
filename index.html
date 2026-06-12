@@ -955,10 +955,11 @@
     #building-modal-past { margin:12px 0;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;display:none; }
     .bm-past-text { font-size:13px;line-height:1.75;color:rgba(255,255,255,0.82);white-space:pre-wrap;word-break:break-word; }
     .bm-past-title { font-size:11px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
-    /* プレミアム会員の紹介バー（X報酬ボタンの下を横に流れる） */
-    #premium-bar { width:150px;height:22px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.45);background:rgba(20,12,2,0.85);position:relative;margin-top:2px; }
-    #premium-track { position:absolute;left:0;top:0;height:100%;display:flex;gap:18px;align-items:center;width:max-content;white-space:nowrap;animation:premiumScroll 16s linear infinite;font-size:10px;font-weight:700;padding:0 6px; }
-    #premium-track a { color:#ffd54f;text-decoration:none; }
+    /* プレミアム会員の紹介バー（X報酬ボタンの下を横に流れる）
+       右レール全体は pointer-events:none なので、ここで明示的にタップ可能に戻す（リンクが開けるように） */
+    #premium-bar { width:210px;height:30px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.5);background:rgba(20,12,2,0.88);position:relative;margin-top:2px;align-self:flex-end;pointer-events:all; }
+    #premium-track { position:absolute;left:0;top:0;height:100%;display:flex;gap:20px;align-items:center;width:max-content;white-space:nowrap;animation:premiumScroll 16s linear infinite;font-size:12px;font-weight:800;padding:0 8px; }
+    #premium-track a { color:#ffd54f;text-decoration:none;pointer-events:all; }
     #premium-track a:hover { text-decoration:underline; }
     @keyframes premiumScroll { 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
     /* 常時表示スクロールバー（タスク/X報酬/スクラッチ/図鑑。下にまだ続きがある合図）
@@ -1538,6 +1539,7 @@
         <ul class="sub-plan-feats" id="sub-plan-1980-feats">
           <li>✨ サブスク会員の特典すべて</li>
           <li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li>
+          <li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>
         </ul>
         <button class="sub-plan-btn sub-plan-btn-gold" id="sub-plan-1980-btn" onclick="subscribeCheckout('premium')">登録する</button>
       </div>
@@ -1856,7 +1858,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-13-v130';
+    const IGNIS_BUILD='2026-06-13-v131';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4462,8 +4464,8 @@
         if(cardEl){cardEl.disabled=false;cardEl.classList.remove('placing');}
       }finally{placeBusy=false;}
     }
-    // 中央特別区域（再生の殿堂エリア）：中央ビル(0,0)を含む4×4＝16マス（-20〜+10）は新規購入・建設不可
-    const SPECIAL_ZONE_MIN=-20,SPECIAL_ZONE_MAX=10;
+    // 中央特別区域（再生の殿堂エリア）：中央ビル(0,0)を中心とした5×5＝25マス（±20）は新規購入・建設不可
+    const SPECIAL_ZONE_MIN=-20,SPECIAL_ZONE_MAX=20;
     function isReservedZone(gx,gz){return gx>=SPECIAL_ZONE_MIN&&gx<=SPECIAL_ZONE_MAX&&gz>=SPECIAL_ZONE_MIN&&gz<=SPECIAL_ZONE_MAX;}
     // 特別区域の床をグレーで示す（所有済みマスは元の色のまま）
     let specialZoneTiles=[];
@@ -5457,7 +5459,7 @@
       return /[　-〿぀-ヿㇰ-ㇿ㐀-鿿豈-﫿＀-￯]/.test(ch);
     }
     function drawMottoWallTexture(entry){
-      const{tex,lines,color,fontSize,texW,texH,cellW,lineCellH,pending}=entry;
+      const{tex,chars,flags,rowHs,color,fontSize,texW,texH,pending}=entry;
       const ctx=tex.getContext();
       ctx.clearRect(0,0,texW,texH);
       // 壁に貼られた横書きプレート（半透明の暗い下地＋枠）
@@ -5475,19 +5477,19 @@
       ctx.shadowColor='rgba(0,0,0,0.9)';
       ctx.shadowBlur=7;
       // 縦1列：各文字を上→下に並べる。
-      // 日本語（かな・漢字・全角）は正立のまま縦書き。英字・数字・記号は90°右回転して横倒し表示。
-      lines.forEach((line,r)=>{
-        const y=lineCellH*(r+0.5);
-        const lineW=line.length*cellW;
-        const startX=(texW-lineW)/2;
-        line.forEach((ch,c)=>{
-          const cx=startX+cellW*(c+0.5);
-          ctx.save();
-          ctx.translate(cx,y);
-          if(!isMottoUprightChar(ch))ctx.rotate(Math.PI/2); // 英字等は90°右回転、日本語は正立
-          ctx.fillText(ch,0,0);
-          ctx.restore();
-        });
+      // 日本語（かな・漢字・全角）は正立のまま縦書き＝1マス分。
+      // 英字・数字は90°右回転して横倒し＝幅が狭いので縦に詰めて並べる
+      //（これで英語でも1文字の大きさが日本語と同等になる）
+      let y=0;
+      chars.forEach((ch,i)=>{
+        const rh=rowHs[i];
+        const cy=y+rh/2;
+        ctx.save();
+        ctx.translate(texW/2,cy);
+        if(!flags[i])ctx.rotate(Math.PI/2); // 英字等は90°右回転、日本語は正立
+        ctx.fillText(ch,0,0);
+        ctx.restore();
+        y+=rh;
       });
       ctx.shadowBlur=0;
       tex.update(false);
@@ -5516,15 +5518,18 @@
       const totalFloors=Math.max(1,Number(building.totalFloors||building.baseFloors)||1);
       const star=getStarByFloors(totalFloors);
       const color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
-      // 縦1列（1文字/行で上→下へ）
-      const lines=mottoLines(chars);
+      // 縦1列（上→下へ）。日本語=1マス、横倒し英字=0.58マス（幅が狭いぶん詰める）。
+      // これにより英語の長文でも1文字の大きさが日本語と同等になる。
+      const MOTTO_LATIN_W=0.58;
+      const flags=chars.map(ch=>isMottoUprightChar(ch));
+      const weights=flags.map(f=>f?1:MOTTO_LATIN_W);
+      const totalW=Math.max(1,weights.reduce((a,b)=>a+b,0));
       // 全文が壁に収まるよう、必要なら1文字サイズを縮小（短い格言は基準サイズのまま大きく）
-      const n=Math.max(1,lines.length);
       const availH=mottoAvailHeight(building);
-      const cellH=Math.min(MOTTO_CHAR_W*MOTTO_LINE_GAP, availH/n);
+      const cellH=Math.min(MOTTO_CHAR_W*MOTTO_LINE_GAP, availH/totalW);
       const charW=cellH/MOTTO_LINE_GAP;
       const planeW=charW;
-      const planeH=n*cellH;
+      const planeH=totalW*cellH;
       const{localPos,rotY}=getMottoWallPlacementLocal(building,planeH);
       const side=BABYLON.Mesh.DOUBLESIDE||2;
       const plane=BABYLON.MeshBuilder.CreatePlane(meshId,{width:planeW,height:planeH,sideOrientation:side},scene);
@@ -5541,18 +5546,20 @@
       const MAX_TEX=4096;
       let cell=128;
       let lineCellH=Math.round(cell*MOTTO_LINE_GAP);
-      if(n*lineCellH>MAX_TEX){
-        lineCellH=Math.max(8,Math.floor(MAX_TEX/n));
+      if(totalW*lineCellH>MAX_TEX){
+        lineCellH=Math.max(8,Math.floor(MAX_TEX/totalW));
         cell=Math.max(8,Math.floor(lineCellH/MOTTO_LINE_GAP));
       }
+      // 行の高さ：日本語=フルセル、横倒し英字=詰めセル
+      const rowHs=flags.map(f=>f?lineCellH:Math.max(6,Math.round(lineCellH*MOTTO_LATIN_W)));
       const texW=MOTTO_CPL*cell;
-      const texH=Math.min(MAX_TEX,n*lineCellH);
+      const texH=Math.min(MAX_TEX,Math.max(cell,rowHs.reduce((a,b)=>a+b,0)));
       const fontSize=Math.floor(cell*0.94);
       const tex=new BABYLON.DynamicTexture('mottotex_'+x+'_'+z,{width:texW,height:texH},scene,true);
       tex.hasAlpha=true;
       tex.vScale=-1;tex.vOffset=1; // 行が下→上に反転するのを上→下に直す
       tex.uScale=-1;tex.uOffset=1; // 左右反転（鏡文字）を直す
-      drawMottoWallTexture({tex,lines,color,fontSize,texW,texH,cellW:cell,lineCellH:lineCellH,pending});
+      drawMottoWallTexture({tex,chars,flags,rowHs,color,fontSize,texW,texH,pending});
       const mat=new BABYLON.StandardMaterial('mottomat_'+x+'_'+z,scene);
       mat.diffuseTexture=tex;
       mat.emissiveTexture=tex;
@@ -6359,18 +6366,19 @@
     }
     // 夜明けの広告塔：保護区の空きマスに高い塔を建て、てっぺんの看板に夜明け回数をネオン表示。
     // 看板はゆっくり回転して街のどこからでも見える。
-    let dawnMonument=null,_dawnAdObs=null;
+    let dawnMonument=null,_dawnAdObs=null,dawnMonumentCell=null;
     function buildDawnMonument(){
       if(!window.BABYLON||!scene)return;
       try{
         if(dawnMonument){dawnMonument.dispose(false,true);dawnMonument=null;}
         const count=(cityDawnData&&cityDawnData.dawn_count)||0;
         let px=5,pz=5; // 空きが無ければマスの交点（ビルと重ならない位置）
-        const cells=[-20,-10,0,10]; // 中央特別区域（4×4）の中から空きマスを探す
+        const cells=[-20,-10,0,10,20]; // 中央特別区域（5×5）の中から空きマスを探す
         outer:for(const gx of cells)for(const gz of cells){
           const k=landKey(gx,gz);
           if(!buildingMap[k]&&!landMap[k]){px=gx;pz=gz;break outer;}
         }
+        dawnMonumentCell=landKey(px,pz); // 投影ホログラムと同じマスを使わないよう記録
         const isJa=currentLang==='ja';
         // 支柱
         const polMat=new BABYLON.StandardMaterial('dawnPoleMat',scene);
@@ -6443,6 +6451,13 @@
       document.getElementById('sub-plan-1980-price').textContent=isJa?'月1980円（税込）':'¥1,980 / month (tax incl.)';
       document.getElementById('sub-plan-980-btn').textContent=isJa?'登録する':'Subscribe';
       document.getElementById('sub-plan-1980-btn').textContent=isJa?'登録する':'Subscribe';
+      // 特典リスト（言語別）。プレミアムは「宣伝枠＋日替わりホログラム投影」で差別化
+      document.getElementById('sub-plan-980-feats').innerHTML=isJa
+        ?'<li>📖 全ビルの過去詳細③〜⑥が読める</li><li>🕯️ 蝋燭を灯せる（1日3本・報酬つき）</li><li>🔴 ビル屋上に赤い点滅ランプ</li><li>🐦 X報酬（リポスト/リプライ）1.5倍</li><li>🪪 Xユーザー名をモザイク無しで表示</li>'
+        :'<li>📖 Read full past details (3-6) of every building</li><li>🕯️ Light candles (3/day, with rewards)</li><li>🔴 Red blinking rooftop lamp</li><li>🐦 1.5x X repost/reply rewards</li><li>🪪 X username shown without mosaic</li>';
+      document.getElementById('sub-plan-1980-feats').innerHTML=isJa
+        ?'<li>✨ サブスク会員の特典すべて</li><li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li><li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>'
+        :'<li>✨ Everything in Subscriber</li><li>💎 Your X link featured in the in-game ticker</li><li>🏙 Your building projected as a daily hologram in the central special zone (tap leads to your building)</li>';
       document.getElementById('sub-note').textContent=isJa?'決済はStripeの安全なページで行われます。いつでも解約できます。':'Payments are handled securely by Stripe. Cancel anytime.';
       const portal=document.getElementById('sub-portal-btn');
       portal.textContent=isJa?'⚙️ プラン変更・解約はこちら':'⚙️ Change plan / cancel';
@@ -6498,6 +6513,51 @@
         }
       }catch(_){}
     })();
+    // ===== プレミアム特典：ビルのホログラム投影（中央特別区域に日替わりで1棟展示）=====
+    // プレミアム会員のビルから固定シードの日替わり乱数で1棟選び、特別区域の空きマスに
+    // 半透明の「投影」として表示する。タップすると本物のビル詳細が開く。
+    let premiumHolo=null;
+    async function loadPremiumShowcase(){
+      if(!db||!window.BABYLON||!scene)return;
+      try{
+        const{data:prem}=await db.from('users').select('id').eq('is_premium',true);
+        if(!prem||!prem.length)return;
+        const ids=new Set(prem.map(u=>u.id));
+        const candidates=buildings.filter(b=>b.ownerId&&ids.has(b.ownerId)&&b.mesh&&!b.mesh.isDisposed());
+        if(!candidates.length)return;
+        // 日替わり（UTC日付シード）で1棟選ぶ＝全プレイヤーが同じ投影を見る
+        const t=new Date();
+        const seed=t.getUTCFullYear()*372+(t.getUTCMonth()+1)*31+t.getUTCDate();
+        const pick=candidates[seed%candidates.length];
+        if(premiumHolo){premiumHolo.dispose(false,true);premiumHolo=null;}
+        // 特別区域の空きマス（記念碑と中央ビルのマスは避ける）
+        let px=10,pz=10;
+        const cells=[-20,-10,0,10,20];
+        outer:for(const gx of cells)for(const gz of cells){
+          const k=landKey(gx,gz);
+          if(buildingMap[k]||landMap[k])continue;
+          if(k===dawnMonumentCell)continue;
+          px=gx;pz=gz;break outer;
+        }
+        const fl=Math.max(1,pick.totalFloors||pick.baseFloors||1);
+        const h=Math.min(fl*0.5,60); // 投影の高さは60まで（見上げられる範囲に）
+        const w=5.0;
+        let mesh;
+        if(pick.shape==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:20},scene);
+        else if(pick.shape==='triangle')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:3},scene);
+        else mesh=BABYLON.MeshBuilder.CreateBox('premium_holo',{width:w,height:h,depth:w},scene);
+        mesh.position=new BABYLON.Vector3(px,h/2,pz);
+        const mat=new BABYLON.StandardMaterial('premiumHoloMat',scene);
+        mat.diffuseColor=new BABYLON.Color3(0.35,0.85,1.0);
+        mat.emissiveColor=new BABYLON.Color3(0.18,0.55,0.85);
+        mat.alpha=0.42; // 半透明＝ホログラム感
+        mat.specularColor=new BABYLON.Color3(0,0,0);
+        mesh.material=mat;
+        mesh.isPickable=true;
+        mesh.metadata={holoOf:pick.landKey||landKey(pick.x,pick.z)};
+        premiumHolo=mesh;
+      }catch(e){/* is_premium未適用などは無視 */}
+    }
     // プレミアム会員の紹介バー（X報酬ボタンの下を流れるXリンク）
     async function loadPremiumBar(){
       if(!db)return;
@@ -7084,6 +7144,7 @@
           notifyMyCandleReplies().catch(()=>{}); // 蝋燭への返事の未読通知
           claimWeeklyQuest().catch(()=>{});   // 週間共同クエストの達成受け取り
           loadPremiumBar().catch(()=>{});     // プレミアム会員の紹介バー
+          loadPremiumShowcase().catch(()=>{}); // プレミアム特典：日替わりビル投影
           drawMinimap();
         })(),isCoarseMobile()?9000:12000,'bootstrapLoad');
       }catch(e){console.warn('[IGNIS] loadBuildingsAndLands',e.message);}
@@ -7097,6 +7158,13 @@
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
       if(pick.pickedMesh.name==='hall_star'){openHallModal();return;} // 再生の殿堂の星
+      if(pick.pickedMesh.name==='premium_holo'){ // プレミアム会員のビル投影 → 本物のビル詳細を開く
+        const key=pick.pickedMesh.metadata&&pick.pickedMesh.metadata.holoOf;
+        const orig=key&&buildingMap[key];
+        showToast(currentLang==='ja'?'💎 プレミアム会員のビル投影（本日の展示）':'💎 Premium member building projection (today\'s feature)');
+        if(orig)openBuildingModal(orig);
+        return;
+      }
       if(pick.pickedMesh.name==='dawn_monument'||pick.pickedMesh.name==='dawn_monument_plate'){
         const n=(cityDawnData&&cityDawnData.dawn_count)||0;
         showToast(currentLang==='ja'?`🌅 夜明けの記念碑：この街に夜明けが来た回数 ${n}回`:`🌅 Dawn Monument: the city has seen ${n} dawn(s)`);
@@ -7366,9 +7434,9 @@
     initAdCarousel();
     switchTab('login');
     setupAuthListener();
-    // タスク/X報酬/ビルスクラッチ/図鑑に常時スクロールバーを付ける（X報酬は水色）
+    // タスク/X報酬/ビルスクラッチ/図鑑/サブスク画面に常時スクロールバーを付ける（X報酬は水色）
     addFixedScrollbar(document.getElementById('x-rewards-body'),'rgba(125,216,255,0.85)');
-    ['task-panel','gacha-box','zukan-body'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
+    ['task-panel','gacha-box','zukan-body','sub-box'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
     // 画面右下にビルド番号（サポート用：どの版が動いているか一目で分かる）
     {const bb=document.getElementById('build-badge');if(bb)bb.textContent=IGNIS_BUILD.replace(/^\d{4}-\d{2}-\d{2}-/,'');}
     // 全BGMを起動時に先読み（スクラッチ/図鑑へ移動した瞬間に音楽が始まるように）

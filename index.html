@@ -1813,7 +1813,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-12-v126';
+    const IGNIS_BUILD='2026-06-12-v127';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2246,14 +2246,37 @@
   // ========================================
   const IgnisAudio={
     ctx:null,master:null,sfxGain:null,bgmEl:null,retroBgmEl:null,retroBgmPlaying:false,bgmStarted:false,muted:false,_inited:false,currentTrack:'city',
+    // 曲ごとに専用の<audio>を持つ（以前は1要素を使い回し、切替のたびに再ダウンロードしていて出だしが遅かった）
+    _bgmPool:{},_bgmPoolLoads:{},
+    _getTrackEl(trackId){
+      if(this._bgmPool[trackId])return this._bgmPool[trackId];
+      let el;
+      if(trackId==='city'){
+        el=document.getElementById('ignis-bgm')||document.createElement('audio');
+        if(!el.parentNode)document.body.appendChild(el);
+      }else{
+        el=document.createElement('audio');
+        el.style.display='none';
+        document.body.appendChild(el);
+      }
+      el.loop=true;el.preload='auto';el.setAttribute('playsinline','');
+      this._bgmPool[trackId]=el;
+      return el;
+    },
+    _loadTrack(trackId){
+      const track=IGNIS_BGM[trackId];
+      if(!track)return Promise.resolve(false);
+      if(this._bgmPoolLoads[trackId])return this._bgmPoolLoads[trackId]; // 1回だけ読み込み、以後は即解決
+      const el=this._getTrackEl(trackId);
+      this._bgmPoolLoads[trackId]=this._loadAudioSources(el,track.sources,trackId);
+      return this._bgmPoolLoads[trackId];
+    },
+    // 起動時に全BGMを裏で先読み（再生はユーザー操作後だが、ダウンロードは即できる）
+    preloadAllBgm(){
+      ['city','opening','collection'].forEach(t=>{try{this._loadTrack(t).catch(()=>{});}catch(_){}});
+    },
     _ensureBgmElement(){
-      if(this.bgmEl)return this.bgmEl;
-      const el=document.getElementById('ignis-bgm');
-      this.bgmEl=el||document.createElement('audio');
-      if(!el)document.body.appendChild(this.bgmEl);
-      this.bgmEl.loop=true;
-      this.bgmEl.preload='auto';
-      this.bgmEl.setAttribute('playsinline','');
+      this.bgmEl=this._getTrackEl(this.currentTrack||'city');
       return this.bgmEl;
     },
     _ensureRetroBgmElement(){
@@ -2312,12 +2335,11 @@
     setBgmTrack(trackId){
       const track=IGNIS_BGM[trackId];
       if(!track)return Promise.resolve(false);
-      const el=this._ensureBgmElement();
-      const wasPlaying=this.bgmStarted;
-      if(wasPlaying){el.pause();this.bgmStarted=false;}
-      if(this.currentTrack===trackId&&el.src)return Promise.resolve(true);
+      // 切替＝再ダウンロードではなく「曲ごとの要素」を差し替えるだけ（即開始）
+      if(this.bgmEl&&this.bgmStarted){this.bgmEl.pause();this.bgmStarted=false;}
       this.currentTrack=trackId;
-      return this._loadAudioSources(el,track.sources,trackId);
+      this.bgmEl=this._getTrackEl(trackId);
+      return this._loadTrack(trackId);
     },
     async playRetroBgm(){
       if(this.muted)return false;
@@ -6878,20 +6900,21 @@
       const isJa=currentLang==='ja';
       showToast(next?(isJa?'Xユーザー名を表示にしました':'X name now visible'):(isJa?'Xユーザー名を非表示にしました':'X name now hidden'));
     }
-    function trimOrphanBuildingsHalf(){
-      const orphans=[];
+    // 買える土地の範囲内（保護区を除く）にある所有者不明（土地未所有）のビルをすべて取り除く
+    function trimOrphanBuildings(){
+      const removeSet=new Set();
       buildings.forEach(b=>{
         const key=b.landKey||landKey(b.x,b.z);
-        if(!landMap[key])orphans.push(b);
+        if(landMap[key])return;                       // 土地に所有者がいる＝正規のビル
+        if(Math.abs(b.x)>GRID_HALF||Math.abs(b.z)>GRID_HALF)return; // 範囲外は対象外
+        if(isReservedZone(b.x,b.z))return;            // 保護区（購入不可）は景観として残す
+        removeSet.add(b);
       });
-      if(orphans.length===0)return;
-      const removeCount=Math.floor(orphans.length/2);
-      if(removeCount<=0)return;
-      const removeSet=new Set(orphans.slice(0,removeCount));
+      if(!removeSet.size)return;
       removeSet.forEach(b=>{
         if(b.mesh){b.mesh.dispose();}
         const key=b.landKey||landKey(b.x,b.z);
-        delete buildingMap[key];
+        if(buildingMap[key]===b)delete buildingMap[key];
       });
       for(let i=buildings.length-1;i>=0;i--){
         if(removeSet.has(buildings[i]))buildings.splice(i,1);
@@ -6904,7 +6927,7 @@
           await loadLands();
           await loadBuildings();
           buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
-          trimOrphanBuildingsHalf();
+          trimOrphanBuildings();
           patchOwnerCenterBuilding();
           try{await withTimeout(loadApprovedProfiles(),8000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
           scheduleMottoRefresh();
@@ -7111,6 +7134,9 @@
       const handle=(land.owner_display||'').replace(/^@/,'').toLowerCase();
       if(handle!==OWNER_X_HANDLE.toLowerCase())return;
       b.employees=1000;
+      // 総階数も従業員1000人で再計算して固定（以前はDBの従業員数で計算した値が残り、
+      // 配属や任期切れのたびに244階↔250階のように表示が揺れていた）
+      b.totalFloors=calcTotalFloors(b.baseFloors||b.totalFloors||1,1000);
       if(b.mesh&&b.mesh.material){
         applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }
@@ -7203,6 +7229,8 @@
     ['task-panel','gacha-box','zukan-body'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
     // 画面右下にビルド番号（サポート用：どの版が動いているか一目で分かる）
     {const bb=document.getElementById('build-badge');if(bb)bb.textContent=IGNIS_BUILD.replace(/^\d{4}-\d{2}-\d{2}-/,'');}
+    // 全BGMを起動時に先読み（スクラッチ/図鑑へ移動した瞬間に音楽が始まるように）
+    IgnisAudio.preloadAllBgm();
     // ===== 自動アップデート =====
     // version.txt（キャッシュ無効で取得）と自分のビルドを比べ、新しい版が出ていたら自動で再読込する。
     // GitHub Pagesのキャッシュ(10分)やスマホのキャッシュで古い版が表示され続ける問題への対策。

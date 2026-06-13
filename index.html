@@ -1859,7 +1859,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-13-v137';
+    const IGNIS_BUILD='2026-06-13-v138';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -5328,6 +5328,8 @@
         if(currentLang!=='en')return;
         if(typeof applyApprovedMottosToScene==='function')applyApprovedMottosToScene();
         if(typeof refreshBuildingModalLang==='function')refreshBuildingModalLang();
+        // 翻訳が遅れて届いた時、投影ビルの格言も英語で作り直す（初回ENで投影だけ日本語のままになる対策）
+        if(typeof loadPremiumShowcase==='function')loadPremiumShowcase().catch(()=>{});
       });
     }
     // 過去詳細③〜⑥：DBに英訳が無い項目をその場で翻訳してモーダルに反映

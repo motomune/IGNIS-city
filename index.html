@@ -1859,7 +1859,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-13-v136';
+    const IGNIS_BUILD='2026-06-13-v137';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -5489,6 +5489,18 @@
         const euler=b.mesh.rotationQuaternion?b.mesh.rotationQuaternion.toEulerAngles():b.mesh.rotation;
         plane.rotation.y=euler.y+rotY;
       });
+      // プレミアム投影ビルの格言も同様にカメラを向いた壁面へ貼り直す（視点追従）
+      if(premiumHoloFake&&premiumHoloFake.mesh&&!premiumHoloFake.mesh.isDisposed()){
+        const hp=scene.getMeshByName('premium_holo_motto');
+        if(hp){
+          const ph=(hp.metadata&&hp.metadata.mottoPlaneH)||4;
+          const{localPos,rotY}=getMottoWallPlacementLocal(premiumHoloFake,ph);
+          const worldPos=BABYLON.Vector3.TransformCoordinates(localPos,premiumHoloFake.mesh.getWorldMatrix());
+          hp.position.copyFrom(worldPos);
+          const e=premiumHoloFake.mesh.rotationQuaternion?premiumHoloFake.mesh.rotationQuaternion.toEulerAngles():premiumHoloFake.mesh.rotation;
+          hp.rotation.y=e.y+rotY;
+        }
+      }
     }
     // 3D壁プレートの配置：カメラを向いた壁面・目線の高さに、壁に沿って貼る
     function getMottoWallPlacementLocal(b,planeH){
@@ -6685,7 +6697,7 @@
     // ===== プレミアム特典：ビルのホログラム投影（中央特別区域に日替わりで1棟展示）=====
     // プレミアム会員のビルから固定シードの日替わり乱数で1棟選び、特別区域の空きマスに
     // 半透明の「投影」として表示する。タップすると本物のビル詳細が開く。
-    let premiumHolo=null;
+    let premiumHolo=null,premiumHoloFake=null;
     async function loadPremiumShowcase(){
       if(!db||!window.BABYLON||!scene)return;
       try{
@@ -6709,10 +6721,12 @@
           if(buildingMap[k]||landMap[k])continue;
           px=gx;pz=gz;break outer;
         }
-        // 本物と同じ階数・同じ形・同じ幅で正確に投影する
+        // 本物のメッシュの実際の高さ・幅をそのまま使う（中央ビルは見せ筋パッチで
+        // totalFloorsとメッシュ高さがズレるため、メッシュの実寸から取る＝確実に一致）
+        const bb=pick.mesh.getBoundingInfo().boundingBox;
+        const h=Math.max(1,(bb.maximumWorld.y-bb.minimumWorld.y));
+        const w=Math.max(1,(bb.maximumWorld.x-bb.minimumWorld.x));
         const fl=Math.max(1,pick.totalFloors||pick.baseFloors||1);
-        const h=fl*0.5;
-        const w=(typeof PRISMS!=='undefined'&&PRISMS[pick.shape]&&PRISMS[pick.shape].w)||5.5;
         let mesh;
         if(pick.shape==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:20},scene);
         else if(pick.shape==='triangle')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:3},scene);
@@ -6727,7 +6741,8 @@
         mesh.isPickable=true;
         mesh.metadata={holoOf:pick.landKey||landKey(pick.x,pick.z)};
         premiumHolo=mesh;
-        // 格言もビル壁に投影（本物と同じ縦書きプレート）
+        premiumHoloFake=null;
+        // 格言もビル壁に投影（本物と同じ縦書きプレート）。視点追従できるよう情報を保持
         try{
           const okey=pick.landKey||landKey(pick.x,pick.z);
           const p=approvedProfiles[okey];
@@ -6735,7 +6750,7 @@
             const fake={x:px,z:pz,mesh,totalFloors:fl,baseFloors:pick.baseFloors,shape:pick.shape};
             addMottoMesh(fake,mottoDisplayText(p),false);
             const mm=scene.getMeshByName('motto_'+px+'_'+pz);
-            if(mm){mm.name='premium_holo_motto';mm.id='premium_holo_motto';}
+            if(mm){mm.name='premium_holo_motto';mm.id='premium_holo_motto';premiumHoloFake=fake;}
           }
         }catch(_){}
       }catch(e){/* is_premium未適用などは無視 */}

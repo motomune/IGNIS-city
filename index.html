@@ -492,7 +492,7 @@
     #gacha-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:160;align-items:center;justify-content:center; }
     #gacha-modal.open { display: flex; }
     #gacha-box { background:#0a0a14;border:1px solid rgba(168,85,247,0.5);border-radius:24px;padding:28px 28px 24px;width:360px;max-width:94vw;position:relative;box-shadow:0 0 60px rgba(168,85,247,0.2),0 20px 60px rgba(0,0,0,0.8);text-align:center; }
-    #gacha-modal-close { position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer; }
+    #gacha-modal-close { position:sticky;float:right;top:0;margin:-8px -8px 0 0;background:rgba(10,10,20,0.85);border:none;color:rgba(255,255,255,0.5);font-size:24px;cursor:pointer;z-index:30;border-radius:8px;width:36px;height:36px; }
     #gacha-modal-close:hover { color: #fff; }
     #gacha-title { font-size:22px;font-weight:900;letter-spacing:0.1em;background:linear-gradient(135deg,#a855f7,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px; }
     #gacha-land-info { display:none; }
@@ -528,7 +528,8 @@
     #build-confirm-btn:disabled { opacity:0.4;cursor:not-allowed; }
     #auth-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:200;align-items:center;justify-content:center; }
     #auth-modal.open { display: flex; }
-    #auth-box { background:#0f0f18;border:1px solid rgba(255,106,0,0.35);border-radius:22px;padding:36px 36px 28px;width:400px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.7);position:relative;overflow:hidden; }
+    #auth-box { background:#0f0f18;border:1px solid rgba(255,106,0,0.35);border-radius:22px;padding:36px 36px 28px;width:400px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.7);position:relative;overflow-y:auto;overflow-x:hidden;max-height:92vh;scrollbar-width:none; }
+    #auth-box::-webkit-scrollbar { width:0;height:0;display:none; }
     #auth-box::before { content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:200px;height:80px;background:radial-gradient(ellipse,rgba(255,106,0,0.2) 0%,transparent 70%);pointer-events:none; }
     #auth-header-fire { text-align:center;font-size:30px;margin-bottom:4px;animation:fireFlicker 1.5s ease-in-out infinite alternate; }
     @keyframes fireFlicker { 0%{filter:brightness(1) drop-shadow(0 0 6px #ff6a00);transform:scaleY(1);}50%{filter:brightness(1.4) drop-shadow(0 0 14px #ff3300);transform:scaleY(1.06);}100%{filter:brightness(0.9) drop-shadow(0 0 4px #ff9900);transform:scaleY(0.97);} }
@@ -569,7 +570,7 @@
     #auth-submit:hover { opacity: 0.85; }
     #auth-submit:disabled { opacity:0.5;cursor:not-allowed; }
     #auth-error { font-size:12px;margin-top:10px;text-align:center;min-height:18px;color:#ff4444; }
-    #auth-close { position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer;z-index:6;touch-action:manipulation;-webkit-tap-highlight-color:transparent; }
+    #auth-close { position:sticky;float:right;top:0;margin:-12px -12px 0 0;background:rgba(15,15,24,0.8);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;z-index:30;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border-radius:8px; }
     #auth-close:hover { color: #fff; }
     #auth-lang-btn {
       position:absolute;top:14px;left:18px;z-index:6;
@@ -1004,7 +1005,7 @@
     #sub-modal { position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:70; }
     #sub-modal.open { display:flex; }
     #sub-box { position:relative;width:min(420px,92vw);max-height:86vh;overflow-y:auto;background:#0d0a14;border:1px solid rgba(255,213,79,0.4);border-radius:18px;padding:22px;box-shadow:0 10px 50px rgba(255,180,0,0.18); }
-    #sub-close { position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer; }
+    #sub-close { position:sticky;float:right;top:0;margin:-6px -6px 0 0;background:rgba(13,10,20,0.85);border:none;color:rgba(255,255,255,0.7);font-size:22px;cursor:pointer;z-index:30;border-radius:8px;width:34px;height:34px; }
     #sub-title { font-size:17px;font-weight:900;color:#ffd54f;margin-bottom:4px; }
     #sub-sub { font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:14px; }
     .sub-plan { border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(255,255,255,0.03); }
@@ -1262,6 +1263,18 @@
       #bottom-btns { gap:6px; bottom:max(8px,env(safe-area-inset-bottom,0px)); }
       #bottom-btns #build-btn { padding:9px 14px !important; font-size:12px !important; }
       #mode-btn, #zukan-float-btn { padding:9px 12px !important; font-size:12px !important; }
+      /* 横画面でモーダルが画面に収まらずボタンが押せない問題：全体をスクロール可能にし高さを抑える */
+      #gacha-modal, #auth-modal, #build-modal, #profile-modal { align-items:flex-start !important; overflow-y:auto !important; padding:8px 0; -webkit-overflow-scrolling:touch; }
+      #gacha-box, #auth-box, #build-box, #profile-box { max-height:none !important; margin:auto; }
+      #gacha-box { padding:14px 16px 18px; }
+      #gacha-book { height:min(40vh,180px) !important; margin-bottom:6px; }
+      .gacha-rates { font-size:10px; }
+      #gacha-spin-btn, #gacha-hire-btn { font-size:13px; padding:10px; }
+      #gacha-modal-close { top:8px; right:10px; font-size:24px; width:34px; height:34px; }
+      /* 採用通知書も横画面で収める */
+      #hire-stamp-overlay { overflow-y:auto; align-items:flex-start; padding:8px 0; }
+      .hire-contract { max-height:none; margin:auto; transform:scale(0.92); }
+      .hire-contract-body { min-height:0; font-size:12px; line-height:1.6; margin-bottom:12px; }
     }
     @media (max-width: 480px) {
       #right-rail { width:124px; }
@@ -1859,7 +1872,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-13-v139';
+    const IGNIS_BUILD='2026-06-14-v140';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3576,6 +3589,8 @@
       if(typeof loadCityTowers==='function')loadCityTowers().catch(()=>{});
       // プレミアム投影ビルの壁格言も言語に合わせて作り直す
       if(typeof loadPremiumShowcase==='function')loadPremiumShowcase().catch(()=>{});
+      // 開いているサブスク画面も言語を切り替える
+      if(typeof applySubModalLang==='function'&&document.getElementById('sub-modal')&&document.getElementById('sub-modal').classList.contains('open'))applySubModalLang();
     }
     const STAR_LABELS_GACHA={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
     const STAR_LABELS_GACHA_EN={5:'★★★★★ Legendary',4:'★★★★ Epic',3:'★★ Rare',2:'★★ Uncommon',1:'★ Common'};
@@ -6623,28 +6638,35 @@
     }
     // ===== サブスク課金（Stripe）=====
     // 決済ページの作成・解約ポータルはEdge Function (stripe-billing) 経由。キーはサーバー側のみ。
-    function openSubModal(){
-      if(!currentUser){openAuthModal();showToast(currentLang==='ja'?'ログインが必要です':'Login required');return;}
+    function applySubModalLang(){
       const isJa=currentLang==='ja';
-      document.getElementById('sub-title').textContent=isJa?'💎 サブスクリプション':'💎 Subscription';
-      document.getElementById('sub-sub').textContent=isJa?'あなたの応援が、誰かの再生を支えます':'Your support helps someone rebuild';
-      document.getElementById('sub-plan-980-name').textContent=isJa?'サブスク会員':'Subscriber';
-      document.getElementById('sub-plan-980-price').textContent=isJa?'月980円（税込）':'¥980 / month (tax incl.)';
-      document.getElementById('sub-plan-1980-name').textContent=isJa?'プレミアム会員':'Premium';
-      document.getElementById('sub-plan-1980-price').textContent=isJa?'月1980円（税込）':'¥1,980 / month (tax incl.)';
-      document.getElementById('sub-plan-980-btn').textContent=isJa?'登録する':'Subscribe';
-      document.getElementById('sub-plan-1980-btn').textContent=isJa?'登録する':'Subscribe';
-      // 特典リスト（言語別）。プレミアムは「宣伝枠＋日替わりホログラム投影」で差別化
-      document.getElementById('sub-plan-980-feats').innerHTML=isJa
+      const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+      set('sub-title',isJa?'💎 サブスクリプション':'💎 Subscription');
+      set('sub-sub',isJa?'あなたの応援が、誰かの再生を支えます':'Your support helps someone rebuild');
+      set('sub-plan-980-name',isJa?'サブスク会員':'Subscriber');
+      set('sub-plan-980-price',isJa?'月980円（税込）':'¥980 / month (tax incl.)');
+      set('sub-plan-1980-name',isJa?'プレミアム会員':'Premium');
+      set('sub-plan-1980-price',isJa?'月1980円（税込）':'¥1,980 / month (tax incl.)');
+      set('sub-plan-980-btn',isJa?'登録する':'Subscribe');
+      set('sub-plan-1980-btn',isJa?'登録する':'Subscribe');
+      const f980=document.getElementById('sub-plan-980-feats');
+      if(f980)f980.innerHTML=isJa
         ?'<li>📖 全ビルの過去詳細③〜⑥が読める</li><li>🕯️ 蝋燭を灯せる（1日3本・報酬つき）</li><li>🔴 ビル屋上に赤い点滅ランプ</li><li>🐦 X報酬（リポスト/リプライ）1.5倍</li><li>🪪 Xユーザー名をモザイク無しで表示</li>'
         :'<li>📖 Read full past details (3-6) of every building</li><li>🕯️ Light candles (3/day, with rewards)</li><li>🔴 Red blinking rooftop lamp</li><li>🐦 1.5x X repost/reply rewards</li><li>🪪 X username shown without mosaic</li>';
-      document.getElementById('sub-plan-1980-feats').innerHTML=isJa
+      const f1980=document.getElementById('sub-plan-1980-feats');
+      if(f1980)f1980.innerHTML=isJa
         ?'<li>✨ サブスク会員の特典すべて</li><li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li><li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>'
         :'<li>✨ Everything in Subscriber</li><li>💎 Your X link featured in the in-game ticker</li><li>🏙 Your building projected as a daily hologram in the central special zone (tap leads to your building)</li>';
-      document.getElementById('sub-note').textContent=isJa?'決済はStripeの安全なページで行われます。いつでも解約できます。':'Payments are handled securely by Stripe. Cancel anytime.';
+      set('sub-note',isJa?'決済はStripeの安全なページで行われます。いつでも解約できます。':'Payments are handled securely by Stripe. Cancel anytime.');
       const portal=document.getElementById('sub-portal-btn');
-      portal.textContent=isJa?'⚙️ プラン変更・解約はこちら':'⚙️ Change plan / cancel';
-      portal.style.display=(currentUser&&currentUser.isSubscribed)?'block':'none';
+      if(portal){
+        portal.textContent=isJa?'⚙️ プラン変更・解約はこちら':'⚙️ Change plan / cancel';
+        portal.style.display=(currentUser&&currentUser.isSubscribed)?'block':'none';
+      }
+    }
+    function openSubModal(){
+      if(!currentUser){openAuthModal();showToast(currentLang==='ja'?'ログインが必要です':'Login required');return;}
+      applySubModalLang();
       document.getElementById('sub-modal').classList.add('open');
     }
     function closeSubModal(){document.getElementById('sub-modal').classList.remove('open');}
@@ -6723,19 +6745,14 @@
           if(buildingMap[k]||landMap[k])continue;
           px=gx;pz=gz;break outer;
         }
-        // 本物のメッシュの実際の高さ・幅をそのまま使う（中央ビルは見せ筋パッチで
-        // totalFloorsとメッシュ高さがズレるため、メッシュの実寸から取る＝確実に一致）
-        pick.mesh.computeWorldMatrix(true);            // 最新のワールド行列を確定
-        pick.mesh.refreshBoundingInfo&&pick.mesh.refreshBoundingInfo();
-        const bb=pick.mesh.getBoundingInfo().boundingBox;
-        const h=Math.max(1,bb.extendSizeWorld.y*2);    // スケール込みの実高さ
-        const w=Math.max(1,bb.extendSizeWorld.x*2);
-        const fl=Math.max(1,Math.round(h/0.5));        // 実高さに対応する階数（格言の余白計算に使う）
-        let mesh;
-        if(pick.shape==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:20},scene);
-        else if(pick.shape==='triangle')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:3},scene);
-        else mesh=BABYLON.MeshBuilder.CreateBox('premium_holo',{width:w,height:h,depth:w},scene);
-        mesh.position=new BABYLON.Vector3(px,h/2,pz);
+        // 本物のメッシュをそのまま複製＝高さ・幅・形が確実に一致する（子メッシュは複製しない）
+        const mesh=pick.mesh.clone('premium_holo',null,true);
+        if(!mesh)return;
+        // 元の見た目（屋上ランプ・既存格言等の子）を引き継がないよう、念のため子を破棄
+        (mesh.getChildMeshes&&mesh.getChildMeshes()||[]).forEach(c=>{try{c.dispose();}catch(_){}});
+        mesh.position=new BABYLON.Vector3(px,pick.mesh.position.y,pz); // 縦位置（高さの中心）も本物と同じ
+        mesh.rotationQuaternion=null;
+        mesh.rotation=(pick.mesh.rotation&&pick.mesh.rotation.clone)?pick.mesh.rotation.clone():new BABYLON.Vector3(0,0,0);
         const mat=new BABYLON.StandardMaterial('premiumHoloMat',scene);
         mat.diffuseColor=new BABYLON.Color3(0.35,0.85,1.0);
         mat.emissiveColor=new BABYLON.Color3(0.18,0.55,0.85);
@@ -6746,6 +6763,10 @@
         mesh.metadata={holoOf:pick.landKey||landKey(pick.x,pick.z)};
         premiumHolo=mesh;
         premiumHoloFake=null;
+        // 投影の実高さ（格言の余白計算に使う）
+        mesh.computeWorldMatrix(true);
+        const bb=mesh.getBoundingInfo().boundingBox;
+        const fl=Math.max(1,Math.round((bb.extendSizeWorld.y*2)/0.5));
         // 格言もビル壁に投影（本物と同じ縦書きプレート）。視点追従できるよう情報を保持
         try{
           const okey=pick.landKey||landKey(pick.x,pick.z);
@@ -7657,7 +7678,7 @@
     setupAuthListener();
     // タスク/X報酬/ビルスクラッチ/図鑑/サブスク画面に常時スクロールバーを付ける（X報酬は水色）
     addFixedScrollbar(document.getElementById('x-rewards-body'),'rgba(125,216,255,0.85)');
-    ['task-panel','gacha-box','zukan-body','sub-box'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
+    ['task-panel','gacha-box','zukan-body','sub-box','auth-box'].forEach(id=>{const el=document.getElementById(id);if(el)addFixedScrollbar(el);});
     // 画面右下にビルド番号（サポート用：どの版が動いているか一目で分かる）
     {const bb=document.getElementById('build-badge');if(bb)bb.textContent=IGNIS_BUILD.replace(/^\d{4}-\d{2}-\d{2}-/,'');}
     // 全BGMを起動時に先読み（スクラッチ/図鑑へ移動した瞬間に音楽が始まるように）

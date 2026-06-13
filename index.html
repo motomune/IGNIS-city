@@ -1859,7 +1859,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-13-v132';
+    const IGNIS_BUILD='2026-06-13-v133';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2483,54 +2483,123 @@
       o.connect(g);g.connect(this.sfxGain);
       o.start(t);o.stop(t+0.055);
     },
+    // 印鑑：①押し付けの「コッ」→②紙を叩くスラップ→③机に響く低い「ドンッ」→④木の余韻
     playStampSeal(){
       if(this.muted||!this.ctx)return;
-      const t=this.ctx.currentTime;
-      const bufSize=Math.floor(this.ctx.sampleRate*0.06);
-      const buf=this.ctx.createBuffer(1,bufSize,this.ctx.sampleRate);
-      const d=buf.getChannelData(0);
-      for(let i=0;i<bufSize;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(bufSize*0.22));
-      const noise=this.ctx.createBufferSource();
-      noise.buffer=buf;
-      const bp=this.ctx.createBiquadFilter();
-      bp.type='bandpass';bp.frequency.value=900;bp.Q.value=0.8;
-      const ng=this.ctx.createGain();
-      ng.gain.setValueAtTime(0.22,t);
-      ng.gain.exponentialRampToValueAtTime(0.001,t+0.07);
-      noise.connect(bp);bp.connect(ng);ng.connect(this.sfxGain);
-      noise.start(t);noise.stop(t+0.08);
-      const o=this.ctx.createOscillator();
-      const g=this.ctx.createGain();
+      const c=this.ctx,t=c.currentTime;
+      const tick=c.createOscillator(),tg=c.createGain();
+      tick.type='triangle';
+      tick.frequency.setValueAtTime(320,t);
+      tick.frequency.exponentialRampToValueAtTime(140,t+0.03);
+      tg.gain.setValueAtTime(0.12,t);
+      tg.gain.exponentialRampToValueAtTime(0.001,t+0.035);
+      tick.connect(tg);tg.connect(this.sfxGain);
+      tick.start(t);tick.stop(t+0.04);
+      const sl=0.05,sb=c.createBuffer(1,Math.floor(c.sampleRate*sl),c.sampleRate),sd=sb.getChannelData(0);
+      for(let i=0;i<sd.length;i++)sd[i]=(Math.random()*2-1)*Math.exp(-i/(sd.length*0.12));
+      const slap=c.createBufferSource();slap.buffer=sb;
+      const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4200;
+      const sg=c.createGain();
+      sg.gain.setValueAtTime(0.5,t+0.012);
+      sg.gain.exponentialRampToValueAtTime(0.001,t+0.07);
+      slap.connect(lp);lp.connect(sg);sg.connect(this.sfxGain);
+      slap.start(t+0.012);slap.stop(t+0.08);
+      const o=c.createOscillator(),g=c.createGain();
       o.type='sine';
-      o.frequency.setValueAtTime(95,t);
-      o.frequency.exponentialRampToValueAtTime(48,t+0.12);
-      g.gain.setValueAtTime(0.28,t);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.14);
+      o.frequency.setValueAtTime(120,t+0.012);
+      o.frequency.exponentialRampToValueAtTime(38,t+0.22);
+      g.gain.setValueAtTime(0.55,t+0.012);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
       o.connect(g);g.connect(this.sfxGain);
-      o.start(t);o.stop(t+0.15);
+      o.start(t+0.012);o.stop(t+0.32);
+      const r=c.createOscillator(),rg=c.createGain();
+      r.type='triangle';
+      r.frequency.setValueAtTime(190,t+0.02);
+      rg.gain.setValueAtTime(0.08,t+0.02);
+      rg.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+      r.connect(rg);rg.connect(this.sfxGain);
+      r.start(t+0.02);r.stop(t+0.27);
     },
+    // ボールペンのサイン音：一画ずつ「書いて・止めて・また書く」を刻む（紙の摩擦ムラ付き）
     playPencilWrite(durationMs=1050){
       if(this.muted||!this.ctx)return;
-      const t=this.ctx.currentTime;
-      const dur=Math.max(0.2,durationMs/1000);
-      const bufSize=Math.floor(this.ctx.sampleRate*dur);
-      const buf=this.ctx.createBuffer(1,bufSize,this.ctx.sampleRate);
-      const d=buf.getChannelData(0);
-      for(let i=0;i<bufSize;i++){
-        const env=0.35+0.65*Math.sin((i/bufSize)*Math.PI);
-        d[i]=(Math.random()*2-1)*env*Math.exp(-((i%120)/120)*2.2);
+      const c=this.ctx,t0=c.currentTime;
+      const dur=Math.max(0.3,durationMs/1000);
+      const strokes=Math.max(4,Math.round(dur*6));
+      let tt=t0+0.02;
+      for(let s=0;s<strokes&&tt<t0+dur;s++){
+        const len=0.05+Math.random()*0.12;   // 1画の長さ
+        const gap=0.015+Math.random()*0.05;  // 画と画の間（ペンが浮く時間）
+        const n=c.createBuffer(1,Math.max(64,Math.floor(c.sampleRate*len)),c.sampleRate);
+        const d=n.getChannelData(0);
+        for(let i=0;i<d.length;i++){
+          const fric=0.6+0.4*Math.sin(i*0.05+s*1.7); // 紙の摩擦ムラ
+          d[i]=(Math.random()*2-1)*fric;
+        }
+        const src=c.createBufferSource();src.buffer=n;
+        const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=900;
+        const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.1;
+        bp.frequency.setValueAtTime(1500+Math.random()*900,tt);
+        bp.frequency.linearRampToValueAtTime(1100+Math.random()*900,tt+len);
+        const g=c.createGain();
+        g.gain.setValueAtTime(0.001,tt);
+        g.gain.linearRampToValueAtTime(0.16+Math.random()*0.06,tt+0.012);
+        g.gain.exponentialRampToValueAtTime(0.001,tt+len);
+        src.connect(hp);hp.connect(bp);bp.connect(g);g.connect(this.sfxGain);
+        src.start(tt);src.stop(tt+len+0.01);
+        tt+=len+gap;
       }
-      const noise=this.ctx.createBufferSource();
-      noise.buffer=buf;
-      const hp=this.ctx.createBiquadFilter();
-      hp.type='highpass';hp.frequency.value=1800;
-      const ng=this.ctx.createGain();
-      ng.gain.setValueAtTime(0.001,t);
-      ng.gain.linearRampToValueAtTime(0.1,t+0.04);
-      ng.gain.setValueAtTime(0.1,t+dur-0.08);
-      ng.gain.exponentialRampToValueAtTime(0.001,t+dur);
-      noise.connect(hp);hp.connect(ng);ng.connect(this.sfxGain);
-      noise.start(t);noise.stop(t+dur+0.02);
+    },
+    // ページをめくる音：紙が滑る「サーッ」→最後に「パタッ」
+    playPageTurn(){
+      if(this.muted||!this.ctx)return;
+      const c=this.ctx,t=c.currentTime;
+      const slideDur=0.32;
+      const n=c.createBuffer(1,Math.floor(c.sampleRate*slideDur),c.sampleRate);
+      const d=n.getChannelData(0);
+      for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(0.25+0.75*(i/d.length));
+      const src=c.createBufferSource();src.buffer=n;
+      const bp=c.createBiquadFilter();bp.type='bandpass';bp.Q.value=0.9;
+      bp.frequency.setValueAtTime(900,t);
+      bp.frequency.exponentialRampToValueAtTime(3600,t+slideDur);
+      const g=c.createGain();
+      g.gain.setValueAtTime(0.001,t);
+      g.gain.linearRampToValueAtTime(0.16,t+slideDur*0.7);
+      g.gain.linearRampToValueAtTime(0.05,t+slideDur);
+      src.connect(bp);bp.connect(g);g.connect(this.sfxGain);
+      src.start(t);src.stop(t+slideDur+0.01);
+      const f=0.07;
+      const fb=c.createBuffer(1,Math.floor(c.sampleRate*f),c.sampleRate);
+      const fd=fb.getChannelData(0);
+      for(let i=0;i<fd.length;i++)fd[i]=(Math.random()*2-1)*Math.exp(-i/(fd.length*0.25));
+      const fs=c.createBufferSource();fs.buffer=fb;
+      const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2400;
+      const fg=c.createGain();
+      fg.gain.setValueAtTime(0.3,t+slideDur);
+      fg.gain.exponentialRampToValueAtTime(0.001,t+slideDur+f);
+      fs.connect(lp);lp.connect(fg);fg.connect(this.sfxGain);
+      fs.start(t+slideDur);fs.stop(t+slideDur+f+0.01);
+    },
+    // スクラッチを削るザラザラ音（指を動かしている間だけ短く鳴らす）
+    playScratchGrain(){
+      if(this.muted||!this.ctx)return;
+      const c=this.ctx,t=c.currentTime;
+      const len=0.05+Math.random()*0.03;
+      const n=c.createBuffer(1,Math.floor(c.sampleRate*len),c.sampleRate);
+      const d=n.getChannelData(0);
+      for(let i=0;i<d.length;i++){
+        const grain=(i%37<19)?1:0.45; // コインで削る粒感
+        d[i]=(Math.random()*2-1)*grain;
+      }
+      const src=c.createBufferSource();src.buffer=n;
+      src.playbackRate.value=0.9+Math.random()*0.3;
+      const bp=c.createBiquadFilter();bp.type='bandpass';
+      bp.frequency.value=1000+Math.random()*700;bp.Q.value=0.8;
+      const g=c.createGain();
+      g.gain.setValueAtTime(0.12,t);
+      g.gain.exponentialRampToValueAtTime(0.001,t+len);
+      src.connect(bp);bp.connect(g);g.connect(this.sfxGain);
+      src.start(t);src.stop(t+len+0.01);
     },
     playGachaClick(){
       if(this.muted||!this.ctx)return;
@@ -2859,8 +2928,10 @@
         setBookPrizeUnderScratch(result);
       }
       if(book)book.classList.add('scratch-ready');
+      try{IgnisAudio.playPageTurn();}catch(_){} // スクラッチページが現れる＝ページをめくる音
       let revealed=false;
       let drawing=false;
+      let lastGrainT=0; // 削り音の間引き用
       const brush=Math.max(26,Math.floor(Math.min(w,h)*0.09*SCRATCH_BRUSH_FACTOR));
       const scratchRevealThreshold=SCRATCH_REVEAL_RATIO;
       const scratchAt=(clientX,clientY)=>{
@@ -2875,6 +2946,9 @@
         ctx.fill();
         ctx.globalCompositeOperation='source-over';
         pulsePrizeEmerge();
+        // 削っている間だけザラザラ音（約70ms間隔で間引き）
+        const nw=performance.now();
+        if(nw-lastGrainT>70){lastGrainT=nw;try{IgnisAudio.playScratchGrain();}catch(_){}}
       };
       const tryReveal=()=>{
         if(revealed)return;

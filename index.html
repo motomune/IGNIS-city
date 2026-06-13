@@ -1859,7 +1859,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-13-v138';
+    const IGNIS_BUILD='2026-06-13-v139';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6496,8 +6496,8 @@
       polMat.diffuseColor=new BABYLON.Color3(0.18,0.17,0.22);
       polMat.emissiveColor=new BABYLON.Color3(0.06,0.05,0.08);
       polMat.specularColor=new BABYLON.Color3(0,0,0);
-      const root=BABYLON.MeshBuilder.CreateCylinder(name,{diameter:0.9,height:16,tessellation:12},scene);
-      root.position=new BABYLON.Vector3(gx,8,gz);
+      const root=BABYLON.MeshBuilder.CreateCylinder(name,{diameter:1.2,height:22,tessellation:12},scene);
+      root.position=new BABYLON.Vector3(gx,11,gz);
       root.material=polMat;
       const tex=new BABYLON.DynamicTexture(name+'Tex',{width:1024,height:512},scene,true);
       const adMat=new BABYLON.StandardMaterial(name+'Mat',scene);
@@ -6505,8 +6505,8 @@
       adMat.emissiveColor=new BABYLON.Color3(0.85,0.72,0.55); // 夜でも光って見える
       adMat.specularColor=new BABYLON.Color3(0,0,0);
       adMat.backFaceCulling=false; // 両面表示
-      const board=BABYLON.MeshBuilder.CreatePlane(name+'_plate',{width:7,height:3.5},scene);
-      board.parent=root;board.position.y=8.8;
+      const board=BABYLON.MeshBuilder.CreatePlane(name+'_plate',{width:13,height:6.5},scene);
+      board.parent=root;board.position.y=12.5;
       board.material=adMat;
       if(!_towerSpinObs)_towerSpinObs=scene.onBeforeRenderObservable.add(()=>{
         Object.values(cityTowers).forEach(t=>{if(t.root&&!t.root.isDisposed())t.root.rotation.y+=0.005;});
@@ -6725,10 +6725,12 @@
         }
         // 本物のメッシュの実際の高さ・幅をそのまま使う（中央ビルは見せ筋パッチで
         // totalFloorsとメッシュ高さがズレるため、メッシュの実寸から取る＝確実に一致）
+        pick.mesh.computeWorldMatrix(true);            // 最新のワールド行列を確定
+        pick.mesh.refreshBoundingInfo&&pick.mesh.refreshBoundingInfo();
         const bb=pick.mesh.getBoundingInfo().boundingBox;
-        const h=Math.max(1,(bb.maximumWorld.y-bb.minimumWorld.y));
-        const w=Math.max(1,(bb.maximumWorld.x-bb.minimumWorld.x));
-        const fl=Math.max(1,pick.totalFloors||pick.baseFloors||1);
+        const h=Math.max(1,bb.extendSizeWorld.y*2);    // スケール込みの実高さ
+        const w=Math.max(1,bb.extendSizeWorld.x*2);
+        const fl=Math.max(1,Math.round(h/0.5));        // 実高さに対応する階数（格言の余白計算に使う）
         let mesh;
         if(pick.shape==='cylinder')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:20},scene);
         else if(pick.shape==='triangle')mesh=BABYLON.MeshBuilder.CreateCylinder('premium_holo',{height:h,diameter:w,tessellation:3},scene);
@@ -7192,7 +7194,8 @@
     async function loadSubscriberSet(){
       if(!db)return;
       try{
-        const{data}=await db.from('users').select('id').eq('is_subscribed',true);
+        // サブスク会員＋プレミアム会員のどちらも屋上ランプ対象（プレミアムはサブスク特典を含む）
+        const{data}=await db.from('users').select('id').or('is_subscribed.eq.true,is_premium.eq.true');
         subscriberIds=new Set((data||[]).map(u=>u.id));
       }catch(e){subscriberIds=new Set();}
     }
@@ -7212,9 +7215,8 @@
       subscriberLamps.push(lamp);
       if(!_lampBlinkObserver){
         _lampBlinkObserver=scene.onBeforeRenderObservable.add(()=>{
-          const t=(performance.now()%1000)/1000; // 1秒周期
-          const on=t<0.5; // 点滅
-          const lvl=on?1:0.12;
+          const t=(performance.now()%2600)/2600; // 2.6秒周期＝ゆっくり点滅
+          const lvl=0.12+0.88*(0.5+0.5*Math.cos(t*Math.PI*2)); // なめらかにフェード
           for(let i=subscriberLamps.length-1;i>=0;i--){
             const lp=subscriberLamps[i];
             if(!lp||lp.isDisposed()){subscriberLamps.splice(i,1);continue;}

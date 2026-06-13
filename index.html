@@ -1859,7 +1859,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-13-v134';
+    const IGNIS_BUILD='2026-06-13-v135';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -5629,7 +5629,10 @@
       const availH=mottoAvailHeight(building);
       const cellH=Math.min(MOTTO_CHAR_W*MOTTO_LINE_GAP, availH/totalW);
       const charW=cellH/MOTTO_LINE_GAP;
-      const planeW=charW;
+      // 黒帯（下地プレート）の横幅。英字（横倒し）を含む時は左右に余白を足して帯を広げる。
+      const hasLatin=kinds.some(k=>k==='latin');
+      const MOTTO_BAND_FACTOR=hasLatin?1.35:1.0;
+      const planeW=charW*MOTTO_BAND_FACTOR;
       const planeH=totalW*cellH;
       const{localPos,rotY}=getMottoWallPlacementLocal(building,planeH);
       const side=BABYLON.Mesh.DOUBLESIDE||2;
@@ -5653,7 +5656,7 @@
       }
       // 行の高さ：日本語=フルセル、横倒し英字=余白込みセル、スペース=隙間
       const rowHs=kinds.map(k=>k==='jp'?lineCellH:Math.max(6,Math.round(lineCellH*(k==='latin'?MOTTO_LATIN_W:MOTTO_SPACE_W))));
-      const texW=MOTTO_CPL*cell;
+      const texW=Math.round(MOTTO_CPL*cell*MOTTO_BAND_FACTOR); // 帯の横幅（英字時は広げて余白）
       const texH=Math.min(MAX_TEX,Math.max(cell,rowHs.reduce((a,b)=>a+b,0)));
       const fontSize=Math.floor(cell*0.94);
       const latinFontSize=Math.floor(cell*0.94*MOTTO_LATIN_FONT); // 英字は1.2倍

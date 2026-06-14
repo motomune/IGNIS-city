@@ -3032,6 +3032,8 @@
       applyGameI18n();
       if(gachaState.result)renderBuildModalPrize();
       updateViewTaskProgressLabel();
+      if(typeof buildDawnMonument==='function')buildDawnMonument();
+      if(typeof loadCityTowers==='function')loadCityTowers().catch(()=>{});
     }
     const STAR_LABELS_GACHA={5:'★★★★★ 伝説',4:'★★★★ エピック',3:'★★★ レア',2:'★★ アンコモン',1:'★ コモン'};
     const STAR_LABELS_GACHA_EN={5:'★★★★★ Legendary',4:'★★★★ Epic',3:'★★ Rare',2:'★★ Uncommon',1:'★ Common'};
@@ -5481,6 +5483,8 @@
           await loadBuildings();
           buildings.forEach(b=>{if(!b.ownerId){const land=landMap[b.landKey];if(land&&land.owner_id)b.ownerId=land.owner_id;}});
           trimOrphanBuildingsHalf();
+          loadCityTowers().catch(()=>{});
+          buildDawnMonument();
           patchOwnerCenterBuilding();
           try{await withTimeout(loadApprovedProfiles(),8000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
           scheduleMottoRefresh();
@@ -5496,6 +5500,29 @@
       if(isFlying&&!pendingBuildMode)return;
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
+      {
+        const nm=pick.pickedMesh.name;
+        if(nm==='tower_dawn'||nm==='tower_dawn_plate'){
+          showToast(currentLang==='ja'?'🌅 夜明けの回数看板です':'🌅 Dawn count billboard');
+          return;
+        }
+        if(nm==='tower_logins'||nm==='tower_logins_plate'){
+          showToast(currentLang==='ja'?'👥 今月ログインしたプレイヤーの人数です（同じ人は1カウント）':'👥 Unique players who logged in this month');
+          return;
+        }
+        if(nm==='tower_event'||nm==='tower_event_plate'){
+          showToast(currentLang==='ja'?'🎪 イベント情報は近日公開！お楽しみに':'🎪 Event details coming soon!');
+          return;
+        }
+        if(nm==='tower_ad'||nm==='tower_ad_plate'){
+          const s=cityTowers.tower_ad&&cityTowers.tower_ad.board.metadata&&cityTowers.tower_ad.board.metadata.adSlide;
+          if(s){
+            if(s.action==='signup')openAdSignup();
+            else window.open(s.href,'_blank');
+          }
+          return;
+        }
+      }
       if(pick.pickedMesh.name.startsWith('b_')){
         let bData=buildings.find(b=>b.mesh===pick.pickedMesh);
         if(!bData&&pick.pickedMesh.metadata&&pick.pickedMesh.metadata.landKey){
@@ -5629,6 +5656,207 @@
         out+=chars[(seed+i*11)%chars.length];
       }
       return out||'████';
+    }
+    // 夜明けの広告塔：保護区の空きマスに高い塔を建て、てっぺんの看板に夜明け回数をネオン表示。
+    // 看板はゆっくり回転して街のどこからでも見える。
+    // ===== 街の広告塔（特別区域の四つ角に回転看板を1本ずつ）=====
+    //   tower_dawn(-20,-20)=夜明け回数 / tower_logins(20,-20)=今月のログイン人数
+    //   tower_event(-20,20)=イベント告知 / tower_ad(20,20)=リンク付き広告（左の広告枠を移設）
+    const cityTowers={};
+    let _towerSpinObs=null;
+    function makeCityTower(name,gx,gz){
+      if(cityTowers[name]){try{cityTowers[name].root.dispose(false,true);}catch(_){}delete cityTowers[name];}
+      const polMat=new BABYLON.StandardMaterial(name+'PoleMat',scene);
+      polMat.diffuseColor=new BABYLON.Color3(0.18,0.17,0.22);
+      polMat.emissiveColor=new BABYLON.Color3(0.06,0.05,0.08);
+      polMat.specularColor=new BABYLON.Color3(0,0,0);
+      const root=BABYLON.MeshBuilder.CreateCylinder(name,{diameter:1.2,height:22,tessellation:12},scene);
+      root.position=new BABYLON.Vector3(gx,11,gz);
+      root.material=polMat;
+      const TOWER_BOARD_W=13,TOWER_BOARD_H=13; // 看板高さ（旧6.5の2倍）
+      const tex=new BABYLON.DynamicTexture(name+'Tex',{width:1024,height:1024},scene,true);
+      const adMat=new BABYLON.StandardMaterial(name+'Mat',scene);
+      adMat.diffuseTexture=tex;
+      adMat.emissiveColor=new BABYLON.Color3(0.85,0.72,0.55); // 夜でも光って見える
+      adMat.specularColor=new BABYLON.Color3(0,0,0);
+      adMat.backFaceCulling=false; // 両面表示
+      const board=BABYLON.MeshBuilder.CreatePlane(name+'_plate',{width:TOWER_BOARD_W,height:TOWER_BOARD_H},scene);
+      board.parent=root;board.position.y=15.75; // 下端は旧看板と同位置
+      board.material=adMat;
+      if(!_towerSpinObs)_towerSpinObs=scene.onBeforeRenderObservable.add(()=>{
+        Object.values(cityTowers).forEach(t=>{if(t.root&&!t.root.isDisposed())t.root.rotation.y+=0.005;});
+      });
+      cityTowers[name]={root,board,tex};
+      return cityTowers[name];
+    }
+    // ネオン文字看板の描画（big文字は幅に合わせて自動縮小）
+    function towerTextTexture(tex,head,big,small){
+      const ctx=tex.getContext();
+      const grad=ctx.createLinearGradient(0,0,1024,0);
+      grad.addColorStop(0,'#2b1020');grad.addColorStop(0.5,'#180f2e');grad.addColorStop(1,'#2b1020');
+      const TW=1024,TH=1024;
+      ctx.fillStyle=grad;ctx.fillRect(0,0,TW,TH);
+      ctx.strokeStyle='#ff8a3d';ctx.lineWidth=16;ctx.strokeRect(16,16,TW-32,TH-32);
+      ctx.textAlign='center';
+      ctx.font='900 96px sans-serif';ctx.fillStyle='#ffd54f';
+      ctx.fillText(head,TW/2,220);
+      let bigSize=220;
+      ctx.font=`900 ${bigSize}px sans-serif`;
+      while(bigSize>60&&ctx.measureText(big).width>930){bigSize-=14;ctx.font=`900 ${bigSize}px sans-serif`;}
+      ctx.fillStyle='#ffffff';
+      ctx.shadowColor='#ff6a00';ctx.shadowBlur=45;
+      ctx.fillText(big,TW/2,small?620:680);
+      ctx.shadowBlur=0;
+      if(small){
+        let smSize=100;
+        ctx.font=`900 ${smSize}px sans-serif`;
+        ctx.fillStyle='#ffb066';
+        while(smSize>56&&ctx.measureText(small).width>930){smSize-=10;ctx.font=`900 ${smSize}px sans-serif`;}
+        ctx.fillText(small,TW/2,820);
+      }
+      tex.update();
+    }
+    // ① 夜明け回数の塔（loadCityDawnから回数更新でも呼ばれる）
+    function buildDawnMonument(){
+      if(!window.BABYLON||!scene)return;
+      try{
+        const count=(cityDawnData&&cityDawnData.dawn_count)||0;
+        const isJa=currentLang==='ja';
+        const t=makeCityTower('tower_dawn',-20,-20);
+        towerTextTexture(t.tex,isJa?'🌅 夜明け':'🌅 DAWNS',String(count)+(isJa?'回':''),'');
+      }catch(e){console.warn('tower dawn',e.message);}
+    }
+    // ②③④の塔を建てる
+    async function loadCityTowers(){
+      if(!window.BABYLON||!scene)return;
+      const isJa=currentLang==='ja';
+      try{
+        // ② 今月のログイン人数 + 全体登録者数
+        let logins=0,totalUsers=0;
+        try{
+          const{data,error}=await db.rpc('get_city_stats');
+          if(error)console.warn('get_city_stats',error.message);
+          else if(data){
+            if(typeof data.monthly_logins==='number')logins=data.monthly_logins;
+            if(typeof data.total_users==='number')totalUsers=data.total_users;
+          }
+        }catch(e){console.warn('get_city_stats',e);}
+        const t2=makeCityTower('tower_logins',20,-20);
+        towerTextTexture(
+          t2.tex,
+          isJa?'👥 ログイン':'👥 LOGINS',
+          isJa?('今月 '+logins+'人'):('Mo. '+logins),
+          isJa?('登録者'+totalUsers+'人'):('Registered '+totalUsers)
+        );
+        // ③ イベント告知
+        const t3=makeCityTower('tower_event',-20,20);
+        towerTextTexture(t3.tex,'🎪 EVENT',isJa?'今後イベント':'COMING',isJa?'開催予定‼':'SOON!!');
+        // ④ リンク付き広告（左のスライド広告を3D看板へ移設）
+        buildAdTower();
+      }catch(e){console.warn('towers',e.message);}
+    }
+    // ④ 広告看板：画像＋動画スライドを順番表示（動画は VideoTexture で再生）。タップでリンク/登録へ
+    let adTowerState={idx:0,timer:null,slides:[],videoEl:null,videoRaf:0,towerRef:null};
+    function disposeAdTowerVideo(t){
+      if(adTowerState.videoRaf){cancelAnimationFrame(adTowerState.videoRaf);adTowerState.videoRaf=0;}
+      if(adTowerState.videoEl){
+        try{adTowerState.videoEl.pause();adTowerState.videoEl.removeAttribute('src');adTowerState.videoEl.load();}catch(_){}
+        adTowerState.videoEl=null;
+      }
+      const tw=t||adTowerState.towerRef;
+      if(tw&&tw.board&&tw.board.material&&tw.tex){
+        tw.board.material.diffuseTexture=tw.tex;
+        tw.board.material.emissiveTexture=null;
+        tw.board.material.emissiveColor=new BABYLON.Color3(0.85,0.72,0.55);
+      }
+    }
+    function buildAdTower(){
+      const t=makeCityTower('tower_ad',20,20);
+      t.board.metadata={adSlide:null};
+      disposeAdTowerVideo(t);
+      const adAssetV='49';
+      const logoVideoSources=buildAdVideoSources(adAssetV);
+      adTowerState.slides=IGNIS_AD_SLIDES.map(s=>{
+        if(s.type==='video'){
+          return{type:'video',videoSources:logoVideoSources,action:s.action||'signup'};
+        }
+        const file=s.file||'';
+        if(!file)return null;
+        return{
+          type:'image',
+          src:IGNIS_AD_RAW+encodeURIComponent(file)+'?v='+adAssetV,
+          action:s.action||'link',
+          href:s.href||IGNIS_AD_LINK
+        };
+      }).filter(Boolean);
+      if(!adTowerState.slides.length)return;
+      const drawImage=(img,slide)=>{
+        disposeAdTowerVideo(t);
+        const ctx=t.tex.getContext();
+        const TW=1024,TH=1024;
+        ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,TW,TH);
+        const r=Math.min(TW/img.width,TH/img.height);
+        const w=img.width*r,h=img.height*r;
+        ctx.drawImage(img,(TW-w)/2,(TH-h)/2,w,h);
+        ctx.strokeStyle='#ffd54f';ctx.lineWidth=12;ctx.strokeRect(6,6,TW-12,TH-12);
+        t.tex.update();
+        t.board.metadata.adSlide=slide;
+      };
+      const showVideo=(slide)=>{
+        disposeAdTowerVideo(t);
+        adTowerState.towerRef=t;
+        const sources=slide.videoSources||[];
+        if(!sources.length)return;
+        let srcIdx=0;
+        const video=document.createElement('video');
+        video.muted=true;video.loop=true;video.playsInline=true;
+        video.setAttribute('playsinline','');video.setAttribute('muted','');
+        video.setAttribute('autoplay','');
+        video.preload='auto';
+        video.crossOrigin='anonymous';
+        adTowerState.videoEl=video;
+        t.board.metadata.adSlide=slide;
+        const ctx=t.tex.getContext();
+        const TW=1024,TH=1024;
+        const paintFrame=()=>{
+          if(adTowerState.videoEl!==video)return;
+          ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,TW,TH);
+          if(video.readyState>=2&&video.videoWidth>0){
+            const r=Math.min(TW/video.videoWidth,TH/video.videoHeight);
+            const w=video.videoWidth*r,h=video.videoHeight*r;
+            ctx.drawImage(video,(TW-w)/2,(TH-h)/2,w,h);
+            ctx.strokeStyle='#ffd54f';ctx.lineWidth=12;ctx.strokeRect(6,6,TW-12,TH-12);
+            t.tex.update();
+          }
+          adTowerState.videoRaf=requestAnimationFrame(paintFrame);
+        };
+        const start=()=>{paintFrame();video.play().catch(()=>{});};
+        const setSrc=(idx)=>{
+          if(idx<0||idx>=sources.length)return false;
+          srcIdx=idx;video.src=sources[idx].url;return true;
+        };
+        video.addEventListener('error',()=>{if(setSrc(srcIdx+1))video.load();});
+        if(!setSrc(0))return;
+        if(video.readyState>=2)start();
+        else video.addEventListener('loadeddata',start,{once:true});
+      };
+      const show=(i)=>{
+        const slide=adTowerState.slides[i%adTowerState.slides.length];
+        if(!slide)return;
+        if(slide.type==='video'){showVideo(slide);return;}
+        const img=new Image();
+        img.crossOrigin='anonymous';
+        img.onload=()=>{try{drawImage(img,slide);}catch(e){console.warn('ad tower draw',e.message);}};
+        img.onerror=()=>console.warn('ad tower img',slide.src);
+        img.src=slide.src;
+      };
+      clearInterval(adTowerState.timer);
+      adTowerState.idx=0;show(0);
+      const adTowerMs=(slide)=>slide&&slide.type==='video'?12000:6000;
+      const scheduleAdTower=()=>{clearInterval(adTowerState.timer);const cur=adTowerState.slides[adTowerState.idx%adTowerState.slides.length];adTowerState.timer=setInterval(()=>{adTowerState.idx++;show(adTowerState.idx);scheduleAdTower();},adTowerMs(cur));};
+      scheduleAdTower();
+      const old=document.getElementById('ad-slot-wrap');
+      if(old)old.style.display='none';
     }
     function patchOwnerCenterBuilding(){
       const key=landKey(SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z);

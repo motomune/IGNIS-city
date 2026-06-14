@@ -961,7 +961,7 @@
     .bm-past-title { font-size:11px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
     /* プレミアム会員の紹介バー（X報酬ボタンの下を横に流れる）
        右レール全体は pointer-events:none なので、ここで明示的にタップ可能に戻す（リンクが開けるように） */
-    #premium-bar { width:142px;height:28px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.5);background:rgba(20,12,2,0.88);position:relative;margin-top:2px;align-self:flex-end;pointer-events:all; }
+    #premium-bar { width:122px;height:28px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.5);background:rgba(20,12,2,0.88);position:relative;margin-top:2px;align-self:flex-end;pointer-events:all; }
     #premium-track { position:absolute;left:0;top:0;height:100%;display:flex;gap:20px;align-items:center;width:max-content;white-space:nowrap;animation:premiumScroll 16s linear infinite;font-size:12px;font-weight:800;padding:0 8px; }
     #premium-track a { color:#ffd54f;text-decoration:none;pointer-events:all; }
     #premium-track a:hover { text-decoration:underline; }
@@ -1011,7 +1011,21 @@
     #sub-title { font-size:17px;font-weight:900;color:#ffd54f;margin-bottom:4px; }
     #sub-sub { font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:14px; }
     .sub-plan { border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(255,255,255,0.03); }
-    .sub-plan-gold { border-color:rgba(255,213,79,0.55);background:linear-gradient(160deg,rgba(255,200,60,0.08),rgba(255,140,0,0.03)); }
+    /* プレミアム枠：金色のキラキラ演出（流れる光沢＋またたく粒） */
+    .sub-plan-gold { position:relative;overflow:hidden;border-color:rgba(255,213,79,0.7);
+      background:linear-gradient(160deg,rgba(255,200,60,0.12),rgba(255,140,0,0.05));
+      box-shadow:0 0 18px rgba(255,190,60,0.22);animation:subGoldGlow 2.6s ease-in-out infinite; }
+    @keyframes subGoldGlow { 0%,100%{box-shadow:0 0 14px rgba(255,190,60,0.18);} 50%{box-shadow:0 0 26px rgba(255,200,80,0.4);} }
+    /* 斜めに流れる光沢 */
+    .sub-plan-gold::before { content:'';position:absolute;top:-60%;left:-150%;width:60%;height:220%;
+      background:linear-gradient(75deg,transparent,rgba(255,255,255,0.45),transparent);
+      transform:rotate(18deg);animation:subGoldSheen 3.2s linear infinite;pointer-events:none; }
+    @keyframes subGoldSheen { 0%{left:-150%;} 60%,100%{left:150%;} }
+    /* またたく星粒 */
+    .sub-plan-gold::after { content:'✦ ✦ ✦';position:absolute;top:8px;right:12px;font-size:10px;color:#fff3b0;
+      letter-spacing:6px;opacity:0.5;animation:subGoldTwinkle 1.8s ease-in-out infinite;pointer-events:none;text-shadow:0 0 6px rgba(255,220,120,0.9); }
+    @keyframes subGoldTwinkle { 0%,100%{opacity:0.25;} 50%{opacity:1;} }
+    .sub-plan-gold > * { position:relative;z-index:1; }
     .sub-plan-name { font-size:14px;font-weight:900;color:#fff; }
     .sub-plan-price { font-size:13px;font-weight:800;color:#ffab40;margin:2px 0 8px; }
     .sub-plan-feats { margin:0 0 10px;padding-left:2px;list-style:none;font-size:11.5px;color:rgba(255,255,255,0.8);line-height:1.9; }
@@ -1225,8 +1239,8 @@
     #x-rewards-btn.rail-btn { background:linear-gradient(135deg,rgba(96,210,255,0.55),rgba(91,140,255,0.55)); }
     /* 右列 */
     #right-rail { position:fixed; top:max(14px,env(safe-area-inset-top,0px)); right:max(14px,env(safe-area-inset-right,0px));
-      z-index:12; display:flex; flex-direction:column; gap:8px; width:142px; align-items:stretch; pointer-events:none; }
-    #right-rail .rail-btn { width:100%; }
+      z-index:12; display:flex; flex-direction:column; gap:8px; width:122px; align-items:stretch; pointer-events:none; }
+    #right-rail .rail-btn { width:100%; padding-left:7px; padding-right:7px; gap:4px; }
     /* 左列（ログアウト）。ステータスの下に置く */
     #left-rail { position:fixed; left:max(14px,env(safe-area-inset-left,0px)); top:max(104px,calc(env(safe-area-inset-top,0px) + 92px));
       z-index:12; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
@@ -1888,7 +1902,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-14-v147';
+    const IGNIS_BUILD='2026-06-14-v148';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2407,13 +2421,13 @@
     _bgmVolume(){
       const t=IGNIS_BGM[this.currentTrack];
       const base=t?t.volume:0.35;
-      return this._sfxFocus?base*0.28:base; // 効果音フォーカス中はBGMを小さく
+      return this._sfxFocus?base*0.14:base; // 効果音フォーカス中はBGMをさらに小さく（さらに半分）
     },
     // スクラッチ／印鑑画面の間だけ：BGMを下げ、効果音(SFX)を大きくする
     setSfxFocus(on){
       this._sfxFocus=!!on;
       try{if(this.bgmEl)this.bgmEl.volume=this.muted?0:this._bgmVolume();}catch(_){}
-      try{if(this.sfxGain&&this.ctx){const v=on?1.35:0.55;this.sfxGain.gain.setTargetAtTime(v,this.ctx.currentTime,0.05);this.sfxGain.gain.value=v;}}catch(_){}
+      try{if(this.sfxGain&&this.ctx){const v=on?2.4:0.55;this.sfxGain.gain.setTargetAtTime(v,this.ctx.currentTime,0.05);this.sfxGain.gain.value=v;}}catch(_){}
     },
     setBgmTrack(trackId){
       const track=IGNIS_BGM[trackId];
@@ -3550,7 +3564,7 @@
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
       const noticeBtn=document.getElementById('notice-btn');if(noticeBtn)noticeBtn.innerHTML=(isJa?'🔔 通知':'🔔 Notices')+'<span id="notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
-      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML=(isJa?'📋 タスク':'📋 Tasks')+'<span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
+      const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML=(isJa?'📋 タスク':'📋 Tasks')+`（${lastTaskPct}%）`+'<span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
       const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'🔔 お知らせ / 通知':'🔔 Notices';
       const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'通知はまだありません':'No notices yet';
       const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
@@ -3888,8 +3902,20 @@
       bar.style.width=pct+'%';
       document.getElementById('task-progress-pct').textContent=pct+'%';
       bar.classList.toggle('complete',pct===100);
+      lastTaskPct=pct;
+      updateTaskBtnLabel();
       await maybeGrantFullClearBonus(doneCount);
       await updateViewTaskProgressLabel();
+    }
+    // タスクボタンに「📋 タスク（〇%）」と今日の達成率を出す（バッジは別spanで維持）
+    let lastTaskPct=0;
+    function updateTaskBtnLabel(){
+      const btn=document.getElementById('task-toggle-btn');
+      if(!btn)return;
+      const isJa=currentLang==='ja';
+      const badge=document.getElementById('task-notice-badge');
+      const badgeTxt=badge?badge.textContent:'0';
+      btn.innerHTML=(isJa?'📋 タスク':'📋 Tasks')+`（${lastTaskPct}%）`+'<span id="task-notice-badge">'+badgeTxt+'</span>';
     }
     function toggleTaskPanel(){
       // タスクパネルを開いても3Dの街は表示したままにする（ユーザー要望で復帰）

@@ -963,7 +963,7 @@
     .bm-past-title { font-size:11px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
     /* プレミアム会員の紹介バー（X報酬ボタンの下を横に流れる）
        右レール全体は pointer-events:none なので、ここで明示的にタップ可能に戻す（リンクが開けるように） */
-    #premium-bar { width:108px;height:28px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.5);background:rgba(20,12,2,0.88);position:relative;margin-top:2px;align-self:flex-end;pointer-events:all; }
+    #premium-bar { width:100px;height:28px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.5);background:rgba(20,12,2,0.88);position:relative;margin-top:2px;align-self:flex-end;pointer-events:all; }
     #premium-track { position:absolute;left:0;top:0;height:100%;display:flex;gap:20px;align-items:center;width:max-content;white-space:nowrap;animation:premiumScroll 16s linear infinite;font-size:12px;font-weight:800;padding:0 8px; }
     #premium-track a { color:#ffd54f;text-decoration:none;pointer-events:all; }
     #premium-track a:hover { text-decoration:underline; }
@@ -1241,12 +1241,12 @@
     #x-rewards-btn.rail-btn { background:linear-gradient(135deg,rgba(96,210,255,0.55),rgba(91,140,255,0.55)); }
     /* 右列 */
     #right-rail { position:fixed; top:max(14px,env(safe-area-inset-top,0px)); right:max(14px,env(safe-area-inset-right,0px));
-      z-index:12; display:flex; flex-direction:column; gap:8px; width:108px; align-items:stretch; pointer-events:none; }
-    #right-rail .rail-btn { width:100%; padding-left:4px; padding-right:4px; gap:3px; font-size:12px; }
+      z-index:12; display:flex; flex-direction:column; gap:8px; width:100px; align-items:stretch; pointer-events:none; }
+    #right-rail .rail-btn { width:100%; padding-left:3px; padding-right:3px; gap:2px; font-size:11.5px; }
     /* 左列（ログアウト）。ステータスの下に置く */
     #left-rail { position:fixed; left:max(14px,env(safe-area-inset-left,0px)); top:max(104px,calc(env(safe-area-inset-top,0px) + 92px));
-      z-index:12; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
-    #left-rail .rail-btn { font-size:12px; padding:8px 14px; color:rgba(255,255,255,0.88); }
+      z-index:12; display:flex; flex-direction:column; gap:8px; pointer-events:none; align-items:flex-start; }
+    #left-rail .rail-btn { font-size:11.5px; padding:7px 9px; gap:3px; color:rgba(255,255,255,0.88); }
     /* ログイン状態の表示切替 */
     .li-only { display:none !important; }
     body.logged-in .li-only { display:flex !important; }
@@ -1904,7 +1904,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-14-v149';
+    const IGNIS_BUILD='2026-06-14-v150';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2429,7 +2429,7 @@
     setSfxFocus(on){
       this._sfxFocus=!!on;
       try{if(this.bgmEl)this.bgmEl.volume=this.muted?0:this._bgmVolume();}catch(_){}
-      try{if(this.sfxGain&&this.ctx){const v=on?7.2:0.55;this.sfxGain.gain.setTargetAtTime(v,this.ctx.currentTime,0.05);this.sfxGain.gain.value=v;}}catch(_){}
+      try{if(this.sfxGain&&this.ctx){const v=on?14.4:0.55;this.sfxGain.gain.setTargetAtTime(v,this.ctx.currentTime,0.05);this.sfxGain.gain.value=v;}}catch(_){}
     },
     setBgmTrack(trackId){
       const track=IGNIS_BGM[trackId];

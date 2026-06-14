@@ -678,11 +678,11 @@
     .building-modal-body::-webkit-scrollbar { width:0;height:0;display:none; }
     /* 常時表示のスクロール位置バー（まだ下に続きがある合図） */
     .bm-scrollbar {
-      position:absolute;right:4px;width:5px;border-radius:6px;
+      position:absolute;right:4px;width:2px;border-radius:3px;
       background:rgba(255,255,255,0.10);z-index:6;pointer-events:none;display:none;
     }
     .bm-scrollthumb {
-      position:absolute;left:0;top:0;width:100%;min-height:24px;border-radius:6px;
+      position:absolute;left:0;top:0;width:100%;min-height:12px;border-radius:3px;
       background:linear-gradient(180deg,#ff6a00,#ee0979);box-shadow:0 0 6px rgba(255,106,0,0.5);
     }
     #building-modal-icon { font-size:48px;text-align:center;margin-bottom:10px; }
@@ -961,15 +961,15 @@
     .bm-past-title { font-size:11px;font-weight:800;color:#ff8a3d;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px; }
     /* プレミアム会員の紹介バー（X報酬ボタンの下を横に流れる）
        右レール全体は pointer-events:none なので、ここで明示的にタップ可能に戻す（リンクが開けるように） */
-    #premium-bar { width:210px;height:30px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.5);background:rgba(20,12,2,0.88);position:relative;margin-top:2px;align-self:flex-end;pointer-events:all; }
+    #premium-bar { width:142px;height:28px;overflow:hidden;border-radius:999px;border:1px solid rgba(255,200,60,0.5);background:rgba(20,12,2,0.88);position:relative;margin-top:2px;align-self:flex-end;pointer-events:all; }
     #premium-track { position:absolute;left:0;top:0;height:100%;display:flex;gap:20px;align-items:center;width:max-content;white-space:nowrap;animation:premiumScroll 16s linear infinite;font-size:12px;font-weight:800;padding:0 8px; }
     #premium-track a { color:#ffd54f;text-decoration:none;pointer-events:all; }
     #premium-track a:hover { text-decoration:underline; }
     @keyframes premiumScroll { 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
     /* 常時表示スクロールバー（タスク/X報酬/スクラッチ/図鑑。下にまだ続きがある合図）
        z-indexは全モーダル（最大380のX報酬含む）より上にしないと裏に隠れて見えない */
-    .auto-sb-track { position:fixed;width:6px;background:rgba(255,255,255,0.12);border-radius:3px;z-index:500;pointer-events:none;display:none; }
-    .auto-sb-thumb { width:100%;background:rgba(255,255,255,0.55);border-radius:3px; }
+    .auto-sb-track { position:fixed;width:3px;background:rgba(255,255,255,0.12);border-radius:2px;z-index:500;pointer-events:none;display:none; }
+    .auto-sb-thumb { width:100%;background:rgba(255,255,255,0.55);border-radius:2px; }
     /* 現在のビルド番号（画面右下に小さく表示。サポート用） */
     #build-badge { position:fixed;right:6px;bottom:4px;font-size:9px;color:rgba(255,255,255,0.35);z-index:55;pointer-events:none;letter-spacing:0.05em; }
     /* ローディング中スピナー（過去詳細の確認中など） */
@@ -1874,7 +1874,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-14-v141';
+    const IGNIS_BUILD='2026-06-14-v142';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4035,7 +4035,7 @@
       try{
         if(!usernameOverride){
           const{data}=await withTimeout(
-            db.from('users').select('username,x_username,coin_column,rank,bench_employees,is_subscribed,show_x_username').eq('id',user.id).single(),
+            db.from('users').select('username,x_username,coin_column,rank,bench_employees,is_subscribed,is_premium,show_x_username').eq('id',user.id).single(),
             8000,'loadUserProfile'
           );
           if(data){
@@ -4044,17 +4044,19 @@
             currentUser.rank=data.rank||1;
             currentUser.benchEmployees=data.bench_employees||0;
             currentUser.isSubscribed=!!data.is_subscribed;
+            currentUser.isPremium=!!data.is_premium;
             currentUser.showXName=data.show_x_username!==false;
           }
         }else{
           const{data:rd}=await withTimeout(
-            db.from('users').select('rank,bench_employees,coin_column,is_subscribed,show_x_username').eq('id',user.id).single(),
+            db.from('users').select('rank,bench_employees,coin_column,is_subscribed,is_premium,show_x_username').eq('id',user.id).single(),
             6000,'loadUserRank'
           );
           if(rd){
             currentUser.rank=rd.rank||1;
             currentUser.benchEmployees=rd.bench_employees||0;
             currentUser.isSubscribed=!!rd.is_subscribed;
+            currentUser.isPremium=!!rd.is_premium;
             currentUser.showXName=rd.show_x_username!==false;
             if(rd.coin_column!=null)document.getElementById('coin-count').textContent=rd.coin_column;
           }
@@ -6551,7 +6553,7 @@
       ctx.shadowColor='#ff6a00';ctx.shadowBlur=45;
       ctx.fillText(big,TW/2,small?620:680);
       ctx.shadowBlur=0;
-      if(small){ctx.font='900 64px sans-serif';ctx.fillStyle='#ffb066';ctx.fillText(small,TW/2,820);}
+      if(small){ctx.font='900 72px sans-serif';ctx.fillStyle='#ffb066';ctx.fillText(small,TW/2,830);}
       tex.update();
     }
     // ① 夜明け回数の塔（loadCityDawnから回数更新でも呼ばれる）
@@ -6569,14 +6571,23 @@
       if(!window.BABYLON||!scene)return;
       const isJa=currentLang==='ja';
       try{
-        // ② 今月のログイン人数（同一人物は1カウント）
-        let logins=0;
+        // ② 今月のログイン人数 + 全体登録者数
+        let logins=0,totalUsers=0;
         try{
-          const{data}=await db.rpc('get_city_stats');
-          if(data&&typeof data.monthly_logins==='number')logins=data.monthly_logins;
-        }catch(_){}
+          const{data,error}=await db.rpc('get_city_stats');
+          if(error)console.warn('get_city_stats',error.message);
+          else if(data){
+            if(typeof data.monthly_logins==='number')logins=data.monthly_logins;
+            if(typeof data.total_users==='number')totalUsers=data.total_users;
+          }
+        }catch(e){console.warn('get_city_stats',e);}
         const t2=makeCityTower('tower_logins',20,-20);
-        towerTextTexture(t2.tex,isJa?'👥 今月のログイン':'👥 MONTHLY LOGINS',String(logins)+(isJa?'人':''),'');
+        towerTextTexture(
+          t2.tex,
+          isJa?'👥 ログイン':'👥 LOGINS',
+          isJa?('今月 '+logins+'人'):('Mo. '+logins),
+          isJa?('登録 '+totalUsers+'人'):('All '+totalUsers)
+        );
         // ③ イベント告知
         const t3=makeCityTower('tower_event',-20,20);
         towerTextTexture(t3.tex,'🎪 EVENT',isJa?'今後イベント':'COMING',isJa?'開催予定‼':'SOON!!');
@@ -6584,17 +6595,43 @@
         buildAdTower();
       }catch(e){console.warn('towers',e.message);}
     }
-    // ④ 広告看板：既存のスライド広告（リンク付き）を順番に表示。タップでリンクへ
-    let adTowerState={idx:0,timer:null,slides:[]};
+    // ④ 広告看板：画像＋動画スライドを順番表示（動画は VideoTexture で再生）。タップでリンク/登録へ
+    let adTowerState={idx:0,timer:null,slides:[],videoEl:null,videoRaf:0,towerRef:null};
+    function disposeAdTowerVideo(t){
+      if(adTowerState.videoRaf){cancelAnimationFrame(adTowerState.videoRaf);adTowerState.videoRaf=0;}
+      if(adTowerState.videoEl){
+        try{adTowerState.videoEl.pause();adTowerState.videoEl.removeAttribute('src');adTowerState.videoEl.load();}catch(_){}
+        adTowerState.videoEl=null;
+      }
+      const tw=t||adTowerState.towerRef;
+      if(tw&&tw.board&&tw.board.material&&tw.tex){
+        tw.board.material.diffuseTexture=tw.tex;
+        tw.board.material.emissiveTexture=null;
+        tw.board.material.emissiveColor=new BABYLON.Color3(0.85,0.72,0.55);
+      }
+    }
     function buildAdTower(){
       const t=makeCityTower('tower_ad',20,20);
       t.board.metadata={adSlide:null};
-      adTowerState.slides=IGNIS_AD_SLIDES.map(s=>({
-        src:s.type==='video'?(s.poster||''):(s.file||''),
-        action:s.action,href:s.href||IGNIS_AD_LINK
-      })).filter(s=>s.src);
+      disposeAdTowerVideo(t);
+      const adAssetV='49';
+      const logoVideoSources=buildAdVideoSources(adAssetV);
+      adTowerState.slides=IGNIS_AD_SLIDES.map(s=>{
+        if(s.type==='video'){
+          return{type:'video',videoSources:logoVideoSources,action:s.action||'signup'};
+        }
+        const file=s.file||'';
+        if(!file)return null;
+        return{
+          type:'image',
+          src:IGNIS_AD_RAW+encodeURIComponent(file)+'?v='+adAssetV,
+          action:s.action||'link',
+          href:s.href||IGNIS_AD_LINK
+        };
+      }).filter(Boolean);
       if(!adTowerState.slides.length)return;
-      const draw=(img,slide)=>{
+      const drawImage=(img,slide)=>{
+        disposeAdTowerVideo(t);
         const ctx=t.tex.getContext();
         const TW=1024,TH=1024;
         ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,TW,TH);
@@ -6605,17 +6642,59 @@
         t.tex.update();
         t.board.metadata.adSlide=slide;
       };
+      const showVideo=(slide)=>{
+        disposeAdTowerVideo(t);
+        adTowerState.towerRef=t;
+        const sources=slide.videoSources||[];
+        if(!sources.length)return;
+        let srcIdx=0;
+        const video=document.createElement('video');
+        video.muted=true;video.loop=true;video.playsInline=true;
+        video.setAttribute('playsinline','');video.setAttribute('muted','');
+        video.setAttribute('autoplay','');
+        video.preload='auto';
+        video.crossOrigin='anonymous';
+        adTowerState.videoEl=video;
+        t.board.metadata.adSlide=slide;
+        const ctx=t.tex.getContext();
+        const TW=1024,TH=1024;
+        const paintFrame=()=>{
+          if(adTowerState.videoEl!==video)return;
+          ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,TW,TH);
+          if(video.readyState>=2&&video.videoWidth>0){
+            const r=Math.min(TW/video.videoWidth,TH/video.videoHeight);
+            const w=video.videoWidth*r,h=video.videoHeight*r;
+            ctx.drawImage(video,(TW-w)/2,(TH-h)/2,w,h);
+            ctx.strokeStyle='#ffd54f';ctx.lineWidth=12;ctx.strokeRect(6,6,TW-12,TH-12);
+            t.tex.update();
+          }
+          adTowerState.videoRaf=requestAnimationFrame(paintFrame);
+        };
+        const start=()=>{paintFrame();video.play().catch(()=>{});};
+        const setSrc=(idx)=>{
+          if(idx<0||idx>=sources.length)return false;
+          srcIdx=idx;video.src=sources[idx].url;return true;
+        };
+        video.addEventListener('error',()=>{if(setSrc(srcIdx+1))video.load();});
+        if(!setSrc(0))return;
+        if(video.readyState>=2)start();
+        else video.addEventListener('loadeddata',start,{once:true});
+      };
       const show=(i)=>{
         const slide=adTowerState.slides[i%adTowerState.slides.length];
         if(!slide)return;
+        if(slide.type==='video'){showVideo(slide);return;}
         const img=new Image();
-        img.onload=()=>{try{draw(img,slide);}catch(e){console.warn('ad tower draw',e.message);}};
+        img.crossOrigin='anonymous';
+        img.onload=()=>{try{drawImage(img,slide);}catch(e){console.warn('ad tower draw',e.message);}};
+        img.onerror=()=>console.warn('ad tower img',slide.src);
         img.src=slide.src;
       };
       clearInterval(adTowerState.timer);
       adTowerState.idx=0;show(0);
-      adTowerState.timer=setInterval(()=>{adTowerState.idx++;show(adTowerState.idx);},6000);
-      // 左側の旧広告枠は廃止（3D看板に移設）
+      const adTowerMs=(slide)=>slide&&slide.type==='video'?12000:6000;
+      const scheduleAdTower=()=>{clearInterval(adTowerState.timer);const cur=adTowerState.slides[adTowerState.idx%adTowerState.slides.length];adTowerState.timer=setInterval(()=>{adTowerState.idx++;show(adTowerState.idx);scheduleAdTower();},adTowerMs(cur));};
+      scheduleAdTower();
       const old=document.getElementById('ad-slot-wrap');
       if(old)old.style.display='none';
     }
@@ -6828,14 +6907,14 @@
         if(r.width<=0||r.height<=0){track.style.display='none';return;} // 画面に出ていない時だけ隠す
         track.style.display='block';
         track.style.top=r.top+'px';
-        track.style.left=(r.right-9)+'px';
+        track.style.left=(r.right-5)+'px';
         track.style.height=r.height+'px';
         if(sh<=ch+2){ // スクロール不要：つまみは約半分の長さで上に置く（全長だと白帯に見えるため）
-          thumb.style.height=Math.round(r.height*0.5)+'px';
+          thumb.style.height=Math.round(r.height*0.25)+'px';
           thumb.style.transform='translateY(0)';
           return;
         }
-        const th=Math.max(24,r.height*ch/sh);
+        const th=Math.max(12,r.height*ch/sh);
         const maxTop=r.height-th;
         const t=(sh-ch)>0?(scrollEl.scrollTop/(sh-ch))*maxTop:0;
         thumb.style.height=th+'px';
@@ -6857,7 +6936,7 @@
       const sh=body.scrollHeight,ch=body.clientHeight;
       if(sh<=ch+2){sb.style.display='none';return;}
       sb.style.display='block';
-      const thumbH=Math.max(24,ch*ch/sh);
+      const thumbH=Math.max(12,ch*ch/sh);
       const maxTop=ch-thumbH;
       const t=(sh-ch)>0?(body.scrollTop/(sh-ch))*maxTop:0;
       thumb.style.height=thumbH+'px';
@@ -7225,6 +7304,8 @@
         const{data}=await db.from('users').select('id').or('is_subscribed.eq.true,is_premium.eq.true');
         subscriberIds=new Set((data||[]).map(u=>u.id));
       }catch(e){subscriberIds=new Set();}
+      // RLSで他人の会員情報が取れない環境でも、自分が会員なら自分のビルには必ずランプを付ける
+      if(currentUser&&(currentUser.isSubscribed||currentUser.isPremium))subscriberIds.add(currentUser.id);
     }
     function addSubscriberLamp(b){
       if(!scene||!window.BABYLON||!b||!b.mesh||b.mesh.isDisposed())return;
@@ -7254,7 +7335,11 @@
     }
     function applySubscriberLamps(){
       if(!subscriberIds||!subscriberIds.size)return;
-      buildings.forEach(b=>{if(b.ownerId&&subscriberIds.has(b.ownerId))addSubscriberLamp(b);});
+      buildings.forEach(b=>{
+        // ownerIdが未設定でも、土地情報から所有者を補完してから判定する
+        if(!b.ownerId){const land=landMap[b.landKey||landKey(b.x,b.z)];if(land&&land.owner_id)b.ownerId=land.owner_id;}
+        if(b.ownerId&&subscriberIds.has(b.ownerId))addSubscriberLamp(b);
+      });
     }
     // 自分のビルが受け取った蝋燭の合計をステータスに表示
     async function loadMyCandleCount(){
@@ -7362,7 +7447,7 @@
           patchOwnerCenterBuilding();
           try{await withTimeout(loadApprovedProfiles(),8000,'loadApprovedProfiles');}catch(e){console.warn('[IGNIS]',e.message);}
           scheduleMottoRefresh();
-          try{await loadSubscriberSet();applySubscriberLamps();}catch(e){console.warn('[IGNIS] lamps',e.message);}
+          try{await loadSubscriberSet();applySubscriberLamps();setTimeout(()=>{try{applySubscriberLamps();}catch(_){}},2500);}catch(e){console.warn('[IGNIS] lamps',e.message);}
           loadMyCandleCount().catch(()=>{});
           subscribeCandleRealtime();
           ensureRevealData().catch(()=>{}); // 名前モザイク用データ（無課金1位/表示設定）を先読み

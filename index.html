@@ -1888,7 +1888,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-14-v146';
+    const IGNIS_BUILD='2026-06-14-v147';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6610,22 +6610,19 @@
       if(!window.BABYLON||!scene)return;
       const isJa=currentLang==='ja';
       try{
-        // ② 今月のログイン人数 + 全体登録者数
-        let logins=0,totalUsers=0;
+        // ② 登録者数の看板（ログイン数は表示しない）
+        let totalUsers=0;
         try{
           const{data,error}=await db.rpc('get_city_stats');
           if(error)console.warn('get_city_stats',error.message);
-          else if(data){
-            if(typeof data.monthly_logins==='number')logins=data.monthly_logins;
-            if(typeof data.total_users==='number')totalUsers=data.total_users;
-          }
+          else if(data&&typeof data.total_users==='number')totalUsers=data.total_users;
         }catch(e){console.warn('get_city_stats',e);}
         const t2=makeCityTower('tower_logins',20,-20);
         towerTextTexture(
           t2.tex,
           isJa?'👥 登録者':'👥 MEMBERS',
           isJa?(totalUsers+'人'):String(totalUsers),
-          isJa?('今月ログイン '+logins+'人'):('Mo. login '+logins)
+          ''
         );
         // ③ イベント告知
         const t3=makeCityTower('tower_event',-20,20);

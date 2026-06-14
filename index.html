@@ -1276,6 +1276,11 @@
       #gacha-spin-btn, #gacha-hire-btn { font-size:12px; padding:9px; }
       #hire-info, #staff-term-info { font-size:9px !important; }
       #gacha-modal-close { font-size:24px; width:34px; height:34px; }
+      /* スクラッチ結果：3つのボタンが画面に収まるよう横並び＋小さく */
+      #gacha-book-phase.result-phase { gap:8px !important; padding:4px 0 10px !important; }
+      #book-result-actions { flex-direction:row !important; flex-wrap:wrap !important; justify-content:center; max-width:100% !important; gap:6px !important; }
+      #book-result-build, #book-result-city, #book-result-retry { width:auto !important; flex:1 1 auto; min-width:130px; font-size:12px !important; padding:9px 12px !important; }
+      #book-prize-layer, #book-result-detail { transform:scale(0.85); }
       /* 採用通知書：横画面では小さく縮めてスクロール可能に（min-heightと.showのscaleを上書き） */
       #hire-stamp-overlay { overflow-y:auto !important; align-items:flex-start !important; padding:6px 0 !important; }
       .hire-contract { width:min(80vw,300px) !important; min-height:0 !important; margin:6px auto !important; padding:16px 18px 20px !important; }
@@ -1883,7 +1888,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-14-v145';
+    const IGNIS_BUILD='2026-06-14-v146';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2398,9 +2403,17 @@
         tryNext();
       });
     },
+    _sfxFocus:false,
     _bgmVolume(){
       const t=IGNIS_BGM[this.currentTrack];
-      return t?t.volume:0.35;
+      const base=t?t.volume:0.35;
+      return this._sfxFocus?base*0.28:base; // 効果音フォーカス中はBGMを小さく
+    },
+    // スクラッチ／印鑑画面の間だけ：BGMを下げ、効果音(SFX)を大きくする
+    setSfxFocus(on){
+      this._sfxFocus=!!on;
+      try{if(this.bgmEl)this.bgmEl.volume=this.muted?0:this._bgmVolume();}catch(_){}
+      try{if(this.sfxGain&&this.ctx){const v=on?1.35:0.55;this.sfxGain.gain.setTargetAtTime(v,this.ctx.currentTime,0.05);this.sfxGain.gain.value=v;}}catch(_){}
     },
     setBgmTrack(trackId){
       const track=IGNIS_BGM[trackId];
@@ -2952,6 +2965,7 @@
         setBookPrizeUnderScratch(result);
       }
       if(book)book.classList.add('scratch-ready');
+      try{IgnisAudio.setSfxFocus(true);}catch(_){} // スクラッチ中：BGMを下げSFXを上げる
       try{IgnisAudio.playPageTurn();}catch(_){} // スクラッチページが現れる＝ページをめくる音
       let revealed=false;
       let drawing=false;
@@ -2983,6 +2997,7 @@
         if(clear/total>scratchRevealThreshold){
           revealed=true;
           drawing=false;
+          try{IgnisAudio.setSfxFocus(false);}catch(_){} // 削り終わり＝音量を戻す
           onReveal();
         }
       };
@@ -4666,6 +4681,7 @@
     }
     function closeGachaModal(skipBgmRefresh){
       document.getElementById('gacha-modal').classList.remove('open');
+      try{IgnisAudio.setSfxFocus(false);}catch(_){} // 画面を閉じたら音量を戻す
       if(!skipBgmRefresh)refreshCityBgm();
     }
     async function handleGachaSpin(){
@@ -5759,6 +5775,7 @@
         overlay.classList.remove('done');
         overlay.classList.add('show');
         overlay.setAttribute('aria-hidden','false');
+        try{IgnisAudio.setSfxFocus(true);}catch(_){} // 印鑑画面：BGMを下げSFX（サイン・印鑑音）を上げる
         let committed=false;
         const commit=()=>{
           if(committed)return;
@@ -5788,6 +5805,7 @@
               overlay.setAttribute('aria-hidden','true');
               if(seal)seal.classList.remove('stamped');
               if(signature)signature.classList.remove('writing','done');
+              try{IgnisAudio.setSfxFocus(false);}catch(_){} // 演出終了：音量を戻す
               resolve();
             },420);
           },closeDelay);

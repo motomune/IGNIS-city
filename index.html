@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -580,7 +580,9 @@
     }
     #task-panel { position:fixed;top:max(148px,calc(env(safe-area-inset-top,0px) + 132px));right:max(24px,env(safe-area-inset-right,0px));bottom:auto;max-height:min(56vh,460px);width:260px;background:rgba(6,6,16,0.95);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:12px 14px;min-width:0;z-index:15;pointer-events:all;display:none;backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.6);overflow-y:auto;-webkit-overflow-scrolling:touch; }
     #task-panel.open { display: block; }
-    #task-panel-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px; }
+    /* スクロールしても閉じる×を上部に固定 */
+    #task-panel-head { position:sticky;top:-12px;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-12px -14px 8px;padding:12px 14px 8px;background:rgba(6,6,16,0.97); }
+    #task-panel-close { background:rgba(255,255,255,0.12);border:none;color:#fff;font-size:18px;line-height:1;cursor:pointer;border-radius:8px;width:30px;height:30px;flex-shrink:0; }
     #task-panel-title { font-size:11px;font-weight:800;color:#ff6a00;letter-spacing:0.15em;text-transform:uppercase; }
     #task-panel-close { background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);color:#fff;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:800;cursor:pointer; }
     .task-row { display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px; }
@@ -1872,7 +1874,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-14-v140';
+    const IGNIS_BUILD='2026-06-14-v141';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3495,6 +3497,7 @@
       document.getElementById('zukan-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('zukan-overlay').classList.contains('open')){renderZukanOwned();renderZukanRarity();}
       document.getElementById('ranking-btn').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
+      const subBtn=document.getElementById('sub-btn');if(subBtn)subBtn.textContent=isJa?'💎 サブスク':'💎 Subscribe';
       document.getElementById('ranking-title').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
       const rtabCoins=document.getElementById('rtab-coins');if(rtabCoins)rtabCoins.textContent=isJa?'💰 コイン':'💰 Coins';
       const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'👥 従業員':'👥 Staff';
@@ -6514,14 +6517,15 @@
       const root=BABYLON.MeshBuilder.CreateCylinder(name,{diameter:1.2,height:22,tessellation:12},scene);
       root.position=new BABYLON.Vector3(gx,11,gz);
       root.material=polMat;
-      const tex=new BABYLON.DynamicTexture(name+'Tex',{width:1024,height:512},scene,true);
+      const TOWER_BOARD_W=13,TOWER_BOARD_H=13; // 看板高さ（旧6.5の2倍）
+      const tex=new BABYLON.DynamicTexture(name+'Tex',{width:1024,height:1024},scene,true);
       const adMat=new BABYLON.StandardMaterial(name+'Mat',scene);
       adMat.diffuseTexture=tex;
       adMat.emissiveColor=new BABYLON.Color3(0.85,0.72,0.55); // 夜でも光って見える
       adMat.specularColor=new BABYLON.Color3(0,0,0);
       adMat.backFaceCulling=false; // 両面表示
-      const board=BABYLON.MeshBuilder.CreatePlane(name+'_plate',{width:13,height:6.5},scene);
-      board.parent=root;board.position.y=12.5;
+      const board=BABYLON.MeshBuilder.CreatePlane(name+'_plate',{width:TOWER_BOARD_W,height:TOWER_BOARD_H},scene);
+      board.parent=root;board.position.y=15.75; // 下端は旧看板と同位置
       board.material=adMat;
       if(!_towerSpinObs)_towerSpinObs=scene.onBeforeRenderObservable.add(()=>{
         Object.values(cityTowers).forEach(t=>{if(t.root&&!t.root.isDisposed())t.root.rotation.y+=0.005;});
@@ -6534,19 +6538,20 @@
       const ctx=tex.getContext();
       const grad=ctx.createLinearGradient(0,0,1024,0);
       grad.addColorStop(0,'#2b1020');grad.addColorStop(0.5,'#180f2e');grad.addColorStop(1,'#2b1020');
-      ctx.fillStyle=grad;ctx.fillRect(0,0,1024,512);
-      ctx.strokeStyle='#ff8a3d';ctx.lineWidth=16;ctx.strokeRect(16,16,992,480);
+      const TW=1024,TH=1024;
+      ctx.fillStyle=grad;ctx.fillRect(0,0,TW,TH);
+      ctx.strokeStyle='#ff8a3d';ctx.lineWidth=16;ctx.strokeRect(16,16,TW-32,TH-32);
       ctx.textAlign='center';
       ctx.font='900 96px sans-serif';ctx.fillStyle='#ffd54f';
-      ctx.fillText(head,512,150);
+      ctx.fillText(head,TW/2,220);
       let bigSize=220;
       ctx.font=`900 ${bigSize}px sans-serif`;
       while(bigSize>60&&ctx.measureText(big).width>930){bigSize-=14;ctx.font=`900 ${bigSize}px sans-serif`;}
       ctx.fillStyle='#ffffff';
       ctx.shadowColor='#ff6a00';ctx.shadowBlur=45;
-      ctx.fillText(big,512,small?380:430);
+      ctx.fillText(big,TW/2,small?620:680);
       ctx.shadowBlur=0;
-      if(small){ctx.font='900 64px sans-serif';ctx.fillStyle='#ffb066';ctx.fillText(small,512,468);}
+      if(small){ctx.font='900 64px sans-serif';ctx.fillStyle='#ffb066';ctx.fillText(small,TW/2,820);}
       tex.update();
     }
     // ① 夜明け回数の塔（loadCityDawnから回数更新でも呼ばれる）
@@ -6591,11 +6596,12 @@
       if(!adTowerState.slides.length)return;
       const draw=(img,slide)=>{
         const ctx=t.tex.getContext();
-        ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,1024,512);
-        const r=Math.min(1024/img.width,512/img.height);
+        const TW=1024,TH=1024;
+        ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,TW,TH);
+        const r=Math.min(TW/img.width,TH/img.height);
         const w=img.width*r,h=img.height*r;
-        ctx.drawImage(img,(1024-w)/2,(512-h)/2,w,h);
-        ctx.strokeStyle='#ffd54f';ctx.lineWidth=12;ctx.strokeRect(6,6,1012,500);
+        ctx.drawImage(img,(TW-w)/2,(TH-h)/2,w,h);
+        ctx.strokeStyle='#ffd54f';ctx.lineWidth=12;ctx.strokeRect(6,6,TW-12,TH-12);
         t.tex.update();
         t.board.metadata.adSlide=slide;
       };
@@ -6824,8 +6830,8 @@
         track.style.top=r.top+'px';
         track.style.left=(r.right-9)+'px';
         track.style.height=r.height+'px';
-        if(sh<=ch+2){ // スクロール不要：バー全長＝「下に続きは無い」の合図（常時表示）
-          thumb.style.height=r.height+'px';
+        if(sh<=ch+2){ // スクロール不要：つまみは約半分の長さで上に置く（全長だと白帯に見えるため）
+          thumb.style.height=Math.round(r.height*0.5)+'px';
           thumb.style.transform='translateY(0)';
           return;
         }

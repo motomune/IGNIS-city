@@ -209,8 +209,9 @@
     #loading-logo {
       font-size: 36px; font-weight: 900; letter-spacing: 0.3em;
       background: linear-gradient(135deg, #ff6a00, #ee0979);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 24px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px;
     }
+    #loading-founder { max-width:340px;margin:0 20px 22px;padding:12px 14px;border:1px solid rgba(255,106,0,0.28);border-radius:12px;background:linear-gradient(180deg,rgba(255,80,0,0.07),rgba(255,30,0,0.02));font-size:11px;line-height:1.95;color:rgba(255,255,255,0.82);text-align:left; }
     #loading-bar-wrap { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
     #loading-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #ff6a00, #ee0979); border-radius: 2px; transition: width 0.3s; }
     #loading-status { margin-top:14px;font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.06em;max-width:280px;text-align:center;line-height:1.5; }
@@ -1357,6 +1358,7 @@
   </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
+    <div id="loading-founder">このゲームは、皆さんが設置したビルに込められたメッセージを通じて、人と人が支え合う場所です。苦難や挫折、孤独を経験した人たちに「あなたは一人じゃない」という想いを届け、再び前を向くきっかけとなる再生の場を目指しています。さらに、この世界での活動を通じて、それぞれのXアカウントや発信をより多くの人へ届け、新たな繋がりを生み出す場としても機能します。</div>
     <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
     <div id="loading-status">② ライブラリ読込中...</div>
     <div id="loading-tap-hint">画面をタップして開始</div>
@@ -1870,7 +1872,7 @@
       <div id="auth-subtitle">街づくりに参加しよう</div>
       <div id="founder-message">
         <span class="fm-head" id="fm-head">— 創設者の想い —</span>
-        <span class="fm-body" id="fm-body">僕は3歳の頃から災難に見舞われ、30歳を過ぎてもそれは終わらなかった。親友だと信じていた人に騙され、大切に守ってきたものの殆どを失った。それでも、火を消したくなかった。この街は、皆の経験を力に変えて、いま苦しんでいる人を支えるために作った。</span>
+        <span class="fm-body" id="fm-body">このゲームは、皆さんが設置したビルに込められたメッセージを通じて、人と人が支え合う場所です。苦難や挫折、孤独を経験した人たちに「あなたは一人じゃない」という想いを届け、再び前を向くきっかけとなる再生の場を目指しています。さらに、この世界での活動を通じて、それぞれのXアカウントや発信をより多くの人へ届け、新たな繋がりを生み出す場としても機能します。</span>
         <span class="fm-last" id="fm-last">🔥 あなたは、一人じゃない。</span>
       </div>
       <div class="auth-tab-wrap">
@@ -1914,7 +1916,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-14-v152';
+    const IGNIS_BUILD='2026-06-16-v153';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3600,7 +3602,7 @@
           labelEl.textContent=isJa?t.label:t.labelEn;
         }
       });
-      document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+      {const lp=selectedLandPrice();document.getElementById('land-buy-btn').textContent=isJa?`🔥 この土地を取得（${lp}コイン）`:`🔥 Get this land (${lp} coins)`;}
       document.getElementById('land-gacha-btn').textContent=isJa?'📖 スクラッチでビルを建てる（50コイン）':'📖 Build via Scratch (50 coins)';
       document.getElementById('land-rebuild-btn').textContent=isJa?'🔄 スクラッチで建て替える（50コイン）':'🔄 Rebuild via Scratch (50 coins)';
       const empTotal=document.querySelector('[data-i18n="emp-total"]');if(empTotal)empTotal.textContent=isJa?'契約社員総数':'Total Contract Staff';
@@ -3622,8 +3624,8 @@
       // 創設者の想い（タイトル画面）
       const fmHead=document.getElementById('fm-head');if(fmHead)fmHead.textContent=isJa?'— 創設者の想い —':'— A Message from the Founder —';
       const fmBody=document.getElementById('fm-body');if(fmBody)fmBody.textContent=isJa
-        ?'僕は3歳の頃から災難に見舞われ、30歳を過ぎてもそれは終わらなかった。親友だと信じていた人に騙され、大切に守ってきたものの殆どを失った。それでも、火を消したくなかった。この街は、皆の経験を力に変えて、いま苦しんでいる人を支えるために作った。'
-        :'Misfortune has followed me since I was three years old, and it did not stop even past thirty. I was deceived by someone I believed was my best friend, and lost almost everything I had protected. Still, I refused to let the fire go out. I built this city to turn everyone\'s experiences into strength — to stand beside those who are suffering right now.';
+        ?'このゲームは、皆さんが設置したビルに込められたメッセージを通じて、人と人が支え合う場所です。苦難や挫折、孤独を経験した人たちに「あなたは一人じゃない」という想いを届け、再び前を向くきっかけとなる再生の場を目指しています。さらに、この世界での活動を通じて、それぞれのXアカウントや発信をより多くの人へ届け、新たな繋がりを生み出す場としても機能します。'
+        :'Through the messages placed in the buildings you raise, this game is a place where people support one another. To those who have known hardship, setback or loneliness, it carries the thought "you are not alone," aiming to be a place of renewal that helps you face forward again. It also works as a place that carries each person\'s X account and posts to more people, creating new connections.';
       const fmLast=document.getElementById('fm-last');if(fmLast)fmLast.textContent=isJa?'🔥 あなたは、一人じゃない。':'🔥 You are not alone.';
       document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
       document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';
@@ -4541,10 +4543,16 @@
           buyBtn.style.display='block';buyBtn.textContent=isJa?'🔒 購入済みの土地です':'🔒 Already owned';buyBtn.disabled=true;
           placeBtn.style.display='none';gachaBtn.style.display='none';rebuildBtn.style.display='none';
         }
+      }else if(isReservedZone(gx,gz)){
+        ownerEl.textContent=isJa?'⛔ 中央特別区域（購入不可）':'⛔ Central reserved zone';buildingEl.textContent='';
+        buyBtn.style.display='block';
+        buyBtn.textContent=isJa?'🔒 購入できません':'🔒 Not purchasable';buyBtn.disabled=true;
+        placeBtn.style.display='none';gachaBtn.style.display='none';rebuildBtn.style.display='none';
       }else{
         ownerEl.textContent=isJa?'空き地（未取得）':'Empty land';buildingEl.textContent='';
         buyBtn.style.display='block';
-        buyBtn.textContent=isJa?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+        const price=landPriceForCell(gx,gz);
+        buyBtn.textContent=isJa?`🔥 この土地を取得（${price}コイン）`:`🔥 Get this land (${price} coins)`;
         buyBtn.disabled=false;placeBtn.style.display='none';gachaBtn.style.display='none';rebuildBtn.style.display='none';
       }
       showHighlight(gx,gz);document.getElementById('land-panel').classList.add('open');
@@ -4639,6 +4647,21 @@
     // 中央特別区域（再生の殿堂エリア）：中央ビル(0,0)を中心とした5×5＝25マス（±20）は新規購入・建設不可
     const SPECIAL_ZONE_MIN=-20,SPECIAL_ZONE_MAX=20;
     function isReservedZone(gx,gz){return gx>=SPECIAL_ZONE_MIN&&gx<=SPECIAL_ZONE_MAX&&gz>=SPECIAL_ZONE_MIN&&gz<=SPECIAL_ZONE_MAX;}
+    // 土地価格：特別区域(中央5x5)の外側からの距離で決まる。
+    //   外側1〜2マス=300コイン / 3〜4マス=200コイン / それ以遠=100コイン（既定）
+    function landPriceForCell(gx,gz){
+      const ring=Math.max(Math.abs(gx),Math.abs(gz))/CELL; // 中央からのマス数
+      const outside=ring-2; // 特別区域の縁(ring=2)からの外側距離
+      if(outside<=0)return 0;     // 特別区域＝購入不可
+      if(outside<=2)return 300;   // 外側2マス
+      if(outside<=4)return 200;   // 3〜4マス
+      return LAND_COST;           // それ以遠＝既定100
+    }
+    function selectedLandPrice(){
+      if(!selectedLandKey)return LAND_COST;
+      const{gx,gz}=keyToCoord(selectedLandKey);
+      return landPriceForCell(gx,gz);
+    }
     // 特別区域の床をうっすらグレーで示し、外周に黄色のラインを引く（所有済みマスは元の色のまま）
     let specialZoneTiles=[];
     function drawSpecialZoneTiles(){
@@ -4680,35 +4703,36 @@
         showToast(currentLang==='ja'?'⛔ 中央エリアは「再生の殿堂」用に保護されています':'⛔ The central area is reserved for the Hall of Rebirth');
         return;
       }
+      const price=landPriceForCell(gx,gz); // 区域からの距離で価格が変わる
       const buyBtn=document.getElementById('land-buy-btn');
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
         const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
         const balance=ud?ud.coin_column||0:0;
-        if(LAND_COST>0&&balance<LAND_COST){
-          showToast(`コインが足りません（必要：${LAND_COST}コイン、残高：${balance}コイン）`);
+        if(price>0&&balance<price){
+          showToast(`コインが足りません（必要：${price}コイン、残高：${balance}コイン）`);
           buyBtn.disabled=false;
-          buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;return;
+          buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${price}コイン）`:`🔥 Get this land (${price} coins)`;return;
         }
         const{error:landErr}=await db.from('lands').insert({grid_x:gx,grid_z:gz,owner_id:currentUser.id});
         if(landErr)throw landErr;
-        if(LAND_COST>0){
-          const newCoins=balance-LAND_COST;
+        if(price>0){
+          const newCoins=balance-price;
           await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
           document.getElementById('coin-count').textContent=newCoins;
-          await recordCoin(-LAND_COST,'land_buy');
+          await recordCoin(-price,'land_buy');
         }
         const xName=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:'?';
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile:null};
         landMap[selectedLandKey].tile=drawOwnedTile(gx,gz,selectedLandKey,currentUser.id);
         await completeTask('get_land');
-        showToast(`🏡 土地を取得！（-${LAND_COST}コイン）`);openLandPanel(gx,gz);
+        showToast(`🏡 土地を取得！（-${price}コイン）`);openLandPanel(gx,gz);
       }catch(e){
         console.warn('land buy error:',e.message);
         if(String(e.message||'').includes('reserved_zone'))showToast(currentLang==='ja'?'⛔ 中央エリアは「再生の殿堂」用に保護されています':'⛔ The central area is reserved for the Hall of Rebirth');
         else showToast('取得に失敗しました: '+e.message);
         buyBtn.disabled=false;
-        buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${LAND_COST}コイン）`:`🔥 Get this land (${LAND_COST} coins)`;
+        buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${price}コイン）`:`🔥 Get this land (${price} coins)`;
       }
     }
     // ========================================
@@ -5633,7 +5657,13 @@
     }
     const MOTTO_WALL_COLORS={5:'#ff6ec7',4:'#fcd34d',3:'#93c5fd',2:'#86efac',1:'#e2e8f0'};
     // 縦1列格言のサイズ設定（横1マス・上→下に縦へ続く）
-    const MOTTO_CHAR_W=3.2;     // 1文字の大きさ（世界座標）
+    const MOTTO_CHAR_W=3.2;     // 1文字の大きさ（世界座標）＝プレミア会員の幅
+    // 所有者の会員ランクで格言の文字幅を変える：プレミア=3.2 / サブスク=2.56 / 無課金=1.98
+    function mottoCharWidthForOwner(ownerId){
+      if(ownerId&&premiumIds.has(ownerId))return MOTTO_CHAR_W;        // プレミア会員（虹ビル相当の幅）
+      if(ownerId&&subscriberIds.has(ownerId))return MOTTO_CHAR_W*0.8; // サブスク会員（中間）
+      return MOTTO_CHAR_W*0.62;                                       // 無課金（標準・小）
+    }
     const MOTTO_LINE_GAP=1.05;  // 文字間（縦方向）係数
     const MOTTO_CPL=1;          // 1行あたりの文字数（=列数）。1で縦一列。
     function mottoLines(chars){
@@ -5719,7 +5749,8 @@
       const chars=splitMottoChars(text,MOTTO_HARD_MAX);
       if(!chars.length)return;
       const meshId='motto_'+x+'_'+z;
-      const sig=chars.join('')+'|'+(pending?'p':'a');
+      const tierTag=premiumIds.has(building.ownerId)?'P':(subscriberIds.has(building.ownerId)?'S':'F');
+      const sig=chars.join('')+'|'+(pending?'p':'a')+'|'+tierTag;
       const existing=scene.getMeshByName(meshId);
       if(existing){
         if(existing.metadata&&existing.metadata.mottoSig===sig)return; // 同じ内容なら作り直さない（毎リフレッシュでの再生成を防止）
@@ -5728,6 +5759,8 @@
       const totalFloors=Math.max(1,Number(building.totalFloors||building.baseFloors)||1);
       const star=getStarByFloors(totalFloors);
       const color=MOTTO_WALL_COLORS[star]||'#f5f5f5';
+      // 会員ランクで格言の横幅（文字サイズ）を変える：プレミア=最大、サブスク=中、無課金=標準（小）
+      const charBase=mottoCharWidthForOwner(building.ownerId);
       // 縦1列（上→下へ）。日本語=1マス、横倒し英字=0.85マス（上下に余白）、単語間スペース=0.5マス。
       // 英字は1.2倍の大きさで描画し、行は余白込みで確保する。
       const MOTTO_LATIN_W=0.85;   // 横倒し英字の行の高さ（cell単位）＝上下の余白込み
@@ -5739,7 +5772,7 @@
       const totalW=Math.max(1,weights.reduce((a,b)=>a+b,0));
       // 全文が壁に収まるよう、必要なら1文字サイズを縮小（短い格言は基準サイズのまま大きく）
       const availH=mottoAvailHeight(building);
-      const cellH=Math.min(MOTTO_CHAR_W*MOTTO_LINE_GAP, availH/totalW);
+      const cellH=Math.min(charBase*MOTTO_LINE_GAP, availH/totalW);
       const charW=cellH/MOTTO_LINE_GAP;
       // 黒帯（下地プレート）の横幅。英字（横倒し）を含む時は左右に余白を足して帯を広げる。
       const hasLatin=kinds.some(k=>k==='latin');
@@ -7380,10 +7413,13 @@
     }
     // ===== サブスク会員のビル屋上に赤く点滅するランプ =====
     let subscriberIds=new Set();
+    let premiumIds=new Set(); // プレミア会員のid（格言の横幅をランク別にするのに使う）
     const subscriberLamps=[];
     let _lampBlinkObserver=null;
     async function loadSubscriberSet(){
       if(!db)return;
+      // プレミア会員のidも取得（格言横幅のランク分け用）
+      try{const{data:pd}=await db.rpc('get_premium_ids');premiumIds=new Set((pd||[]).map(r=>(typeof r==='string'?r:(r&&r.id))).filter(Boolean));}catch(_){premiumIds=new Set();}
       try{
         // 全会員（サブスク＋プレミアム）のidをSECURITY DEFINERのRPCで取得
         //（会員情報そのものは露出せず、idの集合だけ返す安全な方法。全員のビルにランプを付けられる）

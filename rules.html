@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNIS CITY — 遊び方・ルール</title>
+<style>
+  :root{ --fg:#ececf4; --muted:rgba(255,255,255,0.55); --accent:#ff8a3d; --line:rgba(255,255,255,0.1); }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{ font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif; background:#07070d; color:var(--fg); line-height:1.85; padding:24px 16px 80px; }
+  .wrap{ max-width:760px; margin:0 auto; }
+  .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
+  .brand{ font-size:20px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lang-btn{ background:rgba(255,255,255,0.08); border:1px solid var(--line); color:var(--fg); padding:7px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; }
+  .lang-btn:hover{ background:rgba(255,255,255,0.16); }
+  .lead{ font-size:13px; color:var(--muted); margin-bottom:18px; line-height:1.9; }
+  .cta{ display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 28px; }
+  .cta a{ flex:1 1 220px; text-align:center; text-decoration:none; font-weight:800; font-size:15px; padding:14px; border-radius:14px; }
+  .cta .play{ background:linear-gradient(135deg,#ff6a00,#ee0979); color:#fff; }
+  .cta .legal{ background:rgba(255,255,255,0.07); border:1px solid var(--line); color:var(--fg); }
+  h2{ font-size:16px; font-weight:900; color:var(--accent); margin:26px 0 8px; padding-top:14px; border-top:1px solid var(--line); }
+  h2 .em{ margin-right:6px; }
+  p,li{ font-size:13.5px; color:rgba(255,255,255,0.85); }
+  ul,ol{ margin:6px 0 6px 22px; }
+  li{ margin:4px 0; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:13px; }
+  th,td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th{ background:rgba(255,255,255,0.04); color:var(--muted); font-weight:700; white-space:nowrap; }
+  .pill{ display:inline-block; font-size:11px; font-weight:800; padding:2px 9px; border-radius:999px; background:rgba(255,138,61,0.15); color:#ffb066; border:1px solid rgba(255,138,61,0.4); }
+  .note{ font-size:12px; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin:12px 0; }
+  .foot{ margin-top:30px; font-size:11px; color:var(--muted); }
+  .foot a{ color:var(--accent); }
+  [data-lang]{ display:none; }
+  body.ja [data-lang="ja"]{ display:revert; }
+  body.en [data-lang="en"]{ display:revert; }
+  body.ja [data-lang="ja"].block, body.en [data-lang="en"].block{ display:block; }
+</style>
+</head>
+<body class="ja">
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">🔥 IGNIS CITY</div>
+    <button class="lang-btn" onclick="toggleLang()"><span data-lang="ja">English</span><span data-lang="en">日本語</span></button>
+  </div>
+
+  <p class="lead">
+    <span data-lang="ja">IGNIS CITY は、皆さんが建てたビルに込めたメッセージを通じて、人と人が支え合う 3D の街づくりゲームです。苦難や挫折、孤独を経験した人に「あなたは一人じゃない」という想いを届け、再び前を向くきっかけとなる“再生の場”を目指しています。</span>
+    <span data-lang="en">IGNIS CITY is a 3D city-building game where people support one another through the messages placed in the buildings they raise. It aims to be a place of renewal that tells those who have known hardship, setback or loneliness: "you are not alone."</span>
+  </p>
+
+  <div class="cta">
+    <a class="play" href="index.html">▶ <span data-lang="ja">ゲームを始める</span><span data-lang="en">Play the game</span></a>
+    <a class="legal" href="legal.html">📄 <span data-lang="ja">利用規約・特商法</span><span data-lang="en">Terms / Legal</span></a>
+  </div>
+
+  <!-- 目的 -->
+  <h2><span class="em">🎯</span><span data-lang="ja">このゲームの目的</span><span data-lang="en">What you do</span></h2>
+  <div data-lang="ja" class="block">
+    <p>土地を取得してビルを建て、ビルの壁に「格言」、ビル詳細に「過去の経験」を込めます。あなたの言葉が、同じ痛みを抱える誰かの励みになります。他の人のビルに蝋燭を灯し、街全体で支え合いましょう。</p>
+  </div>
+  <div data-lang="en" class="block">
+    <p>Acquire land, build a tower, and place a "motto" on its wall and your past experience in its details. Your words can encourage someone who carries the same pain. Light candles on others' buildings and support each other across the whole city.</p>
+  </div>
+
+  <!-- 基本の流れ -->
+  <h2><span class="em">🏙</span><span data-lang="ja">基本の流れ</span><span data-lang="en">Getting started</span></h2>
+  <ol>
+    <li><span data-lang="ja"><b>登録</b>：メールアドレスとX（旧Twitter）アカウント名で登録します。</span><span data-lang="en"><b>Register</b> with your email and X (Twitter) username.</span></li>
+    <li><span data-lang="ja"><b>コインを貯める</b>：デイリータスクや招待でコインを獲得します。</span><span data-lang="en"><b>Earn coins</b> from daily tasks and invites.</span></li>
+    <li><span data-lang="ja"><b>土地を取得</b>：空き地をタップして取得します（1人2区画まで）。</span><span data-lang="en"><b>Acquire land</b> by tapping an empty tile (up to 2 per person).</span></li>
+    <li><span data-lang="ja"><b>ビルを建てる</b>：スクラッチでビルを獲得し、土地に設置します。</span><span data-lang="en"><b>Build</b> a tower via scratch and place it on your land.</span></li>
+    <li><span data-lang="ja"><b>メッセージを込める</b>：格言と過去詳細を申請（運営の承認後に公開）。</span><span data-lang="en"><b>Add your message</b>: submit a motto and past details (published after review).</span></li>
+  </ol>
+
+  <!-- コイン -->
+  <h2><span class="em">🪙</span><span data-lang="ja">コインの集め方</span><span data-lang="en">Coins</span></h2>
+  <div data-lang="ja" class="block">
+    <p>コインは<b>現金では購入できません</b>。ゲーム内の行動で貯めます。</p>
+    <ul>
+      <li>デイリータスク：ログイン／会社員を採用／他のビルを5棟閲覧／創設者の投稿にリプライ・リポスト</li>
+      <li>友だち招待（登録されると追加ボーナス）</li>
+      <li>蝋燭を灯す（サブスク会員。1日1回の報酬）</li>
+    </ul>
+  </div>
+  <div data-lang="en" class="block">
+    <p>Coins <b>cannot be bought with money</b>. Earn them by playing:</p>
+    <ul><li>Daily tasks: login / hire staff / view 5 buildings / reply & repost the founder's post</li><li>Inviting friends (bonus when they register)</li><li>Lighting candles (subscribers; once-a-day reward)</li></ul>
+  </div>
+
+  <!-- 土地とビル -->
+  <h2><span class="em">🏗</span><span data-lang="ja">土地とビル</span><span data-lang="en">Land &amp; buildings</span></h2>
+  <table>
+    <tr><th><span data-lang="ja">土地の価格</span><span data-lang="en">Land price</span></th><td><span data-lang="ja">中央の特別区域から外側1〜2マス＝300コイン／3〜4マス＝200コイン／それ以遠＝100コイン</span><span data-lang="en">1–2 cells outside the central zone = 300 / 3–4 = 200 / beyond = 100 coins</span></td></tr>
+    <tr><th><span data-lang="ja">中央特別区域</span><span data-lang="en">Central zone</span></th><td><span data-lang="ja">「再生の殿堂」や記念碑のための保護区。購入・建設はできません。</span><span data-lang="en">A reserved area for the Hall of Rebirth and monuments. Not purchasable.</span></td></tr>
+    <tr><th><span data-lang="ja">ビル獲得</span><span data-lang="en">Get a building</span></th><td><span data-lang="ja">スクラッチ（50コイン）で獲得→在庫→土地に設置。階数でレア度が決まります。</span><span data-lang="en">Scratch (50 coins) → inventory → place on land. Floors determine rarity.</span></td></tr>
+    <tr><th><span data-lang="ja">従業員</span><span data-lang="en">Staff</span></th><td><span data-lang="ja">会社員を採用（25コイン）して配属するとビルの階数が伸びます（最大300階）。</span><span data-lang="en">Hire (25 coins) and assign staff to grow floors (max 300).</span></td></tr>
+  </table>
+
+  <!-- 格言・過去詳細 -->
+  <h2><span class="em">💬</span><span data-lang="ja">格言・過去の記録</span><span data-lang="en">Mottos &amp; past records</span></h2>
+  <div data-lang="ja" class="block">
+    <p>ビルの壁に縦書きで表示される「格言」と、ビル詳細に残す「過去の経験（背景・対応・結果・もし生まれ変わったら）」を申請できます。<b>運営の承認後に公開</b>され、英語訳にも対応します。</p>
+    <p class="note">⚠️ 個人や事業所を特定できる表記・宣伝・勧誘・誹謗中傷は投稿できません。承認制で安全を保っています。</p>
+  </div>
+  <div data-lang="en" class="block">
+    <p>Submit a vertical "motto" for your wall and a "past record" (background, response, outcome, and "if reborn") for the building details. Content is <b>published after review</b> and supports English translation.</p>
+    <p class="note">⚠️ No content identifying individuals/businesses, advertising, solicitation, or defamation. A review process keeps it safe.</p>
+  </div>
+
+  <!-- 蝋燭と街のイベント -->
+  <h2><span class="em">🕯️</span><span data-lang="ja">蝋燭と街のイベント</span><span data-lang="en">Candles &amp; city events</span></h2>
+  <ul>
+    <li><span data-lang="ja"><b>蝋燭</b>：心を動かされた他人のビルに灯せます（サブスク会員・1日3本まで・自分のビルは不可）。返事をもらうと従業員を獲得。</span><span data-lang="en"><b>Candles</b>: light them on others' buildings that moved you (subscribers, up to 3/day, not your own). Get staff when you receive a reply.</span></li>
+    <li><span data-lang="ja"><b>夜明けイベント</b>：街全体の蝋燭が基準に達すると、24時間だけ空が朝焼けになります。</span><span data-lang="en"><b>Dawn event</b>: when the city's candles reach a goal, the sky turns to dawn for 24 hours.</span></li>
+    <li><span data-lang="ja"><b>再生の殿堂</b>：今月もっとも多くの蝋燭が灯ったビルが、中央の上空に金の星として展示されます。</span><span data-lang="en"><b>Hall of Rebirth</b>: the most-candled building of the month is shown as a golden star above the center.</span></li>
+  </ul>
+
+  <!-- ランキングとX -->
+  <h2><span class="em">🏆</span><span data-lang="ja">ランキング・Xユーザー名</span><span data-lang="en">Ranking &amp; X name</span></h2>
+  <ul>
+    <li><span data-lang="ja">コイン／従業員／階数／蝋燭でランキングを競えます。</span><span data-lang="en">Compete in coins / staff / floors / candles.</span></li>
+    <li><span data-lang="ja">Xユーザー名は<b>表示ON/OFFを自分で選べます</b>。OFFにすると、ランキング・ビル詳細・テロップすべてで非表示になります。</span><span data-lang="en">You can <b>toggle your X name on/off</b>. When off, it is hidden in rankings, building details and the ticker.</span></li>
+  </ul>
+
+  <!-- 会員プラン -->
+  <h2><span class="em">💎</span><span data-lang="ja">会員プラン</span><span data-lang="en">Membership</span></h2>
+  <table>
+    <tr><th><span data-lang="ja">サブスク会員<br><span class="pill">月980円（税込）</span></span><span data-lang="en">Subscriber<br><span class="pill">¥980/mo</span></span></th>
+        <td><span data-lang="ja">全ビルの過去詳細③〜⑥を閲覧／蝋燭を灯せる／屋上に赤い点滅ランプ／X報酬1.5倍／Xユーザー名をモザイク無しで表示</span><span data-lang="en">Read full past details of every building / light candles / red rooftop lamp / 1.5x X rewards / X name without mosaic</span></td></tr>
+    <tr><th><span data-lang="ja">プレミアム会員<br><span class="pill">月1980円（税込）</span></span><span data-lang="en">Premium<br><span class="pill">¥1,980/mo</span></span></th>
+        <td><span data-lang="ja">サブスク会員の特典すべて＋あなたのXリンクがゲーム内に常時掲載（宣伝テロップ）＋あなたのビルが中央特別区域に日替わりホログラム投影で展示</span><span data-lang="en">Everything in Subscriber + your X link featured in the in-game ticker + your building shown as a daily hologram in the central zone</span></td></tr>
+  </table>
+  <p class="note"><span data-lang="ja">サブスクは自動更新です。解約はゲーム内「💎サブスク」→「プラン変更・解約」からいつでも手続きできます。決済はStripeの安全なページで行われ、カード情報は当方では保持しません。</span><span data-lang="en">Subscriptions auto-renew. Cancel anytime from "💎 Subscribe" → "Change plan / cancel". Payments are handled securely by Stripe; we do not store card details.</span></p>
+
+  <div class="cta">
+    <a class="play" href="index.html">▶ <span data-lang="ja">ゲームを始める</span><span data-lang="en">Play the game</span></a>
+  </div>
+
+  <div class="foot">
+    <a href="legal.html#terms"><span data-lang="ja">利用規約</span><span data-lang="en">Terms</span></a> ・
+    <a href="legal.html#privacy"><span data-lang="ja">プライバシーポリシー</span><span data-lang="en">Privacy</span></a> ・
+    <a href="legal.html#tokushoho"><span data-lang="ja">特定商取引法に基づく表記</span><span data-lang="en">Commercial Transactions</span></a>
+  </div>
+</div>
+
+<script>
+  function toggleLang(){
+    document.body.classList.toggle('ja');document.body.classList.toggle('en');
+    try{localStorage.setItem('ignis_rules_lang',document.body.classList.contains('en')?'en':'ja');}catch(_){}
+  }
+  try{ if(localStorage.getItem('ignis_rules_lang')==='en'){document.body.classList.remove('ja');document.body.classList.add('en');} }catch(_){}
+  try{ if(new URL(location.href).searchParams.get('lang')==='en'){document.body.classList.remove('ja');document.body.classList.add('en');} }catch(_){}
+</script>
+</body>
+</html>

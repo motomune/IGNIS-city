@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNIS CITY</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{ font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif; background:#07070d; color:#ececf4;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    background-image:radial-gradient(circle at 30% 10%,rgba(255,106,0,0.12),transparent 55%),radial-gradient(circle at 75% 90%,rgba(238,9,121,0.10),transparent 55%); }
+  .card{ width:100%; max-width:420px; text-align:center; }
+  .flame{ font-size:46px; line-height:1; margin-bottom:8px; filter:drop-shadow(0 0 16px rgba(255,120,0,0.5)); animation:flick 2.4s ease-in-out infinite; }
+  @keyframes flick{ 0%,100%{opacity:0.85;transform:translateY(0);} 50%{opacity:1;transform:translateY(-3px);} }
+  .brand{ font-size:30px; font-weight:900; letter-spacing:0.18em; background:linear-gradient(135deg,#ff6a00,#ee0979);
+    -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:10px; }
+  .tagline{ font-size:12.5px; color:rgba(255,255,255,0.6); line-height:1.9; margin-bottom:28px; }
+  .btns{ display:flex; flex-direction:column; gap:12px; }
+  a.btn{ display:block; text-decoration:none; font-weight:800; font-size:16px; padding:16px; border-radius:16px; }
+  a.play{ background:linear-gradient(135deg,#ff6a00,#ee0979); color:#fff; box-shadow:0 8px 30px rgba(255,80,0,0.3); }
+  a.rules{ background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16); color:#fff; }
+  a.btn:active{ transform:scale(0.98); }
+  .lang{ margin-top:22px; font-size:12px; }
+  .lang a{ color:#ff8a3d; text-decoration:none; cursor:pointer; }
+  .legal{ margin-top:16px; font-size:10.5px; color:rgba(255,255,255,0.4); }
+  .legal a{ color:rgba(255,255,255,0.55); text-decoration:none; }
+  [data-lang]{ display:none; } body.ja [data-lang=ja]{display:revert;} body.en [data-lang=en]{display:revert;}
+</style>
+</head>
+<body class="ja">
+  <div class="card">
+    <div class="flame">🔥</div>
+    <div class="brand">IGNIS CITY</div>
+    <div class="tagline">
+      <span data-lang="ja">皆さんが建てたビルのメッセージを通じて、人と人が支え合う街。<br>「あなたは一人じゃない」を届ける再生の場。</span>
+      <span data-lang="en">A city where people support one another through the messages in the buildings they raise.<br>A place of renewal that says "you are not alone."</span>
+    </div>
+    <div class="btns">
+      <a class="btn play" href="index.html">▶ <span data-lang="ja">ゲームを始める</span><span data-lang="en">Play the game</span></a>
+      <a class="btn rules" href="rules.html">📖 <span data-lang="ja">遊び方・ルールを見る</span><span data-lang="en">How to play / Rules</span></a>
+    </div>
+    <div class="lang"><a onclick="toggleLang()"><span data-lang="ja">English</span><span data-lang="en">日本語</span></a></div>
+    <div class="legal">
+      <a href="legal.html#terms"><span data-lang="ja">利用規約</span><span data-lang="en">Terms</span></a> ・
+      <a href="legal.html#privacy"><span data-lang="ja">プライバシー</span><span data-lang="en">Privacy</span></a> ・
+      <a href="legal.html#tokushoho"><span data-lang="ja">特定商取引法に基づく表記</span><span data-lang="en">Commercial Transactions</span></a>
+    </div>
+  </div>
+<script>
+  function toggleLang(){document.body.classList.toggle('ja');document.body.classList.toggle('en');}
+  try{ if(new URL(location.href).searchParams.get('lang')==='en'){document.body.className='en';} }catch(_){}
+</script>
+</body>
+</html>

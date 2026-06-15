@@ -1916,7 +1916,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-16-v153';
+    const IGNIS_BUILD='2026-06-16-v154';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -7635,7 +7635,7 @@
           return;
         }
         if(nm==='tower_logins'||nm==='tower_logins_plate'){
-          showToast(currentLang==='ja'?'👥 今月ログインしたプレイヤーの人数です（同じ人は1カウント）':'👥 Unique players who logged in this month');
+          showToast(currentLang==='ja'?'👥 この街の累計登録者数です':'👥 Total registered members of this city');
           return;
         }
         if(nm==='tower_event'||nm==='tower_event_plate'){
@@ -7922,6 +7922,9 @@
     {const bb=document.getElementById('build-badge');if(bb)bb.textContent=IGNIS_BUILD.replace(/^\d{4}-\d{2}-\d{2}-/,'');}
     // 全BGMを起動時に先読み（スクラッチ/図鑑へ移動した瞬間に音楽が始まるように）
     IgnisAudio.preloadAllBgm();
+    // プレミアム会員の紹介テロップは、無課金者・未ログインの全員に表示する（広告として）。
+    // ログイン前でも出るよう、起動時にも読み込む。
+    setTimeout(()=>{try{loadPremiumBar();}catch(_){}},800);
     // 広告を「左レール（X名/ログアウト等）の下端」と「ミニマップの上端」の間に自動配置。
     // 入り切らない時は縮小して、ボタンと被らないようにする。
     function layoutAdSlot(){

@@ -192,18 +192,47 @@
       });
     }
 
+    // ===== アカウントロック（連続ログイン失敗対策）=====
+    // 5回連続で失敗するとフォームを15分ロックする（10回以下でロックの要件を満たす）。
+    // サーバー側の総当たり対策はSupabase Authのレート制限が別途機能する。
+    const LOGIN_MAX_FAILS=5, LOGIN_LOCK_MS=15*60*1000, LOGIN_LS_KEY='ignis_admin_login_lock';
+    function getLoginLockState(){
+      try{return JSON.parse(localStorage.getItem(LOGIN_LS_KEY))||{fails:0,until:0};}catch(_){return{fails:0,until:0};}
+    }
+    function setLoginLockState(s){try{localStorage.setItem(LOGIN_LS_KEY,JSON.stringify(s));}catch(_){}}
+    function loginLockRemainingMin(){
+      const s=getLoginLockState();
+      if(s.until&&s.until>Date.now())return Math.ceil((s.until-Date.now())/60000);
+      return 0;
+    }
     async function handleLogin(ev){
       ev.preventDefault();
+      const errEl=document.getElementById('login-error');
+      const remain=loginLockRemainingMin();
+      if(remain>0){errEl.textContent=`ログイン試行が多すぎます。約${remain}分後に再試行してください。`;return;}
       const email=document.getElementById('login-email').value.trim();
       const password=document.getElementById('login-password').value;
       const btn=document.getElementById('login-btn');
-      const errEl=document.getElementById('login-error');
       errEl.textContent='';btn.disabled=true;btn.textContent='ログイン中...';
       try{
         const{data,error}=await db.auth.signInWithPassword({email,password});
         if(error)throw error;
+        setLoginLockState({fails:0,until:0}); // 成功でリセット
         await checkAndShowAdmin(data.user);
-      }catch(e){errEl.textContent=e.message||'ログインに失敗しました';}
+      }catch(e){
+        // 失敗回数をカウントし、上限でロック
+        const s=getLoginLockState();
+        s.fails=(s.fails||0)+1;
+        if(s.fails>=LOGIN_MAX_FAILS){
+          s.until=Date.now()+LOGIN_LOCK_MS;s.fails=0;
+          setLoginLockState(s);
+          errEl.textContent=`ログイン失敗が${LOGIN_MAX_FAILS}回に達しました。約15分間ロックします。`;
+        }else{
+          setLoginLockState(s);
+          const left=LOGIN_MAX_FAILS-s.fails;
+          errEl.textContent=(e.message||'ログインに失敗しました')+`（あと${left}回でロック）`;
+        }
+      }
       finally{btn.disabled=false;btn.textContent='ログイン';}
     }
 

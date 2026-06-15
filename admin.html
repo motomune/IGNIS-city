@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -77,6 +77,10 @@
     .access-denied{max-width:420px;margin:80px auto;text-align:center;background:#0a0a14;border:1px solid rgba(239,68,68,0.4);border-radius:18px;padding:40px;}
     .access-denied h2{color:#ef4444;font-size:20px;margin-bottom:12px;}
     .access-denied p{color:rgba(255,255,255,0.5);font-size:13px;line-height:1.7;}
+    #admin-stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+    .stat-card{background:#0a0a14;border:1px solid rgba(255,106,0,0.25);border-radius:12px;padding:14px 20px;min-width:150px;}
+    .stat-num{font-size:26px;font-weight:900;color:#ff6a00;line-height:1.1;}
+    .stat-lbl{font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;letter-spacing:0.04em;}
     @media(max-width:680px){.card{grid-template-columns:1fr;gap:12px;}.actions{flex-direction:row;}}
   </style>
 </head>
@@ -141,10 +145,15 @@
         <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
       </div>
     </div>
+    <div id="admin-stats">
+      <div class="stat-card"><div class="stat-num" id="stat-total">–</div><div class="stat-lbl">総ユーザー数</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-mau">–</div><div class="stat-lbl">直近30日ログイン（実人数）</div></div>
+    </div>
     <div class="tabs">
       <button class="tab active" data-tab="pending" onclick="switchTab('pending')">📨 申請中 <span class="badge" id="badge-pending">0</span></button>
       <button class="tab" data-tab="approved" onclick="switchTab('approved')">✅ 承認済み <span class="badge" id="badge-approved">0</span></button>
       <button class="tab" data-tab="rejected" onclick="switchTab('rejected')">❌ 却下 <span class="badge" id="badge-rejected">0</span></button>
+      <button class="tab" id="translate-all-btn" onclick="backfillMottoEn()" title="承認済みで未翻訳の格言をDeepLで英訳してDBに保存">🌐 未翻訳を一括英訳</button>
     </div>
     <div id="list-container">
       <div class="loading">読み込み中...</div>
@@ -160,8 +169,15 @@
     const ADMIN_USER_ID='afc818cd-d2fa-4c1c-8460-9dbce9e60e37';
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-    const CHIP_LABELS={money:'お金',trust:'信用',friend:'友人',partner:'恋人',family:'家族',health:'健康',workplace:'職場の居場所',other:'その他'};
-    function chipsHtml(arr){if(!arr||!arr.length)return '<span style="font-size:11px;color:rgba(255,255,255,0.3);">（なし）</span>';return arr.map(v=>`<span class="chip-item">${CHIP_LABELS[v]||v}</span>`).join('');}
+    const CHIP_LABELS={money:'お金',trust:'信用',reliance:'信頼',friend:'友人',partner:'恋人',family:'家族',health:'健康',workplace:'職場の居場所',other:'その他'};
+    function chipsHtml(arr){
+      if(!arr||!arr.length)return '<span style="font-size:11px;color:rgba(255,255,255,0.3);">（なし）</span>';
+      return arr.map(v=>{
+        const s=String(v);
+        const label=s.startsWith('other:')?`その他: ${s.slice(6)}`:(CHIP_LABELS[s]||s);
+        return `<span class="chip-item">${escapeHtml(label)}</span>`;
+      }).join('');
+    }
 
     let currentTab='pending';
     let profiles=[];
@@ -198,17 +214,12 @@
       try{
         const{data:aal}=await db.auth.mfa.getAuthenticatorAssuranceLevel();
         const{data:fl}=await db.auth.mfa.listFactors();
-        const verified=(fl&&fl.totp||[]).filter(f=>f.status==='verified');
-        if(!verified.length){
-          // 未設定 → 設定を強制
-          await showMfaSetup();
-          return;
-        }
-        if(aal&&aal.currentLevel==='aal1'&&aal.nextLevel==='aal2'){
-          // 設定済みだが未認証 → コード入力
+        const verified=((fl&&fl.totp)||[]).filter(f=>f.status==='verified');
+        if(!verified.length){await showMfaSetup();return;} // 未設定 → 設定を強制
+        if(aal&&aal.currentLevel==='aal1'&&aal.nextLevel==='aal2'){ // 設定済みだが未認証 → コード入力
           mfaFactorId=verified[0].id;
           showScreen('mfa-challenge');
-          setTimeout(()=>document.getElementById('mfa-challenge-code').focus(),100);
+          setTimeout(()=>{const c=document.getElementById('mfa-challenge-code');if(c)c.focus();},100);
           return;
         }
       }catch(e){console.warn('MFA gate',e);} // MFA未対応環境でも管理は使える
@@ -216,21 +227,21 @@
       const display=ud&&ud.x_username?`@${ud.x_username}`:ud&&ud.username?ud.username:user.email;
       document.getElementById('admin-uname').textContent=display;
       showScreen('admin');
+      loadAdminStats();
       await loadProfiles();
     }
-    // ===== MFA：設定（エンロール）=====
+    // ===== MFA（TOTP二段階認証）=====
     let mfaFactorId=null;
     async function showMfaSetup(){
       showScreen('mfa-setup');
       const err=document.getElementById('mfa-setup-error');err.textContent='';
       try{
-        // 未認証の古いファクターが残っていれば削除してから新規発行
         const{data:fl}=await db.auth.mfa.listFactors();
         for(const f of ((fl&&fl.totp)||[])){if(f.status!=='verified'){try{await db.auth.mfa.unenroll({factorId:f.id});}catch(_){}}}
         const{data,error}=await db.auth.mfa.enroll({factorType:'totp',friendlyName:'admin-'+Date.now()});
         if(error)throw error;
         mfaFactorId=data.id;
-        document.getElementById('mfa-qr').innerHTML=data.totp.qr_code; // SVG
+        document.getElementById('mfa-qr').innerHTML=data.totp.qr_code;
         document.getElementById('mfa-secret').textContent='手入力用: '+data.totp.secret;
       }catch(e){err.textContent='QRの生成に失敗: '+(e.message||e);}
     }
@@ -264,6 +275,16 @@
       }catch(e){err.textContent='コードが正しくありません: '+(e.message||e);}
       finally{btn.disabled=false;btn.textContent='認証する';}
     }
+    async function loadAdminStats(){
+      try{
+        const{data,error}=await db.rpc('get_admin_stats');
+        if(error)throw error;
+        if(data&&!data.error){
+          document.getElementById('stat-total').textContent=(data.total_users??'–').toLocaleString?data.total_users.toLocaleString():data.total_users;
+          document.getElementById('stat-mau').textContent=(data.mau_30d??'–').toLocaleString?data.mau_30d.toLocaleString():data.mau_30d;
+        }
+      }catch(e){console.warn('admin stats',e);}
+    }
 
     async function handleLogout(){
       await db.auth.signOut();
@@ -275,15 +296,19 @@
       document.getElementById('list-container').innerHTML='<div class="loading">読み込み中...</div>';
       try{
         const[mottoRes,pastRes]=await Promise.all([
-          db.from('building_profiles').select('id,user_id,building_x,building_z,motto_text,status,created_at,reviewed_at').order('created_at',{ascending:false}),
-          db.from('building_past_details').select('id,user_id,building_x,building_z,lost_items,gained_items,background_detail,current_positive,status,created_at,updated_at').order('updated_at',{ascending:false}),
+          db.from('building_profiles').select('id,user_id,building_x,building_z,motto_text,pending_motto_text,pending_submitted_at,status,created_at,reviewed_at').order('created_at',{ascending:false}),
+          db.from('building_past_details').select('id,user_id,building_x,building_z,lost_items,gained_items,background_detail,how_handled,what_happened_after,journey_to_now,status,created_at,updated_at').order('updated_at',{ascending:false}),
         ]);
         if(mottoRes.error)throw mottoRes.error;
         if(pastRes.error)throw pastRes.error;
-        const allItems=[
-          ...(mottoRes.data||[]).map(p=>({...p,_type:'motto'})),
-          ...(pastRes.data||[]).map(p=>({...p,created_at:p.updated_at||p.created_at,_type:'past'})),
-        ];
+        const mottoItems=(mottoRes.data||[]).map(p=>{
+          // 承認済み格言に修正申請(pending_motto_text)が付いている＝「修正の承認待ち」
+          const isEdit=p.status==='approved'&&!!p.pending_motto_text;
+          return{...p,_type:'motto',_isEdit:isEdit,_reviewState:isEdit?'pending':p.status,
+            created_at:isEdit?(p.pending_submitted_at||p.created_at):p.created_at};
+        });
+        const pastItems=(pastRes.data||[]).map(p=>({...p,created_at:p.updated_at||p.created_at,_type:'past',_isEdit:false,_reviewState:p.status}));
+        const allItems=[...mottoItems,...pastItems];
         const userIds=[...new Set(allItems.map(p=>p.user_id))];
         let userMap={};
         if(userIds.length){
@@ -320,14 +345,118 @@
 
     function renderList(){
       const counts={pending:0,approved:0,rejected:0};
-      profiles.forEach(p=>{if(counts[p.status]!==undefined)counts[p.status]++;});
+      profiles.forEach(p=>{if(counts[p._reviewState]!==undefined)counts[p._reviewState]++;});
       document.getElementById('badge-pending').textContent=counts.pending;
       document.getElementById('badge-approved').textContent=counts.approved;
       document.getElementById('badge-rejected').textContent=counts.rejected;
-      const filtered=profiles.filter(p=>p.status===currentTab);
+      const filtered=profiles.filter(p=>p._reviewState===currentTab);
       const container=document.getElementById('list-container');
       if(!filtered.length){container.innerHTML=`<div class="empty">該当する申請はありません</div>`;return;}
-      container.innerHTML='<div class="list">'+filtered.map(p=>renderCard(p)).join('')+'</div>';
+      let html='';
+      if(currentTab==='pending'){
+        // 同じビルの「格言」と「過去詳細」が両方審査待ちなら、1枚のカードにまとめて一括承認できるようにする
+        const byKey={};const order=[];
+        filtered.forEach(p=>{const k=`${p.building_x}_${p.building_z}`;if(!byKey[k]){byKey[k]=[];order.push(k);}byKey[k].push(p);});
+        html=order.map(k=>{
+          const items=byKey[k];
+          const motto=items.find(p=>p._type==='motto');
+          const past=items.find(p=>p._type==='past');
+          if(motto&&past)return renderComboCard(motto,past);
+          return items.map(p=>renderCard(p)).join('');
+        }).join('');
+      }else{
+        html=filtered.map(p=>renderCard(p)).join('');
+      }
+      container.innerHTML='<div class="list">'+html+'</div>';
+    }
+
+    // 格言＋過去詳細をひとつの申請として表示するカード
+    function renderComboCard(m,past){
+      const star=getStarByFloors(m._floors);
+      const icon=BUILDING_ICONS[star]||'🏢';
+      const u=m.users||{};
+      const xName=u.x_username||'';
+      const ownerHtml=xName?`<a href="https://x.com/${encodeURIComponent(xName)}" target="_blank" rel="noopener">@${xName}</a>`:(u.username||'(unknown)');
+      let mottoBody='';
+      if(m._isEdit){
+        mottoBody=`
+          <div class="past-section">現在の格言（壁に表示中）</div>
+          <div class="motto-text ${rankClass(star)}" style="opacity:0.6;">💬 ${escapeHtml(m.motto_text||'')}</div>
+          <div class="past-section" style="margin-top:8px;color:#ffab40;">修正後（承認待ち）</div>
+          <div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(m.pending_motto_text||'')}</div>`;
+      }else{
+        mottoBody=m.motto_text
+          ?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(m.motto_text)}</div>`
+          :'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+      }
+      const pastBody=`
+        <div class="past-section" style="margin-top:10px;">① 失ったもの</div><div class="chip-row">${chipsHtml(past.lost_items)}</div>
+        <div class="past-section" style="margin-top:8px;">② 得たもの・得ようとしているもの</div><div class="chip-row">${chipsHtml(past.gained_items)}</div>
+        ${past.background_detail?`<div class="past-section" style="margin-top:8px;">③ 出来事が起きるまでの背景と経緯</div><div class="past-text">${escapeHtml(past.background_detail)}</div>`:''}
+        ${past.how_handled?`<div class="past-section" style="margin-top:8px;">④ 自身の対応</div><div class="past-text">${escapeHtml(past.how_handled)}</div>`:''}
+        ${past.what_happened_after?`<div class="past-section" style="margin-top:8px;">⑤ どうなったか</div><div class="past-text">${escapeHtml(past.what_happened_after)}</div>`:''}
+        ${past.journey_to_now?`<div class="past-section" style="margin-top:8px;">⑥ もし生まれ変わったら、どう気をつけたいか</div><div class="past-text">${escapeHtml(past.journey_to_now)}</div>`:''}`;
+      const newest=new Date(m.created_at)>new Date(past.created_at)?m.created_at:past.created_at;
+      return `
+        <div class="card pending">
+          <div class="rank-icon" title="${STAR_LABELS[star]}">${icon}</div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="owner">👤 ${ownerHtml}</span>
+              <span class="type-badge motto">${m._isEdit?'✏️ 格言修正':'💬 格言'}＋📖 過去詳細</span>
+              <span class="coord">座標 ${m.building_x},${m.building_z}</span>
+              <span class="floors">${m._floors||'?'}F / ${STAR_LABELS[star]}</span>
+              <span class="status-badge pending">pending</span>
+            </div>
+            ${mottoBody}
+            ${pastBody}
+            <div class="meta">申請: ${fmtTime(newest)}</div>
+          </div>
+          <div class="actions">
+            <button class="action-btn btn-approve" onclick="approveCombo('${m.id}',${m._isEdit?'true':'false'},'${past.id}')">✅ まとめて承認</button>
+            <button class="action-btn btn-reject" onclick="rejectCombo('${m.id}',${m._isEdit?'true':'false'},'${past.id}')">❌ まとめて却下</button>
+          </div>
+        </div>`;
+    }
+
+    // 格言＋過去詳細をまとめて承認（承認後に両方をDeepLで英訳）
+    async function approveCombo(mottoId,isEdit,pastId){
+      try{
+        const now=new Date().toISOString();
+        if(isEdit){
+          const item=profiles.find(p=>String(p.id)===String(mottoId)&&p._type==='motto');
+          if(!item||!item.pending_motto_text)throw new Error('格言修正の対象が見つかりません（リロードして再試行してください）');
+          const{error:e1}=await db.from('building_profiles').update({
+            motto_text:item.pending_motto_text,pending_motto_text:null,pending_submitted_at:null,reviewed_at:now
+          }).eq('id',item.id);
+          if(e1)throw e1;
+        }else{
+          const{error:e1}=await db.from('building_profiles').update({status:'approved',reviewed_at:now}).eq('id',mottoId);
+          if(e1)throw e1;
+        }
+        const{error:e2}=await db.from('building_past_details').update({status:'approved',updated_at:now}).eq('id',pastId);
+        if(e2)throw e2;
+        showToast('✓ 格言と過去詳細をまとめて承認しました');
+        notifyTranslateResult(translatePending({ids:[mottoId],pastIds:[pastId]}));
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('承認に失敗しました: '+e.message);}
+    }
+    async function rejectCombo(mottoId,isEdit,pastId){
+      if(!confirm(isEdit?'この申請（格言修正＋過去詳細）をまとめて却下しますか？（元の格言はそのまま残ります）':'この申請（格言＋過去詳細）をまとめて却下しますか？'))return;
+      try{
+        const now=new Date().toISOString();
+        if(isEdit){
+          const{error:e1}=await db.from('building_profiles').update({pending_motto_text:null,pending_submitted_at:null}).eq('id',mottoId);
+          if(e1)throw e1;
+        }else{
+          const{error:e1}=await db.from('building_profiles').update({status:'rejected',reviewed_at:now}).eq('id',mottoId);
+          if(e1)throw e1;
+        }
+        const{error:e2}=await db.from('building_past_details').update({status:'rejected',updated_at:now}).eq('id',pastId);
+        if(e2)throw e2;
+        showToast('✓ まとめて却下しました');
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('却下に失敗しました: '+e.message);}
     }
 
     function renderCard(p){
@@ -337,48 +466,96 @@
       const xName=u.x_username||'';
       const ownerHtml=xName?`<a href="https://x.com/${encodeURIComponent(xName)}" target="_blank" rel="noopener">@${xName}</a>`:(u.username||'(unknown)');
       const typeBadge=p._type==='motto'
-        ?`<span class="type-badge motto">💬 格言</span>`
+        ?(p._isEdit?`<span class="type-badge motto">✏️ 格言修正</span>`:`<span class="type-badge motto">💬 格言</span>`)
         :`<span class="type-badge past">📖 過去詳細</span>`;
       let bodyHtml='';
       if(p._type==='motto'){
-        bodyHtml=p.motto_text
-          ?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.motto_text)}</div>`
-          :'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+        if(p._isEdit){
+          // 修正申請：現在の承認済み格言と、修正後（承認待ち）を並べて表示
+          bodyHtml=`
+            <div class="past-section">現在の格言（壁に表示中）</div>
+            <div class="motto-text ${rankClass(star)}" style="opacity:0.6;">💬 ${escapeHtml(p.motto_text||'')}</div>
+            <div class="past-section" style="margin-top:8px;color:#ffab40;">修正後（承認待ち）</div>
+            <div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.pending_motto_text||'')}</div>`;
+        }else{
+          bodyHtml=p.motto_text
+            ?`<div class="motto-text ${rankClass(star)}">💬 ${escapeHtml(p.motto_text)}</div>`
+            :'<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,0.3);">（格言なし）</div>';
+        }
       } else {
         bodyHtml=`
           <div class="past-section">① 失ったもの</div><div class="chip-row">${chipsHtml(p.lost_items)}</div>
           <div class="past-section" style="margin-top:8px;">② 得たもの・得ようとしているもの</div><div class="chip-row">${chipsHtml(p.gained_items)}</div>
-          ${p.background_detail?`<div class="past-section" style="margin-top:8px;">③ 詳細</div><div class="past-text">${escapeHtml(p.background_detail)}</div>`:''}
-          ${p.current_positive?`<div class="past-section" style="margin-top:8px;">④ 読者へのメッセージ</div><div class="past-text">${escapeHtml(p.current_positive)}</div>`:''}`;
+          ${p.background_detail?`<div class="past-section" style="margin-top:8px;">③ 出来事が起きるまでの背景と経緯</div><div class="past-text">${escapeHtml(p.background_detail)}</div>`:''}
+          ${p.how_handled?`<div class="past-section" style="margin-top:8px;">④ 自身の対応</div><div class="past-text">${escapeHtml(p.how_handled)}</div>`:''}
+          ${p.what_happened_after?`<div class="past-section" style="margin-top:8px;">⑤ どうなったか</div><div class="past-text">${escapeHtml(p.what_happened_after)}</div>`:''}
+          ${p.journey_to_now?`<div class="past-section" style="margin-top:8px;">⑥ もし生まれ変わったら、どう気をつけたいか</div><div class="past-text">${escapeHtml(p.journey_to_now)}</div>`:''}`;
       }
       let actions='';
-      if(p.status==='pending'){
+      if(p._isEdit){
+        actions=`
+          <button class="action-btn btn-approve" onclick="approveMottoEdit('${p.id}')">✅ 修正を承認</button>
+          <button class="action-btn btn-reject" onclick="rejectMottoEdit('${p.id}')">❌ 修正を却下</button>`;
+      } else if(p._reviewState==='pending'){
         actions=`
           <button class="action-btn btn-approve" onclick="updateStatus('${p.id}','${p._type}','approved')">✅ 承認</button>
           <button class="action-btn btn-reject" onclick="updateStatus('${p.id}','${p._type}','rejected')">❌ 却下</button>`;
       } else {
         actions=`<button class="action-btn btn-revert" onclick="updateStatus('${p.id}','${p._type}','pending')">↩ 差し戻し</button>`;
       }
-      const reviewedAt=p._type==='motto'?p.reviewed_at:p.updated_at;
+      const reviewedAt=p._isEdit?null:(p._type==='motto'?p.reviewed_at:p.updated_at);
       const reviewedLine=reviewedAt?` ／ 審査: ${fmtTime(reviewedAt)}`:'';
+      const submitLabel=p._isEdit?'修正申請':'申請';
       return `
-        <div class="card ${p.status}">
+        <div class="card ${p._reviewState}">
           <div class="rank-icon" title="${STAR_LABELS[star]}">${icon}</div>
           <div class="card-body">
             <div class="card-row">
               <span class="owner">👤 ${ownerHtml}</span>${typeBadge}
               <span class="coord">座標 ${p.building_x},${p.building_z}</span>
               <span class="floors">${p._floors||'?'}F / ${STAR_LABELS[star]}</span>
-              <span class="status-badge ${p.status}">${p.status}</span>
+              <span class="status-badge ${p._reviewState}">${p._reviewState}</span>
             </div>
             ${bodyHtml}
-            <div class="meta">申請: ${fmtTime(p.created_at)}${reviewedLine}</div>
+            <div class="meta">${submitLabel}: ${fmtTime(p.created_at)}${reviewedLine}</div>
           </div>
           <div class="actions">${actions}</div>
         </div>`;
     }
 
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+    // 承認済み格言への「修正申請」を承認＝修正本文を本採用
+    async function approveMottoEdit(id){
+      // idはonclickから文字列で渡る。DBのid型と揺れても一致するよう文字列同士で比較する
+      const item=profiles.find(p=>String(p.id)===String(id)&&p._type==='motto');
+      if(!item||!item.pending_motto_text){showToast('対象が見つかりません（リロードして再試行してください）');return;}
+      try{
+        const{error}=await db.from('building_profiles').update({
+          motto_text:item.pending_motto_text,
+          pending_motto_text:null,
+          pending_submitted_at:null,
+          reviewed_at:new Date().toISOString()
+        }).eq('id',item.id);
+        if(error)throw error;
+        showToast('✓ 修正を承認しました');
+        notifyTranslateResult(translatePending({ids:[item.id]})); // 採用された格言を英訳してDBへ
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
+    }
+    // 修正申請を却下＝元の承認済み格言を維持し、修正本文を破棄
+    async function rejectMottoEdit(id){
+      if(!confirm('この修正申請を却下しますか？（元の格言はそのまま残ります）'))return;
+      try{
+        const{error}=await db.from('building_profiles').update({
+          pending_motto_text:null,
+          pending_submitted_at:null
+        }).eq('id',id);
+        if(error)throw error;
+        showToast('✓ 修正を却下しました');
+        await loadProfiles();
+      }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
+    }
 
     async function updateStatus(id,type,newStatus){
       const ok=newStatus==='rejected'?confirm('この申請を却下しますか？'):true;
@@ -393,8 +570,40 @@
         if(error)throw error;
         const label=newStatus==='approved'?'承認':newStatus==='rejected'?'却下':'差し戻し';
         showToast(`✓ ${label}しました`);
+        if(newStatus==='approved')notifyTranslateResult(translatePending(type==='motto'?{ids:[id]}:{pastIds:[id]})); // 承認した内容を英訳
         await loadProfiles();
       }catch(e){console.warn(e);showToast('更新に失敗しました: '+e.message);}
+    }
+
+    // ===== DeepL 英訳（Edge Function translate-motto 経由）=====
+    // payload: {ids:[..]}=格言 / {pastIds:[..]}=過去詳細 / {}=未翻訳を全件。キーはサーバー側シークレット。
+    async function translatePending(payload){
+      try{
+        const{data:{session}}=await db.auth.getSession();
+        const token=session&&session.access_token;
+        if(!token)return null;
+        const res=await fetch(`${SUPABASE_URL}/functions/v1/translate-motto`,{
+          method:'POST',
+          headers:{'Authorization':`Bearer ${token}`,'apikey':SUPABASE_ANON_KEY,'Content-Type':'application/json'},
+          body:JSON.stringify(payload||{})
+        });
+        return await res.json();
+      }catch(e){console.warn('translate-motto error',e);return null;}
+    }
+    // 承認時の自動英訳は裏で走らせつつ、失敗したら気づけるよう結果をトーストで知らせる
+    function notifyTranslateResult(promise){
+      promise.then(r=>{
+        if(r&&r.ok)showToast(`🌐 英訳完了（格言${r.motto}件／過去詳細${r.past}件）`);
+        else showToast('⚠ 自動英訳に失敗: '+((r&&r.error)||'translate-motto応答なし')+'（後で「未翻訳を一括英訳」で再試行できます）');
+      }).catch(()=>{showToast('⚠ 自動英訳に失敗（後で「未翻訳を一括英訳」で再試行できます）');});
+    }
+    async function backfillMottoEn(){
+      const btn=document.getElementById('translate-all-btn');
+      if(btn){btn.disabled=true;btn.textContent='英訳中...';}
+      const r=await translatePending({});
+      if(btn){btn.disabled=false;btn.textContent='🌐 未翻訳を一括英訳';}
+      if(r&&r.ok)showToast(`✓ 英訳：格言${r.motto}件／過去詳細${r.past}件`);
+      else showToast('英訳に失敗（関数とDEEPL_API_KEYの設定を確認）: '+((r&&r.error)||''));
     }
 
     (async()=>{

@@ -1574,7 +1574,7 @@
         <div class="sub-plan-price" id="sub-plan-980-price">月980円（税込）</div>
         <ul class="sub-plan-feats" id="sub-plan-980-feats">
           <li>📖 全ビルの過去詳細③〜⑥が読める</li>
-          <li>🕯️ 蝋燭を灯せる（1日3本・報酬つき）</li>
+          <li>🕯️ 蝋燭を灯せる（1日2本・報酬つき）</li>
           <li>🔴 ビル屋上に赤い点滅ランプ</li>
           <li>🐦 X報酬（リポスト/リプライ）1.5倍</li>
           <li>🪪 Xユーザー名をモザイク無しで表示</li>
@@ -1920,7 +1920,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-16-v155';
+    const IGNIS_BUILD='2026-06-16-v156';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6390,17 +6390,23 @@
       [0,120,400,1000].forEach(ms=>setTimeout(updateBuildingScrollbar,ms)); // 内容(過去詳細など)読込後も追従
     }
     // ===== 蝋燭（他人のビルに感銘を受けたら灯す。ビルごとに数を表示）=====
-    let candleState={x:null,z:null,count:0,lit:false,isOwn:false};
+    let candleState={x:null,z:null,count:0,lit:false,isOwn:false,relightAt:null};
     async function loadCandleState(bx,bz,isOwn){
-      candleState={x:bx,z:bz,count:0,lit:false,isOwn:!!isOwn};
+      candleState={x:bx,z:bz,count:0,lit:false,isOwn:!!isOwn,relightAt:null};
       const wrap=document.getElementById('building-candle');
       if(wrap)wrap.style.display='flex';
       try{
         const{count}=await db.from('building_candles').select('id',{count:'exact',head:true}).eq('building_x',bx).eq('building_z',bz);
         candleState.count=count||0;
         if(currentUser){
-          const{data:mine}=await db.from('building_candles').select('id').eq('building_x',bx).eq('building_z',bz).eq('user_id',currentUser.id).maybeSingle();
-          candleState.lit=!!mine;
+          const{data:mine}=await db.from('building_candles').select('created_at').eq('building_x',bx).eq('building_z',bz).eq('user_id',currentUser.id).maybeSingle();
+          if(mine&&mine.created_at){
+            const ageMs=Date.now()-new Date(mine.created_at).getTime();
+            const week=7*24*60*60*1000;
+            // 1週間以内は「点灯中（再点灯まで待ち）」、1週間経過していれば再び灯せる
+            candleState.lit=ageMs<week;
+            candleState.relightAt=ageMs<week?new Date(new Date(mine.created_at).getTime()+week):null;
+          }
         }
       }catch(e){/* テーブル未作成等は0表示 */}
       renderCandleUI();
@@ -6416,40 +6422,48 @@
       const isJa=currentLang==='ja';
       if(cnt)cnt.textContent='🕯️ '+candleState.count;
       if(btn){
-        // 灯せるのはサブスク会員のみ・自分のビル以外・ログイン時
-        if(candleState.isOwn||!currentUser||!currentUser.isSubscribed){btn.style.display='none';}
+        // 灯せるのはログイン中・自分のビル以外（無課金者も可。本数は会員ランクで上限）
+        if(candleState.isOwn||!currentUser){btn.style.display='none';}
         else{
           btn.style.display='inline-flex';
           btn.classList.toggle('lit',candleState.lit);
-          btn.textContent='🕯️ '+(candleState.lit?(isJa?'灯した（取り消す）':'Lit (undo)'):(isJa?'蝋燭を灯す':'Light a candle'));
+          if(candleState.lit){
+            // 取り消し不可。同じビルへは1週間後に再点灯できる
+            btn.disabled=true;
+            const when=candleState.relightAt?candleState.relightAt.toLocaleDateString():'';
+            btn.textContent='🕯️ '+(isJa?('灯済み'+(when?'（'+when+'に再び）':'')):('Lit'+(when?' (again '+when+')':'')));
+          }else{
+            btn.disabled=false;
+            btn.textContent='🕯️ '+(isJa?'蝋燭を灯す':'Light a candle');
+          }
         }
       }
     }
     async function toggleCandle(){
       if(!currentUser||candleState.x===null)return;
+      if(candleState.lit)return; // 取り消し不可・1週間クールダウン中は何もしない
       const isJa=currentLang==='ja';
       const btn=document.getElementById('candle-btn');if(btn)btn.disabled=true;
       try{
         const{data,error}=await db.rpc('toggle_candle',{bx:candleState.x,bz:candleState.z});
         if(error)throw error;
         if(data&&data.ok){
-          candleState.count=data.count;candleState.lit=data.lit;
+          candleState.count=data.count;candleState.lit=true;
+          candleState.relightAt=new Date(Date.now()+7*24*60*60*1000);
           renderCandleUI();
           loadCityDawn().catch(()=>{});    // 夜明けカウントダウンを更新
           claimWeeklyQuest().catch(()=>{}); // 週間クエスト達成チェック
-          if(data.lit&&data.reward){
+          if(data.reward){
             // 当日初回：コイン+5・従業員+1
             const cc=document.getElementById('coin-count');
             if(cc){const cur=parseInt(cc.textContent.replace(/[^0-9]/g,'')||'0',10)||0;cc.textContent=cur+5;}
             if(typeof refreshEmployeeHeader==='function')refreshEmployeeHeader();
             showToast(isJa?'🕯️ 蝋燭を灯しました（+5コイン・従業員+1）':'🕯️ Candle lit (+5 coins, +1 staff)');
-          }else if(data.lit){
-            showToast(isJa?'🕯️ 蝋燭を灯しました（本日の報酬は受取済み）':'🕯️ Candle lit (daily reward already claimed)');
           }else{
-            showToast(isJa?'蝋燭を消しました':'Candle removed');
+            showToast(isJa?'🕯️ 蝋燭を灯しました（本日の報酬は受取済み）':'🕯️ Candle lit (daily reward already claimed)');
           }
           // この1本で夜明けの基準に到達 → 24時間の夜明け開始
-          if(data.lit&&data.dawn_started){
+          if(data.dawn_started){
             setTimeout(()=>{
               applyDawnSky(true);
               loadCityDawn().catch(()=>{});
@@ -6459,13 +6473,16 @@
         }else{
           const r=data&&data.reason;
           if(r==='own_building')showToast(isJa?'自分のビルには灯せません':'You can\'t candle your own building');
-          else if(r==='daily_limit')showToast(isJa?'蝋燭は1日3本までです（明日また灯せます）':'Up to 3 candles per day (try again tomorrow)');
-          else if(r==='subscription_required')showToast(isJa?'蝋燭はサブスク会員限定です':'Candles are subscriber-only');
+          else if(r==='daily_limit'){const lim=(data&&data.limit)||1;showToast(isJa?`蝋燭は1日${lim}本までです（明日また灯せます）`:`Up to ${lim} candle(s) per day (try again tomorrow)`);}
+          else if(r==='cooldown'){
+            const when=data&&data.available_at?new Date(data.available_at).toLocaleDateString():'';
+            showToast(isJa?`このビルへは1週間後（${when}）にまた灯せます`:`You can light this building again in a week (${when})`);
+          }
           else if(r==='not_authenticated')showToast(isJa?'ログインが必要です':'Login required');
           else showToast(isJa?'灯せませんでした':'Could not light');
         }
       }catch(e){console.warn('toggleCandle',e.message);showToast(isJa?'エラーが発生しました':'Error');}
-      finally{if(btn)btn.disabled=false;}
+      finally{if(btn&&!candleState.lit)btn.disabled=false;}
     }
     // ===== 蝋燭への返事（オーナーが定型文で返す。受けた側は従業員+1／日1回）=====
     const CANDLE_PHRASES={
@@ -6493,7 +6510,7 @@
             return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-replied">✓ ${isJa?'返事済み':'Replied'}：「${ph?(isJa?ph.ja:ph.en):''}」</div></div>`;
           }
           const btns=Object.entries(CANDLE_PHRASES).map(([k,v])=>`<button class="cg-phrase-btn" onclick="replyCandle('${g.giver_id}','${k}')">${isJa?v.ja:v.en}</button>`).join('');
-          return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-hint">${isJa?'定型文で返事できます（相手に従業員+1）':'Send a reply (they get +1 staff)'}</div><div class="cg-phrases">${btns}</div></div>`;
+          return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-hint">${isJa?'定型文で返事できます（相手に+3コイン）':'Send a reply (they get +3 coins)'}</div><div class="cg-phrases">${btns}</div></div>`;
         }).join('');
         wrap.style.display='flex';
       }catch(e){console.warn('candle givers',e.message);}
@@ -6872,12 +6889,12 @@
       set('sub-plan-1980-btn',isJa?'登録する':'Subscribe');
       const f980=document.getElementById('sub-plan-980-feats');
       if(f980)f980.innerHTML=isJa
-        ?'<li>📖 全ビルの過去詳細③〜⑥が読める</li><li>🕯️ 蝋燭を灯せる（1日3本・報酬つき）</li><li>🔴 ビル屋上に赤い点滅ランプ</li><li>🐦 X報酬（リポスト/リプライ）1.5倍</li><li>🪪 Xユーザー名をモザイク無しで表示</li>'
-        :'<li>📖 Read full past details (3-6) of every building</li><li>🕯️ Light candles (3/day, with rewards)</li><li>🔴 Red blinking rooftop lamp</li><li>🐦 1.5x X repost/reply rewards</li><li>🪪 X username shown without mosaic</li>';
+        ?'<li>📖 全ビルの過去詳細③〜⑥が読める</li><li>🕯️ 蝋燭を灯せる（1日2本・報酬つき）</li><li>🔴 ビル屋上に赤い点滅ランプ</li><li>🐦 X報酬（リポスト/リプライ）1.5倍</li><li>🪪 Xユーザー名をモザイク無しで表示</li>'
+        :'<li>📖 Read full past details (3-6) of every building</li><li>🕯️ Light candles (2/day, with rewards)</li><li>🔴 Red blinking rooftop lamp</li><li>🐦 1.5x X repost/reply rewards</li><li>🪪 X username shown without mosaic</li>';
       const f1980=document.getElementById('sub-plan-1980-feats');
       if(f1980)f1980.innerHTML=isJa
-        ?'<li>✨ サブスク会員の特典すべて</li><li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li><li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>'
-        :'<li>✨ Everything in Subscriber</li><li>💎 Your X link featured in the in-game ticker</li><li>🏙 Your building projected as a daily hologram in the central special zone (tap leads to your building)</li>';
+        ?'<li>✨ サブスク会員の特典すべて</li><li>🕯️ 蝋燭を1日5本まで灯せる</li><li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li><li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>'
+        :'<li>✨ Everything in Subscriber</li><li>🕯️ Light up to 5 candles per day</li><li>💎 Your X link featured in the in-game ticker</li><li>🏙 Your building projected as a daily hologram in the central special zone (tap leads to your building)</li>';
       set('sub-note',isJa?'決済はStripeの安全なページで行われます。いつでも解約できます。':'Payments are handled securely by Stripe. Cancel anytime.');
       const portal=document.getElementById('sub-portal-btn');
       if(portal){

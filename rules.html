@@ -8,11 +8,17 @@
   :root{ --fg:#ececf4; --muted:rgba(255,255,255,0.55); --accent:#ff8a3d; --line:rgba(255,255,255,0.1); }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{ font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif; background:#07070d; color:var(--fg); line-height:1.85; padding:24px 16px 80px; }
-  .wrap{ max-width:760px; margin:0 auto; }
+  #embers{ position:fixed; inset:0; z-index:0; pointer-events:none; }
+  .wrap{ position:relative; z-index:1; max-width:760px; margin:0 auto; }
   .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
   .brand{ font-size:20px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; background-clip:text; color:transparent; }
-  .lang-btn{ background:rgba(255,255,255,0.08); border:1px solid var(--line); color:var(--fg); padding:7px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; }
-  .lang-btn:hover{ background:rgba(255,255,255,0.16); }
+  .lang-btn{ display:inline-flex; align-items:center; gap:6px; background:rgba(20,18,30,0.85); border:1px solid rgba(255,138,61,0.5); color:#ffd0a0; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:800; cursor:pointer; }
+  .lang-btn:hover{ background:rgba(255,138,61,0.18); }
+  .lang-btn svg{ width:16px; height:16px; }
+  /* 図解 */
+  .figure{ margin:14px 0; padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:14px; }
+  .figure svg{ width:100%; height:auto; display:block; }
+  .figcap{ font-size:11px; color:var(--muted); text-align:center; margin-top:8px; }
   .lead{ font-size:13px; color:var(--muted); margin-bottom:18px; line-height:1.9; }
   .cta{ display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 28px; }
   .cta a{ flex:1 1 220px; text-align:center; text-decoration:none; font-weight:800; font-size:15px; padding:14px; border-radius:14px; }
@@ -37,10 +43,14 @@
 </style>
 </head>
 <body class="ja">
+<canvas id="embers"></canvas>
 <div class="wrap">
   <div class="topbar">
     <div class="brand">🔥 IGNIS CITY</div>
-    <button class="lang-btn" onclick="toggleLang()"><span data-lang="ja">English</span><span data-lang="en">日本語</span></button>
+    <button class="lang-btn" onclick="toggleLang()" aria-label="言語切替">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span data-lang="ja">English</span><span data-lang="en">日本語</span>
+    </button>
   </div>
 
   <p class="lead">
@@ -71,6 +81,23 @@
     <li><span data-lang="ja"><b>ビルを建てる</b>：スクラッチでビルを獲得し、土地に設置します。</span><span data-lang="en"><b>Build</b> a tower via scratch and place it on your land.</span></li>
     <li><span data-lang="ja"><b>メッセージを込める</b>：格言と過去詳細を申請（運営の承認後に公開）。</span><span data-lang="en"><b>Add your message</b>: submit a motto and past details (published after review).</span></li>
   </ol>
+  <div class="figure">
+    <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="flow">
+      <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8a3d"/></marker></defs>
+      <g font-family="sans-serif" font-weight="700" text-anchor="middle">
+        <g><rect x="8" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.16)" stroke="#ff8a3d"/><text x="67" y="62" font-size="22">📝</text><text x="67" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">登録</tspan><tspan data-lang="en">Register</tspan></text></g>
+        <g><rect x="146" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="205" y="62" font-size="22">🪙</text><text x="205" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">コイン獲得</tspan><tspan data-lang="en">Earn coins</tspan></text></g>
+        <g><rect x="284" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="343" y="62" font-size="22">🏞</text><text x="343" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">土地取得</tspan><tspan data-lang="en">Get land</tspan></text></g>
+        <g><rect x="422" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="481" y="62" font-size="22">🏗</text><text x="481" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">ビル建設</tspan><tspan data-lang="en">Build</tspan></text></g>
+        <g><rect x="560" y="40" width="132" height="50" rx="10" fill="rgba(238,9,121,0.16)" stroke="#ee0979"/><text x="626" y="62" font-size="22">💬</text><text x="626" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">メッセージ</tspan><tspan data-lang="en">Message</tspan></text></g>
+        <line x1="126" y1="65" x2="144" y2="65" stroke="#ff8a3d" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="264" y1="65" x2="282" y2="65" stroke="#ff8a3d" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="402" y1="65" x2="420" y2="65" stroke="#ff8a3d" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="540" y1="65" x2="558" y2="65" stroke="#ff8a3d" stroke-width="2" marker-end="url(#ar)"/>
+      </g>
+    </svg>
+    <div class="figcap"><span data-lang="ja">▲ 遊びの流れ</span><span data-lang="en">▲ The gameplay flow</span></div>
+  </div>
 
   <!-- コイン -->
   <h2><span class="em">🪙</span><span data-lang="ja">コインの集め方</span><span data-lang="en">Coins</span></h2>
@@ -95,6 +122,27 @@
     <tr><th><span data-lang="ja">ビル獲得</span><span data-lang="en">Get a building</span></th><td><span data-lang="ja">スクラッチ（50コイン）で獲得→在庫→土地に設置。階数でレア度が決まります。</span><span data-lang="en">Scratch (50 coins) → inventory → place on land. Floors determine rarity.</span></td></tr>
     <tr><th><span data-lang="ja">従業員</span><span data-lang="en">Staff</span></th><td><span data-lang="ja">会社員を採用（25コイン）して配属するとビルの階数が伸びます（最大300階）。</span><span data-lang="en">Hire (25 coins) and assign staff to grow floors (max 300).</span></td></tr>
   </table>
+  <div class="figure">
+    <svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="land zones" style="max-width:340px;margin:0 auto;">
+      <g font-family="sans-serif" font-weight="800" text-anchor="middle">
+        <rect x="20" y="20" width="320" height="320" fill="rgba(120,160,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+        <!-- 100 zone (outer) -->
+        <rect x="20" y="20" width="320" height="320" fill="rgba(60,160,255,0.10)"/>
+        <!-- 200 zone -->
+        <rect x="60" y="60" width="240" height="240" fill="rgba(255,180,60,0.16)"/>
+        <!-- 300 zone -->
+        <rect x="100" y="100" width="160" height="160" fill="rgba(255,90,40,0.22)"/>
+        <!-- special zone -->
+        <rect x="140" y="140" width="80" height="80" fill="rgba(160,160,178,0.6)" stroke="#ffd54f" stroke-width="3"/>
+        <text x="180" y="176" font-size="13" fill="#1a1a1a"><tspan data-lang="ja">特別区域</tspan><tspan data-lang="en">Reserved</tspan></text>
+        <text x="180" y="194" font-size="11" fill="#1a1a1a"><tspan data-lang="ja">購入不可</tspan><tspan data-lang="en">no buy</tspan></text>
+        <text x="180" y="124" font-size="13" fill="#fff">300</text>
+        <text x="180" y="84" font-size="13" fill="#fff">200</text>
+        <text x="180" y="44" font-size="13" fill="#cfe3ff">100</text>
+      </g>
+    </svg>
+    <div class="figcap"><span data-lang="ja">▲ 中央から外側へ：特別区域(不可) → 300 → 200 → 100 コイン</span><span data-lang="en">▲ From center outward: reserved → 300 → 200 → 100 coins</span></div>
+  </div>
 
   <!-- 格言・過去詳細 -->
   <h2><span class="em">💬</span><span data-lang="ja">格言・過去の記録</span><span data-lang="en">Mottos &amp; past records</span></h2>
@@ -150,6 +198,13 @@
   }
   try{ if(localStorage.getItem('ignis_rules_lang')==='en'){document.body.classList.remove('ja');document.body.classList.add('en');} }catch(_){}
   try{ if(new URL(location.href).searchParams.get('lang')==='en'){document.body.classList.remove('ja');document.body.classList.add('en');} }catch(_){}
+  (function(){
+    const c=document.getElementById('embers'); if(!c)return; const ctx=c.getContext('2d'); let W,H,parts=[];
+    function resize(){W=c.width=innerWidth;H=c.height=innerHeight;} resize(); addEventListener('resize',resize);
+    function spawn(){return{x:Math.random()*W,y:H+10,r:0.8+Math.random()*2,vy:0.3+Math.random()*1,vx:(Math.random()-0.5)*0.4,life:0,max:140+Math.random()*180,hue:18+Math.random()*30};}
+    for(let i=0;i<50;i++){const p=spawn();p.y=Math.random()*H;parts.push(p);}
+    function tick(){ctx.clearRect(0,0,W,H);for(const p of parts){p.life++;p.y-=p.vy;p.x+=p.vx+Math.sin(p.life*0.05)*0.25;const t=p.life/p.max,a=Math.max(0,(1-t))*0.75;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},100%,60%,${a})`;ctx.shadowColor=`hsla(${p.hue},100%,55%,${a})`;ctx.shadowBlur=7;ctx.fill();if(p.life>=p.max||p.y<-10)Object.assign(p,spawn());}ctx.shadowBlur=0;requestAnimationFrame(tick);} tick();
+  })();
 </script>
 </body>
 </html>

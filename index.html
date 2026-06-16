@@ -1920,7 +1920,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-16-v156';
+    const IGNIS_BUILD='2026-06-17-v157';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6286,7 +6286,7 @@
       empVal.textContent=isJa?`${buildingData.employees||0}人`:`${buildingData.employees||0}`;
       empVal.className='bm-stat-value';
       if(ci.name==='rainbow')empVal.classList.add('emp-rainbow');else if(ci.name==='gold')empVal.classList.add('emp-gold');else if(ci.name==='red')empVal.classList.add('emp-red');
-      document.getElementById('bm-views-val').textContent=(buildingData.viewCount||0).toLocaleString();
+      document.getElementById('bm-views-val').textContent=(buildingData.viewTotal||buildingData.viewCount||0).toLocaleString();
       document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
@@ -6510,7 +6510,7 @@
             return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-replied">✓ ${isJa?'返事済み':'Replied'}：「${ph?(isJa?ph.ja:ph.en):''}」</div></div>`;
           }
           const btns=Object.entries(CANDLE_PHRASES).map(([k,v])=>`<button class="cg-phrase-btn" onclick="replyCandle('${g.giver_id}','${k}')">${isJa?v.ja:v.en}</button>`).join('');
-          return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-hint">${isJa?'定型文で返事できます（相手に+3コイン）':'Send a reply (they get +3 coins)'}</div><div class="cg-phrases">${btns}</div></div>`;
+          return `<div class="cg-row"><span class="cg-name">🕯️ ${name}</span> <span class="cg-when">${when}</span><div class="cg-hint">${isJa?'定型文で返事できます（お互いにコイン獲得）':'Send a reply (both of you earn coins)'}</div><div class="cg-phrases">${btns}</div></div>`;
         }).join('');
         wrap.style.display='flex';
       }catch(e){console.warn('candle givers',e.message);}
@@ -6523,7 +6523,14 @@
         const{data,error}=await db.rpc('reply_to_candle',{bx:candleState.x,bz:candleState.z,p_giver:giverId,p_phrase:phrase});
         if(error)throw error;
         if(data&&data.ok){
-          showToast(isJa?'💌 返事を送りました':'💌 Reply sent');
+          const oc=data.owner_coins||0;
+          if(oc>0){
+            const cc=document.getElementById('coin-count');
+            if(cc){const cur=parseInt(cc.textContent.replace(/[^0-9]/g,'')||'0',10)||0;cc.textContent=cur+oc;}
+            showToast(isJa?`💌 返事を送りました（+${oc}コイン・相手にもコイン）`:`💌 Reply sent (+${oc} coins; they get coins too)`);
+          }else{
+            showToast(isJa?'💌 返事を送りました':'💌 Reply sent');
+          }
           loadCandleGivers(candleState.x,candleState.z);
         }else{
           const r=data&&data.reason;
@@ -6542,8 +6549,7 @@
         const ph=CANDLE_PHRASES[data[0].phrase];
         const first=ph?(isJa?ph.ja:ph.en):'';
         const more=data.length>1?(isJa?` ほか${data.length-1}件`:` +${data.length-1} more`):'';
-        showToast((isJa?`💌 蝋燭への返事が届きました：「${first}」`:`💌 Reply to your candle: "${first}"`)+more);
-        if(typeof refreshEmployeeHeader==='function')refreshEmployeeHeader();
+        showToast((isJa?`💌 蝋燭への返事が届きました：「${first}」（コイン獲得）`:`💌 Reply to your candle: "${first}" (coins earned)`)+more);
       }catch(e){/* 未適用なら無視 */}
     }
     // ===== 共鳴マップ：自分と同じ「失ったもの」を選んだビルをミニマップで同色表示 =====
@@ -7182,10 +7188,10 @@
           }
           return;
         }
+        if(data&&data.view_total!==undefined){buildingData.viewTotal=data.view_total;document.getElementById('bm-views-val').textContent=(data.view_total||0).toLocaleString();}
         if(data&&data.counted){
           addLocalView(buildingData.x,buildingData.z);
           buildingData.viewCount=data.view_count;
-          document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
           if(buildingData.mesh&&buildingData.mesh.material){
             applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5);
           }
@@ -7199,13 +7205,8 @@
             document.getElementById('emp-bench-count').textContent=Number(data.bench_employees).toLocaleString();
           }
           await refreshEmployeeHeader();
-        } else if(data&&data.view_count!==undefined){
-          document.getElementById('bm-views-val').textContent=(data.view_count||0).toLocaleString();
-          if(data.reason==='already_today'){
-            const isJa=currentLang==='ja';
-            showToast(isJa?'👀 このビルは本日すでに閲覧済みです':'👀 Already viewed this building today');
-          }
         }
+        // 注：閲覧回数(view_total)の表示は上で更新済み。本日2回目以降はトーストを出さない（毎回カウントされるため）
       }catch(e){
         console.warn('view record error:',e.message);
         const isJa=currentLang==='ja';
@@ -7415,7 +7416,7 @@
       }
       if(mesh){mesh.onDisposeObservable.add(()=>{animatedBuildingMats.delete(key);});}
     }
-    function addBuilding(x,z,baseFloors,shape='square',employees=0,fromDB=false,lKey=null,viewCount=0,ownerId=null){
+    function addBuilding(x,z,baseFloors,shape='square',employees=0,fromDB=false,lKey=null,viewCount=0,ownerId=null,viewTotal=0){
       const totalFloors=calcTotalFloors(baseFloors,employees);
       const height=totalFloors*0.5;
       const prism=normalizePrism(shape);
@@ -7429,7 +7430,7 @@
       applyBuildingRankColor(mat,viewCount,mesh,x,z,height);
       mesh.material=mat;
       const key=lKey||landKey(x,z);
-      const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,ownerId};
+      const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,viewTotal,ownerId};
       if(mesh){mesh.metadata={landKey:key,bx:x,bz:z};}
       buildings.push(buildingData);buildingMap[key]=buildingData;
       document.getElementById('building-count').textContent=buildings.length;
@@ -7440,7 +7441,7 @@
       try{
         const{data,error}=await withTimeout(db.from('buildings').select('*'),8000,'buildings');
         if(error)throw error;
-        data.forEach(b=>{let shape='square';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true,null,b.view_count||0,b.owner_id||null);});
+        data.forEach(b=>{let shape='square';if(b.style&&b.style!=='default'){const parts=b.style.split('_');if(parts.length>=1)shape=parts[0];}addBuilding(b.x,b.z,b.floors,shape,b.employees||0,true,null,b.view_count||0,b.owner_id||null,b.view_total||0);});
       }catch(e){
         console.warn('Supabase error:',e.message);
         [[0,0,20,'square',0],[10,5,35,'triangle',30],[-8,12,15,'square',100],[15,-10,50,'cylinder',300]].forEach(([x,z,f,s,emp])=>addBuilding(x,z,f,s,emp,true));

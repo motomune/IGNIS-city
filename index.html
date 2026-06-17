@@ -1403,7 +1403,7 @@
       <button id="task-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleTaskPanel()">📋 タスク<span id="task-notice-badge">0</span></button>
       <button id="ranking-btn" class="rail-btn li-only" type="button" onclick="openRanking()">🏆 ランキング</button>
       <button id="sound-toggle" class="rail-btn" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊 BGM</button>
-      <button id="x-rewards-btn" class="rail-btn" type="button" onclick="openXRewardsRules()" title="X報酬ルールを開く">📘 X報酬</button>
+      <button id="x-rewards-btn" class="rail-btn" type="button" onclick="openXShare()" title="Xでシェア">📤 Xでシェア</button>
       <button id="sub-btn" class="rail-btn li-only" type="button" onclick="openSubModal()" title="サブスク登録・解約" style="background:linear-gradient(135deg,#b8860b,#ffd54f);color:#3a2a00;font-weight:800;">💎 サブスク</button>
       <div id="premium-bar" style="display:none;" title="プレミアム会員の紹介"><div id="premium-track"></div></div>
       <span id="user-name" style="display:none;" aria-hidden="true"></span>
@@ -1576,7 +1576,6 @@
           <li>📖 全ビルの過去詳細③〜⑥が読める</li>
           <li>🕯️ 蝋燭を灯せる（1日2本・報酬つき）</li>
           <li>🔴 ビル屋上に赤い点滅ランプ</li>
-          <li>🐦 X報酬（リポスト/リプライ）1.5倍</li>
           <li>🪪 Xユーザー名をモザイク無しで表示</li>
         </ul>
         <button class="sub-plan-btn" id="sub-plan-980-btn" onclick="subscribeCheckout('sub')">登録する</button>
@@ -1739,6 +1738,7 @@
       <div id="zukan-tabs">
         <button class="zukan-tab active" id="ztab-owned" onclick="switchZukanTab('owned')">🏢 所有ビル</button>
         <button class="zukan-tab" id="ztab-rarity" onclick="switchZukanTab('rarity')">⭐ レアリティ</button>
+        <button class="zukan-tab" id="ztab-plushie" onclick="switchZukanTab('plushie')">🧸 ぬいぐるみ</button>
       </div>
       <button id="zukan-close" onclick="closeZukan()">✕ 閉じる</button>
     </div>
@@ -1754,6 +1754,9 @@
       </div>
       <div id="zukan-rarity" style="display:none;">
         <div id="zukan-rarity-grid"></div>
+      </div>
+      <div id="zukan-plushie" style="display:none;">
+        <div id="zukan-plushie-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
       </div>
     </div>
     <div id="zukan-loading">読み込み中...</div>
@@ -1920,7 +1923,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-17-v158';
+    const IGNIS_BUILD='2026-06-17-v159';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2810,8 +2813,7 @@
       {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:1},
       {type:'hire',  label:'会社員を1人採用する',         labelEn:'Hire 1 office worker',             reward:3},
       {type:'view',  label:'他のビルを5棟閲覧', labelEn:'View 5 other buildings', reward:3, goal:5},
-      {type:'share_reply',  label:'創設者の投稿にリプライ',            labelEn:'Reply to founder\'s post',           reward:5},
-      {type:'share_repost', label:'創設者の投稿をリポスト（引用含む）', labelEn:'Repost founder\'s post (incl. quote)', reward:5},
+      {type:'collect', label:'飛行モードでコインを拾う', labelEn:'Grab a coin in fly mode', reward:2},
     ];
     const CELL=10, GRID_HALF=100;
     const EMP_COLORS=[
@@ -3105,9 +3107,8 @@
       task_hire:     {ja:'デイリー：従業員採用',  en:'Daily: Hire',         icon:'👷'},
       task_get_land: {ja:'デイリー：土地取得',    en:'Daily: Get Land',     icon:'🏡'},
       task_view:     {ja:'デイリー：ビル閲覧',    en:'Daily: View Building',icon:'👀'},
-      task_share:    {ja:'デイリー：Xでシェア',   en:'Daily: Share on X',   icon:'🐦'},
-      task_share_reply: {ja:'デイリー：投稿にリプライ', en:'Daily: Reply on X',  icon:'💬'},
-      task_share_repost:{ja:'デイリー：投稿をリポスト', en:'Daily: Repost on X', icon:'🔁'},
+      task_collect:  {ja:'デイリー：宝のコイン',  en:'Daily: Treasure Coin',icon:'🪙'},
+      daily_treasure:{ja:'宝探し',               en:'Treasure Hunt',       icon:'🎁'},
       task_full_clear:{ja:'デイリー全達成ボーナス',en:'Daily 100% Bonus',   icon:'🎯'},
       weekly_quest:  {ja:'週間共同クエスト達成',   en:'Weekly Quest',        icon:'🤝'},
       candle_reply_received:{ja:'蝋燭への返事',    en:'Candle Reply',        icon:'💌'},
@@ -3550,7 +3551,7 @@
       document.getElementById('ztab-owned').textContent=isJa?'🏢 所有ビル':'🏢 My Buildings';
       document.getElementById('ztab-rarity').textContent=isJa?'⭐ レアリティ':'⭐ Rarity';
       document.getElementById('zukan-close').textContent=isJa?'✕ 閉じる':'✕ Close';
-      if(document.getElementById('zukan-overlay').classList.contains('open')){renderZukanOwned();renderZukanRarity();}
+      if(document.getElementById('zukan-overlay').classList.contains('open')){renderZukanOwned();renderZukanRarity();renderZukanPlushies();}
       document.getElementById('ranking-btn').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
       const subBtn=document.getElementById('sub-btn');if(subBtn)subBtn.textContent=isJa?'💎 サブスク':'💎 Subscribe';
       document.getElementById('ranking-title').textContent=isJa?'🏆 ランキング':'🏆 Ranking';
@@ -3824,11 +3825,11 @@
           {onConflict:'user_id,task_date,task_type',ignoreDuplicates:true}
         )
       ));
-      await loadCreatorShareState();
       renderTaskUI();
       await refreshTaskUI();
-      await checkShareEngagement(); // 創設者投稿への反応が確認済みならシェアタスク完了に
       await updateViewTaskProgressLabel();
+      loadDailyTreasure().catch(()=>{}); // 今日の宝をマップに出現
+      loadPlushies().catch(()=>{});      // 図鑑用のぬいぐるみ所持を取得
       setAuthHeaderLoggedIn(true);
     }
     // ===== シェアタスク：創設者の最新投稿へのリプライ/リポストで達成 =====
@@ -3847,6 +3848,18 @@
           latestCreatorPost=(d2&&d2[0])||null;
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
+    }
+    // Xでシェア：自分の言葉でこのゲームを投稿できる画面へ（#IGNISCITY）。報酬は紐づけない（X規約セーフ）
+    function openXShare(){
+      try{IgnisAudio.playClick();}catch(e){}
+      const isJa=currentLang==='ja';
+      const text=isJa
+        ? 'IGNIS CITY で自分の街を育ててる🔥 苦難や想いをビルに刻んで、支え合う街づくり。'
+        : 'Building my own city in IGNIS CITY 🔥 — a place where we carve our stories into towers and support each other.';
+      const url='https://motomune.github.io/IGNIS-city/welcome.html';
+      const intent='https://x.com/intent/tweet?text='+encodeURIComponent(text)+'&url='+encodeURIComponent(url)+'&hashtags=IGNISCITY';
+      window.open(intent,'_blank');
+      showToast(isJa?'📤 Xの投稿画面を開きました（自由に編集して投稿できます）':'📤 Opened the X compose screen (edit freely and post)');
     }
     // どちらも創設者のXプロフィールを開く（投稿画面ではなく、本人のプロフィールから反応してもらう）
     function openShareReply(){
@@ -3898,17 +3911,7 @@
         const row=document.createElement('div');
         row.className='task-row';
         row.id='task-row-'+task.type;
-        if(task.type==='share_reply'||task.type==='share_repost'){
-          const isReply=task.type==='share_reply';
-          // 項目名そのものがリンク（タップで創設者のXプロフィールを開く）。以前のシェアタスクと同じ見た目
-          row.innerHTML=`<span class="task-status">⬜</span>`+
-            `<span class="task-label" style="cursor:pointer;color:#1d9bf0;text-decoration:underline;" onclick="${isReply?'openShareReply()':'openShareRepost()'}">${isJa?task.label:task.labelEn}`+
-              `<span class="share-note">${isJa?'達成は最大12時間以内に反映されます':'Completion reflects within ~12h'}</span>`+
-            `</span>`+
-            `<span class="task-reward">+${task.reward}</span>`;
-        }else{
-          row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
-        }
+        row.innerHTML=`<span class="task-status">⬜</span><span class="task-label">${isJa?task.label:task.labelEn}</span><span class="task-reward">+${task.reward}</span>`;
         list.appendChild(row);
       });
     }
@@ -6552,6 +6555,87 @@
         showToast((isJa?`💌 蝋燭への返事が届きました：「${first}」（コイン獲得）`:`💌 Reply to your candle: "${first}" (coins earned)`)+more);
       }catch(e){/* 未適用なら無視 */}
     }
+    // ===== デイリー宝探し（飛行モードでコイン/金のぬいぐるみを拾う）=====
+    let dailyTreasure={mesh:null,x:0,y:0,z:0,plushie:false,amount:0,collected:true,collecting:false};
+    let _treasureObs=null;
+    let plushieData=[];
+    async function loadDailyTreasure(){
+      if(!db||!currentUser||!scene||!window.BABYLON)return;
+      try{
+        const{data,error}=await db.rpc('get_daily_treasure');
+        if(error||!data||!data.ok)return;
+        disposeTreasureMesh();
+        dailyTreasure={mesh:null,x:data.x,y:Number(data.y)||8,z:data.z,plushie:!!data.plushie,amount:data.amount||1,collected:!!data.collected,collecting:false};
+        if(dailyTreasure.collected)return; // 本日は取得済み
+        spawnTreasureMesh();
+        startTreasureProximity();
+      }catch(e){console.warn('loadDailyTreasure',e.message);}
+    }
+    function disposeTreasureMesh(){
+      if(dailyTreasure.mesh&&!dailyTreasure.mesh.isDisposed())dailyTreasure.mesh.dispose();
+      dailyTreasure.mesh=null;
+    }
+    function spawnTreasureMesh(){
+      const t=dailyTreasure;
+      const mat=new BABYLON.StandardMaterial('treasure_mat',scene);
+      mat.specularColor=new BABYLON.Color3(1,1,0.7);
+      let mesh;
+      if(t.plushie){
+        mesh=BABYLON.MeshBuilder.CreateSphere('daily_treasure',{diameter:3.4,segments:12},scene);
+        mat.diffuseColor=new BABYLON.Color3(1,0.82,0.2);mat.emissiveColor=new BABYLON.Color3(0.95,0.68,0.06);
+      }else{
+        mesh=BABYLON.MeshBuilder.CreateCylinder('daily_treasure',{height:0.5,diameter:2.8,tessellation:24},scene);
+        mat.diffuseColor=new BABYLON.Color3(1,0.85,0.2);mat.emissiveColor=new BABYLON.Color3(0.88,0.62,0.06);
+        mesh.rotation.x=Math.PI/2;
+      }
+      mesh.material=mat;
+      mesh.position=new BABYLON.Vector3(t.x,t.y,t.z);
+      mesh.isPickable=false;
+      t.mesh=mesh;
+    }
+    function startTreasureProximity(){
+      if(_treasureObs)return;
+      _treasureObs=scene.onBeforeRenderObservable.add(()=>{
+        const t=dailyTreasure;
+        if(!t.mesh||t.mesh.isDisposed()||t.collected||t.collecting)return;
+        t.mesh.rotation.y+=0.03;
+        const baseY=t.y+Math.sin(Date.now()*0.003)*0.6;
+        t.mesh.position.y=baseY;
+        if(!isFlying||scene.activeCamera!==flyCamera)return;
+        const p=flyCamera.position;
+        const dx=p.x-t.x,dy=p.y-baseY,dz=p.z-t.z;
+        if(dx*dx+dy*dy+dz*dz<81)collectDailyTreasure(); // 距離9以内で取得
+      });
+    }
+    async function collectDailyTreasure(){
+      const t=dailyTreasure;
+      if(t.collecting||t.collected)return;
+      t.collecting=true;
+      const isJa=currentLang==='ja';
+      try{
+        const{data,error}=await db.rpc('collect_daily_treasure');
+        if(error)throw error;
+        if(data&&data.ok){
+          t.collected=true;
+          const cc=document.getElementById('coin-count');if(cc&&data.coins!==undefined)cc.textContent=data.coins;
+          try{IgnisAudio.playSuccess();}catch(_){}
+          if(data.plushie){
+            showToast(isJa?`🎁✨ 金のぬいぐるみを見つけた！ +${data.amount}コイン（図鑑に登録）`:`🎁✨ Found the gold plushie! +${data.amount} coins (added to your collection)`);
+            loadPlushies().catch(()=>{});
+          }else{
+            showToast(isJa?`🪙 隠れていたコインを${data.amount}枚拾った！`:`🪙 Grabbed ${data.amount} hidden coin(s)!`);
+          }
+          completeTask('collect').catch(()=>{}); // 「飛行モードでコインを拾う」タスク +2
+          disposeTreasureMesh();
+        }else if(data&&data.reason==='already'){
+          t.collected=true;disposeTreasureMesh();
+        }
+      }catch(e){console.warn('collectDailyTreasure',e.message);}
+      finally{t.collecting=false;}
+    }
+    async function loadPlushies(){
+      try{const{data}=await db.rpc('get_my_plushies');plushieData=Array.isArray(data)?data:[];}catch(e){plushieData=[];}
+    }
     // ===== 共鳴マップ：自分と同じ「失ったもの」を選んだビルをミニマップで同色表示 =====
     let resonanceSet=new Set();
     async function loadResonanceMap(){
@@ -6895,8 +6979,8 @@
       set('sub-plan-1980-btn',isJa?'登録する':'Subscribe');
       const f980=document.getElementById('sub-plan-980-feats');
       if(f980)f980.innerHTML=isJa
-        ?'<li>📖 全ビルの過去詳細③〜⑥が読める</li><li>🕯️ 蝋燭を灯せる（1日2本・報酬つき）</li><li>🔴 ビル屋上に赤い点滅ランプ</li><li>🐦 X報酬（リポスト/リプライ）1.5倍</li><li>🪪 Xユーザー名をモザイク無しで表示</li>'
-        :'<li>📖 Read full past details (3-6) of every building</li><li>🕯️ Light candles (2/day, with rewards)</li><li>🔴 Red blinking rooftop lamp</li><li>🐦 1.5x X repost/reply rewards</li><li>🪪 X username shown without mosaic</li>';
+        ?'<li>📖 全ビルの過去詳細③〜⑥が読める</li><li>🕯️ 蝋燭を灯せる（1日2本・報酬つき）</li><li>🔴 ビル屋上に赤い点滅ランプ</li><li>🪪 Xユーザー名をモザイク無しで表示</li>'
+        :'<li>📖 Read full past details (3-6) of every building</li><li>🕯️ Light candles (2/day, with rewards)</li><li>🔴 Red blinking rooftop lamp</li><li>🪪 X username shown without mosaic</li>';
       const f1980=document.getElementById('sub-plan-1980-feats');
       if(f1980)f1980.innerHTML=isJa
         ?'<li>✨ サブスク会員の特典すべて</li><li>🕯️ 蝋燭を1日5本まで灯せる</li><li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li><li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>'
@@ -7727,6 +7811,7 @@
       if(typeof setScenePaused==='function')setScenePaused(true); // 図鑑表示中は3D停止
       IgnisAudio.playBgmTrack('collection').catch(()=>{});
       await loadZukanBuildings();
+      loadPlushies().then(()=>{if(zukanTab==='plushie')renderZukanPlushies();}).catch(()=>{});
     }
     function closeZukan(){
       document.getElementById('zukan-overlay').classList.remove('open');
@@ -7737,8 +7822,28 @@
       zukanTab=tab;
       document.getElementById('ztab-owned').classList.toggle('active',tab==='owned');
       document.getElementById('ztab-rarity').classList.toggle('active',tab==='rarity');
+      document.getElementById('ztab-plushie').classList.toggle('active',tab==='plushie');
       document.getElementById('zukan-owned').style.display=tab==='owned'?'block':'none';
       document.getElementById('zukan-rarity').style.display=tab==='rarity'?'block':'none';
+      document.getElementById('zukan-plushie').style.display=tab==='plushie'?'block':'none';
+      if(tab==='plushie')renderZukanPlushies();
+    }
+    // ぬいぐるみ図鑑：所持＝カラー、未所持＝シルエット
+    const PLUSHIE_DEX=[
+      {key:'gold',emoji:'🧸',ja:'金のぬいぐるみ',en:'Gold Plushie',hint_ja:'宝探しで約1/30の超レア',hint_en:'~1/30 rare from treasure hunt'},
+    ];
+    function renderZukanPlushies(){
+      const isJa=currentLang==='ja';
+      const grid=document.getElementById('zukan-plushie-grid');if(!grid)return;
+      const owned={};(plushieData||[]).forEach(p=>{owned[p.key]=p.count;});
+      grid.innerHTML=PLUSHIE_DEX.map(d=>{
+        const c=owned[d.key]||0;const have=c>0;
+        return `<div class="zukan-card" style="text-align:center;${have?'':'opacity:0.45;filter:grayscale(1);'}">`+
+          `<div style="font-size:46px;margin:6px 0;">${have?d.emoji:'❔'}</div>`+
+          `<div style="font-weight:800;font-size:13px;">${have?(isJa?d.ja:d.en):'???'}</div>`+
+          `<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;">${have?(isJa?`所持 ×${c}`:`owned ×${c}`):(isJa?d.hint_ja:d.hint_en)}</div>`+
+        `</div>`;
+      }).join('');
     }
     async function loadZukanBuildings(){
       const loadingEl=document.getElementById('zukan-loading');loadingEl.classList.add('show');

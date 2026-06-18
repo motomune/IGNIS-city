@@ -1923,7 +1923,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-17-v159';
+    const IGNIS_BUILD='2026-06-17-v160';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2807,7 +2807,7 @@
     const SCRATCH_DURATION_FACTOR=1.3*1.5*1.5*0.75*0.75;
     const SCRATCH_REVEAL_RATIO=Math.min(SCRATCH_REVEAL_BASE*SCRATCH_DURATION_FACTOR,0.88);
     const SCRATCH_BRUSH_FACTOR=0.9;
-    const TASK_FULL_CLEAR_BONUS=10;
+    const TASK_FULL_CLEAR_BONUS=5;
     const OWNER_X_HANDLE='soultamash81989'; // @soultamash81989
     const DAILY_TASKS=[
       {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:1},
@@ -3901,8 +3901,27 @@
       const isJa=currentLang==='ja';
       showToast(`✅ ${isJa?'タスク完了':'Task done'}！「${isJa?task.label:task.labelEn}」+${task.reward}コイン`);
       await refreshTaskUI();
+      await maybeGrantFullClearBonus(); // 全タスク達成なら +5
     }
-    async function maybeGrantFullClearBonus(){/* 全タスク達成ボーナスは廃止（2026-06-11） */}
+    async function maybeGrantFullClearBonus(){
+      if(!currentUser)return;
+      const today=new Date().toISOString().slice(0,10);
+      const{data}=await db.from('daily_tasks').select('task_type,completed').eq('user_id',currentUser.id).eq('task_date',today);
+      if(!data)return;
+      const allDone=DAILY_TASKS.every(t=>data.some(d=>d.task_type===t.type&&d.completed));
+      if(!allDone)return;
+      // 二重付与防止：coins台帳に本日分の 'task_full_clear' があればスキップ
+      const{data:existing}=await db.from('coins').select('id').eq('user_id',currentUser.id).eq('reason','task_full_clear').gte('created_at',today+'T00:00:00.000Z').limit(1);
+      if(existing&&existing.length)return;
+      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
+      if(!ud)return;
+      const nc=(ud.coin_column||0)+TASK_FULL_CLEAR_BONUS;
+      await db.from('users').update({coin_column:nc}).eq('id',currentUser.id);
+      const cc=document.getElementById('coin-count');if(cc)cc.textContent=nc;
+      await recordCoin(TASK_FULL_CLEAR_BONUS,'task_full_clear');
+      const isJa=currentLang==='ja';
+      showToast(`🎯 ${isJa?'デイリー全達成ボーナス':'All tasks done bonus'}！+${TASK_FULL_CLEAR_BONUS}コイン`);
+    }
     function renderTaskUI(){
       const list=document.getElementById('task-list');
       const isJa=currentLang==='ja';
@@ -6556,7 +6575,7 @@
       }catch(e){/* 未適用なら無視 */}
     }
     // ===== デイリー宝探し（飛行モードでコイン/金のぬいぐるみを拾う）=====
-    let dailyTreasure={mesh:null,x:0,y:0,z:0,plushie:false,amount:0,collected:true,collecting:false};
+    let dailyTreasure={mesh:null,x:0,y:0,z:0,kind:'coins',amount:0,collected:true,collecting:false};
     let _treasureObs=null;
     let plushieData=[];
     async function loadDailyTreasure(){
@@ -6565,7 +6584,7 @@
         const{data,error}=await db.rpc('get_daily_treasure');
         if(error||!data||!data.ok)return;
         disposeTreasureMesh();
-        dailyTreasure={mesh:null,x:data.x,y:Number(data.y)||8,z:data.z,plushie:!!data.plushie,amount:data.amount||1,collected:!!data.collected,collecting:false};
+        dailyTreasure={mesh:null,x:data.x,y:Number(data.y)||8,z:data.z,kind:data.kind||'coins',amount:data.amount||1,collected:!!data.collected,collecting:false};
         if(dailyTreasure.collected)return; // 本日は取得済み
         spawnTreasureMesh();
         startTreasureProximity();
@@ -6580,7 +6599,10 @@
       const mat=new BABYLON.StandardMaterial('treasure_mat',scene);
       mat.specularColor=new BABYLON.Color3(1,1,0.7);
       let mesh;
-      if(t.plushie){
+      if(t.kind==='rainbow'){
+        mesh=BABYLON.MeshBuilder.CreateSphere('daily_treasure',{diameter:3.6,segments:14},scene);
+        mat.diffuseColor=new BABYLON.Color3(1,1,1);mat.emissiveColor=new BABYLON.Color3(0.9,0.2,0.9); // 虹（観測ループで色を巡回）
+      }else if(t.kind==='gold'){
         mesh=BABYLON.MeshBuilder.CreateSphere('daily_treasure',{diameter:3.4,segments:12},scene);
         mat.diffuseColor=new BABYLON.Color3(1,0.82,0.2);mat.emissiveColor=new BABYLON.Color3(0.95,0.68,0.06);
       }else{
@@ -6591,7 +6613,7 @@
       mesh.material=mat;
       mesh.position=new BABYLON.Vector3(t.x,t.y,t.z);
       mesh.isPickable=false;
-      t.mesh=mesh;
+      t.mesh=mesh;t.mat=mat;
     }
     function startTreasureProximity(){
       if(_treasureObs)return;
@@ -6601,10 +6623,11 @@
         t.mesh.rotation.y+=0.03;
         const baseY=t.y+Math.sin(Date.now()*0.003)*0.6;
         t.mesh.position.y=baseY;
+        if(t.kind==='rainbow'&&t.mat){const ph=Date.now()*0.004;t.mat.emissiveColor=new BABYLON.Color3(0.5+0.5*Math.sin(ph),0.5+0.5*Math.sin(ph+2.094),0.5+0.5*Math.sin(ph+4.188));}
         if(!isFlying||scene.activeCamera!==flyCamera)return;
         const p=flyCamera.position;
         const dx=p.x-t.x,dy=p.y-baseY,dz=p.z-t.z;
-        if(dx*dx+dy*dy+dz*dz<81)collectDailyTreasure(); // 距離9以内で取得
+        if(dx*dx+dy*dy+dz*dz<16)collectDailyTreasure(); // 距離4以内＝ぶつかったら取得
       });
     }
     async function collectDailyTreasure(){
@@ -6619,7 +6642,10 @@
           t.collected=true;
           const cc=document.getElementById('coin-count');if(cc&&data.coins!==undefined)cc.textContent=data.coins;
           try{IgnisAudio.playSuccess();}catch(_){}
-          if(data.plushie){
+          if(data.kind==='rainbow'){
+            showToast(isJa?`🌈✨ 虹のぬいぐるみ！超激レア！ +${data.amount}コイン（図鑑に登録）`:`🌈✨ Rainbow plushie! Ultra rare! +${data.amount} coins (added to your collection)`);
+            loadPlushies().catch(()=>{});
+          }else if(data.kind==='gold'){
             showToast(isJa?`🎁✨ 金のぬいぐるみを見つけた！ +${data.amount}コイン（図鑑に登録）`:`🎁✨ Found the gold plushie! +${data.amount} coins (added to your collection)`);
             loadPlushies().catch(()=>{});
           }else{
@@ -7831,6 +7857,7 @@
     // ぬいぐるみ図鑑：所持＝カラー、未所持＝シルエット
     const PLUSHIE_DEX=[
       {key:'gold',emoji:'🧸',ja:'金のぬいぐるみ',en:'Gold Plushie',hint_ja:'宝探しで約1/30の超レア',hint_en:'~1/30 rare from treasure hunt'},
+      {key:'rainbow',emoji:'🌈',ja:'虹のぬいぐるみ',en:'Rainbow Plushie',hint_ja:'宝探しで約1/300の超激レア',hint_en:'~1/300 ultra-rare from treasure hunt'},
     ];
     function renderZukanPlushies(){
       const isJa=currentLang==='ja';

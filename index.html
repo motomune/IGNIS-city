@@ -1399,7 +1399,10 @@
     <div id="right-rail">
       <button id="login-btn-header" class="rail-btn rail-login" onclick="openAuthModal()">ログイン / 登録</button>
       <button id="coin-history-btn" class="rail-btn li-only" type="button" onclick="openCoinHistory()">💰 履歴</button>
-      <button id="lang-btn" class="rail-btn" type="button" onclick="toggleLang()" title="言語切替">🌐 <span id="lang-label">EN</span></button>
+      <div style="display:flex;gap:6px;">
+        <button id="lang-btn" class="rail-btn" type="button" onclick="toggleLang()" title="言語切替" style="flex:1;">🌐 <span id="lang-label">EN</span></button>
+        <button id="rules-btn" class="rail-btn" type="button" onclick="openRulesPage()" title="遊び方・ルール" style="flex:1;">📖 <span id="rules-label">ルール</span></button>
+      </div>
       <button id="task-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleTaskPanel()">📋 タスク<span id="task-notice-badge">0</span></button>
       <button id="ranking-btn" class="rail-btn li-only" type="button" onclick="openRanking()">🏆 ランキング</button>
       <button id="sound-toggle" class="rail-btn" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ">🔊 BGM</button>
@@ -1923,7 +1926,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-17-v160';
+    const IGNIS_BUILD='2026-06-17-v161';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3530,6 +3533,7 @@
       const isJa=currentLang==='ja';
       document.getElementById('lang-label').textContent=isJa?'EN':'JP';
       document.getElementById('auth-lang-label').textContent=isJa?'EN':'JP';
+      {const rl=document.getElementById('rules-label');if(rl)rl.textContent=isJa?'ルール':'Rules';}
       document.querySelector('[data-i18n="buildings"]').textContent=isJa?'所有ビル':'Owned Buildings';
       {const cs=document.querySelector('[data-i18n="candles-stat"]');if(cs)cs.textContent=isJa?'🕯️ 蝋燭':'🕯️ Candles';const cu=document.querySelector('[data-i18n="candles-unit"]');if(cu)cu.textContent=isJa?'本':'';}
       document.querySelector('[data-i18n="buildings-unit"]').textContent=isJa?'棟':'';
@@ -3848,6 +3852,11 @@
           latestCreatorPost=(d2&&d2[0])||null;
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
+    }
+    // 遊び方・ルール説明ページを別タブで開く（言語も引き継ぐ）
+    function openRulesPage(){
+      try{IgnisAudio.playClick();}catch(e){}
+      window.open('rules.html'+(currentLang==='en'?'?lang=en':''),'_blank');
     }
     // Xでシェア：自分の言葉でこのゲームを投稿できる画面へ（#IGNISCITY）。報酬は紐づけない（X規約セーフ）
     function openXShare(){

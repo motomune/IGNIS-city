@@ -1239,6 +1239,16 @@
     .rail-login { background:linear-gradient(135deg,#ff6a00,#ee0979) !important; border:none !important; font-weight:800; }
     #sound-toggle.rail-btn { background:linear-gradient(135deg,rgba(163,230,53,0.6),rgba(134,239,172,0.66)); border-color:rgba(190,242,100,0.5); color:#12411b; }
     #sound-toggle.rail-btn.muted { opacity:0.45; }
+    /* ルールボタン＝BGMボタンと同じ緑 */
+    #rules-btn.rail-btn { background:linear-gradient(135deg,rgba(163,230,53,0.6),rgba(134,239,172,0.66)); border-color:rgba(190,242,100,0.5); color:#12411b; }
+    /* ルール説明オーバーレイ（ゲーム内・iframe） */
+    #rules-overlay { display:none; position:fixed; inset:0; z-index:390; background:#07070d; flex-direction:column; }
+    #rules-overlay.open { display:flex; }
+    #rules-overlay-header { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 16px; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.1); background:#0c0c16; }
+    #rules-overlay-title { font-size:15px; font-weight:900; background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    #rules-overlay-close { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:7px 16px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; }
+    #rules-overlay-close:hover { background:rgba(255,255,255,0.2); }
+    #rules-frame { flex:1; width:100%; border:0; background:#07070d; }
     #x-rewards-btn.rail-btn { background:linear-gradient(135deg,rgba(96,210,255,0.55),rgba(91,140,255,0.55)); }
     /* 右列 */
     #right-rail { position:fixed; top:max(14px,env(safe-area-inset-top,0px)); right:max(14px,env(safe-area-inset-right,0px));
@@ -1850,6 +1860,13 @@
     </div>
     <div id="x-rewards-body"><div id="x-rewards-loading">読み込み中...</div></div>
   </div>
+  <div id="rules-overlay">
+    <div id="rules-overlay-header">
+      <div id="rules-overlay-title">📖 遊び方・ルール</div>
+      <button id="rules-overlay-close" type="button" onclick="closeRulesPage()">✕ 閉じる</button>
+    </div>
+    <iframe id="rules-frame" title="遊び方・ルール" loading="lazy"></iframe>
+  </div>
   <div id="toast"></div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <audio id="ignis-retro-bgm" loop preload="auto" playsinline style="display:none"></audio>
@@ -1926,7 +1943,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-17-v161';
+    const IGNIS_BUILD='2026-06-20-v162';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3853,10 +3870,19 @@
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
     }
-    // 遊び方・ルール説明ページを別タブで開く（言語も引き継ぐ）
+    // 遊び方・ルール説明ページをゲーム内オーバーレイ（iframe）で開く。
+    // 開いている間は3Dを停止＝軽い。閉じたらiframeを解放（メモリ節約）。
     function openRulesPage(){
       try{IgnisAudio.playClick();}catch(e){}
-      window.open('rules.html'+(currentLang==='en'?'?lang=en':''),'_blank');
+      const f=document.getElementById('rules-frame');
+      if(f&&!f.getAttribute('src'))f.setAttribute('src','rules.html'+(currentLang==='en'?'?lang=en':''));
+      document.getElementById('rules-overlay').classList.add('open');
+      if(typeof setScenePaused==='function')setScenePaused(true);
+    }
+    function closeRulesPage(){
+      document.getElementById('rules-overlay').classList.remove('open');
+      if(typeof setScenePaused==='function')setScenePaused(false);
+      const f=document.getElementById('rules-frame');if(f)f.setAttribute('src','');
     }
     // Xでシェア：自分の言葉でこのゲームを投稿できる画面へ（#IGNISCITY）。報酬は紐づけない（X規約セーフ）
     function openXShare(){
@@ -8001,10 +8027,9 @@
       if(!b||!land)return;
       const handle=(land.owner_display||'').replace(/^@/,'').toLowerCase();
       if(handle!==OWNER_X_HANDLE.toLowerCase())return;
-      b.employees=1000;
-      // 総階数も従業員1000人で再計算して固定（以前はDBの従業員数で計算した値が残り、
-      // 配属や任期切れのたびに244階↔250階のように表示が揺れていた）
-      b.totalFloors=calcTotalFloors(b.baseFloors||b.totalFloors||1,1000);
+      // 実データのまま表示（従業員・階数の偽装はしない＝正規）。
+      // 中央ビルは showcase なので色だけ虹に。高さ（color/motto）は実メッシュ totalFloors に一致させ、
+      // 「色が途中で消える／格言だけ高すぎる」不一致を防ぐ。
       if(b.mesh&&b.mesh.material){
         applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }

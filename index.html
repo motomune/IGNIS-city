@@ -1009,7 +1009,11 @@
     /* サブスク登録モーダル */
     #sub-modal { position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:70; }
     #sub-modal.open { display:flex; }
-    #sub-box { position:relative;width:min(420px,92vw);max-height:86vh;overflow-y:auto;background:#0d0a14;border:1px solid rgba(255,213,79,0.4);border-radius:18px;padding:22px;box-shadow:0 10px 50px rgba(255,180,0,0.18); }
+    #sub-box { position:relative;width:min(560px,94vw);max-height:86vh;overflow-y:auto;background:#0d0a14;border:1px solid rgba(255,213,79,0.4);border-radius:18px;padding:22px;box-shadow:0 10px 50px rgba(255,180,0,0.18); }
+    /* サブスク/プレミアムのプランを左右に並べる（左=サブスク・右=プレミア） */
+    #sub-plans-row { display:flex;gap:10px;align-items:stretch;flex-wrap:wrap; }
+    #sub-plans-row .sub-plan { flex:1 1 200px;display:flex;flex-direction:column; }
+    #sub-plans-row .sub-plan .sub-plan-btn { margin-top:auto; }
     #sub-close { position:sticky;float:right;top:0;margin:-6px -6px 0 0;background:rgba(13,10,20,0.85);border:none;color:rgba(255,255,255,0.7);font-size:22px;cursor:pointer;z-index:30;border-radius:8px;width:34px;height:34px; }
     #sub-title { font-size:17px;font-weight:900;color:#ffd54f;margin-bottom:4px; }
     #sub-sub { font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:14px; }
@@ -1052,6 +1056,7 @@
     .bm-past-chip { font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.75); }
     .bm-past-text { font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;white-space:pre-wrap;margin-top:4px; }
     .bm-past-locked { margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(96,165,250,0.08);border:1px dashed rgba(96,165,250,0.35);font-size:11px;color:rgba(147,197,253,0.85);line-height:1.5; }
+    .bm-past-notice { margin:2px 0 10px;padding:8px 11px;border-radius:8px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.35);font-size:10.5px;color:#fca5a5;line-height:1.55; }
     /* スマホ・タブレット */
     /* 狭い画面（縦スマホ）に加え、短い横画面（横向きスマホ）にもモバイル用レイアウトを適用 */
     @media (max-width: 768px), (orientation: landscape) and (max-height: 500px) {
@@ -1497,6 +1502,7 @@
       <div id="building-modal-motto"></div>
       <div id="building-modal-past">
         <div class="bm-past-title">📖 過去詳細 <span id="bm-past-status" class="motto-pending-badge" style="display:none;"></span></div>
+        <div id="bm-past-notice" class="bm-past-notice"></div>
         <div class="bm-past-label" id="bml-past-lost">① 失ったもの</div>
         <div id="bm-past-lost" class="bm-past-chips"></div>
         <div class="bm-past-label" id="bml-past-gained">② 得たもの・得ようとしているもの</div>
@@ -1582,6 +1588,7 @@
       <button id="sub-close" type="button" onclick="closeSubModal()">×</button>
       <div id="sub-title">💎 サブスクリプション</div>
       <div id="sub-sub">あなたの応援が、誰かの再生を支えます</div>
+      <div id="sub-plans-row">
       <div class="sub-plan" id="sub-plan-980">
         <div class="sub-plan-name" id="sub-plan-980-name">サブスク会員</div>
         <div class="sub-plan-price" id="sub-plan-980-price">月980円（税込）</div>
@@ -1602,6 +1609,7 @@
           <li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>
         </ul>
         <button class="sub-plan-btn sub-plan-btn-gold" id="sub-plan-1980-btn" onclick="subscribeCheckout('premium')">登録する</button>
+      </div>
       </div>
       <button id="sub-portal-btn" type="button" onclick="openBillingPortal()" style="display:none;">⚙️ プラン変更・解約はこちら</button>
       <div id="sub-note">決済はStripeの安全なページで行われます。いつでも解約できます。</div>
@@ -1943,7 +1951,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-20-v163';
+    const IGNIS_BUILD='2026-06-20-v164';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6309,6 +6317,9 @@
       const bmlFloors=document.getElementById('bml-floors');if(bmlFloors)bmlFloors.textContent=isJa?'総階数':'Floors';
       const bmlEmp=document.getElementById('bml-emp');if(bmlEmp)bmlEmp.textContent=isJa?'従業員':'Employees';
       const bmlCoord=document.getElementById('bml-coord');if(bmlCoord)bmlCoord.textContent=isJa?'座標':'Coords';
+      const pn=document.getElementById('bm-past-notice');if(pn)pn.textContent=isJa
+        ?'🔒 ③〜⑥の内容はスクリーンショットでの転載を禁止しています。Xへ共有する際は、他の人の個人情報が分からないよう必ずご配慮ください。'
+        :'🔒 Screenshotting/reposting sections ③–⑥ is prohibited. When sharing on X, always make sure other people\'s personal information is not identifiable.';
     }
     // 言語切替時：開いているビル詳細モーダルの格言・ラベル・過去詳細も新しい言語で出し直す
     function refreshBuildingModalLang(){
@@ -7899,8 +7910,8 @@
     }
     // ぬいぐるみ図鑑：所持＝カラー、未所持＝シルエット
     const PLUSHIE_DEX=[
-      {key:'gold',emoji:'🧸',ja:'金の熊のぬいぐるみ',en:'Gold Bear',hint_ja:'宝探しで約1/30の超レア',hint_en:'~1/30 rare from treasure hunt'},
-      {key:'rainbow',emoji:'🧸',ja:'虹の熊のぬいぐるみ',en:'Rainbow Bear',hint_ja:'宝探しで約1/300の超激レア',hint_en:'~1/300 ultra-rare from treasure hunt'},
+      {key:'gold',emoji:'🧸',ja:'金の熊のぬいぐるみ',en:'Gold Bear',hint_ja:'宝探しで約30日に1回（1/30日）の超レア',hint_en:'~once per 30 days from the treasure hunt'},
+      {key:'rainbow',emoji:'🧸',ja:'虹の熊のぬいぐるみ',en:'Rainbow Bear',hint_ja:'宝探しで約300日に1回（1/300日）の超激レア',hint_en:'~once per 300 days from the treasure hunt'},
     ];
     function renderZukanPlushies(){
       const isJa=currentLang==='ja';
@@ -7918,19 +7929,22 @@
     async function loadZukanBuildings(){
       const loadingEl=document.getElementById('zukan-loading');loadingEl.classList.add('show');
       try{
-        // メモリ上の自分のビルから即構築（DB往復なし＝高速）
-        const mine=buildings.filter(b=>b.ownerId===currentUser.id);
-        if(mine.length){
-          zukanBuildings=mine.map(b=>({x:b.x,z:b.z,floors:b.baseFloors,employees:b.employees||0,style:b.shape||'square'}))
-            .sort((a,b)=>b.floors-a.floors);
-          renderZukanOwned();renderZukanRarity();
-        }else{
-          // 念のためのフォールバック（メモリが空のとき）
-          const{data,error}=await db.from('buildings').select('*').eq('owner_id',currentUser.id).order('floors',{ascending:false});
-          if(error)throw error;
-          zukanBuildings=data||[];renderZukanOwned();renderZukanRarity();
+        // 設置済みの自分のビル（メモリから即構築＝高速）
+        let mine=buildings.filter(b=>b.ownerId===currentUser.id)
+          .map(b=>({x:b.x,z:b.z,floors:b.baseFloors,employees:b.employees||0,style:b.shape||'square',inv:false}));
+        if(!mine.length){
+          const{data}=await db.from('buildings').select('*').eq('owner_id',currentUser.id);
+          mine=(data||[]).map(b=>({x:b.x,z:b.z,floors:b.floors,employees:b.employees||0,style:b.style||'square',inv:false}));
         }
-      }catch(e){console.warn('zukan load error:',e.message);showToast('図鑑の読み込みに失敗しました');}
+        // スクラッチで獲得して未設置（在庫）のビルも図鑑に反映
+        let inv=[];
+        try{
+          const{data:invData}=await db.from('building_inventory').select('id,prism,floors,star').eq('user_id',currentUser.id).order('created_at',{ascending:false});
+          inv=(invData||[]).map(r=>({x:null,z:null,floors:r.floors,employees:0,style:r.prism||'square',inv:true,invId:r.id}));
+        }catch(_){/* テーブル未作成等は無視 */}
+        zukanBuildings=mine.concat(inv).sort((a,b)=>b.floors-a.floors);
+        renderZukanOwned();renderZukanRarity();
+      }catch(e){console.warn('zukan load error:',e.message);showToast(currentLang==='ja'?'図鑑の読み込みに失敗しました':'Failed to load collection');}
       finally{loadingEl.classList.remove('show');}
     }
     function getStarByBaseFloors(f){if(f>=48)return 5;if(f>=40)return 4;if(f>=30)return 3;if(f>=20)return 2;return 1;}
@@ -7961,8 +7975,14 @@
         const prismIcon=PRISM_ICONS[prism]||'🏢';
         const empDisplay=isJa?`${(b.employees||0).toLocaleString()}人`:`${(b.employees||0).toLocaleString()}`;
         const card=document.createElement('div');card.className=`zukan-card star${star}`;
-        card.innerHTML=`<div class="zcard-icon">${prismIcon}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${isJa?`${b.floors}階`:`${b.floors}F`}</div><div class="zcard-floors-label">${prismLabel}</div><div class="zcard-meta"><span class="zcard-emp" style="color:${ci.name==='gold'?'#f59e0b':ci.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">👥 ${empDisplay}</span><br><span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span></div>`;
-        card.addEventListener('click',()=>{closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;showToast(`📍 X:${b.x} / Z:${b.z} にフォーカス`);});
+        const metaRight=b.inv
+          ?`<span style="color:#7dd3fc;font-size:10px;">🎒 ${isJa?'在庫（未設置）':'In inventory'}</span>`
+          :`<span style="color:rgba(255,255,255,0.3);font-size:10px;">X:${b.x} Z:${b.z}</span>`;
+        card.innerHTML=`<div class="zcard-icon">${prismIcon}</div><div class="zcard-rank" style="color:${STAR_COLORS_ZUKAN[star]}">${STAR_LABELS_ZUKAN[star]}</div><div class="zcard-floors">${isJa?`${b.floors}階`:`${b.floors}F`}</div><div class="zcard-floors-label">${prismLabel}</div><div class="zcard-meta"><span class="zcard-emp" style="color:${ci.name==='gold'?'#f59e0b':ci.name==='rainbow'?'#ee0979':'rgba(255,255,255,0.6)'}">👥 ${empDisplay}</span><br>${metaRight}</div>`;
+        card.addEventListener('click',()=>{
+          if(b.inv){showToast(isJa?'🎒 在庫のビルです。土地をタップ→「設置」で配置できます':'🎒 In inventory — tap a land tile and place it');return;}
+          closeZukan();arcCamera.target=new BABYLON.Vector3(b.x,0,b.z);arcCamera.radius=30;showToast(`📍 X:${b.x} / Z:${b.z} にフォーカス`);
+        });
         grid.appendChild(card);
       });
     }

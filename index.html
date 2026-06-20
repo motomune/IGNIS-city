@@ -1943,7 +1943,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-20-v162';
+    const IGNIS_BUILD='2026-06-20-v163';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6648,6 +6648,14 @@
       mesh.material=mat;
       mesh.position=new BABYLON.Vector3(t.x,t.y,t.z);
       mesh.isPickable=false;
+      // 熊のぬいぐるみ：耳を2つ付けて熊らしく（コインは耳なし）
+      if(t.kind!=='coins'){
+        [-1,1].forEach(side=>{
+          const ear=BABYLON.MeshBuilder.CreateSphere('treasure_ear',{diameter:1.3,segments:8},scene);
+          ear.material=mat;ear.parent=mesh;ear.isPickable=false;
+          ear.position=new BABYLON.Vector3(side*1.05,1.25,0);
+        });
+      }
       t.mesh=mesh;t.mat=mat;
     }
     function startTreasureProximity(){
@@ -6678,10 +6686,10 @@
           const cc=document.getElementById('coin-count');if(cc&&data.coins!==undefined)cc.textContent=data.coins;
           try{IgnisAudio.playSuccess();}catch(_){}
           if(data.kind==='rainbow'){
-            showToast(isJa?`🌈✨ 虹のぬいぐるみ！超激レア！ +${data.amount}コイン（図鑑に登録）`:`🌈✨ Rainbow plushie! Ultra rare! +${data.amount} coins (added to your collection)`);
+            showToast(isJa?`🌈🧸 虹の熊のぬいぐるみ！超激レア！ +${data.amount}コイン（図鑑に登録）`:`🌈🧸 Rainbow bear! Ultra rare! +${data.amount} coins (added to your collection)`);
             loadPlushies().catch(()=>{});
           }else if(data.kind==='gold'){
-            showToast(isJa?`🎁✨ 金のぬいぐるみを見つけた！ +${data.amount}コイン（図鑑に登録）`:`🎁✨ Found the gold plushie! +${data.amount} coins (added to your collection)`);
+            showToast(isJa?`🧸✨ 金の熊のぬいぐるみを見つけた！ +${data.amount}コイン（図鑑に登録）`:`🧸✨ Found the gold bear! +${data.amount} coins (added to your collection)`);
             loadPlushies().catch(()=>{});
           }else{
             showToast(isJa?`🪙 隠れていたコインを${data.amount}枚拾った！`:`🪙 Grabbed ${data.amount} hidden coin(s)!`);
@@ -7891,8 +7899,8 @@
     }
     // ぬいぐるみ図鑑：所持＝カラー、未所持＝シルエット
     const PLUSHIE_DEX=[
-      {key:'gold',emoji:'🧸',ja:'金のぬいぐるみ',en:'Gold Plushie',hint_ja:'宝探しで約1/30の超レア',hint_en:'~1/30 rare from treasure hunt'},
-      {key:'rainbow',emoji:'🌈',ja:'虹のぬいぐるみ',en:'Rainbow Plushie',hint_ja:'宝探しで約1/300の超激レア',hint_en:'~1/300 ultra-rare from treasure hunt'},
+      {key:'gold',emoji:'🧸',ja:'金の熊のぬいぐるみ',en:'Gold Bear',hint_ja:'宝探しで約1/30の超レア',hint_en:'~1/30 rare from treasure hunt'},
+      {key:'rainbow',emoji:'🧸',ja:'虹の熊のぬいぐるみ',en:'Rainbow Bear',hint_ja:'宝探しで約1/300の超激レア',hint_en:'~1/300 ultra-rare from treasure hunt'},
     ];
     function renderZukanPlushies(){
       const isJa=currentLang==='ja';

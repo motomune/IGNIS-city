@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>人生の灯 / Embers of a Life — IGNIS CITY</title>
+<style>
+  :root{
+    --bg:#07070d; --bg2:#0e0e18; --panel:#14141f; --panel2:#1b1b29;
+    --line:#2a2a3d; --txt:#f3efe9; --sub:#a9a6b8; --dim:#6f6c80;
+    --fire:#ff8a3d; --mag:#ff3da1; --good:#46d39a; --bad:#ff6b6b;
+    --money:#ffce4f; --trust:#7cc4ff; --health:#ff7a8a; --mind:#b58cff; --bond:#5be0c0;
+    --accent:linear-gradient(90deg,#ff8a3d,#ff3da1);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%;}
+  body{
+    background:radial-gradient(1200px 700px at 50% -10%, #16101c 0%, var(--bg) 55%) fixed;
+    color:var(--txt);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.7;
+    overflow:hidden;
+  }
+  #app{
+    height:100%; height:100dvh;
+    display:flex; flex-direction:column;
+    max-width:760px; margin:0 auto;
+    padding:max(10px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom));
+  }
+  /* ---- header ---- */
+  header{display:flex; align-items:center; gap:10px; padding:4px 2px 8px; flex-shrink:0;}
+  .logo{font-weight:800; letter-spacing:.04em; font-size:clamp(14px,3.6vw,17px);
+    background:var(--accent); -webkit-background-clip:text; background-clip:text; color:transparent; white-space:nowrap;}
+  .logo small{display:block; font-size:10px; letter-spacing:.18em; color:var(--dim); -webkit-text-fill-color:var(--dim); margin-top:1px;}
+  .spacer{flex:1;}
+  .iconbtn{
+    background:var(--panel); border:1px solid var(--line); color:var(--txt);
+    border-radius:10px; padding:7px 11px; font-size:12px; cursor:pointer; min-height:36px;
+    display:inline-flex; align-items:center; gap:5px; transition:.15s;
+  }
+  .iconbtn:hover{border-color:var(--fire);}
+  /* ---- stats ---- */
+  #stats{display:grid; grid-template-columns:repeat(5,1fr); gap:6px; flex-shrink:0; margin-bottom:8px;}
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:6px 5px 7px; text-align:center;}
+  .stat .ico{font-size:15px; line-height:1;}
+  .stat .lbl{font-size:9px; color:var(--sub); margin:2px 0 4px; letter-spacing:.02em;}
+  .bar{height:5px; border-radius:4px; background:#000; overflow:hidden;}
+  .bar > i{display:block; height:100%; width:50%; border-radius:4px; transition:width .5s cubic-bezier(.2,.7,.2,1);}
+  .stat .num{font-size:10px; color:var(--dim); margin-top:3px;}
+  .s-money .bar>i{background:var(--money);} .s-trust .bar>i{background:var(--trust);}
+  .s-health .bar>i{background:var(--health);} .s-mind .bar>i{background:var(--mind);}
+  .s-bond .bar>i{background:var(--bond);}
+  .flash{animation:flash .9s ease;}
+  @keyframes flash{0%{filter:brightness(2.2);} 100%{filter:none;}}
+  /* ---- scene ---- */
+  #scene{
+    flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line); border-radius:16px; padding:18px 16px 16px;
+    display:flex; flex-direction:column;
+  }
+  .chapter-tag{font-size:11px; letter-spacing:.16em; color:var(--fire); text-transform:uppercase; margin-bottom:8px;}
+  .scene-title{font-size:clamp(17px,4.6vw,22px); font-weight:800; margin:0 0 12px; line-height:1.4;}
+  .scene-body{font-size:clamp(14px,3.7vw,15.5px); color:#e7e2da; white-space:pre-wrap; margin:0 0 4px;}
+  .scene-body.result{color:var(--sub); border-left:3px solid var(--line); padding-left:12px; margin-top:14px;}
+  .deltas{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;}
+  .delta{font-size:11px; font-weight:700; border-radius:999px; padding:3px 9px; border:1px solid var(--line); background:#0008;}
+  .delta.up{color:var(--good);} .delta.down{color:var(--bad);}
+  .choices{margin-top:auto; padding-top:16px; display:flex; flex-direction:column; gap:9px;}
+  .choice{
+    text-align:left; background:var(--panel2); border:1px solid var(--line); color:var(--txt);
+    border-radius:12px; padding:12px 14px; font-size:clamp(13.5px,3.6vw,15px); cursor:pointer;
+    transition:.15s; position:relative; line-height:1.5;
+  }
+  .choice:hover{border-color:var(--fire); transform:translateY(-1px); background:#222031;}
+  .choice .hint{display:block; font-size:11px; color:var(--dim); margin-top:3px;}
+  .btn-primary{
+    background:var(--accent); border:none; color:#1a0a05; font-weight:800;
+    border-radius:12px; padding:14px; font-size:15px; cursor:pointer; width:100%;
+    box-shadow:0 6px 22px -8px var(--mag); transition:.15s;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--sub); border-radius:12px; padding:12px; font-size:14px; cursor:pointer; width:100%;}
+  .btn-ghost:hover{border-color:var(--fire); color:var(--txt);}
+  /* ---- title / result centered ---- */
+  .center{align-items:center; text-align:center; justify-content:center;}
+  .center .scene-body{text-align:center;}
+  .big-emoji{font-size:54px; line-height:1; margin-bottom:6px; filter:drop-shadow(0 0 24px #ff3da155);}
+  .ending-name{font-size:clamp(22px,6vw,30px); font-weight:900; background:var(--accent); -webkit-background-clip:text; background-clip:text; color:transparent; margin:6px 0 2px;}
+  .coin-box{margin:18px 0 6px; padding:14px 18px; border:1px solid var(--fire); border-radius:14px; background:#1a120a; min-width:200px;}
+  .coin-box .amt{font-size:34px; font-weight:900; color:var(--money);}
+  .coin-box .cap{font-size:11px; color:var(--dim); margin-top:4px;}
+  .carve{margin:16px 0; padding:14px 16px; border-left:3px solid var(--mag); background:#0008; border-radius:0 10px 10px 0; font-style:italic; color:#f0e6dd; font-size:clamp(14px,3.9vw,16px);}
+  .carve small{display:block; font-style:normal; color:var(--dim); font-size:10px; letter-spacing:.16em; margin-bottom:5px;}
+  .grant-line{font-size:13px; margin-top:10px; min-height:18px;}
+  .grant-ok{color:var(--good);} .grant-no{color:var(--sub);}
+  .actions{display:flex; flex-direction:column; gap:9px; width:100%; max-width:340px; margin-top:18px;}
+  .muted{color:var(--dim); font-size:12px;}
+  /* progress dots */
+  #progress{display:flex; gap:5px; justify-content:center; padding:8px 0 2px; flex-shrink:0;}
+  #progress i{width:7px; height:7px; border-radius:50%; background:var(--line);}
+  #progress i.done{background:var(--fire);}
+  #progress i.now{background:var(--mag); box-shadow:0 0 8px var(--mag);}
+  .fade{animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+  /* landscape phones: shrink stats */
+  @media (max-height:480px){
+    #stats .lbl{display:none;} .stat{padding:5px 4px;} .scene-title{margin-bottom:8px;}
+    #scene{padding:12px 14px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">人生の灯<small id="logo-sub">EMBERS OF A LIFE</small></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">EN</span></button>
+    <button class="iconbtn" id="close-btn" onclick="requestClose()" title="close">✕</button>
+  </header>
+
+  <div id="stats" aria-hidden="true"></div>
+  <div id="scene"></div>
+  <div id="progress"></div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   人生の灯 / Embers of a Life  —  IGNIS CITY mini-game
+   - single file, no deps, no keys. Reports result to parent via postMessage.
+   - lang: ?lang=en or 🌐 toggle.
+   ========================================================================= */
+
+/* ---------- language ---------- */
+const params = new URLSearchParams(location.search);
+let lang = (params.get('lang') === 'en') ? 'en' : 'ja';
+const T = (o) => (o && o[lang] != null) ? o[lang] : (o ? o.ja : '');
+
+/* ---------- UI strings ---------- */
+const UI = {
+  start_title:{ja:'人生の灯',en:'Embers of a Life'},
+  start_lead:{ja:'これは、ある一つの人生の物語。\nうまくいかない日も、裏切られる日もある。\nそれでも——選び続けた先に、灯はともる。',
+    en:'This is the story of a single life.\nThere will be hard days, even betrayals.\nAnd yet — keep choosing, and a light will glow.'},
+  start_note:{ja:'所要 約5〜8分 / 選択で結末が変わります',en:'About 5–8 min / your choices shape the ending'},
+  start_btn:{ja:'人生を始める',en:'Begin a life'},
+  already_today:{ja:'本日の報酬は受け取り済みです。プレイは自由にできます。',en:'Today’s reward is already claimed. You can still play freely.'},
+  stat_money:{ja:'お金',en:'Money'}, stat_trust:{ja:'信頼',en:'Trust'},
+  stat_health:{ja:'健康',en:'Health'}, stat_mind:{ja:'心',en:'Mind'}, stat_bond:{ja:'縁',en:'Bonds'},
+  next:{ja:'つづく',en:'Continue'},
+  reward_title:{ja:'今日の報酬',en:'Today’s reward'},
+  coins_unit:{ja:'コイン',en:'coins'},
+  cap_note:{ja:'※ 報酬は1日1回・最大30コイン（換金不可）',en:'※ Once per day, up to 30 coins (no cash value)'},
+  carve_label:{ja:'この人生で、あなたが街に刻む一行',en:'The line you carve into the city'},
+  back_city:{ja:'街にもどる',en:'Back to the city'},
+  again:{ja:'もう一度生きる',en:'Live again'},
+  granting:{ja:'コインを記録しています…',en:'Recording coins…'},
+  granted:{ja:(n,t)=>`+${n} コインを獲得！（所持 ${t}）`,en:(n,t)=>`+${n} coins earned! (total ${t})`},
+  granted_cap:{ja:(n,t)=>`+${n} コインを獲得！（上限到達 / 所持 ${t}）`,en:(n,t)=>`+${n} coins (daily cap reached / total ${t})`},
+  denied:{ja:'本日の報酬は受け取り済みです。',en:'Today’s reward was already claimed.'},
+  offline:{ja:'（プレビュー中：コインは街の中で加算されます）',en:'(preview: coins are added inside the city)'},
+  deltas_none:{ja:'',en:''},
+};
+
+/* ---------- stats ---------- */
+const STAT_KEYS = ['money','trust','health','mind','bond'];
+const STAT_META = {
+  money:{ico:'💰',cls:'s-money',ui:'stat_money'},
+  trust:{ico:'🤝',cls:'s-trust',ui:'stat_trust'},
+  health:{ico:'❤️',cls:'s-health',ui:'stat_health'},
+  mind:{ico:'🧠',cls:'s-mind',ui:'stat_mind'},
+  bond:{ico:'👥',cls:'s-bond',ui:'stat_bond'},
+};
+let S, quality, picks, chapterIndex, totalChapters, daily;
+
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)));}
+function rnd(n){return Math.floor(Math.random()*n);}
+function pick(arr){return arr[rnd(arr.length)];}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* =========================================================================
+   EVENT CONTENT
+   Each event: { tag, title{ja,en}, body{ja,en}, choices:[ choice ] }
+   choice: { label{ja,en}, hint{ja,en}?, good?:0..3,
+             eff:{stat:Δ}, result{ja,en},
+             check?:{stat, dc, eff_fail:{}, result_fail{ja,en}} }
+   Tone: serious life themes, but kept light & hopeful. Every scene ends with an
+   exit / warmth. No graphic, sexual, or self-harm depiction.
+   ========================================================================= */
+
+const ACT1 = [
+ {
+  tag:{ja:'第一章 ・ 旅立ち',en:'Chapter I · Setting Out'},
+  title:{ja:'はじめの分かれ道',en:'The first fork in the road'},
+  body:{ja:'十八歳の春。手元にあるのは、わずかな貯金と、まだ形のない夢だけ。\n進む道を、自分で選べる年になった。',
+    en:'Spring, eighteen. All you have is a little savings and a dream with no shape yet.\nYou’re old enough now to choose your own road.'},
+  choices:[
+   {label:{ja:'大学へ進み、じっくり力を蓄える',en:'Go to college and build yourself slowly'},
+    hint:{ja:'お金は減るが、心と縁が育つ',en:'Costs money, grows mind & bonds'},
+    eff:{money:-15,mind:+10,bond:+8}, good:1,
+    result:{ja:'学びの日々は地味だ。でも、夜ふけに語り合える友ができた。',en:'Study days are plain. But you found friends to talk with late into the night.'}},
+   {label:{ja:'すぐに働いて、自分の足で立つ',en:'Start working and stand on your own'},
+    eff:{money:+15,health:-5,trust:+6},
+    result:{ja:'現場は厳しい。でも初めての給料袋は、思っていたより温かかった。',en:'The work is hard. But your first paycheck felt warmer than you expected.'}},
+   {label:{ja:'夢を追って、何も持たずに街へ出る',en:'Chase the dream — leave with nothing'},
+    hint:{ja:'賭けだが、当たれば大きい',en:'A gamble — big upside'},
+    check:{stat:'mind',dc:60, eff_fail:{money:-10,mind:-8},
+      result_fail:{ja:'準備が足りなかった。財布は軽くなったが、街の広さだけは覚えた。',en:'You weren’t ready. Your wallet thinned, but you learned how wide the world is.'}},
+    eff:{money:+5,mind:+12,bond:+5}, good:1,
+    result:{ja:'怖かった。でも一歩踏み出した自分を、少しだけ好きになれた。',en:'It was scary. But you liked yourself a little more for stepping out.'}},
+  ]
+ },
+ {
+  tag:{ja:'第一章 ・ 出会い',en:'Chapter I · A Meeting'},
+  title:{ja:'隣に座った人',en:'The person beside you'},
+  body:{ja:'通い慣れた帰り道。いつもの席に、見知らぬ誰かが座っていた。\n目が合って、なんとなく言葉を交わす。',
+    en:'On your usual way home, a stranger sat in your usual seat.\nYour eyes met, and somehow you started talking.'},
+  choices:[
+   {label:{ja:'心を開いて、連絡先を交換する',en:'Open up and trade contacts'},
+    eff:{bond:+12,mind:+6}, good:1,
+    result:{ja:'たわいない話で笑った。誰かと笑える夜は、それだけで救いだ。',en:'You laughed over nothing. A night you can laugh with someone is already a kind of rescue.'}},
+   {label:{ja:'今は一人がいい。会釈だけして帰る',en:'You’d rather be alone — just nod and go'},
+    eff:{mind:+4,bond:-3},
+    result:{ja:'静かな夜も悪くない。けれど、ふと誰かの声が恋しくなった。',en:'A quiet night isn’t bad. Still, you found yourself missing a voice.'}},
+  ]
+ },
+ {
+  tag:{ja:'第一章 ・ 仕事',en:'Chapter I · Work'},
+  title:{ja:'最初の任され仕事',en:'Your first real task'},
+  body:{ja:'「これ、君に任せたい」。先輩からの一言。\n大きすぎる仕事だ。やり遂げる自信は、正直まだない。',
+    en:'“I want you to handle this.” A senior’s words.\nThe task is too big. Honestly, you’re not sure you can.'},
+  choices:[
+   {label:{ja:'正直に「助けてほしい」と頼る',en:'Be honest — ask for help'},
+    eff:{trust:+10,bond:+8,mind:+4}, good:2,
+    result:{ja:'弱さを見せたら、みんなが手を貸してくれた。頼ることも、強さだ。',en:'You showed weakness, and everyone pitched in. Leaning on others is a strength too.'}},
+   {label:{ja:'一人で抱え込んで、徹夜でやり切る',en:'Carry it alone, pull all-nighters'},
+    check:{stat:'health',dc:55, eff_fail:{health:-15,mind:-8,trust:+4},
+      result_fail:{ja:'やり切った。けれど体は悲鳴をあげた。無理は、いつか利子をつけて返ってくる。',en:'You finished it. But your body screamed. Overwork is a debt that returns with interest.'}},
+    eff:{trust:+12,health:-6}, good:1,
+    result:{ja:'やり遂げた。評価は上がった。少しの無理は、まだ効いた。',en:'You pulled it off. Your standing rose. A little overreach still worked — this time.'}},
+  ]
+ },
+ {
+  tag:{ja:'第一章 ・ 家族',en:'Chapter I · Family'},
+  title:{ja:'実家からの電話',en:'A call from home'},
+  body:{ja:'久しぶりに親から電話。「元気にしてるか」。\nたった一言なのに、なぜか胸の奥が少し痛む。',
+    en:'A rare call from your parent. “You doing okay?”\nJust a few words, yet something aches quietly in your chest.'},
+  choices:[
+   {label:{ja:'近況を話し、ありがとうと伝える',en:'Share your life, say thank you'},
+    eff:{bond:+10,mind:+8}, good:2,
+    result:{ja:'照れくさかった。でも電話を切ったあと、心が少し軽くなっていた。',en:'It felt awkward. But after you hung up, your heart felt lighter.'}},
+   {label:{ja:'忙しいからと、早めに切り上げる',en:'Say you’re busy, cut it short'},
+    eff:{money:+3,bond:-6,mind:-3},
+    result:{ja:'仕事は進んだ。でも「今度ちゃんと話そう」の今度は、いつだろう。',en:'Work moved along. But “let’s really talk next time” — when is next time?'}},
+  ]
+ },
+];
+
+const ACT2 = [ // hardships — kept serious but not heavy-handed; each ends with an exit
+ {
+  tag:{ja:'第二章 ・ うまい話',en:'Chapter II · A Too-Good Offer'},
+  title:{ja:'「絶対に儲かる」',en:'“You can’t lose”'},
+  body:{ja:'旧友が高そうなスーツで現れた。「いい投資がある。元手が倍になる」。\n目は笑っているのに、どこか必死だった。',
+    en:'An old friend shows up in an expensive suit. “Great investment — your money doubles.”\nThe eyes smile, but something about them is desperate.'},
+  choices:[
+   {label:{ja:'全財産を預ける',en:'Hand over everything'},
+    eff:{money:-30,trust:-12,mind:-8},
+    result:{ja:'連絡は、ある日ふっつり途絶えた。話はうそだった。\n——人を信じた自分が、悪いわけじゃない。そう思える日が、きっと来る。',
+      en:'One day the messages simply stopped. The deal was a lie.\n— Trusting someone wasn’t your fault. A day will come when you can believe that.'}},
+   {label:{ja:'少しだけ、調べてから出す',en:'Invest a little — after checking'},
+    hint:{ja:'冷静さ（心）が高いと被害を抑える',en:'A calm mind limits the damage'},
+    check:{stat:'mind',dc:58, eff_fail:{money:-12,mind:-5},
+      result_fail:{ja:'多少は持っていかれた。けれど全部ではない。学び代だと、自分に言い聞かせる。',en:'You lost some — but not all. Call it tuition, you tell yourself.'}},
+    eff:{money:-3,trust:+4,mind:+6}, good:2,
+    result:{ja:'調べたら、ほころびだらけだった。深入りする前に手を引けた。',en:'You looked closer — it was full of holes. You pulled out before it was too late.'}},
+   {label:{ja:'はっきり断り、距離を置く',en:'Say no clearly, step away'},
+    eff:{trust:+6,bond:-8,mind:+3}, good:1,
+    result:{ja:'友を疑う後ろめたさは残った。でも後日、彼の話は破綻したと聞いた。',en:'A guilt for doubting a friend lingered. Later you heard his scheme collapsed.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 約束',en:'Chapter II · A Promise'},
+  title:{ja:'判子を、押してほしい',en:'“Just sign here”'},
+  body:{ja:'世話になった人が、青い顔で頼んできた。「連帯保証人になってくれないか」。\n断れば、関係は終わるかもしれない。',
+    en:'Someone who once helped you asks, pale-faced: “Will you co-sign my loan?”\nRefuse, and the relationship might end.'},
+  choices:[
+   {label:{ja:'恩を返すために、引き受ける',en:'Sign it, to repay the kindness'},
+    eff:{money:-22,trust:-6,bond:+5},
+    result:{ja:'数か月後、返済は止まった。借金は、こちらに回ってきた。\n——それでも、あなたの「人を助けたい心」は、まちがいじゃない。',
+      en:'Months later the payments stopped. The debt rolled onto you.\n— Even so, your wish to help someone was never wrong.'}},
+   {label:{ja:'心苦しいが、丁重に断る',en:'Decline — gently but firmly'},
+    check:{stat:'trust',dc:50, eff_fail:{bond:-10,mind:-5},
+      result_fail:{ja:'相手は去っていった。守ったものと、失ったもの。胸はまだ重い。',en:'They walked away. What you kept, and what you lost. Your chest still feels heavy.'}},
+    eff:{money:+2,trust:+4,bond:-3}, good:1,
+    result:{ja:'気まずさは残った。でも誠実に理由を話したら、相手も少し分かってくれた。',en:'Awkwardness remained. But you explained honestly, and they understood a little.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 通告',en:'Chapter II · The Notice'},
+  title:{ja:'席が、なくなる',en:'Your seat is gone'},
+  body:{ja:'朝、いつものデスクに封筒が置かれていた。「事業縮小につき……」。\n悪いことは、何もしていない。なのに、自分が要らない人間に思えた。',
+    en:'One morning an envelope sat on your desk. “Due to downsizing…”\nYou did nothing wrong. Yet you felt like someone the world didn’t need.'},
+  choices:[
+   {label:{ja:'落ち込む前に、次の道を探し始める',en:'Start looking for the next road'},
+    check:{stat:'bond',dc:45, eff_fail:{money:-8,mind:-6},
+      result_fail:{ja:'当てはすぐには見つからない。それでも、動いた足は止めなかった。',en:'Nothing turns up right away. Still, you keep your feet moving.'}},
+    eff:{money:+6,bond:+8,mind:+4}, good:2,
+    result:{ja:'昔の縁が、思わぬ仕事を紹介してくれた。縁は、こんな時に効く。',en:'An old connection introduced unexpected work. Bonds matter most at times like this.'}},
+   {label:{ja:'しばらく、ただ休む',en:'Just rest for a while'},
+    eff:{health:+8,money:-12,mind:+5}, good:1,
+    result:{ja:'蓄えは減った。けれど、すり減った心には休息が要る。立ち止まるのも、選択だ。',en:'Savings shrank. But a worn heart needs rest. Pausing is a choice too.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 体',en:'Chapter II · The Body'},
+  title:{ja:'検査の、結果',en:'The test results'},
+  body:{ja:'最近、疲れが抜けない。受けた検査で、医師の表情が変わった。\n「少し、治療が必要です」。命に別状はない。でも、無敵じゃないと知った。',
+    en:'The tiredness won’t lift. At the checkup, the doctor’s face changed.\n“You’ll need some treatment.” Not life-threatening. But you learned you’re not invincible.'},
+  choices:[
+   {label:{ja:'仕事を減らし、治療に専念する',en:'Cut back work, focus on healing'},
+    eff:{health:+16,money:-12,mind:+4}, good:2,
+    result:{ja:'お金は心配だ。でも体は、お金では買い戻せない。今は、自分を選ぶ。',en:'Money worries you. But health can’t be bought back. For now, you choose yourself.'}},
+   {label:{ja:'無理を押して、働き続ける',en:'Push through and keep working'},
+    check:{stat:'health',dc:65, eff_fail:{health:-18,mind:-8},
+      result_fail:{ja:'体は限界を超えた。倒れて初めて、休むことを許せた。',en:'Your body passed its limit. Only after collapsing could you let yourself rest.'}},
+    eff:{money:+8,health:-6}, good:0,
+    result:{ja:'なんとか乗り切った。でも、いつまでも続けられはしない。',en:'You scraped through. But you can’t keep this up forever.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 別れ',en:'Chapter II · Parting'},
+  title:{ja:'手が、離れていく',en:'A hand slips away'},
+  body:{ja:'長く一緒にいた人が、静かに言った。「もう、つかれたの」。\n責める言葉はなかった。それが、かえってこたえた。',
+    en:'Someone you’d been with a long time said quietly, “I’m just tired now.”\nThere was no blame. Somehow that made it harder.'},
+  choices:[
+   {label:{ja:'引き止めず、ありがとうと見送る',en:'Don’t cling — say thank you, let go'},
+    eff:{mind:+8,bond:-8,trust:+5}, good:2,
+    result:{ja:'涙は出た。でも、共にいた時間まで嘘になるわけじゃない。それは確かにあった。',en:'Tears came. But the time you shared doesn’t turn into a lie. It was real.'}},
+   {label:{ja:'すがって、もう一度だけと願う',en:'Cling, beg for one more chance'},
+    eff:{mind:-10,bond:-5},
+    result:{ja:'引き止めても、心は戻らなかった。終わりを認めるのは、いちばん難しい。\n——でも、終わりは、次の何かの始まりでもある。',
+      en:'Even held back, the heart didn’t return. Accepting an ending is the hardest thing.\n— But an ending is also the start of something next.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 静けさ',en:'Chapter II · The Silence'},
+  title:{ja:'誰も、いない部屋',en:'A room with no one in it'},
+  body:{ja:'気づけば、連絡を取る相手がいなくなっていた。\n部屋は静かで、自分の足音だけが響く。「自分なんて」と、つい思ってしまう夜。',
+    en:'Somehow, there’s no one left to message.\nThe room is silent; only your own footsteps echo. “What’s the point of me,” the night whispers.'},
+  choices:[
+   {label:{ja:'勇気を出して、誰かに一言だけ送る',en:'Find the courage to message someone'},
+    eff:{bond:+12,mind:+10}, good:3,
+    result:{ja:'「久しぶり」。たった四文字。返事はすぐ来た。「待ってたよ」。\n——一人だと思っていた夜にも、灯はあった。',
+      en:'“Hey, it’s been a while.” Four small words. The reply came fast: “I’ve been waiting.”\n— Even on the night you felt alone, there was a light.'}},
+   {label:{ja:'外に出て、ただ夜の街を歩く',en:'Go out and just walk the night streets'},
+    eff:{health:+5,mind:+8,bond:+2}, good:1,
+    result:{ja:'答えは出ない。でも、歩いていると朝が近づく。どんな夜にも、朝は来る。',en:'No answers come. But as you walk, morning draws near. Every night has its morning.'}},
+   {label:{ja:'布団をかぶって、今日はもう眠る',en:'Pull up the covers and just sleep'},
+    eff:{health:+8,mind:-2},
+    result:{ja:'今日は、それでいい。生きのびただけで、十分な日もある。',en:'Today, that’s enough. Some days, simply surviving is the whole victory.'}},
+  ]
+ },
+];
+
+const ACT3 = [ // rebirth / resolution
+ {
+  tag:{ja:'第三章 ・ 立ち上がる',en:'Chapter III · Rising'},
+  title:{ja:'もう一度、はじめる',en:'Beginning again'},
+  body:{ja:'失ったものは、たしかにある。手のひらは、前より少し空いている。\nでも、その空いた手で、何かをつかむこともできる。',
+    en:'You’ve lost real things. Your hands are emptier than before.\nBut with those emptied hands, you can also grasp something new.'},
+  choices:[
+   {label:{ja:'小さくてもいい、自分の仕事を始める',en:'Start your own small thing'},
+    check:{stat:'mind',dc:50, eff_fail:{money:-6,mind:+6},
+      result_fail:{ja:'最初はうまくいかない。でも、転んだ方向にも道はある。',en:'It stumbles at first. But there’s a road even in the direction you fell.'}},
+    eff:{money:+14,mind:+10,trust:+6}, good:2,
+    result:{ja:'ささやかな一歩。でも、自分で決めて踏み出した一歩は、重みがちがう。',en:'A modest step. But a step you chose yourself carries a different weight.'}},
+   {label:{ja:'安定を選び、もう一度どこかに勤める',en:'Choose stability — work somewhere steady'},
+    eff:{money:+12,health:+6,bond:+4}, good:1,
+    result:{ja:'派手さはない。でも、毎月の安心が、すり減った心をゆっくり満たしていく。',en:'Nothing flashy. But monthly stability slowly refills a worn-down heart.'}},
+  ]
+ },
+ {
+  tag:{ja:'第三章 ・ 差し出す手',en:'Chapter III · An Offered Hand'},
+  title:{ja:'同じ夜を、見ている人',en:'Someone seeing the same night'},
+  body:{ja:'うずくまる見知らぬ誰かが、目に入った。かつての自分に、よく似ている。\n声をかけるのは、勇気がいる。',
+    en:'You notice a stranger crouched down. They look so much like you used to.\nReaching out takes courage.'},
+  choices:[
+   {label:{ja:'「大丈夫?」と、となりに座る',en:'Sit beside them: “Are you okay?”'},
+    eff:{bond:+12,trust:+12,mind:+8}, good:3,
+    result:{ja:'特別な言葉はいらなかった。ただ、となりにいた。\n——かつて誰かにしてもらったことを、今度は自分が返す番だ。',
+      en:'No special words were needed. You simply stayed beside them.\n— What someone once did for you, now it’s your turn to pass on.'}},
+   {label:{ja:'今の自分には余裕がない。通り過ぎる',en:'You’ve nothing to spare — walk past'},
+    eff:{mind:-4,bond:-2},
+    result:{ja:'仕方ない。でも、後ろ姿が頭から離れない。次は、声をかけられるだろうか。',en:'It can’t be helped. But their figure stays in your mind. Next time, maybe you’ll speak.'}},
+  ]
+ },
+ {
+  tag:{ja:'第三章 ・ 再会',en:'Chapter III · Reunion'},
+  title:{ja:'古い名前の通知',en:'An old name lights up'},
+  body:{ja:'スマホが鳴る。ずっと前に、すれ違ったまま離れた人の名前。\n「元気にしてる? あの時は、ごめん」。',
+    en:'Your phone buzzes. A name from long ago — someone you drifted from.\n“Are you well? I’m sorry about back then.”'},
+  choices:[
+   {label:{ja:'過去を許し、もう一度つながる',en:'Forgive the past, reconnect'},
+    eff:{bond:+12,mind:+10}, good:2,
+    result:{ja:'わだかまりは、会って話したら溶けていった。許すのは、自分のためでもある。',en:'The knot dissolved once you met and talked. Forgiving is also for your own sake.'}},
+   {label:{ja:'もう過ぎたこと。静かに既読にする',en:'It’s past now — quietly leave it read'},
+    eff:{mind:+4,bond:-4},
+    result:{ja:'戻らない関係もある。それでいい。前を向く理由が、また一つ増えた。',en:'Some bonds don’t return. That’s okay. One more reason to face forward.'}},
+  ]
+ },
+ {
+  tag:{ja:'第三章 ・ 街',en:'Chapter III · The City'},
+  title:{ja:'灯のともる街',en:'A city of small lights'},
+  body:{ja:'噂に聞いた街にたどり着いた。ビルの壁には、見知らぬ人々の言葉が刻まれている。\n「私も、ここで立ち止まった」「あなたは一人じゃない」。',
+    en:'You reach a city you’d only heard of. Its walls are carved with strangers’ words.\n“I paused here too.” “You are not alone.”'},
+  choices:[
+   {label:{ja:'自分の言葉を、壁に刻む',en:'Carve your own words into the wall'},
+    eff:{bond:+10,mind:+12,trust:+6}, good:3,
+    result:{ja:'うまく書けなくてもいい。あなたのその一行が、いつか誰かの夜を照らす。',en:'It needn’t be eloquent. Your single line may one day light someone else’s night.'}},
+   {label:{ja:'まずは、誰かの言葉をそっと読む',en:'For now, quietly read others’ words'},
+    eff:{mind:+8,bond:+4}, good:1,
+    result:{ja:'同じ痛みを抜けた人が、たしかにいる。それを知るだけで、少し息ができた。',en:'People really did pass through the same pain. Just knowing that, you could breathe a little.'}},
+  ]
+ },
+];
+
+/* =========================================================================
+   ENDINGS
+   ========================================================================= */
+const ENDINGS = {
+  redeemer:{emoji:'🔥',bonus:8,
+    name:{ja:'灯をともす者',en:'The One Who Lights the Way'},
+    text:{ja:'あなたは自分の傷で、他の誰かの夜を照らした。\nくぐり抜けた苦しみは、いつしか誰かを救う光に変わっていた。',
+      en:'With your own wounds, you lit another’s night.\nThe pain you survived had quietly become a light that saves others.'},
+    carve:{ja:'あなたの痛みは、いつか誰かの道しるべになる。',en:'Your pain can one day become someone’s guiding light.'}},
+  reborn:{emoji:'🌅',bonus:8,
+    name:{ja:'再生',en:'Reborn'},
+    text:{ja:'すべてを失いかけた。それでも、心と縁だけは手放さなかった。\nあなたはもう一度、人を信じ、笑える場所に立っている。',
+      en:'You nearly lost everything. Yet you never let go of your heart, or your bonds.\nYou stand again in a place where you can trust, and laugh.'},
+    carve:{ja:'立ち上がれたのは、あなたが諦めなかったから。',en:'You rose again — because you never gave up.'}},
+  quiet_peace:{emoji:'🌙',bonus:2,
+    name:{ja:'静かな幸福',en:'A Quiet Peace'},
+    text:{ja:'安定を手に入れた。暮らしは穏やかで、不自由はない。\nときどき、隣に誰かがいたらと思う。それでも、今日は悪くない。',
+      en:'You found stability. Life is calm, lacking nothing.\nSometimes you wish someone sat beside you. Still — today isn’t bad.'},
+    carve:{ja:'穏やかな日々も、誰かと分け合えば光になる。',en:'Even calm days become light when shared.'}},
+  survivor:{emoji:'🌱',bonus:5,
+    name:{ja:'生き抜いた',en:'Survivor'},
+    text:{ja:'傷だらけだ。うまくいったとは、とても言えない。\nそれでも——あなたは今日も、ここに立っている。それは、すごいことだ。',
+      en:'You’re covered in scars. You’d never call it a success.\nAnd yet — you’re still standing here today. That, in itself, is remarkable.'},
+    carve:{ja:'生きのびた。それだけで、もう十分に強い。',en:'You survived. That alone is strength enough.'}},
+  lonely:{emoji:'🕯️',bonus:2,
+    name:{ja:'長い夜のはてに',en:'After the Long Night'},
+    text:{ja:'多くを失い、心は冷えきっていた。\nでも、たどり着いた街の壁に、誰かの言葉を見つけた。「あなたは一人じゃない」。\nその一行が、最後にそっと灯をくれた。',
+      en:'You lost much, and your heart went cold.\nBut on a city wall you found a stranger’s words: “You are not alone.”\nThat single line, at the end, gave you a small light.'},
+    carve:{ja:'どんな夜にも、朝は必ずやってくる。',en:'However long the night, morning always comes.'}},
+};
+
+function decideEnding(){
+  const {money,trust,health,mind,bond} = S;
+  if(trust>=70 && quality>=6) return 'redeemer';
+  if(mind>=58 && bond>=52) return 'reborn';
+  if(mind<=22 || bond<=14) return 'lonely';
+  if(money>=58 && health>=52) return 'quiet_peace';
+  return 'survivor';
+}
+
+/* coin formula — driven by how you lived, not luck. cap 30. */
+function calcCoins(endingId){
+  let c = 5;
+  c += Math.floor((S.mind + S.bond) / 16);          // heart + bonds (≈ up to 12)
+  c += Math.floor(Math.max(0, S.money - 30) / 24);   // some self-reliance
+  c += Math.min(8, quality);                          // good choices (0..8)
+  c += ENDINGS[endingId].bonus;                       // ending bonus
+  return Math.max(5, Math.min(30, Math.round(c)));
+}
+
+/* =========================================================================
+   FLOW
+   ========================================================================= */
+function buildRun(){
+  S = {money:30, trust:50, health:70, mind:60, bond:40};
+  quality = 0;
+  const a1 = shuffle(ACT1).slice(0,2);
+  const a2 = shuffle(ACT2).slice(0, 2 + rnd(1)); // 2 hardships (sometimes more variety, kept to 2)
+  const a3 = shuffle(ACT3).slice(0,2);
+  picks = [...a1, ...a2.slice(0,2), ...a3];
+  totalChapters = picks.length;
+  chapterIndex = 0;
+}
+
+const scene = () => document.getElementById('scene');
+const statsEl = () => document.getElementById('stats');
+
+function renderStats(changed){
+  const el = statsEl(); el.setAttribute('aria-hidden','false');
+  el.innerHTML = STAT_KEYS.map(k=>{
+    const m = STAT_META[k];
+    const fl = (changed && changed[k]) ? ' flash':'';
+    return `<div class="stat ${m.cls}${fl}">
+      <div class="ico">${m.ico}</div>
+      <div class="lbl">${T(UI[m.ui])}</div>
+      <div class="bar"><i style="width:${S[k]}%"></i></div>
+      <div class="num">${S[k]}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderProgress(){
+  const p = document.getElementById('progress');
+  let h='';
+  for(let i=0;i<totalChapters;i++){
+    const cls = i<chapterIndex?'done':(i===chapterIndex?'now':'');
+    h+=`<i class="${cls}"></i>`;
+  }
+  p.innerHTML = h;
+}
+
+/* ---- title screen ---- */
+function showTitle(){
+  statsEl().setAttribute('aria-hidden','true'); statsEl().innerHTML='';
+  document.getElementById('progress').innerHTML='';
+  const playedNote = daily.playedToday
+    ? `<p class="muted" style="margin-top:14px;">${T(UI.already_today)}</p>` : '';
+  scene().className='center fade';
+  scene().innerHTML = `
+    <div class="big-emoji">🕯️</div>
+    <div class="ending-name" style="margin-bottom:14px;">${T(UI.start_title)}</div>
+    <p class="scene-body">${T(UI.start_lead)}</p>
+    <div class="actions">
+      <button class="btn-primary" onclick="startRun()">${T(UI.start_btn)}</button>
+      <p class="muted">${T(UI.start_note)}</p>
+      ${playedNote}
+    </div>`;
+}
+
+function startRun(){
+  buildRun();
+  renderStats();
+  renderProgress();
+  showChapter();
+}
+
+/* ---- a chapter ---- */
+function showChapter(){
+  renderProgress();
+  const ev = picks[chapterIndex];
+  scene().className='fade';
+  scene().scrollTop = 0;
+  scene().innerHTML = `
+    <div class="chapter-tag">${T(ev.tag)}</div>
+    <h2 class="scene-title">${T(ev.title)}</h2>
+    <p class="scene-body">${T(ev.body)}</p>
+    <div class="choices">
+      ${ev.choices.map((c,i)=>`
+        <button class="choice" onclick="choose(${i})">
+          ${T(c.label)}
+          ${c.hint?`<span class="hint">${T(c.hint)}</span>`:''}
+        </button>`).join('')}
+    </div>`;
+}
+
+function applyEff(eff){
+  const changed={};
+  for(const k in eff){ const before=S[k]; S[k]=clamp(S[k]+eff[k]); if(S[k]!==before) changed[k]=eff[k]; }
+  return changed;
+}
+
+function choose(i){
+  const ev = picks[chapterIndex];
+  const c = ev.choices[i];
+  let eff = c.eff, resultText = c.result, ok = true;
+
+  if(c.check){
+    const roll = S[c.check.stat] + rnd(21); // skill + luck
+    ok = roll >= c.check.dc;
+    if(!ok){ eff = c.check.eff_fail; resultText = c.check.result_fail; }
+  }
+  const changed = applyEff(eff);
+  if(c.good && ok) quality += c.good;        // good choices reward only when they land
+  else if(c.good && !ok) quality += Math.max(0, c.good-1);
+
+  renderStats(changed);
+  showResult(ev, resultText, eff);
+}
+
+function showResult(ev, resultText, eff){
+  const deltas = Object.keys(eff).map(k=>{
+    const v = eff[k]; if(!v) return '';
+    const m = STAT_META[k];
+    return `<span class="delta ${v>0?'up':'down'}">${m.ico} ${v>0?'+':''}${v}</span>`;
+  }).join('');
+  scene().className='fade';
+  scene().innerHTML = `
+    <div class="chapter-tag">${T(ev.tag)}</div>
+    <h2 class="scene-title">${T(ev.title)}</h2>
+    <p class="scene-body result">${resultText}</p>
+    <div class="deltas">${deltas}</div>
+    <div class="choices">
+      <button class="btn-primary" onclick="advance()">${T(UI.next)} ▶</button>
+    </div>`;
+}
+
+function advance(){
+  chapterIndex++;
+  if(chapterIndex >= totalChapters) showEnding();
+  else showChapter();
+}
+
+/* ---- ending + reward ---- */
+let lastResult=null;
+function showEnding(){
+  renderProgress();
+  const id = decideEnding();
+  const coins = calcCoins(id);
+  const firstClaimToday = !daily.playedToday;
+  lastResult = {ending:id, coins, firstClaim:firstClaimToday};
+
+  if(firstClaimToday){
+    daily.playedToday = true; saveDaily();
+    sendResult(coins, id);   // notify parent (IGNIS) — server decides real grant & cap
+  }
+  renderEnding();
+}
+
+function renderEnding(){
+  const {ending:id, coins, firstClaim:firstClaimToday} = lastResult;
+  const e = ENDINGS[id];
+  scene().className='center fade';
+  scene().scrollTop=0;
+  scene().innerHTML = `
+    <div class="big-emoji">${e.emoji}</div>
+    <div class="chapter-tag">${lang==='ja'?'結末':'Ending'}</div>
+    <div class="ending-name">${T(e.name)}</div>
+    <p class="scene-body" style="margin-top:8px;">${T(e.text)}</p>
+
+    <div class="carve">
+      <small>${T(UI.carve_label)}</small>
+      “${T(e.carve)}”
+    </div>
+
+    <div class="coin-box">
+      <div class="muted">${T(UI.reward_title)}</div>
+      <div class="amt">+${firstClaimToday?coins:0} <span style="font-size:14px;color:var(--sub)">${T(UI.coins_unit)}</span></div>
+      <div class="cap">${T(UI.cap_note)}</div>
+    </div>
+    <div class="grant-line" id="grant-line"></div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="requestClose()">🏙️ ${T(UI.back_city)}</button>
+      <button class="btn-ghost" onclick="restart()">↻ ${T(UI.again)}</button>
+    </div>`;
+
+  const gl = document.getElementById('grant-line');
+  if(firstClaimToday && !grantAnswered){
+    gl.className='grant-line grant-no';
+    gl.textContent = T(UI.granting);
+    // if running standalone (no parent integration), show preview note after a moment
+    if(grantTimeout) clearTimeout(grantTimeout);
+    grantTimeout = setTimeout(()=>{
+      if(!grantAnswered){ gl.className='grant-line grant-no'; gl.textContent = T(UI.offline); }
+    }, 1500);
+  } else if(firstClaimToday && grantAnswered && lastGrant){
+    gl.className = lastGrant.ok ? 'grant-line grant-ok' : 'grant-line grant-no';
+    gl.textContent = lastGrant.text();
+  } else {
+    gl.className='grant-line grant-no';
+    gl.textContent = T(UI.denied);
+  }
+}
+
+function restart(){ grantAnswered=false; lastGrant=null; if(grantTimeout) clearTimeout(grantTimeout); buildRun(); renderStats(); showChapter(); }
+
+/* =========================================================================
+   PARENT BRIDGE (postMessage)
+   ========================================================================= */
+let grantAnswered=false, grantTimeout=null, lastGrant=null;
+function sendResult(coins, ending){
+  try{
+    window.parent && window.parent!==window &&
+      window.parent.postMessage({type:'IGNIS_LIFEGAME_RESULT', coins, ending, v:1}, '*');
+  }catch(e){}
+}
+function requestClose(){
+  try{
+    window.parent && window.parent!==window &&
+      window.parent.postMessage({type:'IGNIS_LIFEGAME_CLOSE', v:1}, '*');
+  }catch(e){}
+}
+window.addEventListener('message', (e)=>{
+  const d = e.data; if(!d || typeof d!=='object') return;
+  const gl = document.getElementById('grant-line');
+  if(d.type==='IGNIS_LIFEGAME_GRANTED'){
+    grantAnswered=true; if(grantTimeout) clearTimeout(grantTimeout);
+    const g=d.granted, t=d.total, capped=d.capped;
+    lastGrant={ok:true, text:()=> (capped?UI.granted_cap:UI.granted)[lang](g,t)};
+    if(gl){ gl.className='grant-line grant-ok'; gl.textContent=lastGrant.text(); }
+  } else if(d.type==='IGNIS_LIFEGAME_DENIED'){
+    grantAnswered=true; if(grantTimeout) clearTimeout(grantTimeout);
+    lastGrant={ok:false, text:()=>T(UI.denied)};
+    if(gl){ gl.className='grant-line grant-no'; gl.textContent=lastGrant.text(); }
+  }
+});
+
+/* =========================================================================
+   DAILY FLAG (local — display only; server is the real authority)
+   ========================================================================= */
+function todayStr(){ return new Date().toISOString().slice(0,10); } // UTC date, matches RPC
+function loadDaily(){
+  let raw=null; try{ raw=JSON.parse(localStorage.getItem('ignis_lifegame_daily')||'null'); }catch(e){}
+  daily = (raw && raw.date===todayStr()) ? raw : {date:todayStr(), playedToday:false};
+}
+function saveDaily(){ try{ localStorage.setItem('ignis_lifegame_daily', JSON.stringify(daily)); }catch(e){} }
+
+/* =========================================================================
+   LANG TOGGLE
+   ========================================================================= */
+function applyLangChrome(){
+  document.documentElement.lang = lang;
+  document.getElementById('lang-label').textContent = lang==='ja'?'EN':'JP';
+  document.getElementById('logo-sub').textContent = lang==='ja'?'EMBERS OF A LIFE':'人生の灯';
+}
+function toggleLang(){
+  lang = (lang==='ja')?'en':'ja';
+  applyLangChrome();
+  // re-render current view
+  if(!picks){ showTitle(); }
+  else { renderStats(); rerenderCurrent(); }
+}
+function rerenderCurrent(){
+  // best-effort: keep the earned ending (don't re-decide/re-send); else re-show chapter choices.
+  const onEnding = !!document.querySelector('.coin-box');
+  if(onEnding && lastResult){ renderEnding(); }
+  else { showChapter(); }
+}
+
+/* =========================================================================
+   BOOT
+   ========================================================================= */
+(function init(){
+  applyLangChrome();
+  loadDaily();
+  showTitle();
+})();
+</script>
+</body>
+</html>

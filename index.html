@@ -706,7 +706,11 @@
     #candle-btn:disabled { opacity:0.5;cursor:not-allowed; }
     #candle-count { font-size:14px;font-weight:800;color:#ffb84d; }
     #building-modal-owner .owner-name { color:#1d9bf0;font-weight:800; }
-    #minimap-wrap { position:fixed;bottom:90px;left:16px;z-index:10;pointer-events:all; }
+    #minimap-wrap { position:fixed;bottom:90px;left:16px;z-index:10;pointer-events:all;display:flex;flex-direction:column;align-items:stretch;gap:7px; }
+    #minimap-inner { position:relative; }
+    /* コインを稼ぐボタン＝ミニマップの真上（被らない） */
+    #coingame-btn { width:100%;padding:8px 6px;border:none;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#3a2a00;font-weight:800;font-size:clamp(9px,2.3vw,12px);white-space:nowrap;cursor:pointer;box-shadow:0 4px 16px rgba(245,158,11,0.4); }
+    #coingame-btn:hover { filter:brightness(1.06); }
     #minimap-canvas { width:140px;height:140px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(6,6,16,0.9);box-shadow:0 4px 20px rgba(0,0,0,0.5);cursor:pointer;display:block; }
     #minimap-label { font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:0.12em;margin-top:4px;text-transform:uppercase; }
     /* ×ボタン：ミニマップの右上の角（内側）に重ねる */
@@ -1441,7 +1445,6 @@
       </div>
       <button id="xname-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleShowXName()" title="ビル詳細・ランキングでのXユーザー名の表示/非表示">🪪 X名: 表示</button>
       <button id="logout-btn" class="rail-btn li-only" type="button" onclick="handleLogout()">↩ ログアウト</button>
-      <button id="coingame-btn" class="rail-btn li-only" type="button" onclick="openCoinGame()" title="コインを稼ぐ" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#3a2a00;font-weight:800;">💰 コインを稼ぐ</button>
     </div>
     <div id="ad-slot-wrap">
       <div id="ad-slot" aria-label="広告枠"></div>
@@ -1480,9 +1483,12 @@
     <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
+    <button id="coingame-btn" class="li-only" type="button" onclick="openCoinGame()" title="コインを稼ぐ">💰 <span id="coingame-label">コインを稼ぐ</span></button>
+    <div id="minimap-inner">
     <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button" aria-label="Close minimap">×</button>
     <button id="minimap-expand" onclick="openBigMap()" title="地図を大きく表示" type="button" aria-label="Expand map">⤢</button>
     <canvas id="minimap-canvas" width="280" height="280" onclick="minimapClick(event)"></canvas>
+    </div>
     <div id="minimap-label">MINIMAP</div>
   </div>
   <div id="motto-wall-labels" aria-hidden="true"></div>
@@ -1883,6 +1889,10 @@
     </div>
     <iframe id="rules-frame" title="遊び方・ルール" loading="lazy"></iframe>
   </div>
+  <div id="lifegame-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(7,7,13,0.8);backdrop-filter:blur(3px);display:none;">
+    <button type="button" onclick="closeCoinGame()" title="閉じる" style="position:absolute;top:10px;right:12px;z-index:2;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:7px 14px;border-radius:20px;font-weight:700;cursor:pointer;">✕</button>
+    <iframe id="lifegame-frame" title="人生の灯" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#07070d;"></iframe>
+  </div>
   <div id="toast"></div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <audio id="ignis-retro-bgm" loop preload="auto" playsinline style="display:none"></audio>
@@ -1959,7 +1969,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-21-v167';
+    const IGNIS_BUILD='2026-06-21-v168';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3616,7 +3626,7 @@
       if(xRewardsClose)xRewardsClose.textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
       document.getElementById('logout-btn').textContent=isJa?'↩ ログアウト':'↩ Logout';
-      {const cg=document.getElementById('coingame-btn');if(cg)cg.textContent=isJa?'💰 コインを稼ぐ':'💰 Earn coins';}
+      {const cg=document.getElementById('coingame-label');if(cg)cg.textContent=isJa?'コインを稼ぐ':'Earn coins';}
       updateXNameToggleBtn();
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
@@ -3888,11 +3898,39 @@
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
     }
-    // コイン稼ぎゲーム（人生ゲーム）。現在制作中のため近日公開の案内。完成後はオーバーレイで開く。
+    // コイン稼ぎゲーム（人生ゲーム lifegame.html）をゲーム内オーバーレイ（iframe）で開く。
+    // lifegame.html は鍵を持たず、結果は postMessage で本体へ → claim_lifegame_reward で付与。
     function openCoinGame(){
       try{IgnisAudio.playClick();}catch(e){}
-      showToast(currentLang==='ja'?'💰 コインを稼ぐゲームは現在制作中です（近日公開）':'💰 The coin-earning game is coming soon');
+      const f=document.getElementById('lifegame-frame');
+      if(f)f.src='lifegame.html'+(currentLang==='en'?'?lang=en':'')+'#'+Date.now();
+      const ov=document.getElementById('lifegame-overlay');if(ov)ov.style.display='block';
+      if(typeof setScenePaused==='function')setScenePaused(true); // 表示中は3D停止＝軽い
     }
+    function closeCoinGame(){
+      const ov=document.getElementById('lifegame-overlay');if(ov)ov.style.display='none';
+      const f=document.getElementById('lifegame-frame');if(f)f.src='about:blank';
+      if(typeof setScenePaused==='function')setScenePaused(false);
+    }
+    // lifegame.html からの結果を受信してコインを付与
+    window.addEventListener('message', async (e) => {
+      if (e.origin !== location.origin) return;
+      const d=e.data;
+      if(!d||typeof d!=='object'||d.v!==1)return;
+      const frame=document.getElementById('lifegame-frame');
+      const post=(msg)=>{ if(frame&&frame.contentWindow)frame.contentWindow.postMessage(msg,location.origin); };
+      if(d.type==='IGNIS_LIFEGAME_CLOSE'){ closeCoinGame(); return; }
+      if(d.type==='IGNIS_LIFEGAME_RESULT'){
+        if(!currentUser){ post({type:'IGNIS_LIFEGAME_DENIED',reason:'not_authenticated',v:1}); return; }
+        const coins=Math.max(0,Math.min(30,parseInt(d.coins,10)||0));
+        try{
+          const{data,error}=await db.rpc('claim_lifegame_reward',{p_coins:coins,p_ending:String(d.ending||'')});
+          if(error||!data||!data.ok){ post({type:'IGNIS_LIFEGAME_DENIED',reason:(data&&data.reason)||'error',v:1}); return; }
+          const cc=document.getElementById('coin-count'); if(cc)cc.textContent=data.total;
+          post({type:'IGNIS_LIFEGAME_GRANTED',granted:data.granted,total:data.total,capped:data.capped,v:1});
+        }catch(_){ post({type:'IGNIS_LIFEGAME_DENIED',reason:'error',v:1}); }
+      }
+    });
     // 遊び方・ルール説明ページをゲーム内オーバーレイ（iframe）で開く。
     // 開いている間は3Dを停止＝軽い。閉じたらiframeを解放（メモリ節約）。
     function openRulesPage(){
@@ -7170,7 +7208,9 @@
         const{data:prem}=await db.from('users').select('id').eq('is_premium',true);
         if(!prem||!prem.length)return;
         const ids=new Set(prem.map(u=>u.id));
-        const candidates=buildings.filter(b=>b.ownerId&&ids.has(b.ownerId)&&b.mesh&&!b.mesh.isDisposed());
+        // 創設者はプレミア扱いだがホログラム投影サービスは対象外（本人の希望）
+        const FOUNDER_ID='afc818cd-d2fa-4c1c-8460-9dbce9e60e37';
+        const candidates=buildings.filter(b=>b.ownerId&&ids.has(b.ownerId)&&b.ownerId!==FOUNDER_ID&&b.mesh&&!b.mesh.isDisposed());
         if(!candidates.length)return;
         // 日替わり（UTC日付シード）で1棟選ぶ＝全プレイヤーが同じ投影を見る
         const t=new Date();

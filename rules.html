@@ -15,7 +15,8 @@
   .rules-cols h2{ break-after:avoid; -webkit-column-break-after:avoid; margin-top:0; }
   .rules-cols h2:not(:first-child){ margin-top:20px; }
   .rules-cols p, .rules-cols ul, .rules-cols ol, .rules-cols table, .rules-cols .figure, .rules-cols .note{ break-inside:avoid; -webkit-column-break-inside:avoid; }
-  @media (max-width:760px){ .rules-cols{ column-count:1; } }
+  /* 縦画面の狭い端末だけ1カラム。横画面（スマホ横含む）は常に2カラム */
+  @media (orientation:portrait) and (max-width:820px){ .rules-cols{ column-count:1; } }
   .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
   .brand{ font-size:20px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .lang-btn{ display:inline-flex; align-items:center; gap:6px; background:rgba(20,18,30,0.85); border:1px solid rgba(255,138,61,0.5); color:#ffd0a0; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:800; cursor:pointer; }

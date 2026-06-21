@@ -9,7 +9,13 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{ font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",system-ui,sans-serif; background:#07070d; color:var(--fg); line-height:1.85; padding:24px 16px 80px; }
   #embers{ position:fixed; inset:0; z-index:0; pointer-events:none; }
-  .wrap{ position:relative; z-index:1; max-width:760px; margin:0 auto; }
+  .wrap{ position:relative; z-index:1; max-width:1040px; margin:0 auto; }
+  /* 本文を左右2カラムに分割（狭い画面では1カラム） */
+  .rules-cols{ column-count:2; column-gap:34px; }
+  .rules-cols h2{ break-after:avoid; -webkit-column-break-after:avoid; margin-top:0; }
+  .rules-cols h2:not(:first-child){ margin-top:20px; }
+  .rules-cols p, .rules-cols ul, .rules-cols ol, .rules-cols table, .rules-cols .figure, .rules-cols .note{ break-inside:avoid; -webkit-column-break-inside:avoid; }
+  @media (max-width:760px){ .rules-cols{ column-count:1; } }
   .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
   .brand{ font-size:20px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .lang-btn{ display:inline-flex; align-items:center; gap:6px; background:rgba(20,18,30,0.85); border:1px solid rgba(255,138,61,0.5); color:#ffd0a0; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:800; cursor:pointer; }
@@ -62,6 +68,7 @@
     <a class="legal" href="legal.html">📄 <span data-lang="ja">利用規約・特商法</span><span data-lang="en">Terms / Legal</span></a>
   </div>
 
+  <div class="rules-cols">
   <!-- 目的 -->
   <h2><span class="em">🎯</span><span data-lang="ja">このゲームの目的</span><span data-lang="en">What you do</span></h2>
   <div data-lang="ja" class="block">
@@ -187,6 +194,7 @@
   <p class="note"><span data-lang="ja">サブスクは自動更新です。解約はゲーム内「💎サブスク」→「プラン変更・解約」からいつでも手続きできます。決済はStripeの安全なページで行われ、カード情報は当方では保持しません。</span><span data-lang="en">Subscriptions auto-renew. Cancel anytime from "💎 Subscribe" → "Change plan / cancel". Payments are handled securely by Stripe; we do not store card details.</span></p>
 
 
+  </div>
   <div class="foot">
     <a href="legal.html#terms"><span data-lang="ja">利用規約</span><span data-lang="en">Terms</span></a> ・
     <a href="legal.html#privacy"><span data-lang="ja">プライバシーポリシー</span><span data-lang="en">Privacy</span></a> ・

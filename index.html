@@ -1057,8 +1057,11 @@
     .bm-past-text { font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;white-space:pre-wrap;margin-top:4px; }
     .bm-past-locked { margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(96,165,250,0.08);border:1px dashed rgba(96,165,250,0.35);font-size:11px;color:rgba(147,197,253,0.85);line-height:1.5; }
     /* スクショ禁止の文言枠：点滅して目立たせる */
-    .bm-past-notice { margin:2px 0 10px;padding:9px 12px;border-radius:8px;background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.55);font-size:11px;font-weight:700;color:#fecaca;line-height:1.55;animation:pastNoticeBlink 1.1s ease-in-out infinite; }
-    @keyframes pastNoticeBlink { 0%,100%{opacity:1;box-shadow:0 0 0 rgba(239,68,68,0);} 50%{opacity:0.55;box-shadow:0 0 14px rgba(239,68,68,0.65);} }
+    .bm-past-notice { margin:2px 0 10px;padding:9px 12px;border-radius:8px;background:rgba(239,68,68,0.16);border:1px solid rgba(239,68,68,0.7);font-size:11px;font-weight:800;color:#fecaca;line-height:1.55;animation:pastNoticeGlow 1.4s ease-in-out infinite; }
+    @keyframes pastNoticeGlow {
+      0%,100%{ box-shadow:0 0 6px rgba(239,68,68,0.45), inset 0 0 4px rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.55); text-shadow:0 0 4px rgba(239,68,68,0.4); }
+      50%{ box-shadow:0 0 22px rgba(239,68,68,0.95), inset 0 0 12px rgba(239,68,68,0.45); border-color:rgba(255,120,120,1); text-shadow:0 0 9px rgba(255,140,140,0.95); }
+    }
     /* スマホ・タブレット */
     /* 狭い画面（縦スマホ）に加え、短い横画面（横向きスマホ）にもモバイル用レイアウトを適用 */
     @media (max-width: 768px), (orientation: landscape) and (max-height: 500px) {
@@ -1438,6 +1441,7 @@
       </div>
       <button id="xname-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleShowXName()" title="ビル詳細・ランキングでのXユーザー名の表示/非表示">🪪 X名: 表示</button>
       <button id="logout-btn" class="rail-btn li-only" type="button" onclick="handleLogout()">↩ ログアウト</button>
+      <button id="coingame-btn" class="rail-btn li-only" type="button" onclick="openCoinGame()" title="コインを稼ぐ" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#3a2a00;font-weight:800;">💰 コインを稼ぐ</button>
     </div>
     <div id="ad-slot-wrap">
       <div id="ad-slot" aria-label="広告枠"></div>
@@ -1955,7 +1959,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-21-v166';
+    const IGNIS_BUILD='2026-06-21-v167';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3612,6 +3616,7 @@
       if(xRewardsClose)xRewardsClose.textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
       document.getElementById('logout-btn').textContent=isJa?'↩ ログアウト':'↩ Logout';
+      {const cg=document.getElementById('coingame-btn');if(cg)cg.textContent=isJa?'💰 コインを稼ぐ':'💰 Earn coins';}
       updateXNameToggleBtn();
       const inviteBtn=document.getElementById('invite-btn');if(inviteBtn)inviteBtn.textContent=isJa?'🎮 ゲーム招待':'🎮 Invite Players';
       const helpBtn=document.getElementById('help-btn');if(helpBtn)helpBtn.textContent=isJa?'❓ ヘルプ / お問い合わせ':'❓ Help / Contact';
@@ -3882,6 +3887,11 @@
           latestCreatorPost=(d2&&d2[0])||null;
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
+    }
+    // コイン稼ぎゲーム（人生ゲーム）。現在制作中のため近日公開の案内。完成後はオーバーレイで開く。
+    function openCoinGame(){
+      try{IgnisAudio.playClick();}catch(e){}
+      showToast(currentLang==='ja'?'💰 コインを稼ぐゲームは現在制作中です（近日公開）':'💰 The coin-earning game is coming soon');
     }
     // 遊び方・ルール説明ページをゲーム内オーバーレイ（iframe）で開く。
     // 開いている間は3Dを停止＝軽い。閉じたらiframeを解放（メモリ節約）。
@@ -5748,9 +5758,10 @@
     const MOTTO_CHAR_W=3.2;     // 1文字の大きさ（世界座標）＝プレミア会員の幅
     // 所有者の会員ランクで格言の文字幅を変える：プレミア=3.2 / サブスク=2.56 / 無課金=1.98
     function mottoCharWidthForOwner(ownerId){
-      if(ownerId&&premiumIds.has(ownerId))return MOTTO_CHAR_W;        // プレミア会員（虹ビル相当の幅）
-      if(ownerId&&subscriberIds.has(ownerId))return MOTTO_CHAR_W*0.8; // サブスク会員（中間）
-      return MOTTO_CHAR_W*0.62;                                       // 無課金（標準・小）
+      const base=MOTTO_CHAR_W*0.62;                                   // 無課金（基準の幅）
+      if(ownerId&&premiumIds.has(ownerId))return base*2;              // プレミア会員＝無課金の2倍
+      if(ownerId&&subscriberIds.has(ownerId))return base*1.5;         // サブスク会員＝無課金の1.5倍
+      return base;                                                    // 無課金
     }
     const MOTTO_LINE_GAP=1.05;  // 文字間（縦方向）係数
     const MOTTO_CPL=1;          // 1行あたりの文字数（=列数）。1で縦一列。
@@ -6635,7 +6646,8 @@
         const{data,error}=await db.rpc('get_daily_treasure');
         if(error||!data||!data.ok)return;
         disposeTreasureMesh();
-        dailyTreasure={mesh:null,x:data.x,y:Number(data.y)||8,z:data.z,kind:data.kind||'coins',amount:data.amount||1,collected:!!data.collected,collecting:false};
+        const spot=findEmptyTreasureSpot(data.x,data.z); // ビル/土地に被らない位置へ
+        dailyTreasure={mesh:null,x:spot.x,y:Number(data.y)||8,z:spot.z,kind:data.kind||'coins',amount:data.amount||1,collected:!!data.collected,collecting:false};
         if(dailyTreasure.collected)return; // 本日は取得済み
         spawnTreasureMesh();
         startTreasureProximity();
@@ -6644,6 +6656,23 @@
     function disposeTreasureMesh(){
       if(dailyTreasure.mesh&&!dailyTreasure.mesh.isDisposed())dailyTreasure.mesh.dispose();
       dailyTreasure.mesh=null;
+    }
+    // 宝はビル/土地に被らない空きセルに配置する（占有セルなら螺旋状に外へ探す）
+    function findEmptyTreasureSpot(wx,wz){
+      const snap=v=>Math.round(v/CELL)*CELL;
+      const gx=snap(wx),gz=snap(wz);
+      const occupied=(x,z)=>{const k=landKey(x,z);return !!landMap[k]||!!buildingMap[k];};
+      const lim=GRID_HALF*CELL;
+      if(!occupied(gx,gz))return{x:gx,z:gz};
+      for(let r=1;r<=14;r++){
+        for(let dx=-r;dx<=r;dx++)for(let dz=-r;dz<=r;dz++){
+          if(Math.max(Math.abs(dx),Math.abs(dz))!==r)continue;
+          const x=gx+dx*CELL,z=gz+dz*CELL;
+          if(Math.abs(x)>lim||Math.abs(z)>lim)continue;
+          if(!occupied(x,z))return{x,z};
+        }
+      }
+      return{x:gx,z:gz};
     }
     function spawnTreasureMesh(){
       const t=dailyTreasure;

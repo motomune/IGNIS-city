@@ -1056,11 +1056,9 @@
     .bm-past-chip { font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.75); }
     .bm-past-text { font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;white-space:pre-wrap;margin-top:4px; }
     .bm-past-locked { margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(96,165,250,0.08);border:1px dashed rgba(96,165,250,0.35);font-size:11px;color:rgba(147,197,253,0.85);line-height:1.5; }
-    .bm-past-notice { margin:2px 0 10px;padding:8px 11px;border-radius:8px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.35);font-size:10.5px;color:#fca5a5;line-height:1.55; }
-    /* ③〜⑥はコピー/選択/長押し保存を抑止＋閲覧者名の透かしで流出を追跡可能に */
-    #building-modal-past { position:relative; }
-    #bm-past-detail-wrap, #bm-past-message-wrap, #bm-past-after-wrap, #bm-past-reborn-wrap { -webkit-user-select:none;user-select:none;-webkit-touch-callout:none; }
-    #bm-past-watermark { position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:22px;transform:rotate(-24deg);opacity:0.09;font-weight:800;font-size:13px;color:#fff;white-space:nowrap; }
+    /* スクショ禁止の文言枠：点滅して目立たせる */
+    .bm-past-notice { margin:2px 0 10px;padding:9px 12px;border-radius:8px;background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.55);font-size:11px;font-weight:700;color:#fecaca;line-height:1.55;animation:pastNoticeBlink 1.1s ease-in-out infinite; }
+    @keyframes pastNoticeBlink { 0%,100%{opacity:1;box-shadow:0 0 0 rgba(239,68,68,0);} 50%{opacity:0.55;box-shadow:0 0 14px rgba(239,68,68,0.65);} }
     /* スマホ・タブレット */
     /* 狭い画面（縦スマホ）に加え、短い横画面（横向きスマホ）にもモバイル用レイアウトを適用 */
     @media (max-width: 768px), (orientation: landscape) and (max-height: 500px) {
@@ -1957,7 +1955,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-21-v165';
+    const IGNIS_BUILD='2026-06-21-v166';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -6328,17 +6326,6 @@
         ?'🔒 ③〜⑥の内容はスクリーンショットでの転載を禁止しています。Xへ共有する際は、他の人の個人情報が分からないよう必ずご配慮ください。'
         :'🔒 Screenshotting/reposting sections ③–⑥ is prohibited. When sharing on X, always make sure other people\'s personal information is not identifiable.';
     }
-    // ③〜⑥に閲覧者名の透かしを重ね、右クリック/長押し保存を抑止（流出を追跡可能にする抑止策）
-    function setPastWatermark(){
-      const host=document.getElementById('building-modal-past');if(!host)return;
-      host.oncontextmenu=(e)=>{e.preventDefault();return false;};
-      let wm=document.getElementById('bm-past-watermark');
-      if(!wm){wm=document.createElement('div');wm.id='bm-past-watermark';host.appendChild(wm);}
-      let name='IGNIS';
-      if(currentUser){name=currentUser.xUsername?('@'+currentUser.xUsername):('ID:'+String(currentUser.id||'').slice(0,8));}
-      const tile=(escapeAttr(name)+'　・　').repeat(5);
-      wm.innerHTML=Array.from({length:9}).map(()=>`<div>${tile}</div>`).join('');
-    }
     // 言語切替時：開いているビル詳細モーダルの格言・ラベル・過去詳細も新しい言語で出し直す
     function refreshBuildingModalLang(){
       const modal=document.getElementById('building-modal');
@@ -6466,7 +6453,6 @@
       else if(notesEl)notesEl.style.display='none';
       clearBuildingPastModal();
       applyBuildingModalLabels(isJa);
-      setPastWatermark();
       document.getElementById('building-modal').classList.add('open');
       document.body.classList.add('building-modal-open');
       loadBuildingPastDetails(buildingData.x,buildingData.z,isOwnLand);

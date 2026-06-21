@@ -17,6 +17,9 @@
   .rules-cols p, .rules-cols ul, .rules-cols ol, .rules-cols table, .rules-cols .figure, .rules-cols .note{ break-inside:avoid; -webkit-column-break-inside:avoid; }
   /* 縦画面の狭い端末だけ1カラム。横画面（スマホ横含む）は常に2カラム */
   @media (orientation:portrait) and (max-width:820px){ .rules-cols{ column-count:1; } }
+  /* 各項目を枠（カード）で囲む */
+  .rsec{ background:rgba(255,255,255,0.035); border:1px solid var(--line); border-radius:14px; padding:12px 15px 14px; margin:0 0 14px; break-inside:avoid; -webkit-column-break-inside:avoid; }
+  .rsec h2{ border-top:none; padding-top:0; margin:0 0 7px; }
   .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
   .brand{ font-size:20px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(135deg,#ff6a00,#ee0979); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .lang-btn{ display:inline-flex; align-items:center; gap:6px; background:rgba(20,18,30,0.85); border:1px solid rgba(255,138,61,0.5); color:#ffd0a0; padding:8px 14px; border-radius:999px; font-size:13px; font-weight:800; cursor:pointer; }
@@ -70,6 +73,7 @@
   </div>
 
   <div class="rules-cols">
+  <div class="rsec">
   <!-- 目的 -->
   <h2><span class="em">🎯</span><span data-lang="ja">このゲームの目的</span><span data-lang="en">What you do</span></h2>
   <div data-lang="ja" class="block">
@@ -79,6 +83,8 @@
     <p>Acquire land, build a tower, and place a "motto" on its wall and your past experience in its details. Your words can encourage someone who carries the same pain. Light candles on others' buildings and support each other across the whole city.</p>
   </div>
 
+  </div>
+  <div class="rsec">
   <!-- 基本の流れ -->
   <h2><span class="em">🏙</span><span data-lang="ja">基本の流れ</span><span data-lang="en">Getting started</span></h2>
   <ol>
@@ -106,6 +112,8 @@
     <div class="figcap"><span data-lang="ja">▲ 遊びの流れ</span><span data-lang="en">▲ The gameplay flow</span></div>
   </div>
 
+  </div>
+  <div class="rsec">
   <!-- コイン -->
   <h2><span class="em">🪙</span><span data-lang="ja">コインの集め方</span><span data-lang="en">Coins</span></h2>
   <div data-lang="ja" class="block">
@@ -125,6 +133,8 @@
     <p class="note">📤 The "Share on X" button lets you post about your city with <b>#IGNISCITY</b> in your own words (optional, fully editable). Sharing itself has no reward, but you earn coins when someone registers through your referral.</p>
   </div>
 
+  </div>
+  <div class="rsec">
   <!-- 土地とビル -->
   <h2><span class="em">🏗</span><span data-lang="ja">土地とビル</span><span data-lang="en">Land &amp; buildings</span></h2>
   <table>
@@ -156,6 +166,8 @@
     <div class="figcap"><span data-lang="ja">▲ 中央から外側へ：特別区域(不可) → 300 → 200 → 100 コイン</span><span data-lang="en">▲ From center outward: reserved → 300 → 200 → 100 coins</span></div>
   </div>
 
+  </div>
+  <div class="rsec">
   <!-- 格言・過去詳細 -->
   <h2><span class="em">💬</span><span data-lang="ja">格言・過去の記録</span><span data-lang="en">Mottos &amp; past records</span></h2>
   <div data-lang="ja" class="block">
@@ -169,6 +181,8 @@
     <p class="note">⚠️ No content identifying individuals/businesses, advertising, solicitation, or defamation. A review process keeps it safe.</p>
   </div>
 
+  </div>
+  <div class="rsec">
   <!-- 蝋燭と街のイベント -->
   <h2><span class="em">🕯️</span><span data-lang="ja">蝋燭と街のイベント</span><span data-lang="en">Candles &amp; city events</span></h2>
   <ul>
@@ -177,24 +191,30 @@
     <li><span data-lang="ja"><b>再生の殿堂</b>：今月もっとも多くの蝋燭が灯ったビルが、中央の上空に金の星として展示されます。</span><span data-lang="en"><b>Hall of Rebirth</b>: the most-candled building of the month is shown as a golden star above the center.</span></li>
   </ul>
 
+  </div>
+  <div class="rsec">
   <!-- ランキングとX -->
   <h2><span class="em">🏆</span><span data-lang="ja">ランキング・Xユーザー名</span><span data-lang="en">Ranking &amp; X name</span></h2>
   <ul>
     <li><span data-lang="ja">コイン／従業員／階数／蝋燭でランキングを競えます。</span><span data-lang="en">Compete in coins / staff / floors / candles.</span></li>
+    <li><span data-lang="ja"><b>ランキング上位はXユーザー名が公開されます</b>：<b>サブスク・プレミア会員は常に公開</b>（自分で非表示にしない限り）。<b>無課金者は各部門（コイン／従業員／階数／蝋燭）の1位</b>のユーザー名のみ公開され、それ以外はモザイク表示になります。</span><span data-lang="en"><b>Top ranks have their X username made public</b>: <b>subscribers & premium members are always shown</b> (unless they turn it off). For <b>free users, only the #1 in each category (coins / staff / floors / candles)</b> is revealed; everyone else is masked.</span></li>
     <li><span data-lang="ja">Xユーザー名は<b>表示ON/OFFを自分で選べます</b>。OFFにすると、ランキング・ビル詳細・テロップすべてで非表示になります。</span><span data-lang="en">You can <b>toggle your X name on/off</b>. When off, it is hidden in rankings, building details and the ticker.</span></li>
   </ul>
 
+  </div>
+  <div class="rsec">
   <!-- 会員プラン -->
   <h2><span class="em">💎</span><span data-lang="ja">会員プラン</span><span data-lang="en">Membership</span></h2>
   <table>
     <tr><th><span data-lang="ja">サブスク会員<br><span class="pill">月980円（税込）</span></span><span data-lang="en">Subscriber<br><span class="pill">¥980/mo</span></span></th>
-        <td><span data-lang="ja">全ビルの過去詳細③〜⑥を閲覧／<b>蝋燭を1日2本</b>灯せる／屋上に赤い点滅ランプ／X報酬1.5倍／Xユーザー名をモザイク無しで表示</span><span data-lang="en">Read full past details of every building / <b>light 2 candles/day</b> / red rooftop lamp / 1.5x X rewards / X name without mosaic</span></td></tr>
+        <td><span data-lang="ja">全ビルの過去詳細③〜⑥を閲覧／<b>蝋燭を1日2本</b>灯せる／屋上に赤い点滅ランプ／Xユーザー名をモザイク無しで表示</span><span data-lang="en">Read full past details of every building / <b>light 2 candles/day</b> / red rooftop lamp / X name without mosaic</span></td></tr>
     <tr><th><span data-lang="ja">プレミアム会員<br><span class="pill">月1980円（税込）</span></span><span data-lang="en">Premium<br><span class="pill">¥1,980/mo</span></span></th>
         <td><span data-lang="ja">サブスク会員の特典すべて＋<b>蝋燭を1日5本</b>灯せる＋あなたのXリンクがゲーム内に常時掲載（宣伝テロップ）＋あなたのビルが中央特別区域に日替わりホログラム投影で展示</span><span data-lang="en">Everything in Subscriber + <b>light 5 candles/day</b> + your X link featured in the in-game ticker + your building shown as a daily hologram in the central zone</span></td></tr>
   </table>
   <p class="note"><span data-lang="ja">サブスクは自動更新です。解約はゲーム内「💎サブスク」→「プラン変更・解約」からいつでも手続きできます。決済はStripeの安全なページで行われ、カード情報は当方では保持しません。</span><span data-lang="en">Subscriptions auto-renew. Cancel anytime from "💎 Subscribe" → "Change plan / cancel". Payments are handled securely by Stripe; we do not store card details.</span></p>
 
 
+  </div>
   </div>
   <div class="foot">
     <a href="legal.html#terms"><span data-lang="ja">利用規約</span><span data-lang="en">Terms</span></a> ・

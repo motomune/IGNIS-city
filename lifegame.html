@@ -103,10 +103,97 @@
   #progress i.now{background:var(--mag); box-shadow:0 0 8px var(--mag);}
   .fade{animation:fade .35s ease;}
   @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+  /* ---- board phase ---- */
+  #board-hud{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px;}
+  .hud{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:6px 4px; text-align:center;}
+  .hud .hl{font-size:9px; color:var(--sub); letter-spacing:.02em;}
+  .hud .hv{font-size:clamp(13px,3.4vw,15px); font-weight:800; margin-top:2px;}
+  .hud .hv small{font-size:9px; color:var(--dim); font-weight:600;}
+  .hud.cash .hv{color:var(--money);} .hud.cash.neg .hv{color:var(--bad);}
+  #board-track{
+    display:flex; gap:6px; overflow-x:auto; overflow-y:hidden; padding:8px 4px 12px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:thin; flex-shrink:0;
+  }
+  #board-track::-webkit-scrollbar{height:6px;}
+  #board-track::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+  .tile{
+    position:relative; flex:0 0 auto; width:46px; height:46px; border-radius:10px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:18px; border:1px solid var(--line); background:var(--panel2); line-height:1;
+  }
+  .tile .ti{font-size:8px; color:var(--dim); position:absolute; top:2px; left:4px;}
+  .t-salary{background:#1a2410; border-color:#3c5a1e;}
+  .t-good{background:#10221c; border-color:#1e5a44;}
+  .t-bad{background:#241010; border-color:#5a1e1e;}
+  .t-bonus{background:#241f10; border-color:#5a4a1e;}
+  .t-event{background:#1a1426; border-color:#43306a;}
+  .t-encounter{background:#101f24; border-color:#1e4a5a;}
+  .t-illness{background:#240f18; border-color:#5a1e3a;}
+  .t-branch{background:#201828; border-color:#5a3d6a;}
+  .t-rest{background:#15151f; border-color:#33334a;}
+  .t-setback{background:#241015; border-color:#5a1e2e;}
+  .t-goal{background:linear-gradient(135deg,#ff8a3d,#ff3da1); border:none; color:#1a0a05; font-size:20px;}
+  .tile.here{box-shadow:0 0 0 2px var(--fire), 0 0 14px var(--fire); transform:translateY(-3px); transition:.25s;}
+  .tile .token{position:absolute; bottom:-15px; left:50%; transform:translateX(-50%); font-size:20px; filter:drop-shadow(0 2px 4px #000);}
+  #board-stage{margin-top:auto; padding-top:8px;}
+  .die{font-size:54px; line-height:1; text-align:center; color:var(--fire); filter:drop-shadow(0 0 16px var(--fire));}
+  .board-msg{font-size:clamp(13.5px,3.6vw,15px); color:#e7e2da; white-space:pre-wrap;}
+  .board-msg .mh{font-weight:800; font-size:clamp(15px,4vw,18px); margin:0 0 6px; color:var(--txt);}
+  .comp{display:inline-flex; gap:2px; align-items:center;}
+  #sound-btn.off{opacity:.5;}
+  /* ---- 3D dice ---- */
+  .dice-area{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 0 2px;}
+  .dice-scene{width:64px; height:64px; perspective:300px;}
+  .cube{position:relative; width:64px; height:64px; transform-style:preserve-3d; transition:transform 1s cubic-bezier(.2,.9,.25,1);}
+  .cube.tumble{transition:transform .9s cubic-bezier(.3,.7,.3,1.2);}
+  .face{position:absolute; width:64px; height:64px; border-radius:12px;
+    background:linear-gradient(150deg,#fff,#ffe6d2); border:1px solid #e0b48a;
+    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    padding:9px; box-shadow:inset 0 0 10px #d59a6a55;}
+  .pip{width:11px; height:11px; border-radius:50%; background:#b3361f; align-self:center; justify-self:center; box-shadow:0 1px 1px #0006;}
+  .f1{transform:translateZ(32px);} .f2{transform:rotateY(90deg) translateZ(32px);}
+  .f3{transform:rotateY(180deg) translateZ(32px);} .f4{transform:rotateY(-90deg) translateZ(32px);}
+  .f5{transform:rotateX(90deg) translateZ(32px);} .f6{transform:rotateX(-90deg) translateZ(32px);}
+  /* pip layouts via grid positions */
+  .p-tl{grid-area:1/1;} .p-tc{grid-area:1/2;} .p-tr{grid-area:1/3;}
+  .p-ml{grid-area:2/1;} .p-mc{grid-area:2/2;} .p-mr{grid-area:2/3;}
+  .p-bl{grid-area:3/1;} .p-bc{grid-area:3/2;} .p-br{grid-area:3/3;}
+  /* ---- central tile-scene演出 (rich themed scenes) ---- */
+  #scene{position:relative;}
+  #fx-overlay{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:20; border-radius:16px; overflow:hidden; --a:#ff8a3d; --p1:#16101f; --p2:#07070d;
+    background:radial-gradient(circle at 50% 42%, var(--p1) 0%, var(--p2) 72%); animation:fxFade .35s ease;}
+  #fx-overlay::after{content:''; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 120px -20px var(--a); opacity:.5;}
+  @keyframes fxFade{from{opacity:0;} to{opacity:1;}}
+  .fx-motif{position:absolute; inset:0; overflow:hidden; pointer-events:none;}
+  .fx-motif > i{position:absolute; display:block; will-change:transform,opacity;}
+  .fx-core{position:relative; display:flex; align-items:center; justify-content:center; width:clamp(130px,40vw,180px); height:clamp(130px,40vw,180px);}
+  .fx-ring{position:absolute; inset:0; border-radius:50%; border:2px solid var(--a); opacity:.55;
+    box-shadow:0 0 40px -6px var(--a), inset 0 0 30px -10px var(--a); animation:fxRingIn .55s cubic-bezier(.2,1.5,.4,1), fxSpin 9s linear .55s infinite;}
+  .fx-ring.r2{inset:14px; border-style:dashed; opacity:.35; animation:fxRingIn .55s cubic-bezier(.2,1.5,.4,1), fxSpin 14s linear .55s infinite reverse;}
+  .fx-glow{position:absolute; width:62%; height:62%; border-radius:50%; background:radial-gradient(circle, var(--a) 0%, transparent 70%); opacity:.4; filter:blur(10px); animation:fxPulse 2s ease-in-out infinite;}
+  .fx-emoji{font-size:clamp(54px,17vw,92px); line-height:1; position:relative; z-index:2;
+    animation:fxPop .5s cubic-bezier(.2,1.7,.4,1), fxFloat 2.6s ease-in-out .5s infinite; filter:drop-shadow(0 4px 18px #000a);}
+  .fx-label{margin-top:18px; font-size:clamp(16px,4.6vw,22px); font-weight:800; letter-spacing:.05em; text-align:center; padding:0 16px; max-width:90%;
+    color:#fff; text-shadow:0 0 18px var(--a), 0 2px 6px #000; animation:fxRise .5s ease .15s both;}
+  @keyframes fxPop{from{transform:scale(.2); opacity:0;} to{transform:scale(1); opacity:1;}}
+  @keyframes fxFloat{0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-9px) rotate(2deg);}}
+  @keyframes fxRise{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
+  @keyframes fxRingIn{from{transform:scale(.3); opacity:0;} to{transform:scale(1);}}
+  @keyframes fxSpin{to{transform:rotate(360deg);}}
+  @keyframes fxPulse{0%,100%{opacity:.35; transform:scale(.95);} 50%{opacity:.7; transform:scale(1.08);}}
+  @keyframes mFall{0%{transform:translateY(-14vh) rotate(0); opacity:0;} 12%{opacity:1;} 100%{transform:translateY(88vh) rotate(320deg); opacity:.15;}}
+  @keyframes mRain{0%{transform:translateY(-16vh); opacity:0;} 14%{opacity:.85;} 100%{transform:translateY(92vh); opacity:0;}}
+  @keyframes mRise{0%{transform:translateY(12vh) scale(.6); opacity:0;} 18%{opacity:1;} 100%{transform:translateY(-72vh) scale(1); opacity:0;}}
+  @keyframes mTwinkle{0%,100%{opacity:0; transform:scale(.4);} 50%{opacity:1; transform:scale(1.15);}}
+  @keyframes mDrift{0%{transform:translate(0,0) scale(.8); opacity:0;} 30%{opacity:.5;} 100%{transform:translate(var(--dx),var(--dy)) scale(1.3); opacity:0;}}
   /* landscape phones: shrink stats */
   @media (max-height:480px){
     #stats .lbl{display:none;} .stat{padding:5px 4px;} .scene-title{margin-bottom:8px;}
     #scene{padding:12px 14px;}
+    .tile{width:40px; height:40px; font-size:16px;}
+    #board-hud .hl{display:none;}
+    #fx-overlay .fx-emoji{font-size:clamp(48px,16vh,84px);}
   }
 </style>
 </head>
@@ -115,6 +202,7 @@
   <header>
     <div class="logo">人生の灯<small id="logo-sub">EMBERS OF A LIFE</small></div>
     <div class="spacer"></div>
+    <button class="iconbtn" id="sound-btn" onclick="toggleSound()" title="sound">🔊</button>
     <button class="iconbtn" id="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">EN</span></button>
     <button class="iconbtn" id="close-btn" onclick="requestClose()" title="close">✕</button>
   </header>
@@ -123,6 +211,7 @@
   <div id="scene"></div>
   <div id="progress"></div>
 </div>
+<audio id="lg-bgm" loop preload="auto" playsinline style="display:none"></audio>
 
 <script>
 "use strict";
@@ -160,6 +249,47 @@ const UI = {
   denied:{ja:'本日の報酬は受け取り済みです。',en:'Today’s reward was already claimed.'},
   offline:{ja:'（プレビュー中：コインは街の中で加算されます）',en:'(preview: coins are added inside the city)'},
   deltas_none:{ja:'',en:''},
+  // ---- board ----
+  story_close:{ja:'第一の人生 ・ 結び',en:'Life One · Closing'},
+  board_lead:{ja:'物語はまだ終わらない。ここからは、あなたの「人生の道」を一歩ずつ歩いていく。',
+    en:'The story isn’t over. From here, you walk your own road through life, step by step.'},
+  to_board:{ja:'人生はつづく',en:'Life goes on'},
+  board_setup:{ja:'あなたの人生の出発点',en:'Your starting point in life'},
+  job_label:{ja:'職業',en:'Occupation'},
+  cash_label:{ja:'所持金',en:'Cash'},
+  start_label:{ja:'スタート',en:'Start'},
+  comp_label:{ja:'仲間',en:'Allies'},
+  turn_label:{ja:'ターン',en:'Turn'},
+  man:{ja:'万',en:'×10k'},
+  depart:{ja:'出発する',en:'Set out'},
+  roll:{ja:'サイコロを振る',en:'Roll the die'},
+  rolling:{ja:'振っています…',en:'Rolling…'},
+  moving:{ja:'進んでいます…',en:'Moving…'},
+  cont:{ja:'つづける',en:'Continue'},
+  ally_join:{ja:'仲間が加わった！逆境の時、きっと力になってくれる。',en:'An ally joined you! In hard times, they’ll have your back.'},
+  ally_save:{ja:'仲間が肩代わりしてくれた。一人じゃ、なかった。',en:'An ally took the blow for you. You weren’t alone.'},
+  skip_turn:{ja:'今日は休もう。無理は、しない。',en:'Rest today. No pushing yourself.'},
+  tile_salary:{ja:'給料日',en:'Payday'},
+  tile_good:{ja:'順風',en:'Good winds'},
+  tile_bad:{ja:'逆風',en:'Headwinds'},
+  tile_bonus:{ja:'臨時収入',en:'Windfall'},
+  tile_rest:{ja:'休息',en:'A pause'},
+  tile_encounter:{ja:'出会い',en:'An encounter'},
+  tile_setback:{ja:'試練',en:'A trial'},
+  msg_salary:{ja:'働いた分の給料が入った。',en:'Your honest pay came in.'},
+  msg_good:{ja:'小さな幸運。こんな日もある。',en:'A small bit of luck. Some days are like this.'},
+  msg_bad:{ja:'思わぬ出費。ため息が出る。',en:'An unexpected expense. You sigh.'},
+  msg_bonus:{ja:'予期せぬ臨時収入。素直に、ありがたい。',en:'An unexpected windfall. You’re simply grateful.'},
+  msg_rest:{ja:'立ち止まって、深呼吸。心と体が、少し戻る。',en:'You pause and breathe. Body and heart recover a little.'},
+  msg_encounter:{ja:'道で、誰かと心が通った。',en:'On the road, you connected with someone.'},
+  msg_setback:{ja:'つまずいて、少し後戻り。それでも、また歩ける。',en:'You stumble and fall back a little. Still, you can walk again.'},
+  reach_goal:{ja:'終着駅 ・ 人生をやりきった',en:'The Last Station · A life lived fully'},
+  msg_goal:{ja:'長い道のりだった。振り返れば、笑った日も泣いた日もあった。\nよく、ここまで歩いてきた。',
+    en:'It was a long road. Looking back, there were days you laughed and days you wept.\nYou walked all this way. Well done.'},
+  result_title:{ja:'人生の決算',en:'Life’s Reckoning'},
+  final_cash:{ja:'最終の蓄え',en:'Final savings'},
+  reached:{ja:'終着到達',en:'Reached the goal'},
+  yes:{ja:'はい',en:'Yes'}, no:{ja:'いいえ',en:'No'},
 };
 
 /* ---------- stats ---------- */
@@ -172,6 +302,7 @@ const STAT_META = {
   bond:{ico:'👥',cls:'s-bond',ui:'stat_bond'},
 };
 let S, quality, picks, chapterIndex, totalChapters, daily;
+let phase='title', storyEndingId=null, board=null;
 
 function clamp(v){return Math.max(0,Math.min(100,Math.round(v)));}
 function rnd(n){return Math.floor(Math.random()*n);}
@@ -493,6 +624,7 @@ const statsEl = () => document.getElementById('stats');
 
 function renderStats(changed){
   const el = statsEl(); el.setAttribute('aria-hidden','false');
+  el.style.gridTemplateColumns='repeat(5,1fr)';
   el.innerHTML = STAT_KEYS.map(k=>{
     const m = STAT_META[k];
     const fl = (changed && changed[k]) ? ' flash':'';
@@ -517,6 +649,7 @@ function renderProgress(){
 
 /* ---- title screen ---- */
 function showTitle(){
+  phase='title';
   statsEl().setAttribute('aria-hidden','true'); statsEl().innerHTML='';
   document.getElementById('progress').innerHTML='';
   const playedNote = daily.playedToday
@@ -534,6 +667,8 @@ function showTitle(){
 }
 
 function startRun(){
+  phase='story';
+  audioKick(); Sfx.play('start');
   buildRun();
   renderStats();
   renderProgress();
@@ -566,6 +701,7 @@ function applyEff(eff){
 }
 
 function choose(i){
+  Sfx.play('choice');
   const ev = picks[chapterIndex];
   const c = ev.choices[i];
   let eff = c.eff, resultText = c.result, ok = true;
@@ -579,6 +715,8 @@ function choose(i){
   if(c.good && ok) quality += c.good;        // good choices reward only when they land
   else if(c.good && !ok) quality += Math.max(0, c.good-1);
 
+  const net = Object.keys(eff).reduce((s,k)=>s+eff[k],0);
+  Sfx.play(net>=0 ? 'up' : 'down');
   renderStats(changed);
   showResult(ev, resultText, eff);
 }
@@ -601,37 +739,70 @@ function showResult(ev, resultText, eff){
 }
 
 function advance(){
+  Sfx.play('click');
   chapterIndex++;
-  if(chapterIndex >= totalChapters) showEnding();
+  if(chapterIndex >= totalChapters) showStoryEnding();
   else showChapter();
 }
 
-/* ---- ending + reward ---- */
+/* ---- story ending (transition to the board phase — NO reward yet) ---- */
 let lastResult=null;
-function showEnding(){
+function showStoryEnding(){
+  phase='storyend';
   renderProgress();
-  const id = decideEnding();
-  const coins = calcCoins(id);
-  const firstClaimToday = !daily.playedToday;
-  lastResult = {ending:id, coins, firstClaim:firstClaimToday};
-
-  if(firstClaimToday){
-    daily.playedToday = true; saveDaily();
-    sendResult(coins, id);   // notify parent (IGNIS) — server decides real grant & cap
-  }
-  renderEnding();
-}
-
-function renderEnding(){
-  const {ending:id, coins, firstClaim:firstClaimToday} = lastResult;
-  const e = ENDINGS[id];
+  storyEndingId = decideEnding();
+  const e = ENDINGS[storyEndingId];
   scene().className='center fade';
   scene().scrollTop=0;
   scene().innerHTML = `
     <div class="big-emoji">${e.emoji}</div>
-    <div class="chapter-tag">${lang==='ja'?'結末':'Ending'}</div>
+    <div class="chapter-tag">${T(UI.story_close)}</div>
     <div class="ending-name">${T(e.name)}</div>
     <p class="scene-body" style="margin-top:8px;">${T(e.text)}</p>
+    <div class="carve">
+      <small>${T(UI.carve_label)}</small>
+      “${T(e.carve)}”
+    </div>
+    <p class="scene-body" style="margin-top:14px;">${T(UI.board_lead)}</p>
+    <div class="actions">
+      <button class="btn-primary" onclick="startBoard()">${T(UI.to_board)} ▶</button>
+    </div>`;
+}
+
+/* ---- final result (after the board) + reward ---- */
+function showFinalResult(){
+  phase='final';
+  const id = decideBoardEnding();
+  const coins = calcBoardCoins();
+  const firstClaimToday = !daily.playedToday;
+  lastResult = {ending:id, coins, firstClaim:firstClaimToday, cash:board.cash, reached:board.reachedGoal, occ:board.occ};
+
+  if(firstClaimToday){
+    daily.playedToday = true; saveDaily();
+    sendResult(coins, id);   // notify parent (IGNIS) — server decides real grant & cap
+    setTimeout(()=>Sfx.play('coin'), 350);
+  }
+  renderFinal();
+}
+
+function renderFinal(){
+  const {ending:id, coins, firstClaim:firstClaimToday, cash, reached, occ} = lastResult;
+  const e = BOARD_ENDINGS[id];
+  statsEl().setAttribute('aria-hidden','true'); statsEl().innerHTML='';
+  document.getElementById('progress').innerHTML='';
+  scene().className='center fade';
+  scene().scrollTop=0;
+  scene().innerHTML = `
+    <div class="big-emoji">${e.emoji}</div>
+    <div class="chapter-tag">${T(UI.result_title)}</div>
+    <div class="ending-name">${T(e.name)}</div>
+    <p class="scene-body" style="margin-top:8px;">${T(e.text)}</p>
+
+    <div style="display:flex; gap:14px; justify-content:center; margin:14px 0 2px; flex-wrap:wrap;">
+      <span class="muted">${OCC[occ].icon} ${T(OCC[occ].name)}</span>
+      <span class="muted">${T(UI.final_cash)}: <b style="color:var(--money)">¥${cash}${T(UI.man)}</b></span>
+      <span class="muted">${T(UI.reached)}: ${reached?'🏁 '+T(UI.yes):T(UI.no)}</span>
+    </div>
 
     <div class="carve">
       <small>${T(UI.carve_label)}</small>
@@ -668,7 +839,7 @@ function renderEnding(){
   }
 }
 
-function restart(){ grantAnswered=false; lastGrant=null; if(grantTimeout) clearTimeout(grantTimeout); buildRun(); renderStats(); showChapter(); }
+function restart(){ grantAnswered=false; lastGrant=null; board=null; if(grantTimeout) clearTimeout(grantTimeout); phase='story'; buildRun(); renderStats(); showChapter(); }
 
 /* =========================================================================
    PARENT BRIDGE (postMessage)
@@ -727,10 +898,1164 @@ function toggleLang(){
   else { renderStats(); rerenderCurrent(); }
 }
 function rerenderCurrent(){
-  // best-effort: keep the earned ending (don't re-decide/re-send); else re-show chapter choices.
-  const onEnding = !!document.querySelector('.coin-box');
-  if(onEnding && lastResult){ renderEnding(); }
+  // re-render the current phase in the new language (keep earned state — never re-decide/re-send).
+  if(phase==='final' && lastResult){ renderFinal(); }
+  else if(phase==='board'){ renderBoard(); }
+  else if(phase==='storyend'){ showStoryEnding(); }
   else { showChapter(); }
+}
+
+/* =========================================================================
+   AUDIO — synthesized SFX (no files) + optional BGM mp3
+   ========================================================================= */
+const Sfx = (function(){
+  let ctx=null, master=null, muted=false;
+  function ensure(){ if(ctx) return ctx; try{ ctx=new (window.AudioContext||window.webkitAudioContext)();
+    master=ctx.createGain(); master.gain.value=0.3; master.connect(ctx.destination);}catch(e){ctx=null;} return ctx; }
+  function now(){ return ctx?ctx.currentTime:0; }
+  function blip(f,t,dur,type,vol){ if(!ctx)return; const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type=type||'sine'; o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.25,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+0.02); }
+  function slide(f1,f2,t,dur,type,vol){ if(!ctx)return; const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type=type||'sine'; o.frequency.setValueAtTime(f1,t); o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.22,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+0.02); }
+  function noise(t,dur,vol){ if(!ctx)return; const len=Math.max(1,Math.floor(ctx.sampleRate*dur));
+    const b=ctx.createBuffer(1,len,ctx.sampleRate), d=b.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+    const n=ctx.createBufferSource(); n.buffer=b; const g=ctx.createGain(); g.gain.value=vol||0.12;
+    const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=1600; n.connect(f); f.connect(g); g.connect(master); n.start(t); }
+  const presets = {
+    click(){ blip(440,now(),0.07,'triangle',0.16); },
+    choice(){ const t=now(); blip(523,t,0.08,'triangle',0.18); blip(784,t+0.06,0.1,'triangle',0.16); },
+    dice(){ for(let i=0;i<6;i++) noise(now()+i*0.07,0.06,0.1); },
+    land(){ blip(170,now(),0.12,'sine',0.3); noise(now(),0.08,0.1); },
+    up(){ const t=now(); [523,659,784].forEach((f,i)=>blip(f,t+i*0.06,0.12,'sine',0.2)); },
+    down(){ const t=now(); [440,349,262].forEach((f,i)=>blip(f,t+i*0.06,0.13,'sine',0.18)); },
+    good(){ const t=now(); [659,988].forEach((f,i)=>blip(f,t+i*0.07,0.18,'sine',0.2)); },
+    bad(){ slide(200,90,now(),0.35,'sawtooth',0.16); },
+    coin(){ const t=now(); [988,1319,1568,2093].forEach((f,i)=>blip(f,t+i*0.05,0.12,'triangle',0.16)); },
+    ally(){ const t=now(); [392,494,587,784].forEach((f,i)=>blip(f,t+i*0.05,0.25,'sine',0.14)); },
+    goal(){ const t=now(); [523,659,784,1047,1319].forEach((f,i)=>blip(f,t+i*0.11,0.4,'triangle',0.18)); },
+    start(){ const t=now(); [392,523,659].forEach((f,i)=>blip(f,t+i*0.09,0.3,'sine',0.18)); },
+  };
+  return {
+    play(name){ if(muted) return; ensure(); if(!ctx) return; if(ctx.state==='suspended') ctx.resume();
+      const p=presets[name]; if(p){ try{p();}catch(e){} } },
+    setMuted(m){ muted=m; }, resume(){ ensure(); if(ctx&&ctx.state==='suspended') ctx.resume(); }
+  };
+})();
+
+const Bgm = (function(){
+  let el=null, started=false, idx=0;
+  const SRC = ['lifegame-bgm.mp3','audio_opening-bgm.mp3']; // primary, then IGNIS opening if present
+  function init(){ if(el) return; el=document.getElementById('lg-bgm'); if(!el) return; el.volume=0.4;
+    el.addEventListener('error', ()=>{ if(idx<SRC.length-1){ idx++; el.src=SRC[idx]; el.load(); el.play&&el.play().catch(()=>{}); } });
+    el.src=SRC[idx]; }
+  return {
+    play(){ init(); if(!el) return; started=true; const p=el.play&&el.play(); if(p&&p.catch) p.catch(()=>{}); },
+    pause(){ if(el){ try{el.pause();}catch(e){} } }
+  };
+})();
+
+let soundOn = true;
+function toggleSound(){
+  soundOn = !soundOn; Sfx.setMuted(!soundOn);
+  const b=document.getElementById('sound-btn');
+  if(b){ b.textContent = soundOn?'🔊':'🔇'; b.classList.toggle('off', !soundOn); }
+  if(soundOn){ Sfx.play('click'); Bgm.play(); } else { Bgm.pause(); }
+}
+function audioKick(){ Sfx.resume(); if(soundOn) Bgm.play(); }  // call on a user gesture
+
+/* ---- 3D dice cube ---- */
+const PIPS = {1:['p-mc'],2:['p-tl','p-br'],3:['p-tl','p-mc','p-br'],4:['p-tl','p-tr','p-bl','p-br'],
+  5:['p-tl','p-tr','p-mc','p-bl','p-br'],6:['p-tl','p-tr','p-ml','p-mr','p-bl','p-br']};
+const FACE_ROT = {1:[0,0],2:[0,-90],3:[0,180],4:[0,90],5:[-90,0],6:[90,0]};
+function faceHTML(n,cls){ return `<div class="face ${cls}">${PIPS[n].map(p=>`<div class="pip ${p}"></div>`).join('')}</div>`; }
+function cubeHTML(){ return `<div class="dice-scene"><div class="cube" id="cube" style="transform:rotateX(-22deg) rotateY(16deg)">
+  ${faceHTML(1,'f1')}${faceHTML(2,'f2')}${faceHTML(3,'f3')}${faceHTML(4,'f4')}${faceHTML(5,'f5')}${faceHTML(6,'f6')}</div></div>`; }
+function setCubeFace(n, spins){ const c=document.getElementById('cube'); if(!c) return;
+  const [rx,ry]=FACE_ROT[n]; const ex=(spins||2)*360; c.classList.add('tumble');
+  c.style.transform=`rotateX(${rx-ex}deg) rotateY(${ry+ex}deg)`; }
+
+/* ---- central tile-scene 演出 (rich themed scenes) ---- */
+const SCENE_THEMES = {
+  money:    {pal:['#3a2c0a','#0d0a06'], accent:'#ffce4f', motif:'coins',    icon:'💴'},
+  windfall: {pal:['#3a2c0a','#0d0a06'], accent:'#ffce4f', motif:'confetti', icon:'🎁'},
+  loss:     {pal:['#2a1014','#0a0608'], accent:'#ff6b6b', motif:'rain',     icon:'💸'},
+  fraud:    {pal:['#1a1226','#08060c'], accent:'#b58cff', motif:'shadow',   icon:'🎭'},
+  betrayal: {pal:['#241018','#0a0608'], accent:'#ff3da1', motif:'shadow',   icon:'🗡️'},
+  illness:  {pal:['#241018','#0a0608'], accent:'#ff7a8a', motif:'rain',     icon:'🏥'},
+  love:     {pal:['#2a1020','#0a0610'], accent:'#ff8ab8', motif:'hearts',   icon:'💗'},
+  bond:     {pal:['#0e2420','#06100e'], accent:'#5be0c0', motif:'hearts',   icon:'🤝'},
+  work:     {pal:['#10202a','#060a0e'], accent:'#7cc4ff', motif:'sparkle',  icon:'💼'},
+  luck:     {pal:['#10241c','#06100c'], accent:'#46d39a', motif:'sparkle',  icon:'🍀'},
+  city:     {pal:['#1a1020','#08060c'], accent:'#ff8a3d', motif:'sparkle',  icon:'🌆'},
+  comeback: {pal:['#10241a','#06100c'], accent:'#46d39a', motif:'rise',     icon:'🌱'},
+  rest:     {pal:['#141420','#070710'], accent:'#b58cff', motif:'sparkle',  icon:'💤'},
+  goal:     {pal:['#3a1430','#0c0610'], accent:'#ff3da1', motif:'confetti', icon:'🏁'},
+  family:   {pal:['#241c0e','#0c0a06'], accent:'#ffce4f', motif:'hearts',   icon:'🏠'},
+  travel:   {pal:['#101f2a','#06090e'], accent:'#7cc4ff', motif:'sparkle',  icon:'🧳'},
+};
+function buildMotif(kind, accent){
+  const N = ({coins:11, rain:18, hearts:10, sparkle:14, shadow:7, confetti:16, rise:10})[kind] || 12;
+  let h='';
+  for(let i=0;i<N;i++){
+    const left=rnd(101), delay=(Math.random()*0.9).toFixed(2), dur=(1.1+Math.random()*1.3).toFixed(2);
+    if(kind==='coins') h+=`<i style="left:${left}%; top:0; font-size:${13+rnd(13)}px; animation:mFall ${dur}s linear ${delay}s infinite">🪙</i>`;
+    else if(kind==='rain') h+=`<i style="left:${left}%; top:0; width:2px; height:${14+rnd(16)}px; background:linear-gradient(${accent},transparent); border-radius:2px; animation:mRain ${(0.7+Math.random()*0.5).toFixed(2)}s linear ${delay}s infinite"></i>`;
+    else if(kind==='hearts') h+=`<i style="left:${left}%; bottom:0; font-size:${13+rnd(13)}px; filter:drop-shadow(0 0 6px ${accent}); animation:mRise ${dur}s ease-in ${delay}s infinite">❤</i>`;
+    else if(kind==='confetti') h+=`<i style="left:${left}%; top:0; width:8px; height:13px; border-radius:2px; background:${pick([accent,'#ffce4f','#5be0c0','#7cc4ff','#ff3da1'])}; animation:mFall ${dur}s linear ${delay}s infinite"></i>`;
+    else if(kind==='shadow'){ const dx=rnd(80)-40, dy=rnd(80)-40; h+=`<i style="left:${left}%; top:${rnd(101)}%; width:${28+rnd(46)}px; height:${28+rnd(46)}px; border-radius:50%; background:radial-gradient(circle,#000 0%,transparent 70%); --dx:${dx}px; --dy:${dy}px; animation:mDrift ${(2+Math.random()).toFixed(2)}s ease-out ${delay}s infinite"></i>`; }
+    else if(kind==='rise') h+=`<i style="left:${left}%; bottom:0; font-size:${12+rnd(12)}px; filter:drop-shadow(0 0 6px ${accent}); animation:mRise ${dur}s ease-in ${delay}s infinite">✦</i>`;
+    else h+=`<i style="left:${left}%; top:${rnd(101)}%; color:${accent}; font-size:${10+rnd(13)}px; text-shadow:0 0 8px ${accent}; animation:mTwinkle ${(0.8+Math.random()).toFixed(2)}s ease-in-out ${delay}s infinite">✦</i>`;
+  }
+  return h;
+}
+function showSceneFx(themeKey, label, then, iconOverride){
+  const th = SCENE_THEMES[themeKey] || SCENE_THEMES.city;
+  const sc = scene();
+  let ov=document.getElementById('fx-overlay'); if(ov && ov.parentNode) ov.remove();
+  ov=document.createElement('div'); ov.id='fx-overlay';
+  ov.style.setProperty('--a', th.accent); ov.style.setProperty('--p1', th.pal[0]); ov.style.setProperty('--p2', th.pal[1]);
+  ov.innerHTML = `<div class="fx-motif">${buildMotif(th.motif, th.accent)}</div>
+    <div class="fx-core"><div class="fx-glow"></div><div class="fx-ring"></div><div class="fx-ring r2"></div>
+      <div class="fx-emoji">${iconOverride||th.icon}</div></div>
+    <div class="fx-label">${label}</div>`;
+  sc.appendChild(ov);
+  setTimeout(()=>{ if(ov && ov.parentNode) ov.remove(); if(then) then(); }, 1300);
+}
+
+/* =========================================================================
+   BOARD PHASE — 「人生の道」 sugoroku
+   ========================================================================= */
+const BOARD_MAX_TURNS = 10;
+const GOAL = 36;                  // last tile index (track 0..36; tuned for 10 turns)
+const DICE = ['','⚀','⚁','⚂','⚃','⚄','⚅'];
+
+const OCC = {
+  entrepreneur:{icon:'🏢', name:{ja:'起業家',en:'Entrepreneur'}, salary:[8,14], invMul:1.6, riskMul:1.5, startCash:0,
+    note:{ja:'高収入だが、詐欺・裏切りの傷も深い。',en:'High income — but fraud and betrayal cut deeper.'}},
+  creator:{icon:'✍️', name:{ja:'表現者',en:'Creator'}, salary:[6,10], goodBonus:2, startCash:0,
+    note:{ja:'順風・出会いに強く、心が折れにくい。',en:'Thrives on good fortune; a resilient heart.'}},
+  caregiver:{icon:'🤲', name:{ja:'支え手',en:'Caregiver'}, salary:[6,10], startCash:0,
+    note:{ja:'人とのつながりが、何よりの財産。',en:'Human bonds are your greatest wealth.'}},
+  craftsman:{icon:'🔧', name:{ja:'職人',en:'Craftsperson'}, salary:[7,11], startCash:2,
+    note:{ja:'逆境に強く、コツコツ堅実に積み上げる。',en:'Steady and tough; you build little by little.'}},
+  investor:{icon:'📈', name:{ja:'投資家',en:'Investor'}, salary:[4,8], invMul:2.0, bonusMul:2.0, startCash:5,
+    note:{ja:'投資と臨時収入が、ぐっと大きい。',en:'Investments and windfalls pay off big.'}},
+  restart:{icon:'🌱', name:{ja:'再出発',en:'New Start'}, salary:[4,8], startCash:-3,
+    note:{ja:'収入は低いが、再起の力は誰よりも強い。',en:'Low income — but unmatched power to rise again.'}},
+};
+
+const BOARD_ENDINGS = {
+  fulfilled:{emoji:'🌟', name:{ja:'満ち足りた人生',en:'A Life Fulfilled'},
+    text:{ja:'お金も、心も、人との縁も。あなたは多くを抱えて終着にたどり着いた。\n完璧じゃない。でも、胸を張れる人生だった。',
+      en:'Money, heart, and bonds — you reached the last station holding much.\nNot perfect. But a life you can be proud of.'},
+    carve:{ja:'歩き続ければ、道はちゃんと続いていく。',en:'Keep walking, and the road keeps going.'}},
+  prosperous:{emoji:'💎', name:{ja:'築き上げた人',en:'The Builder'},
+    text:{ja:'がむしゃらに働き、確かな蓄えを築いた。\nたまには、その手で得たもので、誰かを笑顔にできたら。',
+      en:'You worked hard and built real wealth.\nNow and then, may what you earned bring someone a smile.'},
+    carve:{ja:'積み上げたものは、誰かと分けてこそ光る。',en:'What you build shines brightest when shared.'}},
+  content:{emoji:'🌿', name:{ja:'穏やかな道のり',en:'A Gentle Road'},
+    text:{ja:'大きな浮き沈みもあった。でも最後は、穏やかな足取りで歩けた。\nそれは決して、当たり前のことじゃない。',
+      en:'There were highs and lows. But in the end, your steps were calm.\nThat is no small thing.'},
+    carve:{ja:'平凡な一日こそ、いちばんの宝物。',en:'An ordinary day is the greatest treasure.'}},
+  weathered:{emoji:'🌧️', name:{ja:'雨をくぐって',en:'Through the Rain'},
+    text:{ja:'うまくいかないことの方が、多かったかもしれない。\nそれでもあなたは、最後まで歩くのをやめなかった。それが、答えだ。',
+      en:'Perhaps more went wrong than right.\nAnd still, you never stopped walking. That, in itself, is your answer.'},
+    carve:{ja:'転んでも、立ち上がった回数の方が多い。',en:'You fell — but you rose more times than you fell.'}},
+  not_alone:{emoji:'🕯️', name:{ja:'一人じゃなかった',en:'You Were Not Alone'},
+    text:{ja:'心がくじけそうな道のりだった。でも、差し出された手があった。\nうずくまった夜にも、隣には誰かの灯があった。',
+      en:'It was a road that nearly broke you. But a hand reached out.\nEven on the nights you crouched down, a light was there beside you.'},
+    carve:{ja:'あなたは、ひとりじゃない。',en:'You are not alone.'}},
+};
+
+const BOARD_EVENTS = [
+ {icon:'💼', theme:'work', title:{ja:'就職の岐路',en:'A Career Crossroads'}, body:{ja:'好条件の誘いが二つ。堅実な道か、賭けに出るか。',en:'Two good offers. The steady path, or the bold leap?'},
+  choices:[
+   {label:{ja:'安定した職を選ぶ',en:'Take the stable job'}, eff:{cash:8,trust:3}, good:1,
+     result:{ja:'派手さはないが、毎月の安心が積み上がっていく。',en:'Nothing flashy, but monthly security adds up.'}},
+   {label:{ja:'挑戦的な仕事に飛び込む',en:'Leap into the bold one'}, hint:{ja:'心が高いと大きく実る',en:'A strong mind pays off big'},
+     check:{stat:'mind',dc:58,eff_fail:{cash:-6,mind:-4},result_fail:{ja:'準備不足で空回り。でも、挑んだ経験は残った。',en:'Underprepared, it stalled. But the courage to try remains.'}},
+     eff:{cash:16,mind:4}, good:1, result:{ja:'勝負に出て、しっかり結果を掴んだ。',en:'You took the gamble and made it pay.'}},
+  ]},
+ {icon:'📈', theme:'money', title:{ja:'投資の誘い',en:'An Investment'}, body:{ja:'手堅そうな投資話が舞い込んだ。乗るか、見送るか。',en:'A solid-looking investment appears. In, or out?'},
+  choices:[
+   {label:{ja:'資金を投じる',en:'Put money in'}, hint:{ja:'冷静な判断（心）が成否を分ける',en:'A calm mind decides the outcome'},
+     check:{stat:'mind',dc:55,eff_fail:{cash:-10},result_fail:{ja:'相場は読みきれなかった。授業料だと思おう。',en:'You misread the market. Call it tuition.'}},
+     eff:{cash:14}, result:{ja:'冷静に見極めて、利益を得た。',en:'You judged calmly, and gained.'}},
+   {label:{ja:'今回は見送る',en:'Pass for now'}, eff:{trust:2}, good:1,
+     result:{ja:'欲を出さない。それも一つの賢さだ。',en:'No greed. That, too, is wisdom.'}},
+  ]},
+ {icon:'🎭', theme:'fraud', title:{ja:'うますぎる話',en:'Too Good to Be True'}, body:{ja:'「絶対に儲かる」。あの旧友の、必死な笑顔。',en:'“You can’t lose.” That old friend’s desperate smile.'},
+  choices:[
+   {label:{ja:'冷静に見抜こうとする',en:'Try to see through it'}, hint:{ja:'信頼が高いと回避できる',en:'High trust avoids the trap'},
+     check:{stat:'trust',dc:56,eff_fail:{cash:-14,trust:-4},result_fail:{ja:'連絡は途絶えた。人を信じた自分は、悪くない。',en:'The messages stopped. Trusting someone wasn’t your fault.'}},
+     eff:{mind:4,trust:3}, good:2, result:{ja:'ほころびに気づき、深入りせずに済んだ。',en:'You spotted the cracks and stayed out.'}},
+   {label:{ja:'全額を預けてしまう',en:'Hand over everything'}, eff:{cash:-18,trust:-5,mind:-4},
+     result:{ja:'お金は消えた。でも、この痛みを知る人は、街にたくさんいる。',en:'The money vanished. But many in the city know this same ache.'}},
+  ]},
+ {icon:'📝', theme:'bond', title:{ja:'保証人',en:'The Co-Signer'}, body:{ja:'恩のある人が、青い顔で判子を頼んできた。',en:'Someone you owe asks, pale-faced, for your signature.'},
+  choices:[
+   {label:{ja:'恩を返すために引き受ける',en:'Sign, to repay the kindness'}, eff:{cash:-12,bond:6}, good:2,
+     result:{ja:'のちに負担は来た。でも、人を助けたい心は、間違いじゃない。',en:'A burden came later. But your wish to help was never wrong.'}},
+   {label:{ja:'心苦しいが、丁重に断る',en:'Decline, though it hurts'}, eff:{bond:-4,trust:3}, good:1,
+     result:{ja:'誠実に理由を話したら、相手も少し分かってくれた。',en:'You explained honestly, and they understood a little.'}},
+  ]},
+ {icon:'🗡️', theme:'betrayal', title:{ja:'裏切り',en:'Betrayal'}, body:{ja:'信じていた相棒が、お金を持って消えた。',en:'A partner you trusted vanished with the money.'},
+  choices:[
+   {label:{ja:'怒りを手放し、前を向く',en:'Let go of the anger, move on'}, eff:{cash:-8,mind:6,bond:2}, good:2,
+     result:{ja:'許すのは相手のためじゃない。自分が前に進むためだ。',en:'Forgiving isn’t for them. It’s so you can walk forward.'}},
+   {label:{ja:'徹底的に争う',en:'Fight it all the way'}, eff:{cash:-4,trust:-3,mind:-5},
+     result:{ja:'いくらか取り戻した。でも、心はすり減った。',en:'You recovered some. But it wore your heart thin.'}},
+  ]},
+ {icon:'🔥', theme:'illness', title:{ja:'燃え尽き',en:'Burnout'}, body:{ja:'走り続けた体と心が、悲鳴をあげ始めた。',en:'Your body and mind, always running, begin to scream.'},
+  choices:[
+   {label:{ja:'思い切って休む',en:'Dare to rest'}, eff:{cash:-4,health:8,mind:8}, good:1,
+     result:{ja:'休むのは、逃げじゃない。また走るための準備だ。',en:'Resting isn’t fleeing. It’s preparing to run again.'}},
+   {label:{ja:'歯を食いしばって続ける',en:'Grit your teeth and push'}, hint:{ja:'健康が高ければ耐えられる',en:'Good health can endure'},
+     check:{stat:'health',dc:60,eff_fail:{health:-12,mind:-6},result_fail:{ja:'限界を超えた。倒れて、ようやく休めた。',en:'You passed your limit. Only by collapsing could you rest.'}},
+     eff:{cash:8,health:-4}, result:{ja:'なんとか乗り切った。でも、長くは続かない。',en:'You scraped through. But not for long.'}},
+  ]},
+ {icon:'📱', theme:'bond', title:{ja:'古い縁の再会',en:'An Old Bond Returns'}, body:{ja:'すれ違ったまま離れた人から、連絡が来た。',en:'Someone you drifted apart from reaches out.'},
+  choices:[
+   {label:{ja:'もう一度つながる',en:'Reconnect'}, eff:{bond:8,mind:5}, good:1, addCompanion:true,
+     result:{ja:'わだかまりは、会って話したら溶けた。仲間が一人、増えた。',en:'The knot dissolved once you talked. You gained an ally.'}},
+   {label:{ja:'そっと既読にする',en:'Quietly leave it read'}, eff:{mind:3,bond:-3},
+     result:{ja:'戻らない縁もある。それでも、前を向く。',en:'Some bonds don’t return. Still, you face forward.'}},
+  ]},
+ {icon:'🕯️', theme:'city', title:{ja:'差し出す手',en:'An Offered Hand'}, body:{ja:'うずくまる人がいる。かつての自分に、よく似ている。',en:'Someone crouches, low. They look like you once did.'},
+  choices:[
+   {label:{ja:'お金と時間を割いて助ける',en:'Spend money and time to help'}, eff:{cash:-6,trust:5,bond:6}, good:3, addCompanion:true,
+     result:{ja:'見返りはない。でも、灯は確かに、誰かに渡った。',en:'No reward. But a light truly passed to someone.'}},
+   {label:{ja:'余裕がなく、通り過ぎる',en:'Walk past — you’ve nothing to spare'}, eff:{mind:-3},
+     result:{ja:'仕方ない。でも、その後ろ姿が、頭を離れない。',en:'It can’t be helped. But their figure lingers in your mind.'}},
+  ]},
+];
+
+const BRANCH_EVENTS = [
+ {icon:'🛤️', theme:'travel', title:{ja:'分かれ道',en:'A Fork in the Road'}, body:{ja:'安全な道と、険しい近道。どちらを選ぶ？',en:'A safe road, or a steep shortcut. Which way?'},
+  choices:[
+   {label:{ja:'安全な道を行く',en:'Take the safe road'}, eff:{cash:4,health:2}, good:1,
+     result:{ja:'遠回りでも、確かな一歩を重ねていく。',en:'The long way — but each step is sure.'}},
+   {label:{ja:'険しい近道に挑む',en:'Brave the shortcut'}, hint:{ja:'心が高いと報われる',en:'A strong mind is rewarded'},
+     check:{stat:'mind',dc:57,eff_fail:{cash:-6,health:-4},result_fail:{ja:'道は険しすぎた。引き返す体力を使った。',en:'Too steep. You spent your strength turning back.'}},
+     eff:{cash:12,mind:3}, result:{ja:'近道は、確かに早かった。',en:'The shortcut truly was faster.'}},
+  ]},
+ {icon:'🏘️', theme:'family', title:{ja:'住む場所',en:'Where to Live'}, body:{ja:'都会に出るか、地元に残るか。',en:'Move to the big city, or stay in your hometown?'},
+  choices:[
+   {label:{ja:'都会で勝負する',en:'Try your luck in the city'}, hint:{ja:'稼げるが、消耗もする',en:'More money, but more wear'},
+     check:{stat:'health',dc:52,eff_fail:{cash:8,health:-8},result_fail:{ja:'稼ぎは増えた。でも、体がついていかない。',en:'You earned more — but your body lagged behind.'}},
+     eff:{cash:12,trust:2}, result:{ja:'刺激の中で、ぐんと力をつけた。',en:'Amid the bustle, you grew stronger.'}},
+   {label:{ja:'地元に根を張る',en:'Put down roots at home'}, eff:{cash:3,bond:6,health:3}, good:1, addCompanion:true,
+     result:{ja:'顔なじみに囲まれて、心がほどけた。仲間も増えた。',en:'Among familiar faces, your heart eased. You gained an ally.'}},
+  ]},
+];
+
+const ILLNESS_EVENT = {icon:'🏥', theme:'illness', title:{ja:'病',en:'Illness'}, body:{ja:'体に不調のサイン。検査の結果、しばらく治療が必要だと言われた。',en:'A sign of illness. The tests say you’ll need treatment for a while.'},
+  choices:[
+   {label:{ja:'お金を使って、しっかり治療する',en:'Pay for proper treatment'}, eff:{cash:-8,health:12}, good:1,
+     result:{ja:'お金は減った。でも体は、お金では買い戻せない。',en:'Money shrank. But health can’t be bought back later.'}},
+   {label:{ja:'無理をして、治療を後回しに',en:'Put it off and push through'}, hint:{ja:'健康が低いと倒れる',en:'Low health may collapse'},
+     check:{stat:'health',dc:55,eff_fail:{health:-12,skip:true},result_fail:{ja:'無理がたたって倒れた。しばらく動けない。',en:'You pushed too hard and collapsed. You can’t move for a while.'}},
+     eff:{cash:4,health:-4}, result:{ja:'今回はなんとか動けた。でも、無理は利子をつけて返ってくる。',en:'You managed this time. But overreach returns with interest.'}},
+  ]};
+
+/* ---- expanded event pool (batch 1) ---- */
+const EXTRA_EVENTS = [
+ {icon:'📈', theme:'work', title:{ja:'昇進の打診',en:'Offered a Promotion'}, body:{ja:'上司に呼ばれた。「次のリーダーを任せたい」。やりがいはある。でも、責任も重い。',en:'Your boss calls you in. “I want you to lead the next team.” Rewarding — but heavy.'},
+  choices:[
+   {label:{ja:'引き受けて、力を試す',en:'Accept and test yourself'}, hint:{ja:'心が高いと活躍',en:'A strong mind shines'},
+    check:{stat:'mind',dc:56,eff_fail:{cash:4,health:-6,mind:-3},result_fail:{ja:'重圧に押されぎみ。でも、人は失敗しながら大きくなる。',en:'The pressure got to you. But people grow through stumbles.'}},
+    eff:{cash:12,trust:5,mind:3}, good:1, result:{ja:'任された仕事を、しっかりやり遂げた。',en:'You took the role and carried it well.'}},
+   {label:{ja:'今の立場で着実に',en:'Stay where you’re steady'}, eff:{cash:4,health:4}, good:1,
+    result:{ja:'背伸びはしない。自分のペースを守ることも、強さだ。',en:'No overreaching. Keeping your own pace is a strength too.'}},
+  ]},
+ {icon:'📉', theme:'loss', title:{ja:'リストラの波',en:'The Layoff Wave'}, body:{ja:'会社の業績が傾いた。「次は自分かもしれない」。重い空気が、職場に流れる。',en:'The company is sinking. “I could be next.” A heavy air fills the office.'},
+  choices:[
+   {label:{ja:'早めに次の道を探す',en:'Start seeking the next road early'}, check:{stat:'bond',dc:48,eff_fail:{cash:-6,mind:-4},result_fail:{ja:'すぐには見つからない。でも、動いた足は裏切らない。',en:'Nothing turns up yet. But moving feet never betray you.'}},
+    eff:{cash:8,bond:5}, good:2, result:{ja:'人づての縁が、新しい仕事を運んできた。',en:'A connection brought you new work.'}},
+   {label:{ja:'残って踏ん張る',en:'Stay and hold on'}, eff:{cash:5,health:-4}, result:{ja:'なんとか生き残った。でも、安心はできない。',en:'You survived the cut. But you can’t relax.'}},
+  ]},
+ {icon:'💻', theme:'work', title:{ja:'副業のはじまり',en:'A Side Hustle Begins'}, body:{ja:'夜、少しだけ自分の仕事を始めてみた。眠い。でも、自分の手で何かを作る感覚があった。',en:'At night, you start a little work of your own. You’re tired. But you feel the joy of making something with your hands.'},
+  choices:[
+   {label:{ja:'睡眠を削って打ち込む',en:'Pour in your sleep hours'}, check:{stat:'health',dc:55,eff_fail:{cash:6,health:-10},result_fail:{ja:'稼ぎは出た。でも体は正直だ。倒れる前に気づけた。',en:'It paid — but your body is honest. You caught it before collapse.'}},
+    eff:{cash:12,mind:3}, result:{ja:'コツコツが実を結び始めた。',en:'The steady effort began to bear fruit.'}},
+   {label:{ja:'無理せず、週末だけ',en:'Weekends only, no strain'}, eff:{cash:5,mind:4,health:2}, good:1, result:{ja:'細く長く。続けられる形が、いちばん強い。',en:'Slow but lasting. What you can sustain is strongest.'}},
+  ]},
+ {icon:'🚀', theme:'work', title:{ja:'独立の決断',en:'Going Independent'}, body:{ja:'「自分の店を持ちたい」。ずっと胸にあった夢。踏み出すなら、今かもしれない。',en:'“I want my own place.” A dream long held. If ever, now might be the time.'},
+  choices:[
+   {label:{ja:'貯金をかけて挑む',en:'Bet your savings and go'}, hint:{ja:'心が高いと成功率UP',en:'A strong mind raises success'},
+    check:{stat:'mind',dc:60,eff_fail:{cash:-16,mind:-4},result_fail:{ja:'初めの一年は苦しかった。でも、挑んだ事実は消えない。',en:'The first year was hard. But the fact that you tried never fades.'}},
+    eff:{cash:20,mind:6,trust:4}, good:2, result:{ja:'小さな店に、少しずつ常連がついた。',en:'Your little place slowly gathered regulars.'}},
+   {label:{ja:'もう少し準備を重ねる',en:'Prepare a while longer'}, eff:{cash:3,trust:3,mind:2}, good:1, result:{ja:'焦らない。土台を固める時間も、夢の一部だ。',en:'No rush. Building the foundation is part of the dream too.'}},
+  ]},
+ {icon:'📧', theme:'fraud', title:{ja:'当選しました', en:'“You’ve Won!”'}, body:{ja:'「高額当選。手数料だけお振込を」。スマホに届いた、うますぎるメッセージ。',en:'“You’ve won big — just pay the handling fee.” A too-good message on your phone.'},
+  choices:[
+   {label:{ja:'無視して、即削除する',en:'Ignore it and delete'}, eff:{trust:4,mind:3}, good:1, result:{ja:'うまい話には裏がある。落ち着いて、見送った。',en:'Easy money has a catch. Calmly, you let it pass.'}},
+   {label:{ja:'念のため手数料を払う',en:'Pay the fee, just in case'}, eff:{cash:-12,trust:-3}, result:{ja:'当選などなかった。悔しいが、これも学びだ。次は引っかからない。',en:'There was no prize. It stings — but it’s a lesson. Not next time.'}},
+  ]},
+ {icon:'💌', theme:'fraud', title:{ja:'優しすぎる相手',en:'Someone Too Kind'}, body:{ja:'出会ったばかりの相手が、やたら優しい。そして、そっとお金の相談を切り出してきた。',en:'Someone you just met is awfully kind. Then, softly, they bring up money.'},
+  choices:[
+   {label:{ja:'冷静に距離を取る',en:'Calmly keep your distance'}, hint:{ja:'縁が高いと見抜ける',en:'Strong bonds see through it'},
+    check:{stat:'bond',dc:54,eff_fail:{cash:-14,mind:-5},result_fail:{ja:'情にほだされ、渡してしまった。連絡は途絶えた。心は痛むが、優しさは罪じゃない。',en:'Moved by feeling, you gave. Then silence. It hurts — but kindness is no crime.'}},
+    eff:{trust:4,mind:4}, good:1, result:{ja:'違和感を信じてよかった。優しさの皮を、そっと見抜けた。',en:'Trusting your unease paid off. You saw past the mask of kindness.'}},
+   {label:{ja:'信じて、お金を渡す',en:'Trust them, give the money'}, eff:{cash:-14,mind:-5,trust:-3}, result:{ja:'お金は戻らなかった。でも、人を信じられる心は、まだ失っていない。',en:'The money never returned. But your ability to trust isn’t lost.'}},
+  ]},
+ {icon:'🧓', theme:'family', title:{ja:'親の介護',en:'Caring for a Parent'}, body:{ja:'年老いた親に、手が必要になった。仕事と、家族と。どちらも大切で、体は一つだ。',en:'Your aging parent needs help. Work, and family. Both matter — and you have one body.'},
+  choices:[
+   {label:{ja:'仕事を調整して、寄り添う',en:'Adjust work and be there'}, eff:{cash:-8,bond:8,mind:4}, good:2, result:{ja:'お金より、今しか取り戻せない時間がある。そばにいる、と決めた。',en:'Some time can’t be bought back. You chose to be near.'}},
+   {label:{ja:'仕事を優先し、できる範囲で',en:'Prioritize work, help as you can'}, eff:{cash:4,bond:-4,mind:-2}, result:{ja:'生活も守らねば。ただ、後悔だけは残さないように。',en:'You must protect your living too. Just — leave no regrets.'}},
+  ]},
+ {icon:'👶', theme:'family', title:{ja:'小さな命',en:'A Tiny Life'}, body:{ja:'家族が増えた。守るものができると、人は少しだけ強くなれる。そして、少しだけ怖くなる。',en:'Your family grew. With something to protect, you grow a little stronger — and a little more afraid.'},
+  choices:[
+   {label:{ja:'がむしゃらに働く',en:'Work with everything you have'}, eff:{cash:12,health:-5,bond:3}, result:{ja:'疲れる。でも、寝顔を見ると、もう少し頑張れる。',en:'You’re worn out. But that sleeping face gives you a little more.'}},
+   {label:{ja:'そばにいる時間を大切にする',en:'Cherish time together'}, eff:{cash:2,bond:10,mind:5}, good:2, result:{ja:'お金じゃ買えない時間。今しかない笑顔を、ちゃんと見た。',en:'Time money can’t buy. You truly saw the smiles that won’t come twice.'}},
+  ]},
+ {icon:'🏠', theme:'money', title:{ja:'家を買う',en:'Buying a Home'}, body:{ja:'長いローン。重い決断。でも、自分の帰る場所を持つというのは、特別なことだ。',en:'A long loan. A heavy decision. But having a place to come home to is something special.'},
+  choices:[
+   {label:{ja:'無理のない範囲で買う',en:'Buy within your means'}, eff:{cash:-12,mind:6,bond:4}, good:1, result:{ja:'背伸びしすぎない選択。安心して眠れる夜が、増えた。',en:'A choice that didn’t overreach. More nights you can sleep easy.'}},
+   {label:{ja:'理想を追って大きく借りる',en:'Chase the ideal, borrow big'}, check:{stat:'money',dc:55,eff_fail:{cash:-20,mind:-5},result_fail:{ja:'返済が重くのしかかる。家はあるのに、心は休まらない。',en:'The payments press down. You have a home, yet your heart can’t rest.'}},
+    eff:{cash:-14,mind:4}, result:{ja:'理想の住まいを手に入れた。誇らしさと、少しの不安と。',en:'You got your dream home. Pride — and a little worry.'}},
+  ]},
+ {icon:'🎰', theme:'loss', title:{ja:'一発逆転の誘い',en:'A Shot at Easy Riches'}, body:{ja:'「これで全部取り返せる」。追い込まれた時ほど、甘い誘いは光って見える。',en:'“This’ll win it all back.” The more cornered you are, the brighter the easy bait looks.'},
+  choices:[
+   {label:{ja:'きっぱり断つ',en:'Cut it off completely'}, eff:{mind:6,trust:4}, good:2, result:{ja:'一番苦しい時に、踏みとどまれた。それは、本物の強さだ。',en:'You held the line at your hardest moment. That’s real strength.'}},
+   {label:{ja:'最後の賭けに出る',en:'Take one last gamble'}, eff:{cash:-12,mind:-6}, result:{ja:'うまい逆転なんて、なかった。でも、底を知った人は、もう一度立てる。',en:'There was no easy reversal. But those who hit bottom can rise again.'}},
+  ]},
+ {icon:'🩺', theme:'illness', title:{ja:'再検査',en:'A Second Test'}, body:{ja:'健康診断の通知。「再検査が必要です」。心臓が、ことりと音を立てた気がした。',en:'A note from your checkup. “Further tests needed.” Your heart seemed to skip.'},
+  choices:[
+   {label:{ja:'すぐに病院へ行く',en:'Go to the hospital right away'}, eff:{cash:-4,health:10,mind:3}, good:1, result:{ja:'早めに動いて、大事には至らなかった。体は、何より大事な資本だ。',en:'Acting early, it stayed minor. Health is your most precious capital.'}},
+   {label:{ja:'忙しいから後回しに',en:'Put it off — you’re busy'}, check:{stat:'health',dc:58,eff_fail:{health:-12,mind:-4},result_fail:{ja:'放っておいたら、悪化していた。後悔が、胸をよぎる。',en:'Left alone, it worsened. Regret crosses your chest.'}},
+    eff:{cash:2,health:-3}, result:{ja:'今回は大事なかった。でも、運に頼るのは一度きりにしよう。',en:'It was fine this time. But don’t lean on luck twice.'}},
+  ]},
+ {icon:'😵', theme:'illness', title:{ja:'限界のサイン',en:'A Sign of the Limit'}, body:{ja:'朝、布団から起き上がれなかった。体じゃなく、心が「もう無理」と言っている。',en:'One morning, you couldn’t get out of bed. Not your body — your heart said, “No more.”'},
+  choices:[
+   {label:{ja:'思い切って、休みを取る',en:'Dare to take real rest'}, eff:{cash:-4,health:8,mind:10}, good:2, result:{ja:'休むのは、負けじゃない。立ち止まる勇気が、あなたを守った。',en:'Resting isn’t losing. The courage to pause protected you.'}},
+   {label:{ja:'気合いで乗り切る',en:'Push through on willpower'}, eff:{cash:4,mind:-8,health:-4}, result:{ja:'今日はしのげた。でも、心の電池は、いつか替えが要る。',en:'You got through today. But the heart’s battery needs recharging someday.'}},
+  ]},
+ {icon:'💔', theme:'love', title:{ja:'失恋',en:'Heartbreak'}, body:{ja:'好きだった人が、去っていった。理由を全部聞いても、埋まらない穴がある。',en:'The one you loved walked away. Even with every reason, a hole remains.'},
+  choices:[
+   {label:{ja:'泣いて、ちゃんと悲しむ',en:'Cry, and truly grieve'}, eff:{mind:6,bond:2}, good:1, result:{ja:'悲しみに蓋をしない。涙の分だけ、心はまた歩き出せる。',en:'You didn’t bottle the sorrow. Tear by tear, your heart can walk again.'}},
+   {label:{ja:'仕事に逃げ込む',en:'Bury yourself in work'}, eff:{cash:8,mind:-5}, result:{ja:'忙しさで紛らわせた。でも、ふとした夜に、また思い出す。',en:'Busyness numbed it. But on a quiet night, it returns.'}},
+  ]},
+ {icon:'💍', theme:'love', title:{ja:'人生をともに',en:'A Life Together'}, body:{ja:'「これからも、となりにいてくれる?」。怖さもある。でも、その手は、温かかった。',en:'“Will you stay by my side?” There’s fear. But that hand was warm.'},
+  choices:[
+   {label:{ja:'勇気を出して、頷く',en:'Find the courage, and nod'}, eff:{bond:12,mind:6,cash:-4}, good:2, result:{ja:'二人なら、苦しい時も半分こ。支え合う相手ができた。',en:'Together, hard times halve. You found someone to lean on.'}},
+   {label:{ja:'今はまだ、一人でいたい',en:'For now, stay on your own'}, eff:{mind:4,bond:-3}, result:{ja:'自分の時間を選んだ。それも、間違いじゃない。',en:'You chose your own time. That’s no mistake either.'}},
+  ]},
+ {icon:'📱', theme:'loss', title:{ja:'画面の向こうの悪意',en:'Malice Behind the Screen'}, body:{ja:'何気ない投稿に、心ない言葉が並んだ。会ったこともない誰かの言葉が、なぜか深く刺さる。',en:'Cruel words pile under a harmless post. Words from strangers somehow cut deep.'},
+  choices:[
+   {label:{ja:'そっとスマホを置く',en:'Quietly put the phone down'}, eff:{mind:6,health:3}, good:1, result:{ja:'全員に好かれなくていい。画面を閉じれば、本当の世界がある。',en:'You needn’t be liked by all. Close the screen — the real world waits.'}},
+   {label:{ja:'言い返して、戦う',en:'Fight back, argue'}, eff:{mind:-6,health:-3}, result:{ja:'消耗するだけだった。沈黙もまた、一つの答えだと知る。',en:'It only drained you. Silence, too, you learn, is an answer.'}},
+  ]},
+ {icon:'🤲', theme:'city', title:{ja:'ボランティアの一日',en:'A Day of Volunteering'}, body:{ja:'誘われて、炊き出しの手伝いに行った。見知らぬ人の「ありがとう」が、思いのほか沁みた。',en:'Invited along, you helped at a soup kitchen. A stranger’s “thank you” sank in deeper than you’d expect.'},
+  choices:[
+   {label:{ja:'これからも続けてみる',en:'Keep doing it from now'}, eff:{cash:-3,trust:6,bond:6}, good:3, result:{ja:'誰かの役に立つと、自分の存在も少し許せる。灯は、巡る。',en:'Helping others, you forgive your own existence a little. The light circulates.'}},
+   {label:{ja:'今日だけの、いい思い出に',en:'A nice one-day memory'}, eff:{mind:4,bond:2}, good:1, result:{ja:'たった一日でも、温かさは残る。心の隅に、小さな灯がともった。',en:'Even one day leaves warmth. A small light glows in your heart’s corner.'}},
+  ]},
+ {icon:'🕯️', theme:'city', title:{ja:'壁の言葉',en:'Words on the Wall'}, body:{ja:'ふと立ち寄った街。ビルの壁に、見知らぬ人の言葉が刻まれていた。「あなたは一人じゃない」。',en:'You stop by a city. On a wall, a stranger’s words are carved: “You are not alone.”'},
+  choices:[
+   {label:{ja:'自分も一行、刻む',en:'Carve a line of your own'}, eff:{mind:10,bond:6,trust:4}, good:3, result:{ja:'うまく書けなくていい。その一行が、いつか誰かの夜を照らす。',en:'It needn’t be eloquent. That line may light someone’s night someday.'}},
+   {label:{ja:'静かに読んで、帰る',en:'Read quietly, and go'}, eff:{mind:6,bond:2}, good:1, result:{ja:'同じ痛みを越えた人がいる。それを知るだけで、息ができた。',en:'Someone crossed the same pain. Just knowing, you could breathe.'}},
+  ]},
+ {icon:'🎉', theme:'windfall', title:{ja:'思わぬ臨時収入',en:'An Unexpected Windfall'}, body:{ja:'昔の仕事の精算、忘れていた還付金。理由はどうあれ、財布が少しふくらんだ。',en:'A settlement from old work, a forgotten refund. Whatever the reason, your wallet swelled a bit.'},
+  choices:[
+   {label:{ja:'将来のために蓄える',en:'Save it for the future'}, eff:{cash:12,mind:3}, good:1, result:{ja:'浮かれず、コツコツ。備えあれば、心は少し軽くなる。',en:'No splurge, just savings. Being prepared lightens the heart.'}},
+   {label:{ja:'お世話になった人に贈る',en:'Give to someone who helped you'}, eff:{cash:4,trust:6,bond:6}, good:2, result:{ja:'恩は、巡らせるもの。渡した笑顔が、何より嬉しかった。',en:'Kindness is meant to circulate. The smile you gave was the best reward.'}},
+  ]},
+ {icon:'📉', theme:'money', title:{ja:'相場の暴落',en:'The Market Crashes'}, body:{ja:'コツコツ積んだ投資が、一夜で大きく目減りした。画面の赤い数字が、心臓に悪い。',en:'Your steady investments dropped hard overnight. The red numbers are bad for the heart.'},
+  choices:[
+   {label:{ja:'狼狽売りせず、持ち続ける',en:'Don’t panic-sell; hold on'}, hint:{ja:'心が高いと耐えられる',en:'A calm mind endures'},
+    check:{stat:'mind',dc:56,eff_fail:{cash:-10,mind:-4},result_fail:{ja:'不安に耐えきれず手放した。底で売る——あるあるだ。',en:'Anxiety won; you sold. Selling at the bottom — it happens.'}},
+    eff:{cash:8,mind:4}, good:1, result:{ja:'嵐は過ぎた。慌てなかった自分を、少し褒めたい。',en:'The storm passed. You’d praise yourself a little for staying calm.'}},
+   {label:{ja:'全部売って、損切りする',en:'Sell all, cut the loss'}, eff:{cash:-8,mind:2}, result:{ja:'痛いが、これ以上は失わない。引き際も、技術のうち。',en:'It hurts, but no more losses. Knowing when to stop is a skill.'}},
+  ]},
+ {icon:'😤', theme:'loss', title:{ja:'理不尽な上司',en:'An Unfair Boss'}, body:{ja:'毎日のように、心ない言葉が飛んでくる。自分が悪いのかと、思い込みそうになる。',en:'Day after day, cruel words fly. You almost convince yourself it’s your fault.'},
+  choices:[
+   {label:{ja:'記録して、しかるべき所に相談',en:'Document it; seek the right help'}, eff:{trust:5,mind:5,cash:-2}, good:2, result:{ja:'我慢が美徳とは限らない。声を上げて、自分を守った。',en:'Endurance isn’t always virtue. You spoke up and protected yourself.'}},
+   {label:{ja:'環境を変えるため、転職する',en:'Change jobs to change the air'}, check:{stat:'bond',dc:48,eff_fail:{cash:-6,mind:-2},result_fail:{ja:'すぐは決まらない。でも、逃げるが勝ちのこともある。',en:'It takes time. But sometimes, walking away is winning.'}},
+    eff:{cash:4,mind:6,bond:3}, good:1, result:{ja:'新しい場所で、息ができた。環境は、変えていい。',en:'In a new place, you could breathe. You’re allowed to change your world.'}},
+  ]},
+ {icon:'🐶', theme:'bond', title:{ja:'小さな家族',en:'A Small Family Member'}, body:{ja:'雨の日、震えていた小さな命と目が合った。連れて帰れば、責任が増える。でも——。',en:'On a rainy day, your eyes meet a small, shivering life. Take it home, and your burdens grow. But —'},
+  choices:[
+   {label:{ja:'家族として迎える',en:'Welcome it as family'}, eff:{cash:-4,bond:10,mind:8}, good:2, result:{ja:'手はかかる。でも、帰る家に待つ存在がいるのは、温かい。',en:'It’s work. But having someone waiting at home is warm.'}},
+   {label:{ja:'保護施設に届ける',en:'Take it to a shelter'}, eff:{trust:4,bond:3}, good:1, result:{ja:'自分では飼えない。でも、ちゃんと託した。それも優しさだ。',en:'You couldn’t keep it. But you saw it cared for. That’s kindness too.'}},
+  ]},
+ {icon:'🌾', theme:'travel', title:{ja:'田舎への移住',en:'Moving to the Countryside'}, body:{ja:'都会の喧騒に、少し疲れた。ゆっくり流れる時間のある場所へ、行ってみたくなった。',en:'Worn by the city’s noise, you long for a place where time flows slowly.'},
+  choices:[
+   {label:{ja:'思い切って移り住む',en:'Make the move'}, eff:{cash:-6,health:8,mind:8,bond:3}, good:1, result:{ja:'収入は減った。でも、空が広い。心の余白が、戻ってきた。',en:'Income shrank. But the sky is wide. The margins of your heart returned.'}},
+   {label:{ja:'都会に残り、踏ん張る',en:'Stay and tough it out'}, eff:{cash:8,health:-3}, result:{ja:'刺激の中で生きる道を選んだ。それも、一つの強さだ。',en:'You chose to live amid the buzz. That’s a strength too.'}},
+  ]},
+ {icon:'✈️', theme:'travel', title:{ja:'海外への挑戦',en:'A Leap Abroad'}, body:{ja:'言葉も文化も違う場所で、自分を試したくなった。怖い。でも、心が躍っている。',en:'You want to test yourself where language and culture differ. It’s scary. But your heart races.'},
+  choices:[
+   {label:{ja:'飛び込んでみる',en:'Take the plunge'}, hint:{ja:'健康が高いと乗り切れる',en:'Good health carries you'},
+    check:{stat:'health',dc:52,eff_fail:{cash:6,health:-8,mind:3},result_fail:{ja:'慣れない環境に体は参った。でも、見た景色は一生の宝だ。',en:'The strange world tired your body. But the sights are a lifelong treasure.'}},
+    eff:{cash:10,mind:8,trust:3}, good:1, result:{ja:'世界は広く、自分は小さい。それを知れたことが、財産になった。',en:'The world is vast, you small. Knowing that became your wealth.'}},
+   {label:{ja:'地に足をつけて、国内で',en:'Stay grounded, at home'}, eff:{cash:5,mind:3}, result:{ja:'今いる場所で根を張る。それも立派な選択だ。',en:'Putting down roots where you are. A fine choice too.'}},
+  ]},
+ {icon:'📞', theme:'loss', title:{ja:'容赦ない催促',en:'A Relentless Demand'}, body:{ja:'返しきれない支払いがある。鳴り続ける電話。眠れない夜が、続いていた。',en:'A debt you can’t fully repay. A phone that won’t stop. Sleepless nights drag on.'},
+  choices:[
+   {label:{ja:'専門家や公的窓口に相談する',en:'Consult an expert or a public office'}, eff:{cash:-4,mind:8,trust:4}, good:2, result:{ja:'一人で抱えなくていい。相談したら、道は思ったより、ちゃんとあった。',en:'You needn’t carry it alone. You asked — and the road was more real than you feared.'}},
+   {label:{ja:'誰にも言わず、耐える',en:'Tell no one and endure'}, check:{stat:'bond',dc:50,eff_fail:{mind:-8,health:-4},result_fail:{ja:'抱え込みすぎて、心がきしむ。それでも、朝はまた来る。',en:'You held too much; your heart creaks. And still, morning comes again.'}},
+    eff:{mind:-3,cash:2}, result:{ja:'なんとかしのいだ。でも、頼ることを覚えてもいい頃だ。',en:'You scraped by. But it may be time to learn to lean on others.'}},
+  ]},
+ {icon:'🌱', theme:'comeback', title:{ja:'もう一度の事業',en:'A Second Venture'}, body:{ja:'一度は失敗した。それでも、もう一度だけ、自分の手で立ち上げてみたくなった。',en:'You failed once. Even so, you want to build something with your own hands, one more time.'},
+  choices:[
+   {label:{ja:'失敗を糧に、再挑戦する',en:'Try again, wiser for the fall'}, hint:{ja:'信頼が高いと味方が集まる',en:'High trust draws allies'},
+    check:{stat:'trust',dc:54,eff_fail:{cash:-8,mind:4},result_fail:{ja:'今回も簡単じゃない。でも、転んだ数だけ、立ち方を知っている。',en:'It’s not easy this time either. But you know how to rise, fall by fall.'}},
+    eff:{cash:16,mind:8,trust:5}, good:2, addCompanion:true, result:{ja:'昔の仲間が「また一緒に」と集まった。一度の失敗は、終わりじゃない。',en:'Old friends gathered: “Let’s do it again.” One failure isn’t the end.'}},
+   {label:{ja:'安定を選び、勤めに出る',en:'Choose stability, take a job'}, eff:{cash:8,health:4}, good:1, result:{ja:'夢を諦めたわけじゃない。今は、力を蓄える時だ。',en:'You didn’t give up the dream. For now, it’s time to gather strength.'}},
+  ]},
+ {icon:'🙏', theme:'bond', title:{ja:'恩人との再会',en:'Meeting a Benefactor'}, body:{ja:'どん底の時、手を差し伸べてくれた人と、街でばったり。あの日の恩を、まだ返せていない。',en:'You run into the person who helped you at rock bottom. You still haven’t repaid that day.'},
+  choices:[
+   {label:{ja:'感謝を伝え、恩を返す',en:'Give thanks and repay the kindness'}, eff:{cash:-4,trust:6,bond:8,mind:5}, good:2, result:{ja:'「あの時、助けてくれてありがとう」。言えてよかった。心の宿題が、一つ消えた。',en:'“Thank you for that day.” You got to say it. One weight on your heart lifted.'}},
+   {label:{ja:'照れて、会釈だけする',en:'Shy away with just a nod'}, eff:{mind:-2,bond:1}, result:{ja:'言えなかった。でも、いつか必ず。心に、small約束を一つ刻んだ。',en:'You couldn’t say it. But someday, surely. You made a small promise to yourself.'}},
+  ]},
+ {icon:'🤝', theme:'bond', title:{ja:'仲間の挑戦',en:'A Friend’s Challenge'}, body:{ja:'友が夢に挑むという。「お金を貸してほしい」ではなく、「応援してほしい」と言った。',en:'A friend is chasing a dream. Not “lend me money,” but “cheer me on.”'},
+  choices:[
+   {label:{ja:'全力で背中を押す',en:'Cheer them with all you have'}, eff:{bond:8,mind:4}, good:2, addCompanion:true, result:{ja:'損得じゃない応援。友の目が輝いた。縁が、また一つ深まった。',en:'Support beyond gain or loss. Their eyes lit up. A bond deepened.'}},
+   {label:{ja:'現実的な助言をする',en:'Offer realistic advice'}, eff:{trust:4,bond:2}, good:1, result:{ja:'甘くない言葉も、相手を思えばこそ。友は、少し考え込んでいた。',en:'Hard words, given out of care. Your friend fell into thought.'}},
+  ]},
+ {icon:'🎓', theme:'work', title:{ja:'学び直し',en:'Going Back to Learn'}, body:{ja:'この歳で、また学校に通うなんて。周りは若い人ばかり。でも、知りたい気持ちは本物だ。',en:'Back to school, at this age. Everyone’s younger. But the wish to learn is real.'},
+  choices:[
+   {label:{ja:'恥を捨てて、学ぶ',en:'Drop the pride, and learn'}, eff:{cash:-6,mind:8,trust:4}, good:1, result:{ja:'いくつになっても、人は変われる。新しい扉が、静かに開いた。',en:'At any age, people can change. A new door quietly opened.'}},
+   {label:{ja:'独学で、こっそり頑張る',en:'Self-study, quietly'}, eff:{mind:5,cash:-1}, good:1, result:{ja:'自分のペースで、一歩ずつ。学びに、遅すぎることはない。',en:'At your own pace, step by step. It’s never too late to learn.'}},
+  ]},
+ {icon:'🌧️', theme:'loss', title:{ja:'大切な人との別れ',en:'Losing Someone Dear'}, body:{ja:'ずっとそばにいた人が、いなくなった。当たり前だった日々が、急に遠く感じる。',en:'Someone always near you is gone. The ordinary days suddenly feel far away.'},
+  choices:[
+   {label:{ja:'思い出を抱いて、前を向く',en:'Carry the memories, face forward'}, eff:{mind:6,bond:4}, good:2, result:{ja:'悲しみは消えない。でも、共にいた時間は、確かにあった。それを灯にして歩く。',en:'The grief won’t vanish. But the shared time was real. You walk by its light.'}},
+   {label:{ja:'しばらく、立ち止まる',en:'Pause, for a while'}, eff:{health:4,mind:2,cash:-3}, good:1, result:{ja:'急がなくていい。悲しむ時間も、生きることの一部だ。',en:'No need to hurry. Time to grieve is part of living too.'}},
+  ]},
+];
+BOARD_EVENTS.push(...EXTRA_EVENTS);
+
+/* ---- expanded event pool (batch 2) ---- */
+const EXTRA_EVENTS2 = [
+ {icon:'🧾', theme:'loss', title:{ja:'給料の未払い',en:'Wages Unpaid'}, body:{ja:'働いた分の給料が、振り込まれていない。「もう少し待って」と言われ続け、月が変わった。',en:'The pay you earned never came. “Just wait a bit,” they kept saying — and a month passed.'},
+  choices:[
+   {label:{ja:'証拠を集めて、正当に請求する',en:'Gather proof and claim it rightfully'}, eff:{cash:8,trust:5,mind:3}, good:2, result:{ja:'泣き寝入りしない。記録を揃えて、ちゃんと取り戻した。',en:'No suffering in silence. With records in hand, you got it back.'}},
+   {label:{ja:'波風立てず、諦める',en:'Let it go, keep the peace'}, eff:{cash:-6,mind:-3}, result:{ja:'損をした。でも、いつか「あの時声を上げれば」と思うかもしれない。',en:'You lost out. Someday you may wish you’d spoken up.'}},
+  ]},
+ {icon:'😠', theme:'betrayal', title:{ja:'横取りされた手柄',en:'Stolen Credit'}, body:{ja:'徹夜で仕上げた企画。会議で、同僚がそれを「自分のもの」として発表していた。',en:'A plan you finished pulling all-nighters. In the meeting, a colleague presented it as their own.'},
+  choices:[
+   {label:{ja:'冷静に、事実で示す',en:'Calmly show the facts'}, hint:{ja:'信頼が高いと信じてもらえる',en:'High trust earns belief'},
+    check:{stat:'trust',dc:54,eff_fail:{mind:-5,trust:-2},result_fail:{ja:'証明しきれず、もやもやが残った。でも、見ている人は見ている。',en:'You couldn’t fully prove it. But those who watch, watch closely.'}},
+    eff:{trust:6,mind:4}, good:1, result:{ja:'淡々と記録を示した。真実は、静かに伝わった。',en:'You quietly showed the records. The truth came through.'}},
+   {label:{ja:'ぐっとこらえて、次で見返す',en:'Swallow it; outshine them next time'}, eff:{mind:-3,trust:3}, result:{ja:'今は耐える。本当の実力は、いつか必ず光る。',en:'You endure for now. Real skill always shines in time.'}},
+  ]},
+ {icon:'📑', theme:'money', title:{ja:'大口の契約',en:'A Big Contract'}, body:{ja:'人生を変えるかもしれない、大きな取引の話。準備に時間と元手が要る。',en:'A deal that might change your life. It needs time and capital to prepare.'},
+  choices:[
+   {label:{ja:'資金を投じて、本気で取りにいく',en:'Invest and go all in'}, hint:{ja:'心が高いとまとめられる',en:'A sharp mind closes it'},
+    check:{stat:'mind',dc:58,eff_fail:{cash:-10,mind:-3},result_fail:{ja:'惜しくもまとまらなかった。でも、ここまで戦えた自分がいる。',en:'It slipped away. But you fought all the way here.'}},
+    eff:{cash:20,trust:5}, good:1, result:{ja:'大きな契約が成立した。努力が、形になった瞬間だ。',en:'The big deal closed. A moment where effort took shape.'}},
+   {label:{ja:'身の丈に合う規模で',en:'Keep it your own size'}, eff:{cash:8,mind:2}, good:1, result:{ja:'無理はしない。確実な一歩を、選んだ。',en:'No overreach. You chose a sure step.'}},
+  ]},
+ {icon:'🛒', theme:'money', title:{ja:'値上げの波',en:'Everything Costs More'}, body:{ja:'気づけば、何もかも高くなっていた。同じ給料なのに、財布の減りが早い。',en:'Before you knew it, everything got pricier. Same pay, but the wallet empties faster.'},
+  choices:[
+   {label:{ja:'家計を見直し、工夫する',en:'Rework the budget, get clever'}, eff:{cash:6,mind:3}, good:1, result:{ja:'小さな工夫の積み重ね。暮らしは、知恵で守れる。',en:'Small clever habits add up. Wisdom can protect a life.'}},
+   {label:{ja:'気にせず、今まで通り',en:'Ignore it, carry on'}, eff:{cash:-6}, result:{ja:'気づけば、貯金が減っていた。たまには、立ち止まって見直そう。',en:'Quietly, savings shrank. Sometimes, pause and reassess.'}},
+  ]},
+ {icon:'🎊', theme:'bond', title:{ja:'親友の結婚式',en:'A Best Friend’s Wedding'}, body:{ja:'幼なじみが、晴れの日を迎えた。心からの祝福と、少しの寂しさが、同時にこみ上げる。',en:'A childhood friend’s big day. Heartfelt joy — and a touch of loneliness — rise together.'},
+  choices:[
+   {label:{ja:'心を込めて、祝う',en:'Celebrate with all your heart'}, eff:{cash:-4,bond:8,mind:5}, good:2, result:{ja:'大切な人の幸せは、自分の幸せでもある。いい涙が出た。',en:'A loved one’s joy is your joy too. Good tears came.'}},
+   {label:{ja:'忙しさを理由に、欠席する',en:'Skip it, citing busyness'}, eff:{cash:2,bond:-6}, result:{ja:'仕事は進んだ。でも、戻らない日もある。少し、後悔した。',en:'Work moved on. But some days don’t return. You regretted it a little.'}},
+  ]},
+ {icon:'🧒', theme:'family', title:{ja:'子の反抗期',en:'A Child Rebels'}, body:{ja:'「うるさい、ほっといて」。かわいかったあの子が、心の扉を閉じてしまった。',en:'“Leave me alone.” The child who was so sweet has closed the door of their heart.'},
+  choices:[
+   {label:{ja:'急かさず、待って見守る',en:'Don’t rush; wait and watch over them'}, eff:{bond:8,mind:4}, good:2, result:{ja:'子は、親が思うより自分で考えている。信じて、待った。',en:'Children think more than parents know. You trusted, and waited.'}},
+   {label:{ja:'厳しく、正面からぶつかる',en:'Confront them head-on, sternly'}, check:{stat:'bond',dc:52,eff_fail:{bond:-6,mind:-4},result_fail:{ja:'溝が深まった。正しさより、寄り添いが要る時もある。',en:'The rift deepened. Sometimes closeness matters more than being right.'}},
+    eff:{bond:3,trust:3}, result:{ja:'本気でぶつかった。火花は散ったが、想いは伝わった。',en:'You clashed sincerely. Sparks flew, but your care got through.'}},
+  ]},
+ {icon:'💔', theme:'loss', title:{ja:'二人の道が分かれる',en:'Two Paths Part'}, body:{ja:'長く連れ添った人と、別々の道を歩むことになった。愛がなくなったのではなく、形が変わった。',en:'You and a long partner choose separate roads. Love didn’t vanish — its shape changed.'},
+  choices:[
+   {label:{ja:'感謝して、送り出す',en:'Give thanks and let go'}, eff:{cash:-6,mind:6,bond:2}, good:2, result:{ja:'共に過ごした時間は、嘘にならない。穏やかに、終わりを受け入れた。',en:'The shared years don’t become a lie. Calmly, you accepted the end.'}},
+   {label:{ja:'感情をぶつけ、争う',en:'Let emotions clash, fight it out'}, eff:{cash:-8,mind:-6}, result:{ja:'消耗だけが残った。それでも、いつかは前を向ける日が来る。',en:'Only exhaustion remained. Still, a day to face forward will come.'}},
+  ]},
+ {icon:'🦴', theme:'illness', title:{ja:'古傷の再発',en:'An Old Wound Returns'}, body:{ja:'昔いためた場所が、また痛み出した。年齢を、ふと意識させられる。',en:'An old injury aches again. It quietly reminds you of your age.'},
+  choices:[
+   {label:{ja:'きちんと治療し、体を労る',en:'Treat it properly; be kind to your body'}, eff:{cash:-6,health:12}, good:1, result:{ja:'だましだましは、もう終わり。体と、ちゃんと向き合った。',en:'No more pushing through. You faced your body honestly.'}},
+   {label:{ja:'痛み止めで、ごまかす',en:'Mask it with painkillers'}, eff:{cash:-2,health:-4}, result:{ja:'その場はしのげた。でも、根っこは残ったまま。',en:'It got you by. But the root remains.'}},
+  ]},
+ {icon:'🎤', theme:'fraud', title:{ja:'熱狂のセミナー',en:'The Hyped Seminar'}, body:{ja:'「誰でも億万長者に」。壇上の人は自信満々。会場の熱気に、つい飲まれそうになる。',en:'“Anyone can be a millionaire.” The speaker brims with confidence. The room’s heat nearly sweeps you up.'},
+  choices:[
+   {label:{ja:'冷めた目で、席を立つ',en:'Stay cool and walk out'}, eff:{trust:5,mind:4}, good:2, result:{ja:'簡単に億万長者になれるなら、誰も苦労しない。落ち着いて、帰った。',en:'If riches were that easy, no one would struggle. Calmly, you left.'}},
+   {label:{ja:'高額な教材を契約する',en:'Sign up for the pricey course'}, eff:{cash:-16,mind:-4}, result:{ja:'中身は、どこにでもある話だった。高い勉強代になった。',en:'The content was nothing special. An expensive lesson.'}},
+  ]},
+ {icon:'🎯', theme:'work', title:{ja:'みんなの力で',en:'By Everyone’s Power'}, body:{ja:'自分のアイデアを、ネットで支援してもらう挑戦。応援は、集まるだろうか。',en:'You ask the internet to back your idea. Will the support come?'},
+  choices:[
+   {label:{ja:'想いを正直に、言葉にする',en:'Put your heart honestly into words'}, hint:{ja:'信頼が高いと共感を呼ぶ',en:'High trust draws sympathy'},
+    check:{stat:'trust',dc:53,eff_fail:{cash:2,mind:-2},result_fail:{ja:'目標には届かなかった。でも、応援してくれた人の顔は、忘れない。',en:'You missed the goal. But you won’t forget those who backed you.'}},
+    eff:{cash:14,bond:6,trust:4}, good:1, addCompanion:true, result:{ja:'見知らぬ人たちが、夢を後押ししてくれた。世界は、案外あたたかい。',en:'Strangers pushed your dream forward. The world is warmer than you’d think.'}},
+   {label:{ja:'自己資金で、地道にやる',en:'Bootstrap it quietly'}, eff:{cash:-4,mind:4}, good:1, result:{ja:'人に頼らず、まず自分で。小さくとも、確かな一歩。',en:'First on your own, not leaning on others. Small but sure.'}},
+  ]},
+ {icon:'🌊', theme:'loss', title:{ja:'思いがけない災害',en:'An Unexpected Disaster'}, body:{ja:'自然の力の前に、人は無力だ。積み上げてきたものの一部が、一夜にして失われた。',en:'Before nature’s force, people are powerless. Part of what you built was lost overnight.'},
+  choices:[
+   {label:{ja:'助け合い、立て直す',en:'Help each other and rebuild'}, eff:{cash:-8,bond:10,mind:6}, good:2, addCompanion:true, result:{ja:'近所の人と、声を掛け合った。失って初めて、つながりの強さを知った。',en:'Neighbors called out to one another. Only in loss did you feel the strength of ties.'}},
+   {label:{ja:'一人で、黙々と片づける',en:'Clean up alone, in silence'}, eff:{cash:-6,health:-4,mind:2}, result:{ja:'なんとか前を向く。でも、一人で抱えるには、重すぎる夜もある。',en:'You manage to face forward. But some nights are too heavy to carry alone.'}},
+  ]},
+ {icon:'🏆', theme:'windfall', title:{ja:'思いがけない表彰',en:'An Unexpected Award'}, body:{ja:'地道な働きが、誰かの目に留まっていた。「あなたの仕事を、評価したい」と声がかかる。',en:'Your quiet work caught someone’s eye. “We’d like to recognize you,” they say.'},
+  choices:[
+   {label:{ja:'素直に、喜んで受ける',en:'Accept it, gladly'}, eff:{cash:6,trust:6,mind:5}, good:1, result:{ja:'見ていてくれる人がいた。報われた気がして、また頑張れる。',en:'Someone had been watching. Feeling rewarded, you can push on.'}},
+   {label:{ja:'支えてくれた人に光を譲る',en:'Pass the spotlight to those who helped'}, eff:{trust:8,bond:6}, good:2, result:{ja:'「一人の力じゃない」。そう言える人を、人は信頼する。',en:'“It wasn’t me alone.” People trust those who can say that.'}},
+  ]},
+ {icon:'🍶', theme:'bond', title:{ja:'同窓会',en:'A Class Reunion'}, body:{ja:'十数年ぶりの再会。みんな、それぞれの人生を抱えていた。笑い話の裏に、苦労も見える。',en:'A reunion after many years. Everyone carries their own life. Behind the laughs, you glimpse hardship too.'},
+  choices:[
+   {label:{ja:'弱音も、笑って分かち合う',en:'Share the struggles with a laugh'}, eff:{bond:8,mind:5}, good:2, result:{ja:'苦労してるのは、自分だけじゃなかった。それだけで、肩が軽くなる。',en:'You weren’t the only one struggling. Just that lightened your shoulders.'}},
+   {label:{ja:'見栄を張って、強がる',en:'Put on a brave, boastful face'}, eff:{mind:-3,bond:-2}, result:{ja:'立派に見せた。でも、本音を言えたら、もっと楽だったかも。',en:'You looked impressive. But honesty might have felt lighter.'}},
+  ]},
+ {icon:'💰', theme:'family', title:{ja:'遺された財産',en:'An Inheritance Left Behind'}, body:{ja:'亡き人が、いくらかの財産を遺してくれた。お金には、想いが詰まっている。',en:'A departed loved one left some inheritance. Money, full of their feelings.'},
+  choices:[
+   {label:{ja:'大切に使い、未来へ繋ぐ',en:'Use it with care, pass it forward'}, eff:{cash:14,mind:5,bond:3}, good:1, result:{ja:'無駄にはしない。遺してくれた想いごと、未来へ運ぶ。',en:'You won’t waste it. You carry their feelings into the future.'}},
+   {label:{ja:'分け方をめぐり、親族と揉める',en:'Quarrel with relatives over the split'}, eff:{cash:8,bond:-8,mind:-4}, result:{ja:'お金は手に入った。でも、失った縁もある。お金は、人を試す。',en:'You got the money. But lost some ties. Money tests people.'}},
+  ]},
+ {icon:'🚚', theme:'travel', title:{ja:'突然の転勤',en:'A Sudden Transfer'}, body:{ja:'「来月から、遠くの支社へ」。築いてきた人間関係を、一度手放すことになる。',en:'“Next month, a distant branch.” You must let go of relationships you’ve built.'},
+  choices:[
+   {label:{ja:'前向きに、新天地へ',en:'Embrace the new place'}, eff:{cash:8,mind:4,bond:-3}, good:1, result:{ja:'寂しさはある。でも、新しい出会いも、きっと待っている。',en:'There’s loneliness. But new meetings surely wait too.'}},
+   {label:{ja:'断って、今の場所を守る',en:'Refuse; protect where you are'}, eff:{cash:-4,bond:5,mind:3}, good:1, result:{ja:'昇進より、今の縁を選んだ。大切なものは、人それぞれだ.',en:'You chose your ties over a promotion. What matters differs for each of us.'}},
+  ]},
+ {icon:'📚', theme:'work', title:{ja:'資格への挑戦',en:'Chasing a Qualification'}, body:{ja:'キャリアの幅を広げる資格。合格率は低い。仕事の合間に、机に向かう日々が始まる。',en:'A qualification to widen your career. The pass rate is low. Days of studying between work begin.'},
+  choices:[
+   {label:{ja:'コツコツ、毎日続ける',en:'Study a little every day'}, hint:{ja:'心が高いと実る',en:'A focused mind succeeds'},
+    check:{stat:'mind',dc:56,eff_fail:{mind:3,health:-3},result_fail:{ja:'今回は届かなかった。でも、積んだ知識は消えない。来年がある。',en:'You fell short this time. But knowledge stays. There’s next year.'}},
+    eff:{cash:10,mind:6,trust:4}, good:1, result:{ja:'合格通知。地道な努力は、ちゃんと裏切らない。',en:'A pass. Honest effort doesn’t betray you.'}},
+   {label:{ja:'今は見送り、本業に集中',en:'Skip it; focus on the main job'}, eff:{cash:5,health:2}, result:{ja:'優先順位をつけた。すべては、できない。それでいい。',en:'You set priorities. You can’t do it all. And that’s okay.'}},
+  ]},
+ {icon:'🏃', theme:'comeback', title:{ja:'体を動かす',en:'Getting Moving'}, body:{ja:'なまった体に、嫌気がさした。「少しだけ」と、久しぶりに外へ走りに出た。',en:'Fed up with a sluggish body, you head out for a run — “just a little” — for the first time in ages.'},
+  choices:[
+   {label:{ja:'習慣にして、続ける',en:'Make it a habit'}, eff:{health:10,mind:6}, good:1, result:{ja:'汗をかくと、心まで少し晴れる。続けるほど、自分が好きになる。',en:'Sweat clears the heart a little. The more you keep on, the more you like yourself.'}},
+   {label:{ja:'三日坊主で、やめてしまう',en:'Quit after three days'}, eff:{health:2,mind:-2}, result:{ja:'続かなかった。でも、始めたことに意味がある。また、いつでも始められる。',en:'It didn’t last. But starting mattered. You can always begin again.'}},
+  ]},
+ {icon:'🎊', theme:'comeback', title:{ja:'借金、完済',en:'Debt, Cleared'}, body:{ja:'長く重しだった借金を、ついに返し終えた。肩の荷が、すっと軽くなる音がした。',en:'The debt that weighed on you for so long is finally paid. You almost hear your shoulders lighten.'},
+  choices:[
+   {label:{ja:'これからは、堅実に蓄える',en:'From now, save steadily'}, eff:{cash:6,mind:8,trust:4}, good:1, result:{ja:'同じ轍は踏まない。自由になったお金で、未来に備える。',en:'No repeating the rut. With freed money, you prepare for the future.'}},
+   {label:{ja:'自分への、ささやかなご褒美',en:'A small reward for yourself'}, eff:{cash:-3,mind:8,health:3}, good:1, result:{ja:'よく頑張った、自分。たまには、自分を労ってもいい。',en:'You worked hard. Sometimes, you deserve to be kind to yourself.'}},
+  ]},
+ {icon:'🏺', theme:'windfall', title:{ja:'掘り出し物',en:'A Hidden Gem'}, body:{ja:'何気なく寄った古物市。隅に転がっていた品が、実は値打ちものだった。',en:'At a flea market you wandered into, a piece in the corner turns out to be valuable.'},
+  choices:[
+   {label:{ja:'売って、現金にする',en:'Sell it for cash'}, eff:{cash:10,mind:2}, good:1, result:{ja:'思わぬ臨時収入。たまには、こんな幸運もある。',en:'An unexpected windfall. Now and then, luck smiles.'}},
+   {label:{ja:'手元に置いて、大切にする',en:'Keep it, treasure it'}, eff:{mind:5,bond:2}, good:1, result:{ja:'お金に換えない価値もある。眺めるたび、心がほぐれた。',en:'Some value can’t be cashed. Each glance eased your heart.'}},
+  ]},
+ {icon:'🧭', theme:'bond', title:{ja:'導いてくれる人',en:'Someone Who Guides You'}, body:{ja:'人生の先輩が、何気ない一言をくれた。その言葉が、迷っていた背中を、そっと押した。',en:'A mentor offers a passing word. It gently pushes your hesitant back.'},
+  choices:[
+   {label:{ja:'素直に、教えを受け取る',en:'Take the advice openly'}, eff:{mind:8,trust:5}, good:1, addCompanion:true, result:{ja:'頼れる人がいるのは、心強い。一人で抱えなくて、いいんだ。',en:'Having someone to rely on is reassuring. You needn’t carry it alone.'}},
+   {label:{ja:'自分のやり方を、貫く',en:'Stick to your own way'}, eff:{mind:4,trust:1}, result:{ja:'自分を信じるのも、大事なこと。答えは、自分の中にもある。',en:'Trusting yourself matters too. The answer is also within you.'}},
+  ]},
+ {icon:'📋', theme:'loss', title:{ja:'仕事が見つからない',en:'No Work in Sight'}, body:{ja:'何社受けても、お祈りメールばかり。「自分は必要とされていない」と、心が沈む。',en:'Application after application, only rejections. “I’m not needed,” your heart sinks.'},
+  choices:[
+   {label:{ja:'視野を広げ、別の道も探す',en:'Widen your view; seek other paths'}, check:{stat:'mind',dc:50,eff_fail:{cash:-4,mind:2},result_fail:{ja:'まだ見つからない。でも、探し方を変えれば、扉は増える。',en:'Still nothing. But change how you search, and doors multiply.'}},
+    eff:{cash:6,mind:5,bond:3}, good:1, result:{ja:'思いがけない分野に、自分の居場所があった。',en:'In an unexpected field, you found a place to belong.'}},
+   {label:{ja:'落ち込んで、立ち止まる',en:'Sink, and pause'}, eff:{mind:-4,health:3}, result:{ja:'今日は休もう。落ちた数は、あなたの価値とは関係ない。',en:'Rest today. The number of rejections has nothing to do with your worth.'}},
+  ]},
+ {icon:'⭐', theme:'luck', title:{ja:'小さな成功',en:'A Small Success'}, body:{ja:'ずっと努力してきたことが、ほんの少しだけ、形になった。誰かが「すごいね」と言ってくれた。',en:'Something you long worked on took shape, just a little. Someone said, “That’s amazing.”'},
+  choices:[
+   {label:{ja:'素直に、自分を認める',en:'Honestly own it'}, eff:{mind:8,trust:3}, good:1, result:{ja:'「よくやった」と、自分に言ってあげる。自己肯定は、明日の燃料だ。',en:'“Well done,” you tell yourself. Self-worth is fuel for tomorrow.'}},
+   {label:{ja:'まだまだ、と気を引き締める',en:'Stay humble; there’s far to go'}, eff:{mind:3,cash:3}, good:1, result:{ja:'浮かれない。でも、今日の一歩は、確かに前進だった。',en:'No getting carried away. Still, today’s step was real progress.'}},
+  ]},
+ {icon:'🌟', theme:'city', title:{ja:'見知らぬ親切',en:'A Stranger’s Kindness'}, body:{ja:'落ち込んで歩いていたら、見知らぬ人が、そっと飲み物を差し出してくれた。理由もなく、ただ。',en:'Walking downcast, a stranger quietly offers you a drink. For no reason, just because.'},
+  choices:[
+   {label:{ja:'ありがたく受け取り、いつか返す',en:'Accept gratefully; pay it forward'}, eff:{mind:8,bond:5,trust:4}, good:2, result:{ja:'見ず知らずの優しさが、沁みた。今度は、自分が誰かに。',en:'A stranger’s kindness sank in. Next time, it’ll be your turn.'}},
+   {label:{ja:'戸惑って、断ってしまう',en:'Flustered, you decline'}, eff:{mind:2}, result:{ja:'素直に受け取れなかった。でも、その温かさは、覚えている。',en:'You couldn’t accept it. But you remember the warmth.'}},
+  ]},
+ {icon:'🤖', theme:'work', title:{ja:'時代の変化',en:'Times Are Changing'}, body:{ja:'新しい技術が、あなたの仕事のやり方を変えようとしている。学ぶか、抗うか。',en:'New technology is set to change how you work. Learn it, or resist?'},
+  choices:[
+   {label:{ja:'新しい道具を、使いこなす',en:'Master the new tools'}, eff:{cash:10,mind:6}, good:1, result:{ja:'変化を味方につけた。怖がるより、乗りこなす方が面白い。',en:'You made change your ally. Riding it beats fearing it.'}},
+   {label:{ja:'今までのやり方を、貫く',en:'Stick to the old ways'}, eff:{cash:-4,trust:2}, result:{ja:'慣れたやり方は心地よい。でも、時代は待ってくれない。',en:'Familiar ways feel good. But the times won’t wait.'}},
+  ]},
+ {icon:'🌙', theme:'illness', title:{ja:'眠れない夜',en:'A Sleepless Night'}, body:{ja:'考えごとが頭を巡って、目が冴える。時計の針だけが、やけに大きく聞こえる夜。',en:'Worries circle your mind, wide awake. A night where only the clock ticks loud.'},
+  choices:[
+   {label:{ja:'スマホを置き、深呼吸する',en:'Put down the phone; breathe deep'}, eff:{health:6,mind:5}, good:1, result:{ja:'考えても仕方ない夜もある。明日の自分に、任せてみよう。',en:'Some nights, worrying won’t help. Leave it to tomorrow’s you.'}},
+   {label:{ja:'夜通し、悩み続ける',en:'Agonize all night'}, eff:{health:-5,mind:-3}, result:{ja:'寝不足の朝。でも、夜が明けただけで、少しはマシに思える。',en:'A sleepless morning. But just seeing dawn makes it feel a bit better.'}},
+  ]},
+ {icon:'🤝', theme:'city', title:{ja:'仲直り',en:'Making Amends'}, body:{ja:'些細なことで、こじれた相手がいる。謝るのは、勇気がいる。でも、このままも、つらい。',en:'A petty thing soured a relationship. Apologizing takes courage. But leaving it hurts too.'},
+  choices:[
+   {label:{ja:'自分から、歩み寄る',en:'Reach out first'}, eff:{bond:8,mind:5,trust:3}, good:2, result:{ja:'「ごめん」の一言で、空気が変わった。先に折れるのは、負けじゃない。',en:'One “sorry” changed the air. Bending first isn’t losing.'}},
+   {label:{ja:'意地を張って、待つ',en:'Hold your pride, and wait'}, eff:{mind:-3,bond:-2}, result:{ja:'相手も折れてこない。意地は、時に大切なものを遠ざける。',en:'They don’t bend either. Pride can push away what matters.'}},
+  ]},
+ {icon:'🎨', theme:'luck', title:{ja:'才能の芽',en:'A Sprout of Talent'}, body:{ja:'趣味で始めたことを、「向いてるね」と褒められた。眠っていた何かが、目を覚ます。',en:'A hobby you started earns praise: “You’re a natural.” Something dormant awakens.'},
+  choices:[
+   {label:{ja:'本気で、伸ばしてみる',en:'Pursue it seriously'}, eff:{cash:4,mind:8,trust:3}, good:1, result:{ja:'好きなことに、夢中になれる時間。人生が、少し色づいた。',en:'Time lost in what you love. Life took on a little color.'}},
+   {label:{ja:'趣味のままで、楽しむ',en:'Keep it a hobby, just enjoy'}, eff:{mind:5,health:2}, good:1, result:{ja:'肩の力を抜いて、楽しむ。それが、長続きの秘訣だ。',en:'Relax and enjoy. That’s the secret to lasting.'}},
+  ]},
+ {icon:'🧓', theme:'bond', title:{ja:'老いゆく自分',en:'Growing Older'}, body:{ja:'鏡の中の自分に、白いものが増えた。できないことも、増えてきた。時の流れを、感じる。',en:'More gray in the mirror. More things you can’t do. You feel the flow of time.'},
+  choices:[
+   {label:{ja:'重ねた年を、受け入れる',en:'Embrace the years'}, eff:{mind:8,bond:4}, good:2, result:{ja:'若さは失っても、深みが増す。あなたの皺は、生きた証だ。',en:'Youth fades, but depth grows. Your lines are proof you lived.'}},
+   {label:{ja:'あらがって、若さを追う',en:'Resist; chase youth'}, eff:{cash:-6,mind:-2}, result:{ja:'時計の針は、戻らない。でも、今を生きることは、いつでもできる。',en:'The clock won’t turn back. But you can always live in the now.'}},
+  ]},
+];
+BOARD_EVENTS.push(...EXTRA_EVENTS2);
+
+/* ---- expanded event pool (batch 3) ---- */
+const EXTRA_EVENTS3 = [
+ {icon:'🤜', theme:'betrayal', title:{ja:'共同経営者との対立',en:'A Clash with a Partner'}, body:{ja:'一緒に始めた相棒と、方針が真っ向から食い違った。どちらも、譲れない想いがある。',en:'You and the partner you started with clash head-on. Neither will yield their vision.'},
+  choices:[
+   {label:{ja:'とことん話し合う',en:'Talk it through, fully'}, hint:{ja:'信頼が高いと折り合える',en:'High trust finds middle ground'},
+    check:{stat:'trust',dc:54,eff_fail:{cash:-8,bond:-5},result_fail:{ja:'溝は埋まらず、袂を分かった。それでも、共に夢を見た日々は本物だった。',en:'The gap stayed; you parted ways. Still, the days you dreamed together were real.'}},
+    eff:{cash:8,bond:6,mind:4}, good:2, result:{ja:'ぶつかった末に、より強い信頼が生まれた。',en:'After clashing, a stronger trust was born.'}},
+   {label:{ja:'自分の道を、突き進む',en:'Push on your own way'}, eff:{cash:4,bond:-6,mind:2}, result:{ja:'信念は守った。でも、一人になった分、背負うものも増えた。',en:'You kept your conviction. But alone, you carry more.'}},
+  ]},
+ {icon:'🌅', theme:'comeback', title:{ja:'大病からの生還',en:'Surviving a Serious Illness'}, body:{ja:'長い治療を、なんとか乗り越えた。当たり前に見えた朝日が、こんなにも眩しい。',en:'You somehow came through a long treatment. The sunrise you took for granted is so bright now.'},
+  choices:[
+   {label:{ja:'残りの人生を、大切に生きる',en:'Live the rest with care'}, eff:{health:10,mind:10,bond:5}, good:2, result:{ja:'失いかけて、初めて分かる。生きているだけで、もう十分すごいことだ。',en:'Nearly losing it, you finally see: just being alive is already amazing.'}},
+   {label:{ja:'取り戻すように、また走り出す',en:'Race off again, as if to catch up'}, eff:{cash:8,health:-4}, result:{ja:'時間を取り戻したい。でも、体の声には、もう耳を傾けよう。',en:'You want the time back. But now, listen to your body.'}},
+  ]},
+ {icon:'🕊️', theme:'family', title:{ja:'子の独立',en:'A Child Leaves Home'}, body:{ja:'手のかかった子が、自分の足で歩き出す日。嬉しいはずなのに、家が少し広く感じる。',en:'The child you raised steps out on their own. You should be glad, yet the house feels larger.'},
+  choices:[
+   {label:{ja:'笑顔で、送り出す',en:'See them off with a smile'}, eff:{bond:6,mind:6}, good:2, result:{ja:'巣立ちは、育てた証。寂しさの分だけ、ちゃんと愛せた証拠だ。',en:'Leaving the nest is proof of your care. The loneliness measures how well you loved.'}},
+   {label:{ja:'自分の時間を、取り戻す',en:'Reclaim your own time'}, eff:{mind:5,health:3}, good:1, result:{ja:'これからは、自分のために。新しい人生の章が、静かに始まる。',en:'From now, for yourself. A new chapter quietly begins.'}},
+  ]},
+ {icon:'🎏', theme:'work', title:{ja:'定年の日',en:'The Day You Retire'}, body:{ja:'長年勤め上げた職場を、今日で去る。花束を受け取りながら、いろんな顔が浮かんだ。',en:'Today you leave the workplace of many years. Holding the bouquet, many faces come to mind.'},
+  choices:[
+   {label:{ja:'やりきった、と胸を張る',en:'Stand tall: you gave it all'}, eff:{mind:8,trust:5,bond:4}, good:2, result:{ja:'完璧じゃなかった。でも、自分なりに、ちゃんと走り抜いた。',en:'It wasn’t perfect. But in your own way, you ran the whole road.'}},
+   {label:{ja:'次の生きがいを、探し始める',en:'Start seeking a new purpose'}, eff:{mind:5,health:3}, good:1, result:{ja:'終わりは、始まり。第二の人生に、まだ見ぬ楽しみがある。',en:'An ending is a beginning. A second life holds joys yet unseen.'}},
+  ]},
+ {icon:'🏢', theme:'loss', title:{ja:'会社の倒産',en:'The Company Folds'}, body:{ja:'勤め先が、ある日突然なくなった。明日からの暮らしに、暗い影が差す。',en:'Your workplace vanished one day. A dark shadow falls over tomorrow’s living.'},
+  choices:[
+   {label:{ja:'仲間と、情報を交換し合う',en:'Trade leads with former colleagues'}, eff:{cash:6,bond:6,mind:3}, good:1, addCompanion:true, result:{ja:'同じ境遇の仲間と、励まし合った。一人で沈まずに済んだ。',en:'You buoyed each other up. You didn’t sink alone.'}},
+   {label:{ja:'すぐに、次の職を探す',en:'Hunt for the next job at once'}, check:{stat:'mind',dc:50,eff_fail:{cash:-4,mind:2},result_fail:{ja:'焦りは禁物。でも、動き続ける限り、道は閉じない。',en:'No rushing. But as long as you move, no door fully closes.'}},
+    eff:{cash:8,trust:3}, good:1, result:{ja:'素早い行動が、次の縁を引き寄せた。',en:'Quick action drew the next opportunity.'}},
+  ]},
+ {icon:'🌑', theme:'loss', title:{ja:'成功のあとの孤独',en:'Loneliness After Success'}, body:{ja:'欲しかったものは、手に入った。なのに、心の真ん中に、ぽっかり穴が空いている。',en:'You got what you wanted. Yet a hole gapes in the center of your heart.'},
+  choices:[
+   {label:{ja:'人とのつながりを、取り戻す',en:'Rebuild your connections'}, eff:{cash:-4,bond:10,mind:8}, good:2, result:{ja:'お金は、孤独を埋めない。誰かと笑う時間こそ、本当の豊かさだ。',en:'Money doesn’t fill loneliness. Laughing with someone is the true wealth.'}},
+   {label:{ja:'さらなる成功を、追い求める',en:'Chase even more success'}, eff:{cash:10,mind:-4}, result:{ja:'走り続ける。でも、その先に、本当に欲しいものはあるだろうか。',en:'You keep running. But is what you truly want at the end of it?'}},
+  ]},
+ {icon:'🕯️', theme:'loss', title:{ja:'旧友の訃報',en:'News of an Old Friend'}, body:{ja:'昔の友が、世を去ったと聞いた。会えるうちに、会っておけばよかった。後悔が、胸を締める。',en:'You hear an old friend has passed. You wish you’d met while you could. Regret tightens your chest.'},
+  choices:[
+   {label:{ja:'大切な人に、今すぐ連絡する',en:'Reach out to loved ones, now'}, eff:{bond:8,mind:6}, good:2, result:{ja:'「元気?」のひと言を、後回しにしない。今、伝えられることを伝えた。',en:'You don’t delay a simple “How are you?” You said what you could, now.'}},
+   {label:{ja:'静かに、その人を悼む',en:'Quietly mourn them'}, eff:{mind:4,bond:2}, good:1, result:{ja:'手を合わせる。あなたの中で、その人はまだ生きている。',en:'You bow your head. Within you, they still live.'}},
+  ]},
+ {icon:'🎲', theme:'bond', title:{ja:'新しい居場所',en:'A New Place to Belong'}, body:{ja:'趣味のサークルに、思い切って参加してみた。最初は緊張したが、共通の話題で、すぐ打ち解けた。',en:'You take the plunge into a hobby circle. Nervous at first, but a shared passion soon broke the ice.'},
+  choices:[
+   {label:{ja:'積極的に、輪に加わる',en:'Jump into the group'}, eff:{bond:10,mind:6}, good:2, addCompanion:true, result:{ja:'年齢も立場も関係ない。「好き」でつながる仲間ができた。',en:'Age and rank don’t matter. You found friends bound by what you love.'}},
+   {label:{ja:'様子を見て、ゆっくり馴染む',en:'Take it slow, ease in'}, eff:{bond:5,mind:3}, good:1, result:{ja:'焦らず、自分のペースで。居心地のいい場所が、また一つ増えた.',en:'No rush, at your own pace. One more comfortable place to be.'}},
+  ]},
+ {icon:'📝', theme:'bond', title:{ja:'再びの保証人',en:'Asked to Co-Sign Again'}, body:{ja:'以前、痛い目にあった「保証人」の話が、また持ち上がった。今度は、別の大切な人から。',en:'The “co-signer” talk that once burned you comes up again — this time from another dear person.'},
+  choices:[
+   {label:{ja:'経験を活かし、線を引く',en:'Apply experience; draw a line'}, eff:{trust:5,mind:5,bond:-2}, good:2, result:{ja:'助けたい気持ちと、守るべき一線。痛みから学んだ、賢い優しさだ。',en:'The wish to help, and a line to hold. A wiser kindness, learned from pain.'}},
+   {label:{ja:'情に流され、また引き受ける',en:'Give in to feeling, sign again'}, check:{stat:'trust',dc:60,eff_fail:{cash:-14,mind:-4},result_fail:{ja:'やはり、同じ轍を踏んだ。優しさは美点だが、時に身を削る。',en:'You repeated the rut. Kindness is a virtue, but it can cut deep.'}},
+    eff:{cash:-4,bond:5}, result:{ja:'今回は、相手が誠実だった。信じた甲斐があった。',en:'This time, they were sincere. Your faith was rewarded.'}},
+  ]},
+ {icon:'🕴️', theme:'fraud', title:{ja:'闇への誘い',en:'An Invitation to the Dark'}, body:{ja:'「楽して大金を稼げる仕事がある」。言葉は甘いが、どこか後ろめたい匂いがする。',en:'“There’s easy money to be made.” The words are sweet, but something smells wrong.'},
+  choices:[
+   {label:{ja:'きっぱりと、断る',en:'Refuse, flatly'}, eff:{trust:6,mind:5}, good:2, result:{ja:'楽な道の先に、まともな未来はない。誘いを、振り切った。',en:'No decent future lies down the easy road. You shook off the offer.'}},
+   {label:{ja:'一度だけ、と話を聞く',en:'Just hear them out, once'}, eff:{mind:-4,trust:-3}, result:{ja:'深入りする前に、なんとか足を抜いた。危ない橋は、渡らないに限る.',en:'You pulled out before going deep. Best not to cross a dangerous bridge.'}},
+  ]},
+ {icon:'💹', theme:'money', title:{ja:'利益確定の時',en:'Time to Take Profit'}, body:{ja:'長く持っていた投資が、ぐんと値上がりした。売るべきか、まだ伸びると見るか。',en:'A long-held investment has surged. Sell now, or bet it climbs further?'},
+  choices:[
+   {label:{ja:'欲張らず、利益を確定する',en:'Don’t get greedy; lock in gains'}, eff:{cash:14,mind:4}, good:1, result:{ja:'頭と尻尾はくれてやる。確実な利益を、手にした。',en:'Leave the head and tail for others. You secured a sure gain.'}},
+   {label:{ja:'もっと上がると、持ち続ける',en:'Hold on; it’ll rise more'}, check:{stat:'mind',dc:55,eff_fail:{cash:-8,mind:-3},result_fail:{ja:'欲を出したら、下がり始めた。利確のタイミングは、難しい。',en:'Greed crept in, and it dropped. Timing the exit is hard.'}},
+    eff:{cash:10}, result:{ja:'読みが当たり、さらに伸びた。今度こそ、と利益を確定した。',en:'Your read was right; it climbed more. This time, you locked it in.'}},
+  ]},
+ {icon:'📊', theme:'money', title:{ja:'老後への不安',en:'Worry About Later Years'}, body:{ja:'「このまま歳をとって、大丈夫だろうか」。漠然とした不安が、夜にふと顔を出す。',en:'“Will I be all right as I age?” A vague worry surfaces at night.'},
+  choices:[
+   {label:{ja:'今から、こつこつ備える',en:'Start preparing, bit by bit'}, eff:{cash:6,mind:6}, good:1, result:{ja:'不安は、行動で薄まる。小さな備えが、未来の安心になる。',en:'Worry fades with action. Small preparation becomes future peace.'}},
+   {label:{ja:'考えても仕方ない、と先送り',en:'Put it off; no use worrying'}, eff:{mind:-3}, result:{ja:'今は楽。でも、未来の自分が、少し困るかもしれない。',en:'Easy for now. But your future self may struggle a little.'}},
+  ]},
+ {icon:'🤝', theme:'city', title:{ja:'被害者を支える',en:'Supporting a Victim'}, body:{ja:'詐欺にあって、打ちひしがれている人がいる。かつての自分と、同じ目をしている。',en:'Someone is crushed after a scam. They have the same eyes you once had.'},
+  choices:[
+   {label:{ja:'話を聞き、寄り添う',en:'Listen and stay close'}, eff:{cash:-2,trust:6,bond:8,mind:5}, good:3, addCompanion:true, result:{ja:'「あなたは悪くない」。かつて欲しかった言葉を、今度は自分が渡せた。',en:'“It wasn’t your fault.” The words you once needed, you now gave.'}},
+   {label:{ja:'専門の窓口を、教える',en:'Point them to proper help'}, eff:{trust:4,bond:3}, good:1, result:{ja:'自分にできるのは、ここまで。でも、正しい道筋を示せた。',en:'This is what you can do. But you showed the right path.'}},
+  ]},
+ {icon:'🎓', theme:'family', title:{ja:'子の進学',en:'A Child’s Education'}, body:{ja:'子が、進みたい道を見つけた。応援したい。でも、必要なお金は、決して小さくない。',en:'Your child found a path they want. You want to support it. But the cost is far from small.'},
+  choices:[
+   {label:{ja:'無理してでも、夢を支える',en:'Stretch to back the dream'}, eff:{cash:-14,bond:8,mind:4}, good:2, result:{ja:'自分の暮らしは切り詰めても。子の未来に、賭ける価値がある。',en:'Even cutting your own life. The child’s future is worth betting on.'}},
+   {label:{ja:'現実を話し、一緒に考える',en:'Be honest; plan it together'}, eff:{cash:-4,bond:5,trust:4}, good:1, result:{ja:'できることと、できないこと。正直に話したら、子も一緒に考えてくれた。',en:'What you can and can’t. Spoken honestly, the child thought along with you.'}},
+  ]},
+ {icon:'🏞️', theme:'rest', title:{ja:'自然の中で',en:'Out in Nature'}, body:{ja:'久しぶりに、山へ出かけた。スマホの電波も届かない場所で、ただ風の音を聞いた。',en:'You head to the mountains for the first time in ages. Where no signal reaches, you just listen to the wind.'},
+  choices:[
+   {label:{ja:'何も考えず、自然に浸る',en:'Empty your mind; soak in nature'}, eff:{health:10,mind:10}, good:1, result:{ja:'頭の中の雑音が、すっと消えた。人は、自然に還ると、また満ちる。',en:'The noise in your head vanished. Returning to nature, people refill.'}},
+   {label:{ja:'絶景を写真に、残す',en:'Capture the view in photos'}, eff:{mind:6,bond:3}, good:1, result:{ja:'この景色を、誰かに見せたい。そう思える相手がいる幸せ。',en:'You want to show this to someone. The joy of having such a person.'}},
+  ]},
+ {icon:'🚉', theme:'travel', title:{ja:'ふるさとへ',en:'Back to Your Hometown'}, body:{ja:'久しぶりに、生まれ育った町に降り立った。変わったもの、変わらないもの。胸が、じんとする。',en:'You step off in your hometown after years. What changed, what didn’t. Your chest warms.'},
+  choices:[
+   {label:{ja:'昔の人に、会いに行く',en:'Go see old faces'}, eff:{bond:8,mind:6}, good:1, addCompanion:true, result:{ja:'「おかえり」のひと言。根っこのある場所は、いつでも迎えてくれる。',en:'A simple “welcome back.” A place with roots always takes you in.'}},
+   {label:{ja:'一人で、思い出をたどる',en:'Trace memories alone'}, eff:{mind:6,health:2}, good:1, result:{ja:'あの頃の自分に、そっと「よく頑張ったね」と声をかけた。',en:'You quietly told your younger self, “You did well.”'}},
+  ]},
+ {icon:'🥗', theme:'illness', title:{ja:'流行りの健康法',en:'The Latest Health Fad'}, body:{ja:'「これさえやれば健康に」と、巷で話題の方法。試してみたい気もするが、本当だろうか。',en:'“Do just this and be healthy,” says the latest trend. Tempting — but is it true?'},
+  choices:[
+   {label:{ja:'うのみにせず、基本を大事に',en:'Don’t swallow it; stick to basics'}, eff:{health:8,mind:4}, good:1, result:{ja:'楽な近道に、飛びつかない。よく食べ、よく寝て、よく動く。それが一番だ。',en:'No leaping at easy shortcuts. Eat, sleep, move well. That’s best.'}},
+   {label:{ja:'高い健康グッズを、買い込む',en:'Splurge on pricey gadgets'}, eff:{cash:-8,health:2}, result:{ja:'効果は、いまひとつ。健康は、お金より習慣で買うものだった.',en:'The effect was so-so. Health is bought with habits, not money.'}},
+  ]},
+ {icon:'💬', theme:'bond', title:{ja:'画面越しの再会',en:'A Reunion On-Screen'}, body:{ja:'SNSで、ずっと探していた人を見つけた。連絡しようか、迷う指が、画面の上で止まる。',en:'On social media, you find someone you’d long sought. Your finger hovers, unsure whether to message.'},
+  choices:[
+   {label:{ja:'勇気を出して、連絡する',en:'Find the courage to write'}, eff:{bond:8,mind:5}, good:1, result:{ja:'「久しぶり」。たった一言から、止まっていた時間が、また動き出した。',en:'“It’s been a while.” From one line, frozen time began to move again.'}},
+   {label:{ja:'そっと、見守るだけにする',en:'Just quietly watch over them'}, eff:{mind:3}, result:{ja:'元気そうで、何より。それだけで、少し安心できた。',en:'They look well. That alone put you at ease.'}},
+  ]},
+ {icon:'🛍️', theme:'money', title:{ja:'大きな買い物',en:'A Big Purchase'}, body:{ja:'ずっと欲しかった高価なもの。買えば気分は上がる。でも、本当に必要だろうか。',en:'A pricey thing you’ve long wanted. Buying it would lift your mood. But do you truly need it?'},
+  choices:[
+   {label:{ja:'一晩、考えてから決める',en:'Sleep on it before deciding'}, eff:{cash:2,mind:4}, good:1, result:{ja:'衝動を、ひと晩寝かせた。冷静になると、本当に要るものが見えてくる。',en:'You let the impulse rest a night. Calm, you see what you really need.'}},
+   {label:{ja:'勢いで、買ってしまう',en:'Buy it on impulse'}, eff:{cash:-12,mind:4}, result:{ja:'手に入れた瞬間は、最高だった。喜びが続くといいのだけれど。',en:'The moment you got it was the best. May the joy last.'}},
+  ]},
+ {icon:'🧑‍🏫', theme:'city', title:{ja:'誰かの先生に',en:'Becoming Someone’s Teacher'}, body:{ja:'若い人から「教えてほしい」と頼られた。自分の経験が、誰かの役に立つ日が来るとは。',en:'A younger person asks you to teach them. Who knew your experience would help someone.'},
+  choices:[
+   {label:{ja:'惜しみなく、伝える',en:'Share generously'}, eff:{trust:6,bond:6,mind:5}, good:2, addCompanion:true, result:{ja:'教えることは、学ぶこと。渡した知識が、次の世代へと巡っていく。',en:'To teach is to learn. The knowledge you gave circles to the next generation.'}},
+   {label:{ja:'自信がない、と遠慮する',en:'Hold back; you lack confidence'}, eff:{mind:-2}, result:{ja:'断ってしまった。でも、あなたの歩んだ道には、確かな価値がある。',en:'You declined. But the road you walked holds real value.'}},
+  ]},
+ {icon:'📓', theme:'rest', title:{ja:'人生の棚卸し',en:'Taking Stock of Life'}, body:{ja:'ふと立ち止まり、これまでを振り返った。できたこと、できなかったこと。色々あった。',en:'You pause and look back. What you managed, what you didn’t. Quite a lot.'},
+  choices:[
+   {label:{ja:'過去を、まるごと肯定する',en:'Affirm all of your past'}, eff:{mind:10,bond:3}, good:2, result:{ja:'失敗も回り道も、全部ひっくるめて、自分の人生だ。悪くない、と思えた。',en:'Failures and detours, all of it — your life. “Not bad,” you could think.'}},
+   {label:{ja:'後悔ばかり、数えてしまう',en:'Only count the regrets'}, eff:{mind:-4,health:2}, result:{ja:'下を向いた夜。でも、まだ続きを書ける。人生は、終わっていない。',en:'A downcast night. But you can still write more. Life isn’t over.'}},
+  ]},
+ {icon:'🎶', theme:'luck', title:{ja:'心ときめく時間',en:'A Time That Lifts You'}, body:{ja:'夢中になれる何かに、出会った。理屈じゃなく、ただ「好き」。それが、毎日を明るくする。',en:'You found something to lose yourself in. Not logic — just love. It brightens your days.'},
+  choices:[
+   {label:{ja:'思いきり、楽しむ',en:'Enjoy it to the fullest'}, eff:{mind:8,health:4,bond:3}, good:1, result:{ja:'好きなものがあるって、強い。それは、つらい時の支えにもなる。',en:'Having something you love is strength. It holds you up in hard times too.'}},
+   {label:{ja:'ほどほどに、たしなむ',en:'Enjoy it in moderation'}, eff:{mind:5,cash:2}, good:1, result:{ja:'バランスよく。日々の彩りとして、長く付き合っていける。',en:'Balanced. A splash of color you can keep for years.'}},
+  ]},
+ {icon:'🤲', theme:'city', title:{ja:'恩送り',en:'Paying It Forward'}, body:{ja:'昔、自分が助けられた。今、困っている若い人が、目の前にいる。',en:'Once, you were helped. Now, a struggling young person stands before you.'},
+  choices:[
+   {label:{ja:'見返りを求めず、手を貸す',en:'Lend a hand, expecting nothing'}, eff:{cash:-4,trust:6,bond:6,mind:5}, good:3, result:{ja:'恩は、返すより「送る」もの。灯は、こうして街を巡っていく。',en:'Kindness is passed on, not just paid back. So the light travels the city.'}},
+   {label:{ja:'できる範囲で、助言する',en:'Advise, within your means'}, eff:{trust:4,bond:3}, good:1, result:{ja:'多くはできない。でも、言葉ひとつが、誰かの背中を押すこともある。',en:'You can’t do much. But a single word can push someone forward.'}},
+  ]},
+ {icon:'🌱', theme:'comeback', title:{ja:'どん底からの一歩',en:'A Step from Rock Bottom'}, body:{ja:'すべてを失ったと思った。でも、朝は来た。今日、ほんの小さな一歩を、踏み出せるか。',en:'You thought you’d lost everything. But morning came. Today, can you take one tiny step?'},
+  choices:[
+   {label:{ja:'できることを、一つだけやる',en:'Do just one thing you can'}, eff:{mind:8,health:5,cash:3}, good:2, result:{ja:'布団を畳む。それだけでいい。小さな一歩の積み重ねが、再生になる。',en:'Fold the blanket. That’s enough. Small steps stacked become rebirth.'}},
+   {label:{ja:'誰かに、助けを求める',en:'Ask someone for help'}, eff:{bond:8,mind:6}, good:2, addCompanion:true, result:{ja:'「助けて」は、弱さじゃない。手を伸ばせば、握り返す手があった。',en:'“Help me” isn’t weakness. You reached out — and a hand gripped back.'}},
+  ]},
+ {icon:'🏅', theme:'bond', title:{ja:'晴れ舞台での再会',en:'A Reunion at the Big Day'}, body:{ja:'晴れの舞台で、ずっと支えてくれた人の顔を、客席に見つけた。涙が、にじむ。',en:'On your big day, you spot in the crowd the face of someone who always supported you. Tears blur your eyes.'},
+  choices:[
+   {label:{ja:'感謝を、まっすぐ伝える',en:'Tell them thank you, directly'}, eff:{bond:10,mind:6,trust:4}, good:2, result:{ja:'「あなたのおかげです」。言えてよかった。喜びは、分かち合うと倍になる。',en:'“It’s thanks to you.” You’re glad you said it. Joy shared is joy doubled.'}},
+   {label:{ja:'胸の中で、そっと礼を言う',en:'Thank them quietly, within'}, eff:{mind:5,bond:3}, good:1, result:{ja:'目が合って、微笑み合った。言葉がなくても、想いは届く。',en:'Your eyes met, and you smiled. Without words, the feeling reached.'}},
+  ]},
+ {icon:'🐾', theme:'loss', title:{ja:'大切な相棒との別れ',en:'Farewell to a Faithful Friend'}, body:{ja:'長年連れ添った、もの言わぬ家族が、静かに旅立った。小さな温もりが、もうそこにない。',en:'A wordless family member of many years quietly passed. A small warmth is no longer there.'},
+  choices:[
+   {label:{ja:'ありがとう、と見送る',en:'See them off with thanks'}, eff:{mind:6,bond:4}, good:2, result:{ja:'たくさんの幸せをもらった。悲しみは、深く愛した証だ。',en:'They gave you so much happiness. Grief is proof you loved deeply.'}},
+   {label:{ja:'写真を見て、思い出に浸る',en:'Look at photos, and remember'}, eff:{mind:4,health:2}, good:1, result:{ja:'楽しかった日々が、よみがえる。その温もりは、心の中で生き続ける。',en:'The happy days return. That warmth lives on in your heart.'}},
+  ]},
+ {icon:'🔧', theme:'work', title:{ja:'頼られる存在に',en:'The One People Rely On'}, body:{ja:'気づけば、職場で「あの人に聞けば大丈夫」と言われる存在になっていた。',en:'Before you knew it, you became the one they say “ask them, it’ll be fine” about.'},
+  choices:[
+   {label:{ja:'後輩を、育てることに力を注ぐ',en:'Pour energy into mentoring juniors'}, eff:{cash:4,trust:8,bond:5}, good:2, addCompanion:true, result:{ja:'自分一人の力には、限りがある。次へ繋ぐことで、力は何倍にもなる。',en:'One person’s power is limited. Passed on, it multiplies.'}},
+   {label:{ja:'全部、自分で抱え込む',en:'Shoulder it all yourself'}, eff:{cash:8,health:-6}, result:{ja:'頼られるのは嬉しい。でも、抱えすぎると、いつか潰れてしまう。',en:'Being relied on feels good. But carry too much, and you’ll break.'}},
+  ]},
+ {icon:'🌈', theme:'comeback', title:{ja:'雨上がりの空',en:'The Sky After Rain'}, body:{ja:'つらい時期を、どうにか抜けた。ふと見上げた空に、薄く虹がかかっていた。',en:'You somehow came through a hard stretch. Looking up, a faint rainbow arced across the sky.'},
+  choices:[
+   {label:{ja:'乗り越えた自分を、認める',en:'Acknowledge how far you came'}, eff:{mind:10,health:4,bond:3}, good:2, result:{ja:'よく、ここまで歩いてきた。雨の日があったから、虹が綺麗に見える。',en:'You walked all this way. Because of the rain, the rainbow looks so bright.'}},
+   {label:{ja:'油断せず、次に備える',en:'Stay alert; prepare for next'}, eff:{cash:4,mind:5}, good:1, result:{ja:'晴れの日に、傘の手入れをする。備えあれば、次の雨も怖くない。',en:'Mend the umbrella on a sunny day. Prepared, the next rain won’t scare you.'}},
+  ]},
+];
+BOARD_EVENTS.push(...EXTRA_EVENTS3);
+
+/* ---- expanded event pool (batch 4) ---- */
+const EXTRA_EVENTS4 = [
+ {icon:'💐', theme:'love', title:{ja:'記念日',en:'An Anniversary'}, body:{ja:'共に歩んできた人との、節目の日。日々に追われ、気持ちを伝えるのを、忘れていないか。',en:'A milestone day with the one beside you. Chased by daily life, have you forgotten to say how you feel?'},
+  choices:[
+   {label:{ja:'時間をつくり、感謝を伝える',en:'Make time; express your thanks'}, eff:{cash:-3,bond:10,mind:5}, good:2, result:{ja:'「いつもありがとう」。照れくさい言葉が、二人の距離を、また縮めた。',en:'“Thank you, always.” The bashful words drew you both closer again.'}},
+   {label:{ja:'忙しさにかまけて、流す',en:'Let it slide, citing busyness'}, eff:{bond:-5,mind:-2}, result:{ja:'特別な日が、普通の日になった。当たり前は、手入れしないと、錆びる。',en:'A special day became ordinary. What’s taken for granted rusts without care.'}},
+  ]},
+ {icon:'🙃', theme:'betrayal', title:{ja:'親友だと思っていた人',en:'Someone You Called a Friend'}, body:{ja:'一番信じていた相手が、陰で自分を裏切っていた。怒りより先に、深い悲しみが来た。',en:'The one you trusted most betrayed you behind your back. Before anger came a deep sadness.'},
+  choices:[
+   {label:{ja:'縁を、静かに手放す',en:'Quietly release the bond'}, eff:{mind:6,trust:3,bond:-4}, good:1, result:{ja:'去る者は、追わない。自分を大切にしてくれる人を、これから大事にしよう。',en:'Don’t chase those who leave. Cherish those who cherish you.'}},
+   {label:{ja:'もう一度だけ、向き合う',en:'Face them, one more time'}, check:{stat:'mind',dc:55,eff_fail:{mind:-6,bond:-3},result_fail:{ja:'分かり合えなかった。でも、ぶつけた想いに、嘘はない。',en:'You couldn’t reconcile. But the feelings you voiced were true.'}},
+    eff:{mind:4,bond:4,trust:3}, good:1, result:{ja:'本音をぶつけたら、相手も詫びた。ひびは残るが、ゼロには戻らない。',en:'You spoke your heart; they apologized. A crack remains, but it isn’t nothing.'}},
+  ]},
+ {icon:'☎️', theme:'fraud', title:{ja:'不安をあおる電話',en:'A Call That Stokes Fear'}, body:{ja:'「至急、お金が必要だ」。慌てた声で、家族を名乗る電話。だが、どこか違和感がある。',en:'“I need money, urgently.” A panicked voice claims to be family. But something feels off.'},
+  choices:[
+   {label:{ja:'一度切って、本人に確認する',en:'Hang up; verify with the real person'}, eff:{trust:5,mind:5}, good:2, result:{ja:'落ち着いて、かけ直した。やはり、なりすましだった。冷静さが、身を守った。',en:'Calmly, you called back. An impostor, as suspected. Composure protected you.'}},
+   {label:{ja:'慌てて、言われるまま振り込む',en:'Panic and wire it as told'}, eff:{cash:-16,mind:-4}, result:{ja:'お金は戻らなかった。不安をあおる手口だと、後で知った。次は、必ず疑おう。',en:'The money was gone. A fear-baiting trick, you learned. Next time, doubt first.'}},
+  ]},
+ {icon:'☕', theme:'rest', title:{ja:'何でもない一日',en:'An Uneventful Day'}, body:{ja:'特別なことは、何も起きない。あたたかい飲み物と、静かな時間。それだけの、休日。',en:'Nothing special happens. A warm drink, quiet time. Just a simple day off.'},
+  choices:[
+   {label:{ja:'この穏やかさを、味わう',en:'Savor the calm'}, eff:{health:6,mind:8}, good:1, result:{ja:'何でもない日こそ、宝物。平穏は、努力の上に、そっと咲く花だ。',en:'An ordinary day is the treasure. Peace is a flower that quietly blooms upon effort.'}},
+   {label:{ja:'時間を無駄にした、と焦る',en:'Fret that you wasted time'}, eff:{mind:-3,health:2}, result:{ja:'休むことに、罪悪感を覚えた。でも、何もしない時間も、ちゃんと意味がある。',en:'You felt guilty resting. But time doing nothing has meaning too.'}},
+  ]},
+ {icon:'🏙️', theme:'loss', title:{ja:'新しい街の孤独',en:'Lonely in a New City'}, body:{ja:'知らない土地に、引っ越してきた。便利だけど、知り合いは一人もいない。少し、心細い。',en:'You moved to an unfamiliar place. Convenient, but you know no one. A little forlorn.'},
+  choices:[
+   {label:{ja:'自分から、地域に飛び込む',en:'Step into the community yourself'}, check:{stat:'bond',dc:48,eff_fail:{mind:-3,bond:2},result_fail:{ja:'すぐには馴染めない。でも、種をまけば、いつか芽が出る。',en:'You don’t fit in at once. But sow seeds, and sprouts will come.'}},
+    eff:{bond:8,mind:5}, good:1, addCompanion:true, result:{ja:'勇気を出して挨拶したら、思いのほか、温かく迎えられた。',en:'You braved a hello, and were welcomed warmer than expected.'}},
+   {label:{ja:'部屋にこもって、やり過ごす',en:'Stay holed up and wait it out'}, eff:{mind:-4,health:3}, result:{ja:'静かな日々。でも、ふとした時に、誰かの声が恋しくなる。',en:'Quiet days. But at odd moments, you miss a voice.'}},
+  ]},
+ {icon:'🌸', theme:'loss', title:{ja:'親を見送る',en:'Seeing a Parent Off'}, body:{ja:'いつか来ると分かっていた日。それでも、心の準備なんて、できていなかった。',en:'A day you knew would come. And still, no amount of preparing was enough.'},
+  choices:[
+   {label:{ja:'感謝を胸に、見送る',en:'See them off, holding gratitude'}, eff:{mind:8,bond:5}, good:2, result:{ja:'「育ててくれて、ありがとう」。受け取った愛を、今度は誰かへ。命は、巡る。',en:'“Thank you for raising me.” The love you received, now for someone else. Life circles on.'}},
+   {label:{ja:'もっと親孝行を、と悔やむ',en:'Regret you didn’t do more'}, eff:{mind:-4,health:2}, result:{ja:'後悔は尽きない。でも、あなたが幸せに生きることが、何よりの恩返しだ。',en:'Regret runs deep. But living happily is the greatest repayment of all.'}},
+  ]},
+ {icon:'💵', theme:'windfall', title:{ja:'思いがけない昇給',en:'An Unexpected Raise'}, body:{ja:'地道な働きが認められ、給料が上がった。封筒の厚みに、少しだけ、報われた気がする。',en:'Your steady work was recognized; your pay rose. The thicker envelope feels like a small reward.'},
+  choices:[
+   {label:{ja:'浮かれず、半分は貯金する',en:'Stay grounded; save half'}, eff:{cash:10,mind:4}, good:1, result:{ja:'生活水準は、急に上げない。賢い人は、増えた分こそ、大切にする。',en:'Don’t inflate your lifestyle. The wise treasure the increase most.'}},
+   {label:{ja:'頑張った自分に、ご褒美を',en:'Reward your hard work'}, eff:{cash:2,mind:6,health:3}, good:1, result:{ja:'たまには、いいだろう。自分を労うことも、明日への活力になる。',en:'Now and then, why not. Treating yourself fuels tomorrow too.'}},
+  ]},
+ {icon:'🥦', theme:'comeback', title:{ja:'生活を立て直す',en:'Rebuilding Your Habits'}, body:{ja:'乱れた生活に、けじめをつけたくなった。早寝、自炊、少しの運動。小さな決意。',en:'You want to set your messy life straight. Early nights, home cooking, a little exercise. A small resolve.'},
+  choices:[
+   {label:{ja:'できることから、整える',en:'Start with what you can'}, eff:{health:10,mind:6}, good:1, result:{ja:'劇的じゃなくていい。整った日々が、心の余裕を、少しずつ生む。',en:'No need for drama. Ordered days slowly create room in the heart.'}},
+   {label:{ja:'完璧を目指して、息切れする',en:'Aim for perfect, and burn out'}, eff:{health:3,mind:-3}, result:{ja:'張り切りすぎた。ほどほどが、いちばん続く。また、ゆるく始めよう。',en:'You overdid it. Moderation lasts longest. Start again, gently.'}},
+  ]},
+ {icon:'🎬', theme:'work', title:{ja:'眠っていた夢',en:'A Dream That Slept'}, body:{ja:'忙しさに、しまい込んでいた夢。「今さら」と思う一方で、まだ諦めきれない自分がいる。',en:'A dream you’d tucked away amid the rush. “Too late now,” you think — yet part of you won’t let go.'},
+  choices:[
+   {label:{ja:'小さく、また始めてみる',en:'Start again, in a small way'}, eff:{cash:-3,mind:8,health:3}, good:2, result:{ja:'遅すぎることなんて、ない。心が躍る方へ、もう一度、歩き出した。',en:'It’s never too late. You stepped again toward what makes your heart race.'}},
+   {label:{ja:'現実を見て、そっとしまう',en:'Face reality; tuck it away'}, eff:{mind:-2,cash:3}, result:{ja:'今は、その時じゃない。でも、夢は消えない。いつか、必ず。',en:'Not the time, now. But the dream won’t vanish. Someday, surely.'}},
+  ]},
+ {icon:'🛒', theme:'fraud', title:{ja:'格安の罠',en:'The Bargain Trap'}, body:{ja:'欲しかった品が、ありえない安値で。心が躍るが、よく見ると、店の情報が、やけに曖昧だ。',en:'The thing you wanted, at an impossible price. You’re thrilled — but the shop’s details are oddly vague.'},
+  choices:[
+   {label:{ja:'怪しいと感じ、やめておく',en:'Sense the danger; don’t buy'}, eff:{trust:4,mind:4}, good:1, result:{ja:'安すぎる話には、裏がある。手を出さず、正解だった。',en:'A price too low has a catch. Not buying was the right call.'}},
+   {label:{ja:'安さに惹かれ、注文する',en:'Lured by the price, you order'}, eff:{cash:-8,trust:-3}, result:{ja:'品物は、届かなかった。返金もない。安物買いの、苦い教訓だ。',en:'The goods never came. No refund. A bitter lesson in false bargains.'}},
+  ]},
+ {icon:'🎁', theme:'bond', title:{ja:'思いがけない恩返し',en:'An Unexpected Repayment'}, body:{ja:'昔、何気なく助けた人が、立派になって訪ねてきた。「あの時の恩を、返したくて」。',en:'Someone you once casually helped visits, now thriving. “I wanted to repay that day.”'},
+  choices:[
+   {label:{ja:'ありがたく、受け取る',en:'Accept it gratefully'}, eff:{cash:6,bond:8,mind:6}, good:2, result:{ja:'渡した優しさが、巡って戻ってきた。善いことは、ちゃんと根を張る。',en:'The kindness you gave came circling back. Good deeds take root.'}},
+   {label:{ja:'「気にしないで」と、固辞する',en:'Wave it off: “Don’t worry”'}, eff:{trust:5,bond:4}, good:1, result:{ja:'見返りは要らない。でも、覚えていてくれたこと自体が、嬉しかった。',en:'You wanted nothing back. But that they remembered, that alone was joy.'}},
+  ]},
+ {icon:'🌧️', theme:'illness', title:{ja:'自分を責める夜',en:'A Night of Self-Blame'}, body:{ja:'うまくいかないのは、全部自分のせいだ——そんな考えが、頭の中をぐるぐる回る。',en:'It’s all my fault that things go wrong — the thought circles in your head.'},
+  choices:[
+   {label:{ja:'自分に、優しい言葉をかける',en:'Speak kindly to yourself'}, eff:{mind:8,health:4}, good:2, result:{ja:'親友が同じ事で悩んでたら、責める? 自分にも、同じ優しさを。',en:'If a friend struggled with this, would you blame them? Give yourself that same kindness.'}},
+   {label:{ja:'もっと頑張れ、と追い込む',en:'Drive yourself: try harder'}, eff:{mind:-6,health:-2}, result:{ja:'追い込みすぎた。でも、あなたは十分、頑張っている。もう、責めないで。',en:'You pushed too hard. But you’re trying enough. Stop blaming yourself.'}},
+  ]},
+ {icon:'🎆', theme:'city', title:{ja:'街の祭り',en:'The Town Festival'}, body:{ja:'街がにぎわう、祭りの夜。一人で行くか、迷う。でも、灯りと音に、心が誘われる。',en:'A festival night, the town alive. You hesitate to go alone. But the lights and sounds call to you.'},
+  choices:[
+   {label:{ja:'思い切って、繰り出す',en:'Head out, boldly'}, eff:{bond:6,mind:6,health:2}, good:1, result:{ja:'人の波に紛れて歩くだけで、不思議と元気が出た。街は、生きている。',en:'Just walking in the crowd, you strangely felt revived. The town is alive.'}},
+   {label:{ja:'遠くから、灯りを眺める',en:'Watch the lights from afar'}, eff:{mind:4}, good:1, result:{ja:'輪の中に入れなくても、その温かさは、ちゃんと届いた。',en:'Even outside the circle, its warmth still reached you.'}},
+  ]},
+ {icon:'✉️', theme:'bond', title:{ja:'届いた手紙',en:'A Letter Arrives'}, body:{ja:'ポストに、手書きの手紙。デジタルの時代に、わざわざ。差出人の名に、胸が高鳴る。',en:'A handwritten letter in the mailbox. In a digital age, by hand. The sender’s name quickens your heart.'},
+  choices:[
+   {label:{ja:'丁寧に読み、返事を書く',en:'Read it with care; write back'}, eff:{bond:8,mind:6}, good:2, result:{ja:'手間をかけた言葉には、想いが宿る。あなたも、ペンを取った。',en:'Words that take effort carry feeling. You, too, took up the pen.'}},
+   {label:{ja:'後で読もう、と置いておく',en:'Set it aside for later'}, eff:{mind:2}, result:{ja:'忙しさで、後回しに。でも、その手紙は、いつでもあなたを待っている。',en:'Busyness postponed it. But the letter waits for you, always.'}},
+  ]},
+ {icon:'🚪', theme:'comeback', title:{ja:'やめる勇気',en:'The Courage to Quit'}, body:{ja:'続けてきたことが、もう自分を幸せにしていない。「やめる」のも、立派な決断だ。',en:'What you’ve kept up no longer makes you happy. To “quit” is a worthy decision too.'},
+  choices:[
+   {label:{ja:'区切りをつけ、次へ進む',en:'Draw a line; move on'}, eff:{cash:-2,mind:8,health:4}, good:2, result:{ja:'続けるより、やめる方が難しい時もある。手放した分、新しい風が入る。',en:'Sometimes quitting is harder than continuing. Let go, and fresh air comes in.'}},
+   {label:{ja:'惰性で、続けてしまう',en:'Continue out of inertia'}, eff:{cash:2,mind:-4}, result:{ja:'変わらない毎日。でも、いつでも、扉は開けられる。',en:'Unchanging days. But you can open the door anytime.'}},
+  ]},
+ {icon:'👰', theme:'family', title:{ja:'子の門出',en:'A Child’s New Journey'}, body:{ja:'手のかかったあの子が、伴侶を得て、新しい家庭を築く。感慨が、波のように押し寄せる。',en:'The child you raised gains a partner and builds a new home. Emotion washes over you in waves.'},
+  choices:[
+   {label:{ja:'幸せを願い、背中を押す',en:'Wish them well; push them forward'}, eff:{bond:8,mind:8}, good:2, result:{ja:'親の役目を、ひとつ果たせた。あの小さな手が、こんなに大きくなった。',en:'One duty as a parent, fulfilled. That tiny hand, grown so large.'}},
+   {label:{ja:'寂しさを、ぐっとこらえる',en:'Hold back the loneliness'}, eff:{mind:4,health:2}, good:1, result:{ja:'笑顔で送り出した。涙は、家に帰ってから、そっと。',en:'You sent them off smiling. The tears came quietly, back home.'}},
+  ]},
+ {icon:'🫂', theme:'city', title:{ja:'倒れそうな同僚',en:'A Colleague on the Edge'}, body:{ja:'いつも明るい同僚の表情が、最近、暗い。声をかけるべきか、踏み込みすぎか、迷う。',en:'A usually cheerful colleague has looked dark lately. Reach out, or is that overstepping?'},
+  choices:[
+   {label:{ja:'さりげなく、声をかける',en:'Reach out, gently'}, eff:{trust:5,bond:8,mind:4}, good:3, addCompanion:true, result:{ja:'「最近どう?」のひと言で、相手の肩の力が抜けた。気づきが、誰かを救う。',en:'A simple “How are you lately?” eased their shoulders. Noticing can save someone.'}},
+   {label:{ja:'余計なお世話かと、見守る',en:'Hold back; just watch over them'}, eff:{mind:2}, result:{ja:'踏み込めなかった。でも、気にかける眼差しは、きっと伝わっている。',en:'You held back. But a caring gaze surely reaches them.'}},
+  ]},
+ {icon:'⏳', theme:'money', title:{ja:'塩漬けの資産',en:'A Frozen Asset'}, body:{ja:'値下がりしたまま、手放せずにいる投資。「いつか戻る」と、ずるずる持ち続けている。',en:'An investment fallen in value you can’t let go of. “It’ll recover,” you keep holding on.'},
+  choices:[
+   {label:{ja:'冷静に見極め、整理する',en:'Assess calmly; clean it up'}, eff:{cash:4,mind:5}, good:1, result:{ja:'感情を切り離して、判断した。執着を手放すと、お金も心も、動き出す。',en:'You judged free of emotion. Let go of attachment, and money and mind both move.'}},
+   {label:{ja:'見ないふりで、塩漬けにする',en:'Look away; let it sit frozen'}, eff:{mind:-2}, result:{ja:'問題を、先送りにした。向き合うのは怖いが、いつかは、決断が要る。',en:'You deferred it. Facing it is scary, but a decision will come due.'}},
+  ]},
+ {icon:'🏡', theme:'family', title:{ja:'祖父母の知恵',en:'A Grandparent’s Wisdom'}, body:{ja:'年老いた祖父母が、ぽつりと言った。「お金より、人だよ」。皺だらけの手が、温かかった。',en:'An aged grandparent murmured, “People matter more than money.” The wrinkled hand was warm.'},
+  choices:[
+   {label:{ja:'その言葉を、心に刻む',en:'Carve the words into your heart'}, eff:{mind:8,bond:6}, good:2, result:{ja:'長く生きた人の言葉は、重い。大切なものを、見失わないようにしよう。',en:'Words from a long life carry weight. Don’t lose sight of what matters.'}},
+   {label:{ja:'時代が違う、と聞き流す',en:'Brush it off: times have changed'}, eff:{cash:2,bond:-2}, result:{ja:'聞き流した。でも、その言葉は、いつか効いてくるのかもしれない。',en:'You let it pass. But the words may sink in someday.'}},
+  ]},
+ {icon:'😄', theme:'comeback', title:{ja:'笑い話になる日',en:'The Day It Becomes a Laugh'}, body:{ja:'あんなにつらかった出来事を、今は笑って話せる。時間は、痛みを、ゆっくり変えていく。',en:'What once hurt so much, you can now tell with a laugh. Time slowly transforms pain.'},
+  choices:[
+   {label:{ja:'乗り越えた経験を、誰かに話す',en:'Share what you overcame'}, eff:{bond:6,mind:8,trust:4}, good:2, result:{ja:'あなたの「失敗談」が、今まさに悩む誰かの、希望になる。',en:'Your “failure story” becomes hope for someone struggling right now.'}},
+   {label:{ja:'胸にしまい、静かに微笑む',en:'Keep it in; smile quietly'}, eff:{mind:6}, good:1, result:{ja:'語らずとも、乗り越えた事実は消えない。その強さは、あなたのものだ。',en:'Unspoken, the fact that you overcame remains. That strength is yours.'}},
+  ]},
+ {icon:'💞', theme:'love', title:{ja:'変わらぬとなり',en:'The One Still Beside You'}, body:{ja:'長い年月を、ともに歩いてきた人。ときめきは形を変え、深い信頼になっていた。',en:'The one who walked the long years with you. The flutter changed shape, into deep trust.'},
+  choices:[
+   {label:{ja:'これからも、と手を取る',en:'Take their hand: “From here too”'}, eff:{bond:10,mind:8}, good:2, result:{ja:'派手さはない。でも、となりに当たり前にいてくれる人こそ、宝物だ。',en:'Nothing flashy. But the one simply, always there is the treasure.'}},
+   {label:{ja:'感謝を、言葉にしそびれる',en:'Miss the chance to say thanks'}, eff:{bond:3,mind:-1}, result:{ja:'言わなくても伝わる、は半分本当で半分嘘。今度こそ、言葉にしよう。',en:'“It’s understood unspoken” is half true, half not. Next time, say it.'}},
+  ]},
+ {icon:'🧭', theme:'comeback', title:{ja:'人生の地図を描き直す',en:'Redrawing Your Map'}, body:{ja:'思い描いていた道とは、違う場所にいる。でも、ここから、また地図を描けばいい。',en:'You’re somewhere other than the road you’d pictured. But from here, you can draw the map anew.'},
+  choices:[
+   {label:{ja:'今いる場所から、描き始める',en:'Start drawing from where you are'}, eff:{mind:8,cash:3,health:3}, good:2, result:{ja:'回り道も、人生のうち。寄り道で見た景色は、誰のものでもない、あなたの宝だ。',en:'Detours are part of life. The sights along them are your treasure, no one else’s.'}},
+   {label:{ja:'理想とのギャップに、立ち尽くす',en:'Freeze at the gap from the ideal'}, eff:{mind:-3,health:2}, result:{ja:'立ち止まってもいい。でも、足元には、ちゃんと次の一歩がある。',en:'It’s okay to pause. But at your feet, the next step is always there.'}},
+  ]},
+ {icon:'🤞', theme:'bond', title:{ja:'小さな約束',en:'A Small Promise'}, body:{ja:'「今度、必ず」。交わした、ささやかな約束。忙しさの中で、忘れてしまいそうになる。',en:'“Next time, for sure.” A small promise made. In the rush, you almost forget it.'},
+  choices:[
+   {label:{ja:'ちゃんと、約束を果たす',en:'Keep the promise, properly'}, eff:{cash:-2,bond:8,trust:5}, good:2, result:{ja:'小さな約束を守る人を、人は信じる。信頼は、こうして積み上がる。',en:'People trust those who keep small promises. Trust is built this way.'}},
+   {label:{ja:'つい、後回しにする',en:'Put it off, again'}, eff:{bond:-4,trust:-2}, result:{ja:'「いつか」は、なかなか来ない。小さな約束ほど、相手は覚えている。',en:'“Someday” rarely comes. The smaller the promise, the more they remember.'}},
+  ]},
+ {icon:'🌟', theme:'luck', title:{ja:'転機の予感',en:'A Sense of Turning'}, body:{ja:'何かが、変わり始めている。これまでの積み重ねが、ふと、追い風に変わる気配。',en:'Something is beginning to change. Your past efforts seem about to become a tailwind.'},
+  choices:[
+   {label:{ja:'好機をつかみ、動く',en:'Seize the moment; act'}, hint:{ja:'心が高いと活かせる',en:'A sharp mind makes the most of it'},
+    check:{stat:'mind',dc:54,eff_fail:{cash:4,mind:3},result_fail:{ja:'波にうまく乗れなかった。でも、巡ってきたこと自体が、努力の証だ。',en:'You didn’t quite catch the wave. But its arrival is proof of your effort.'}},
+    eff:{cash:14,mind:6,trust:4}, good:1, result:{ja:'積み重ねが、花開いた。運も、努力した人の元へ来る。',en:'Your buildup bloomed. Luck, too, comes to those who worked.'}},
+   {label:{ja:'慎重に、様子を見る',en:'Be cautious; watch and wait'}, eff:{cash:4,mind:3}, result:{ja:'急がば回れ。確実な一手を、見極めるのも賢さだ。',en:'Make haste slowly. Spotting the sure move is wisdom too.'}},
+  ]},
+ {icon:'🕯️', theme:'city', title:{ja:'誰かの灯になる',en:'Becoming Someone’s Light'}, body:{ja:'かつて、暗闇でうずくまっていた自分。今、同じ闇にいる誰かに、手を伸ばせるだろうか。',en:'Once, you crouched in the dark. Now, can you reach out to someone in that same darkness?'},
+  choices:[
+   {label:{ja:'自分の経験を、そっと差し出す',en:'Quietly offer your experience'}, eff:{trust:6,bond:8,mind:8}, good:3, addCompanion:true, result:{ja:'「私も、そうだった」。その一言が、誰かの夜を照らす灯になる。灯は、巡る。',en:'“I was there too.” Those words become a light in someone’s night. The light circles on.'}},
+   {label:{ja:'そっと、寄り添うだけにする',en:'Just stay quietly beside them'}, eff:{bond:5,mind:5}, good:2, result:{ja:'言葉はいらない。ただ、となりにいる。それだけで、救われることがある。',en:'No words needed. Just being beside them. That alone can save.'}},
+  ]},
+];
+BOARD_EVENTS.push(...EXTRA_EVENTS4);
+
+/* ---- mapping: story result → board start ---- */
+function chooseOccupation(){
+  if(storyEndingId==='lonely') return 'restart';
+  const maxStat = Math.max(S.trust,S.mind,S.bond,S.health,S.money);
+  if(maxStat < 40) return 'restart';
+  if(S.money>=70 && S.money>=maxStat) return 'investor';
+  const map = {trust:'entrepreneur', mind:'creator', bond:'caregiver', health:'craftsman'};
+  let best='craftsman', bv=-1;
+  for(const k in map){ if(S[k] > bv){ bv=S[k]; best=map[k]; } }
+  return best;
+}
+
+function startBoard(){
+  audioKick(); Sfx.play('start');
+  const occKey = chooseOccupation();
+  const sb = ({redeemer:10,reborn:10,quiet_peace:6,survivor:2,lonely:0})[storyEndingId];
+  const cash = Math.max(5, 8 + Math.round(S.money*0.4)) + (sb==null?2:sb) + (OCC[occKey].startCash||0);
+  const sp = ({redeemer:3,reborn:3,quiet_peace:2,survivor:1,lonely:0})[storyEndingId];
+  board = {
+    occ:occKey, cash, pos:(sp==null?1:sp), turn:0, maxTurns:BOARD_MAX_TURNS,
+    companions:(S.bond>=60?1:0), boardQuality:0, reachedGoal:false,
+    skipNext:false, busy:false, cont:null, curEvent:null, tiles:genTrack(),
+    firstSalaryHalf:(S.mind<25),
+  };
+  renderBoardIntro();
+}
+
+function genTrack(){
+  const tiles=[{type:'start'}];
+  const pool=['event','event','event','good','good','bad','encounter','illness','branch','rest','setback','bonus'];
+  for(let i=1;i<GOAL;i++){
+    tiles.push({type: (i%5===0) ? 'salary' : pick(pool)});
+  }
+  tiles.push({type:'goal'});
+  return tiles;
+}
+
+/* ---- rendering ---- */
+function renderBoardStats(changed){
+  const el = statsEl(); el.setAttribute('aria-hidden','false');
+  el.style.gridTemplateColumns='repeat(4,1fr)';
+  el.innerHTML = ['trust','health','mind','bond'].map(k=>{
+    const m = STAT_META[k]; const fl = (changed && changed[k]) ? ' flash':'';
+    return `<div class="stat ${m.cls}${fl}"><div class="ico">${m.ico}</div><div class="lbl">${T(UI[m.ui])}</div>
+      <div class="bar"><i style="width:${S[k]}%"></i></div><div class="num">${S[k]}</div></div>`;
+  }).join('');
+}
+
+const TILE_ICON = {salary:'💴',good:'🟦',bad:'🟥',bonus:'🎁',event:'❓',encounter:'🤝',illness:'🏥',branch:'🔀',rest:'💤',setback:'↩️',goal:'🏁',start:'🏠'};
+function renderTrackHTML(){
+  let h='';
+  for(let i=0;i<board.tiles.length;i++){
+    const here = i===board.pos;
+    h += `<div class="tile t-${board.tiles[i].type}${here?' here':''}">
+      <span class="ti">${i}</span>${TILE_ICON[board.tiles[i].type]||'·'}
+      ${here?'<div class="token">🚶</div>':''}</div>`;
+  }
+  return h;
+}
+function scrollToken(){
+  const el = document.querySelector('#board-track .here');
+  if(el && el.scrollIntoView){ try{ el.scrollIntoView({inline:'center',block:'nearest'}); }catch(e){ el.scrollIntoView(); } }
+}
+
+function renderBoardFrame(stageHtml){
+  phase='board';
+  renderBoardStats();
+  document.getElementById('progress').innerHTML='';
+  const occ = OCC[board.occ];
+  scene().className='';
+  scene().innerHTML = `
+    <div id="board-hud">
+      <div class="hud"><div class="hl">${T(UI.job_label)}</div><div class="hv">${occ.icon} <small>${T(occ.name)}</small></div></div>
+      <div class="hud cash ${board.cash<0?'neg':''}"><div class="hl">${T(UI.cash_label)}</div><div class="hv">¥${board.cash}<small>${T(UI.man)}</small></div></div>
+      <div class="hud"><div class="hl">${T(UI.turn_label)}</div><div class="hv">${Math.min(board.turn,board.maxTurns)}/${board.maxTurns}</div></div>
+      <div class="hud"><div class="hl">${T(UI.comp_label)}</div><div class="hv">🤝 ${board.companions}</div></div>
+    </div>
+    <div id="board-track">${renderTrackHTML()}</div>
+    <div id="board-stage">${stageHtml}</div>`;
+  scrollToken();
+}
+
+function renderBoardIntro(){
+  phase='board';
+  renderBoardStats();
+  document.getElementById('progress').innerHTML='';
+  const occ = OCC[board.occ];
+  const startTxt = board.pos===0 ? (lang==='ja'?'最初から':'from the start')
+                                 : (board.pos + (lang==='ja'?'マス先':' tiles ahead'));
+  scene().className='center fade';
+  scene().innerHTML = `
+    <div class="big-emoji">${occ.icon}</div>
+    <div class="chapter-tag">${T(UI.board_setup)}</div>
+    <div class="ending-name" style="font-size:clamp(20px,5vw,26px)">${T(occ.name)}</div>
+    <p class="scene-body" style="margin-top:6px">${T(occ.note)}</p>
+    <div style="display:flex;gap:16px;justify-content:center;margin:16px 0;flex-wrap:wrap">
+      <span class="muted">${T(UI.cash_label)}: <b style="color:var(--money)">¥${board.cash}${T(UI.man)}</b></span>
+      <span class="muted">${T(UI.start_label)}: ${startTxt}</span>
+      <span class="muted">${T(UI.comp_label)}: 🤝 ${board.companions}</span>
+    </div>
+    <div class="actions"><button class="btn-primary" onclick="audioKick();Sfx.play('start');renderBoard()">${T(UI.depart)} 🎲</button></div>`;
+}
+
+function renderBoard(){
+  board.busy=false; board.cont=null;
+  renderBoardFrame(`<div class="die">🎲</div>
+    <div class="choices"><button class="btn-primary" onclick="rollDice()">🎲 ${T(UI.roll)}</button></div>`);
+}
+
+/* ---- dice & movement ---- */
+function rollDice(){
+  if(board.busy) return;
+  board.busy=true; audioKick();
+  if(board.skipNext){
+    board.skipNext=false; board.turn++; Sfx.play('click');
+    showPanel(T(UI.tile_rest), T(UI.skip_turn), {}, afterResolve);
+    return;
+  }
+  const d = 1+rnd(6);
+  const st = document.getElementById('board-stage');
+  if(st) st.innerHTML = `<div class="dice-area">${cubeHTML()}<p class="muted">${T(UI.rolling)}</p></div>`;
+  Sfx.play('dice');
+  setTimeout(()=>setCubeFace(d, 2), 50);        // tumble to the rolled face
+  setTimeout(()=>{ Sfx.play('land'); moveBy(d); }, 1050);
+}
+
+function moveBy(d){
+  let target = board.pos + d;
+  if(target >= GOAL) target = GOAL;
+  board.pos = target; board.turn++;
+  renderBoardFrame(`<div class="muted" style="text-align:center">${T(UI.moving)}</div>`);
+  setTimeout(()=>resolveTile(board.pos), 480);
+}
+
+/* ---- continue plumbing ---- */
+function boardContinue(){ Sfx.play('click'); const f=board.cont; board.cont=null; if(f) f(); }
+function deltaChips(eff){
+  let chips='';
+  if(eff.cash){ chips += `<span class="delta ${eff.cash>0?'up':'down'}">💰 ${eff.cash>0?'+':''}${eff.cash}${T(UI.man)}</span>`; }
+  for(const k in eff){ if(k==='cash') continue; const m=STAT_META[k]; if(!m) continue; const v=eff[k]; if(!v) continue;
+    chips += `<span class="delta ${v>0?'up':'down'}">${m.ico} ${v>0?'+':''}${v}</span>`; }
+  return chips;
+}
+function panelHTML(title, body, eff, contLabel){
+  return `<div class="board-msg fade"><p class="mh">${title}</p><p>${body}</p>
+      <div class="deltas">${deltaChips(eff||{})}</div></div>
+    <div class="choices"><button class="btn-primary" onclick="boardContinue()">${contLabel||T(UI.cont)} ▶</button></div>`;
+}
+function showPanel(title, body, eff, contFn, contLabel){
+  board.cont = contFn || afterResolve;
+  renderBoardFrame(panelHTML(title, body, eff||{}, contLabel));
+}
+
+function applyBoardEff(eff){
+  const changed={};
+  for(const k in eff){
+    if(k==='cash'){ board.cash += eff[k]; }
+    else if(STAT_META[k]){ const b=S[k]; S[k]=clamp(S[k]+eff[k]); if(S[k]!==b) changed[k]=eff[k]; }
+  }
+  return changed;
+}
+
+/* ---- tile resolution: central 演出 first, then resolve ---- */
+const TILE_THEME = {salary:'money', good:'luck', bad:'loss', bonus:'windfall',
+  encounter:'bond', rest:'rest', setback:'loss', start:'city'};
+function tileLabel(type){
+  const m={salary:'tile_salary',good:'tile_good',bad:'tile_bad',bonus:'tile_bonus',encounter:'tile_encounter',rest:'tile_rest',setback:'tile_setback'};
+  return m[type] ? T(UI[m[type]]) : (lang==='ja'?'人生の途上':'On the way');
+}
+function resolveTile(idx){
+  if(idx>=GOAL || board.tiles[idx].type==='goal'){
+    showSceneFx('goal', T(UI.reach_goal), ()=>{ Sfx.play('goal'); resolveGoal(); }); return;
+  }
+  const t = board.tiles[idx];
+  if(t.type==='event' || t.type==='branch' || t.type==='illness'){
+    const ev = (t.type==='illness') ? ILLNESS_EVENT : pick(t.type==='branch' ? BRANCH_EVENTS : BOARD_EVENTS);
+    const theme = ev.theme || (t.type==='illness'?'illness':(t.type==='branch'?'travel':'city'));
+    showSceneFx(theme, T(ev.title), ()=>openBoardEvent(ev), ev.icon);
+    return;
+  }
+  showSceneFx(TILE_THEME[t.type]||'city', tileLabel(t.type), ()=>doInlineTile(t));
+}
+
+function doInlineTile(t){
+  const occ = OCC[board.occ];
+  switch(t.type){
+    case 'salary': {
+      let amt = occ.salary[0] + rnd(occ.salary[1]-occ.salary[0]+1);
+      let body = T(UI.msg_salary);
+      if(board.firstSalaryHalf){ amt = Math.max(1, Math.round(amt/2)); board.firstSalaryHalf=false;
+        body += lang==='ja' ? '（まだ本調子じゃない…今回は半分）' : ' (not at your best yet — half this time)'; }
+      const eff={cash:amt}; applyBoardEff(eff); Sfx.play('coin'); showPanel(T(UI.tile_salary), body, eff); break;
+    }
+    case 'good': {
+      let amt = 2 + rnd(4) + (occ.goodBonus||0);
+      const eff={cash:amt}; if(rnd(2)===0) eff.mind=2; if(rnd(3)===0) eff.bond=2;
+      applyBoardEff(eff); Sfx.play('good'); showPanel(T(UI.tile_good), T(UI.msg_good), eff); break;
+    }
+    case 'bad': {
+      let loss = 3 + rnd(4); if(occ.riskMul) loss = Math.round(loss*occ.riskMul);
+      let body = T(UI.msg_bad);
+      if(board.companions>0){ loss = Math.ceil(loss/2); board.companions--; body = T(UI.ally_save)+'\n'+body; Sfx.play('ally'); }
+      else Sfx.play('bad');
+      const eff={cash:-loss}; applyBoardEff(eff); showPanel(T(UI.tile_bad), body, eff); break;
+    }
+    case 'bonus': {
+      let amt = 6 + rnd(7); if(occ.bonusMul) amt = Math.round(amt*occ.bonusMul);
+      const eff={cash:amt}; applyBoardEff(eff); Sfx.play('coin'); showPanel(T(UI.tile_bonus), T(UI.msg_bonus), eff); break;
+    }
+    case 'rest': {
+      const eff={health:4+rnd(5), mind:3+rnd(4)}; applyBoardEff(eff); Sfx.play('up');
+      showPanel(T(UI.tile_rest), T(UI.msg_rest), eff); break;
+    }
+    case 'encounter': {
+      board.companions++; const eff={bond:4+rnd(5)}; applyBoardEff(eff); Sfx.play('ally');
+      showPanel(T(UI.tile_encounter), T(UI.ally_join)+'\n'+T(UI.msg_encounter), eff); break;
+    }
+    case 'setback': {
+      let back = 2 + rnd(3); let body = T(UI.msg_setback);
+      if(S.trust>=60 || S.bond>=60) back = Math.max(1, back-1);
+      if(board.companions>0){ board.companions--; back=0; body = T(UI.ally_save); Sfx.play('ally'); }
+      else Sfx.play('down');
+      board.pos = Math.max(0, board.pos - back);
+      showPanel(T(UI.tile_setback), body, {}); break;
+    }
+    default:
+      showPanel(lang==='ja'?'人生の途上':'On the way',
+                lang==='ja'?'静かな一日。また、次へ進もう。':'A quiet day. On we go.', {});
+  }
+}
+
+function openBoardEvent(ev){
+  board.curEvent = ev; board.cont = null;
+  const html = `<div class="board-msg fade"><p class="mh">${T(ev.title)}</p><p>${T(ev.body)}</p></div>
+    <div class="choices">${ev.choices.map((c,i)=>`
+      <button class="choice" onclick="boardChoose(${i})">${T(c.label)}${c.hint?`<span class="hint">${T(c.hint)}</span>`:''}</button>`).join('')}</div>`;
+  renderBoardFrame(html);
+}
+
+function boardChoose(i){
+  const c = board.curEvent.choices[i];
+  let eff = c.eff, body = c.result, ok = true;
+  if(c.check){
+    const roll = S[c.check.stat] + rnd(21);
+    ok = roll >= c.check.dc;
+    if(!ok){ eff = c.check.eff_fail; body = c.check.result_fail; }
+  }
+  applyBoardEff(eff);
+  if(c.addCompanion && ok){ board.companions++; Sfx.play('ally'); }
+  else { const net=Object.keys(eff).reduce((s,k)=> s + (k==='skip'?0:eff[k]), 0); Sfx.play(net>=0?'up':'down'); }
+  if(eff && eff.skip) board.skipNext = true;
+  if(c.good && ok) board.boardQuality += c.good;
+  else if(c.good && !ok) board.boardQuality += Math.max(0, c.good-1);
+  showPanel(T(board.curEvent.title), body, eff, afterResolve);
+}
+
+function resolveGoal(){
+  board.reachedGoal = true;
+  let amt = 15; if(OCC[board.occ].bonusMul) amt = Math.round(amt*1.3);
+  const eff={cash:amt}; applyBoardEff(eff);
+  showPanel(T(UI.reach_goal), T(UI.msg_goal), eff, showFinalResult, T(UI.result_title));
+}
+
+function afterResolve(){
+  if(board.reachedGoal || board.pos>=GOAL){ showFinalResult(); return; }
+  if(board.turn>=board.maxTurns){ showFinalResult(); return; }
+  renderBoard();
+}
+
+/* ---- final scoring ---- */
+function decideBoardEnding(){
+  const cash=board.cash, st=S.mind+S.bond+S.trust;
+  if(board.reachedGoal && st>=170 && cash>=70) return 'fulfilled';
+  if(cash>=120) return 'prosperous';
+  if(S.mind<=25 || S.bond<=18) return 'not_alone';
+  if(cash<=15 || st<110) return 'weathered';
+  return 'content';
+}
+function calcBoardCoins(){
+  let c = 4;
+  c += Math.max(0, Math.min(9, Math.floor(board.cash/18)));   // wealth milestone (0..9)
+  c += Math.floor((S.mind + S.bond + S.trust) / 40);          // heart/bonds/trust (0..7)
+  c += board.reachedGoal ? 6 : 2;                              // completed the journey
+  c += Math.max(0, Math.min(6, (quality||0) + board.boardQuality)); // wise/kind choices
+  return Math.max(5, Math.min(30, Math.round(c)));
 }
 
 /* =========================================================================

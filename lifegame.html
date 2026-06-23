@@ -47,6 +47,11 @@
   .bar{height:5px; border-radius:4px; background:#000; overflow:hidden;}
   .bar > i{display:block; height:100%; width:50%; border-radius:4px; transition:width .5s cubic-bezier(.2,.7,.2,1);}
   .stat .num{font-size:10px; color:var(--dim); margin-top:3px;}
+  /* enlarged board status (top bars during sugoroku) */
+  #stats.big-stats .ico{font-size:19px;}
+  #stats.big-stats .lbl{font-size:12px; margin:3px 0 5px;}
+  #stats.big-stats .num{font-size:15px; font-weight:800; color:var(--txt);}
+  #stats.big-stats .bar{height:7px;}
   .s-money .bar>i{background:var(--money);} .s-trust .bar>i{background:var(--trust);}
   .s-health .bar>i{background:var(--health);} .s-mind .bar>i{background:var(--mind);}
   .s-bond .bar>i{background:var(--bond);}
@@ -74,6 +79,10 @@
   }
   .choice:hover{border-color:var(--fire); transform:translateY(-1px); background:#222031;}
   .choice .hint{display:block; font-size:11px; color:var(--dim); margin-top:3px;}
+  .ch-letter{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; min-width:20px;
+    border-radius:6px; margin-right:9px; font-size:11px; font-weight:800; color:#1a0a05;
+    background:linear-gradient(135deg,#ff8a3d,#ff3da1); vertical-align:middle;}
+  .ch-letter:empty{display:none;}
   .btn-primary{
     background:var(--accent); border:none; color:#1a0a05; font-weight:800;
     border-radius:12px; padding:14px; font-size:15px; cursor:pointer; width:100%;
@@ -91,6 +100,9 @@
   .btn-resume{width:100%; border-radius:12px; padding:13px; font-size:14px; font-weight:800; cursor:pointer;
     color:#fff; border:1px solid var(--fire); background:linear-gradient(90deg,#3a2410,#5a3a14); box-shadow:0 0 16px -4px var(--fire);}
   .btn-resume:hover{filter:brightness(1.1);}
+  .btn-again{width:100%; border-radius:12px; padding:14px; font-size:15px; font-weight:800; cursor:pointer;
+    color:#1a0a05; border:none; background:linear-gradient(90deg,#ffce4f,#ff8a3d); box-shadow:0 6px 20px -8px #ffce4f;}
+  .btn-again:hover{filter:brightness(1.07);}
   .btn-ghost:hover{border-color:var(--fire); color:var(--txt);}
   /* ---- title / result centered ---- */
   .center{align-items:center; text-align:center; justify-content:center;}
@@ -554,6 +566,133 @@ const ACT2 = [ // hardships — kept serious but not heavy-handed; each ends wit
       en:'You couldn’t tell a soul. Still, someone worried and reached out.\n— However far you sink, someone does care. Those who’ve hit bottom can rise again.'}},
   ]
  },
+ {
+  tag:{ja:'第二章 ・ 偽りの愛',en:'Chapter II · A False Love'},
+  title:{ja:'結婚詐欺',en:'A Marriage Scam'},
+  body:{ja:'将来を誓った相手は、お金だけが目当てだった。貯金も、信じる心も、根こそぎ持っていかれた。',
+    en:'The one you vowed a future with only wanted your money. Your savings — and your trust — were taken to the roots.'},
+  choices:[
+   {label:{ja:'自分を責めず、立ち直ると決める',en:'Don’t blame yourself; choose to heal'}, eff:{money:-60,trust:-10,mind:+10}, good:2,
+    result:{ja:'人を信じられたのは、あなたが優しいから。\n——その優しさは、いつか必ず、正しい人を引き寄せる。',en:'You could trust because you’re kind.\n— That kindness will surely draw the right person someday.'}},
+   {label:{ja:'警察と専門家に、きちんと相談する',en:'Go properly to police and experts'}, eff:{money:-40,trust:+4,mind:+5}, good:2,
+    result:{ja:'泣き寝入りしなかった。一部は取り戻せた。\n——声を上げる勇気が、次の誰かも救う。',en:'You didn’t suffer in silence; you recovered some.\n— The courage to speak up may save the next person too.'}},
+   {label:{ja:'しばらく、誰にも会わず心を休める',en:'Rest your heart; see no one for a while'}, eff:{money:-60,health:+6,mind:+6}, good:1,
+    result:{ja:'傷ついた心には、時間という薬がいる。\n——焦らなくていい。あなたのペースで、また歩き出せる。',en:'A wounded heart needs the medicine of time.\n— No rush. You’ll walk again, at your own pace.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 崩れた足場',en:'Chapter II · The Ground Gives Way'},
+  title:{ja:'事業の倒産',en:'Your Business Fails'},
+  body:{ja:'必死で育てた会社が、ついに立ち行かなくなった。残ったのは、たくさんの借金と、空っぽの事務所。',
+    en:'The company you built with all your might finally couldn’t go on. What’s left is heavy debt and an empty office.'},
+  choices:[
+   {label:{ja:'従業員の再就職を、最後まで世話する',en:'See your staff into new jobs, to the end'}, eff:{money:-50,trust:+12,bond:+8}, good:3, allies:1, debt:10,
+    result:{ja:'自分が一番苦しい時に、人を思えた。\n——その姿を見ていた仲間が、「また一緒に」と言ってくれた。借金は残ったが、信頼は残った。',en:'At your hardest, you still thought of others.\n— A colleague who saw it said, “Let’s do it again.” Debt remained — but so did trust.'}},
+   {label:{ja:'失敗を分析し、次への糧にする',en:'Analyze the failure; make it fuel'}, eff:{money:-50,mind:+12}, good:2, debt:8,
+    result:{ja:'なぜ倒れたかを、目をそらさず見つめた。\n——この痛い経験は、次に必ず生きる。倒れ方を知る人は、強い。',en:'You faced, without flinching, why it fell.\n— This painful lesson will live in the next try. Those who know how they fell are strong.'}},
+   {label:{ja:'一度すべてを手放し、ゼロから歩む',en:'Let it all go; walk again from zero'}, eff:{money:-70,health:+5,mind:+8}, good:1, debt:12,
+    result:{ja:'肩の荷を、いったん全部おろした。\n——身軽になった分、また何でも始められる。終わりは、始まりだ。',en:'You set the whole weight down for now.\n— Lighter, you can start anything again. An ending is a beginning.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 偽りの罪',en:'Chapter II · A Crime You Didn’t Commit'},
+  title:{ja:'身に覚えのない汚名',en:'A Stain You Didn’t Earn'},
+  body:{ja:'やってもいないことで、責められた。噂は広まり、築いてきた信用が、音を立てて崩れていく。',
+    en:'You were blamed for something you never did. Rumors spread, and the trust you built crumbles with a roar.'},
+  choices:[
+   {label:{ja:'真実を、諦めず証明していく',en:'Prove the truth; never give up'}, hint:{ja:'心が高いと貫ける',en:'A strong mind sees it through'},
+    check:{stat:'mind',dc:55,eff_fail:{trust:-12,mind:-4},result_fail:{ja:'すぐには晴れない。でも、誠実に生きる姿を、見ている人は必ずいる。\n——真実は、いつか必ず追いついてくる。',en:'It doesn’t clear at once. But someone always sees an honest life.\n— Truth always catches up, in the end.'}},
+    eff:{trust:+10,mind:+6}, good:2, result:{ja:'根気強く事実を示し、汚名をそそいだ。\n——苦しい時に味方でいてくれた人こそ、本物だと分かった。',en:'Patiently, you showed the facts and cleared your name.\n— Those who stood with you in the dark — they were the real ones.'}},
+   {label:{ja:'信じてくれる人を、大切にする',en:'Cherish those who believe you'}, eff:{trust:-8,bond:+12,mind:+4}, good:2, allies:1,
+    result:{ja:'全員にわかってもらえなくていい。\n——「私はあなたを信じてる」。その一言が、何より心強かった。',en:'Not everyone needs to understand.\n— “I believe you.” Those words were the greatest strength of all.'}},
+   {label:{ja:'渦中を離れ、心を立て直す',en:'Step away from the storm; recover'}, eff:{trust:-6,health:+5,mind:+6}, good:1,
+    result:{ja:'渦の中で消耗するより、一度離れた。\n——騒ぎは、いつか必ず静まる。それまで、自分を守ろう。',en:'Rather than wear down in the storm, you stepped away.\n— Every uproar quiets in time. Until then, protect yourself.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 別れの形',en:'Chapter II · A Shape of Parting'},
+  title:{ja:'離婚',en:'Divorce'},
+  body:{ja:'長く連れ添った人と、別々の道を行くことになった。家も、貯えも、半分に。心には、大きな穴が空いた。',
+    en:'You and a long partner go separate ways. Home and savings, halved. A great hole opens in your heart.'},
+  choices:[
+   {label:{ja:'恨まず、新しい自分を見つけにいく',en:'No bitterness — go find a new you'}, eff:{money:-40,mind:+10,health:+4}, good:2,
+    result:{ja:'失ったのは半分。でも、自分の時間が戻ってきた。\n——一人を楽しめる人は、また誰かと、もっと幸せになれる。',en:'You lost half. But your own time came back.\n— Those who can enjoy solitude can find deeper happiness with someone again.'}},
+   {label:{ja:'子どもとの絆を、何より大切にする',en:'Above all, treasure the bond with your child'}, eff:{money:-40,bond:+12,mind:+4}, good:2,
+    result:{ja:'形は変わっても、親であることは変わらない。\n——「お父さん／お母さんが好き」。その言葉が、すべてを支えてくれた。',en:'The shape changed, but you’re still a parent.\n— “I love you.” That word held everything up.'}},
+   {label:{ja:'感謝して、過去に区切りをつける',en:'Give thanks; close the chapter'}, eff:{money:-40,mind:+8,bond:+2}, good:1,
+    result:{ja:'共に過ごした年月は、嘘にはならない。\n——「ありがとう」と言えた時、ようやく前を向けた。',en:'The years shared don’t become a lie.\n— When you could say “thank you,” you could finally face forward.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 喪失',en:'Chapter II · Bereavement'},
+  title:{ja:'大切な人の死',en:'The Death of Someone Dear'},
+  body:{ja:'いつもそばにいてくれた人が、もういない。当たり前だった毎日が、急に色を失った。',
+    en:'Someone always by your side is gone. The ordinary days suddenly lose their color.'},
+  choices:[
+   {label:{ja:'悲しみを、ちゃんと味わいきる',en:'Let yourself fully grieve'}, eff:{mind:+8,health:-4,bond:+4}, good:2,
+    result:{ja:'泣いて、泣いて、それでいい。\n——悲しみの深さは、愛の深さ。その人は、あなたの中で生き続ける。',en:'Cry, and cry — that’s okay.\n— The depth of grief is the depth of love. They live on, inside you.'}},
+   {label:{ja:'その人の分まで、生きると誓う',en:'Vow to live for their sake too'}, eff:{mind:+10,health:+3}, good:2,
+    result:{ja:'残された自分にできるのは、精一杯生きること。\n——きっと、空の上で笑ってくれている。',en:'What you can do, left behind, is live fully.\n— Surely, they’re smiling from above.'}},
+   {label:{ja:'思い出を、誰かと語り合う',en:'Share the memories with someone'}, eff:{bond:+10,mind:+6}, good:2, allies:1,
+    result:{ja:'一人で抱えず、思い出を分かち合った。\n——語るたび、その人は、また少し笑う。悲しみは、分けると軽くなる。',en:'You didn’t hold it alone; you shared the memories.\n— Each telling, they smile again. Grief, when shared, grows lighter.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 自然の猛威',en:'Chapter II · Nature’s Fury'},
+  title:{ja:'災害ですべてを失う',en:'A Disaster Takes Everything'},
+  body:{ja:'一夜の災害で、家も、思い出の品も、流されてしまった。残ったのは、自分の命だけ。',
+    en:'In one night’s disaster, your home and cherished things were swept away. All that’s left is your life.'},
+  choices:[
+   {label:{ja:'助け合い、地域でまた立ち上がる',en:'Help each other; rise again with the community'}, eff:{money:-70,bond:+14,mind:+6}, good:3, allies:1, debt:8,
+    result:{ja:'見ず知らずの人が、毛布と温かい食事をくれた。\n——物は失った。でも、人の優しさという財産を、初めて知った。',en:'Strangers gave you blankets and a warm meal.\n— You lost things. But you discovered the wealth of human kindness.'}},
+   {label:{ja:'命があっただけ、と前を向く',en:'Be grateful you’re alive; face forward'}, eff:{money:-70,mind:+10,health:+3}, good:2, debt:6,
+    result:{ja:'失ったものを数えれば、きりがない。\n——でも、生きてさえいれば、また何でも取り戻せる。',en:'Count what’s lost and there’s no end.\n— But as long as you live, you can win anything back again.'}},
+   {label:{ja:'同じ境遇の人を、今度は自分が支える',en:'Now you support others in the same boat'}, eff:{money:-70,trust:+8,bond:+8}, good:3, allies:1, debt:10,
+    result:{ja:'自分もつらいのに、もっとつらい人に手を差し伸べた。\n——痛みを知る人の優しさは、誰よりも深く、誰かを救う。',en:'Hurting yourself, you reached for those hurting more.\n— The kindness of those who know pain runs deepest, and saves.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 深い沼',en:'Chapter II · A Deep Mire'},
+  title:{ja:'抜け出せない習慣',en:'A Habit You Can’t Escape'},
+  body:{ja:'つらさから逃れるための何かに、のめり込みすぎた。気づけば、お金も時間も、奪われていた。',
+    en:'To escape the pain, you leaned too hard on something. Before you knew it, it had taken your money and your time.'},
+  choices:[
+   {label:{ja:'勇気を出して、助けを求める',en:'Find the courage to ask for help'}, eff:{money:-50,bond:+12,mind:+10}, good:3, allies:1, debt:8,
+    result:{ja:'「助けて」と言うのは、負けじゃない。\n——手を伸ばした先に、支えてくれる人と、回復への道があった。',en:'Saying “help me” isn’t losing.\n— Beyond your outstretched hand were people, and a road to recovery.'}},
+   {label:{ja:'環境を変え、距離を置く',en:'Change your environment; create distance'}, eff:{money:-40,health:+6,mind:+6}, good:2,
+    result:{ja:'きっかけから、物理的に離れた。\n——意志だけに頼らない。仕組みで自分を守るのも、立派な強さだ。',en:'You physically left the triggers behind.\n— Don’t rely on willpower alone. Protecting yourself by design is real strength.'}},
+   {label:{ja:'一日ずつ、やめ続けてみる',en:'Try quitting, one day at a time'}, eff:{money:-40,mind:+8,health:+4}, good:2,
+    result:{ja:'「今日だけ」を、積み重ねていく。\n——昨日より、ほんの少しマシな今日。その一歩が、再生になる。',en:'You stack up “just for today.”\n— A today a little better than yesterday. That step becomes rebirth.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 重い鎖',en:'Chapter II · Heavy Chains'},
+  title:{ja:'膨らむ借金',en:'Mounting Debt'},
+  body:{ja:'いつの間にか、返しきれない額の借金を背負っていた。督促の通知に、夜も眠れない。',
+    en:'Somewhere along the way, you took on debt you can’t repay. The demand notices steal your sleep.'},
+  choices:[
+   {label:{ja:'公的な窓口に、正直に相談する',en:'Honestly consult an official advisor'}, eff:{money:-20,mind:+10,trust:+4}, good:2, debt:6,
+    result:{ja:'一人で抱えなくていい、と知った。\n——正しい手続きで、道は必ず開ける。底からでも、再出発できる。',en:'You learned you needn’t carry it alone.\n— With the right steps, a path always opens. You can restart, even from the bottom.'}},
+   {label:{ja:'生活を切り詰め、こつこつ返す',en:'Cut back hard; repay bit by bit'}, eff:{money:-30,health:-4,mind:+6}, good:2, debt:10,
+    result:{ja:'地道な毎日は、骨が折れる。\n——でも、一円ずつでも減っていく。誠実な積み重ねは、必ず報われる。',en:'The steady days are grueling.\n— But it shrinks, yen by yen. Honest accumulation always pays off.'}},
+   {label:{ja:'信頼できる人に、打ち明ける',en:'Confide in someone you trust'}, eff:{money:-20,bond:+10,mind:+6}, good:2, allies:1, debt:6,
+    result:{ja:'恥を捨てて、打ち明けた。\n——「一緒に考えよう」。その言葉だけで、眠れる夜が戻ってきた。',en:'You dropped your pride and confided.\n— “Let’s figure it out together.” Just those words, and restful nights returned.'}},
+  ]
+ },
+ {
+  tag:{ja:'第二章 ・ 一瞬の過ち',en:'Chapter II · A Moment’s Mistake'},
+  title:{ja:'加害者になった日',en:'The Day You Caused Harm'},
+  body:{ja:'ほんの不注意が、大きな事故を招いた。相手を傷つけ、責任と後悔が、重くのしかかる。',
+    en:'A moment’s carelessness caused a serious accident. You hurt someone; responsibility and regret weigh heavy.'},
+  choices:[
+   {label:{ja:'逃げず、誠心誠意つぐなう',en:'Don’t flee; atone with all your heart'}, eff:{money:-50,trust:+10,mind:+4}, good:3, debt:8,
+    result:{ja:'何度も足を運び、心から詫び続けた。\n——やがて相手が、「もういいよ」と。償う姿勢は、人の心を動かす。',en:'You went back again and again, apologizing from the heart.\n— In time they said, “It’s alright now.” Sincere atonement moves people.'}},
+   {label:{ja:'同じ過ちを防ぐ側に、回る',en:'Become someone who prevents such harm'}, eff:{money:-40,mind:+8,bond:+4}, good:2, debt:6,
+    result:{ja:'痛みを、誰かを守る力に変えた。\n——過ちは消せない。でも、そこから何を学ぶかは、選べる。',en:'You turned the pain into power to protect others.\n— You can’t erase a mistake. But what you learn from it, you can choose.'}},
+   {label:{ja:'自分を許せるまで、向き合い続ける',en:'Keep facing it until you can forgive yourself'}, eff:{money:-40,mind:+6,health:-3}, good:1,
+    result:{ja:'自分を責める夜が、長く続いた。\n——でも、反省できる心がある限り、人はやり直せる。あなたは、もう大丈夫。',en:'Nights of self-blame ran long.\n— But while a heart can reflect, a person can begin again. You’re going to be okay.'}},
+  ]
+ },
 ];
 
 const ACT3 = [ // rebirth / resolution
@@ -675,9 +814,9 @@ function buildRun(){
   S = {money:30, trust:50, health:70, mind:60, bond:40};
   quality = 0; bonusAllies = 0; storyDebt = 0;
   const a1 = shuffle(ACT1).slice(0,2);
-  const a2 = shuffle(ACT2).slice(0, 2 + rnd(1)); // 2 hardships (sometimes more variety, kept to 2)
+  const a2 = shuffle(ACT2).slice(0, 3); // 3 trials → more of life's big upheavals each run
   const a3 = shuffle(ACT3).slice(0,2);
-  picks = [...a1, ...a2.slice(0,2), ...a3];
+  picks = [...a1, ...a2, ...a3];
   totalChapters = picks.length;
   chapterIndex = 0;
 }
@@ -688,6 +827,7 @@ const statsEl = () => document.getElementById('stats');
 function renderStats(changed){
   const el = statsEl(); el.setAttribute('aria-hidden','false');
   el.style.gridTemplateColumns='repeat(5,1fr)';
+  el.classList.remove('big-stats');
   el.innerHTML = STAT_KEYS.map(k=>{
     const m = STAT_META[k];
     const d = changed && changed[k];
@@ -755,7 +895,7 @@ function showChapter(){
     <div class="choices">
       ${ev.choices.map((c,i)=>`
         <button class="choice" onclick="choose(${i})">
-          ${T(c.label)}
+          <b class="ch-letter">${'ABC'[i]||''}</b>${T(c.label)}
           ${c.hint?`<span class="hint">${T(c.hint)}</span>`:''}
         </button>`).join('')}
     </div>`;
@@ -890,7 +1030,7 @@ function renderFinal(){
 
     <div class="actions">
       <button class="btn-primary" onclick="requestClose()">🏙️ ${T(UI.back_city)}</button>
-      <button class="btn-ghost" onclick="restart()">↻ ${T(UI.again)}</button>
+      <button class="btn-again" onclick="restart()">↻ ${T(UI.again)}</button>
     </div>`;
 
   const gl = document.getElementById('grant-line');
@@ -1020,7 +1160,7 @@ function rerenderCurrent(){
 const Sfx = (function(){
   let ctx=null, master=null, muted=false;
   function ensure(){ if(ctx) return ctx; try{ ctx=new (window.AudioContext||window.webkitAudioContext)();
-    master=ctx.createGain(); master.gain.value=0.3; master.connect(ctx.destination);}catch(e){ctx=null;} return ctx; }
+    master=ctx.createGain(); master.gain.value=0.6; master.connect(ctx.destination);}catch(e){ctx=null;} return ctx; }
   function now(){ return ctx?ctx.currentTime:0; }
   function blip(f,t,dur,type,vol){ if(!ctx)return; const o=ctx.createOscillator(),g=ctx.createGain();
     o.type=type||'sine'; o.frequency.setValueAtTime(f,t);
@@ -2070,7 +2210,7 @@ const BOARD_PATTERNS = (function(){
   const out=[];
   for(let p=0;p<50;p++){
     const r = mulberry32((p+1)*2654435761>>>0);
-    const salaryEvery = 7 + Math.floor(r()*3);   // 7,8,9 → fewer paydays
+    const salaryEvery = (7 + Math.floor(r()*3)) * 3;   // 21–27 → paydays are now rare
     // per-pattern weighted bag (varies the "feel" of each board)
     const bag=[];
     const w = {event:3+Math.floor(r()*3), good:2+Math.floor(r()*2), bad:1+Math.floor(r()*2),
@@ -2092,6 +2232,7 @@ function genTrack(){
 function renderBoardStats(changed){
   const el = statsEl(); el.setAttribute('aria-hidden','false');
   el.style.gridTemplateColumns='repeat(4,1fr)';
+  el.classList.add('big-stats');
   el.innerHTML = ['trust','health','mind','bond'].map(k=>{
     const m = STAT_META[k]; const d = changed && changed[k];
     const pop = d ? `<span class="pop ${d>0?'up':'down'}">${d>0?'▲+':'▼'}${d}</span>` : '';
@@ -2307,7 +2448,7 @@ function openBoardEvent(ev){
   board.curEvent = ev; board.cont = null;
   const html = `<div class="board-msg fade"><p class="mh">${T(ev.title)}</p><p>${T(ev.body)}</p></div>
     <div class="choices">${ev.choices.map((c,i)=>`
-      <button class="choice" onclick="boardChoose(${i})">${T(c.label)}${c.hint?`<span class="hint">${T(c.hint)}</span>`:''}</button>`).join('')}</div>`;
+      <button class="choice" onclick="boardChoose(${i})"><b class="ch-letter">${'ABC'[i]||''}</b>${T(c.label)}${c.hint?`<span class="hint">${T(c.hint)}</span>`:''}</button>`).join('')}</div>`;
   renderBoardFrame(html);
 }
 
@@ -2361,10 +2502,41 @@ function calcBoardCoins(){
 /* =========================================================================
    BOOT
    ========================================================================= */
+/* ---- ensure every event offers a 3rd ("C") option: a wise, character-building path ---- */
+const THIRD = {
+  money:    {label:{ja:'慎重に、専門家に相談してから動く',en:'Consult a pro before acting'}, eff:{mind:4,trust:3}, good:1, result:{ja:'焦らず、確かめてから動いた。冷静さは、いちばんの武器になる。',en:'You checked before moving. Composure is your best weapon.'}},
+  windfall: {label:{ja:'一部を、お世話になった人へ贈る',en:'Give some to those who helped you'}, eff:{bond:5,trust:3}, good:1, result:{ja:'分かち合うほど、喜びは増えていく。',en:'The more you share, the more the joy grows.'}},
+  loss:     {label:{ja:'今は立ち止まり、心を休める',en:'Pause for now; rest your heart'}, eff:{health:5,mind:5}, good:1, result:{ja:'休むのも、前へ進むための力になる。',en:'Resting, too, is strength to move forward.'}},
+  fraud:    {label:{ja:'即決せず、信頼できる人に相談する',en:'Don’t decide alone; ask someone you trust'}, eff:{trust:4,mind:5}, good:1, result:{ja:'一人で抱え込まない。それが、自分を守る。',en:'Not carrying it alone — that protects you.'}},
+  betrayal: {label:{ja:'怒りを手放し、自分の道に集中する',en:'Let go of anger; focus on your path'}, eff:{mind:6}, good:1, result:{ja:'許しは、相手でなく、自分への贈り物だ。',en:'Forgiveness is a gift to yourself, not them.'}},
+  illness:  {label:{ja:'生活を見直し、体をいたわる',en:'Rework your habits; be kind to your body'}, eff:{health:6,mind:2}, good:1, result:{ja:'体は、何より大切な相棒。大事にしよう。',en:'Your body is your most precious partner.'}},
+  love:     {label:{ja:'素直な気持ちを、言葉にする',en:'Put your honest feelings into words'}, eff:{bond:5,mind:4}, good:1, result:{ja:'伝えた分だけ、心の距離は近づく。',en:'The more you say it, the closer hearts grow.'}},
+  bond:     {label:{ja:'まず、相手の話をじっくり聴く',en:'First, really listen to them'}, eff:{bond:5,trust:3}, good:1, result:{ja:'聴くことは、いちばんの優しさだ。',en:'To listen is the deepest kindness.'}},
+  work:     {label:{ja:'学び直して、地力をつける',en:'Go back to learning; build your base'}, eff:{mind:5,trust:2}, good:1, result:{ja:'積んだ学びは、決して裏切らない。',en:'The learning you stack never betrays you.'}},
+  luck:     {label:{ja:'幸運を、努力で確かなものにする',en:'Make the luck stick through effort'}, eff:{mind:4,health:2}, good:1, result:{ja:'運も、続ける人の味方になる。',en:'Luck favors those who keep going.'}},
+  city:     {label:{ja:'街の誰かに、そっと手を貸す',en:'Quietly lend a hand to someone nearby'}, eff:{bond:5,trust:4}, good:1, result:{ja:'灯は、渡すほどに増えていく。',en:'The light multiplies the more you pass it on.'}},
+  comeback: {label:{ja:'小さな一歩から、やり直す',en:'Begin again from one small step'}, eff:{mind:5,health:3}, good:1, result:{ja:'どん底からでも、道はちゃんと続く。',en:'Even from rock bottom, the road goes on.'}},
+  rest:     {label:{ja:'深呼吸して、自分をいたわる',en:'Breathe deep; be good to yourself'}, eff:{health:5,mind:4}, good:1, result:{ja:'自分に優しく。それで、いいんだ。',en:'Be gentle with yourself. That’s enough.'}},
+  family:   {label:{ja:'家族と、ちゃんと向き合う',en:'Face your family honestly'}, eff:{bond:6}, good:1, result:{ja:'そばにいる人を、大切にしよう。',en:'Cherish the people right beside you.'}},
+  travel:   {label:{ja:'焦らず、自分のペースで進む',en:'No rush — go at your own pace'}, eff:{mind:4,health:2}, good:1, result:{ja:'急がば回れ。確かな一歩を選ぼう。',en:'Make haste slowly; choose the sure step.'}},
+};
+function ensureThree(ev, theme){
+  if(!ev || !ev.choices || ev.choices.length>=3) return;
+  const tc = THIRD[theme] || THIRD.city;
+  ev.choices.push(JSON.parse(JSON.stringify(tc)));
+}
+function injectThirdChoices(){
+  BOARD_EVENTS.forEach(e=>ensureThree(e, e.theme));
+  BRANCH_EVENTS.forEach(e=>ensureThree(e, e.theme||'travel'));
+  ensureThree(ILLNESS_EVENT, 'illness');
+  [ACT1, ACT2, ACT3].forEach(arr=>arr.forEach(e=>ensureThree(e, storyTheme(e))));
+}
+
 (function init(){
   applyLangChrome();
   loadDaily();
   loadSave();
+  injectThirdChoices();
   spawnEmbers();
   updateAvatar();
   showTitle();

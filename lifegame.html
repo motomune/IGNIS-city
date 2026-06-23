@@ -110,37 +110,56 @@
   .hud .hv{font-size:clamp(13px,3.4vw,15px); font-weight:800; margin-top:2px;}
   .hud .hv small{font-size:9px; color:var(--dim); font-weight:600;}
   .hud.cash .hv{color:var(--money);} .hud.cash.neg .hv{color:var(--bad);}
+  /* ---- 3D board track (perspective road of raised blocks) ---- */
   #board-track{
-    display:flex; gap:6px; overflow-x:auto; overflow-y:hidden; padding:8px 4px 12px;
-    -webkit-overflow-scrolling:touch; scrollbar-width:thin; flex-shrink:0;
+    overflow-x:auto; overflow-y:hidden; padding:50px 10px 26px; flex-shrink:0;
+    -webkit-overflow-scrolling:touch; scrollbar-width:thin; perspective:760px;
+    background:linear-gradient(180deg,#0c0c16 0%,#07070d 100%);
+    border-radius:14px; border:1px solid #1c1c2c; box-shadow:inset 0 14px 30px -16px #000, inset 0 -10px 24px -14px #000;
   }
   #board-track::-webkit-scrollbar{height:6px;}
   #board-track::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
-  .tile{
-    position:relative; flex:0 0 auto; width:46px; height:46px; border-radius:10px;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    font-size:18px; border:1px solid var(--line); background:var(--panel2); line-height:1;
+  .track-rail{
+    display:flex; gap:11px; width:max-content; transform:rotateX(26deg); transform-style:preserve-3d;
+    transform-origin:center bottom; padding:6px 8px 4px;
   }
-  .tile .ti{font-size:8px; color:var(--dim); position:absolute; top:2px; left:4px;}
-  .t-salary{background:#1a2410; border-color:#3c5a1e;}
-  .t-good{background:#10221c; border-color:#1e5a44;}
-  .t-bad{background:#241010; border-color:#5a1e1e;}
-  .t-bonus{background:#241f10; border-color:#5a4a1e;}
-  .t-event{background:#1a1426; border-color:#43306a;}
-  .t-encounter{background:#101f24; border-color:#1e4a5a;}
-  .t-illness{background:#240f18; border-color:#5a1e3a;}
-  .t-branch{background:#201828; border-color:#5a3d6a;}
-  .t-rest{background:#15151f; border-color:#33334a;}
-  .t-setback{background:#241015; border-color:#5a1e2e;}
-  .t-goal{background:linear-gradient(135deg,#ff8a3d,#ff3da1); border:none; color:#1a0a05; font-size:20px;}
-  .tile.here{box-shadow:0 0 0 2px var(--fire), 0 0 14px var(--fire); transform:translateY(-3px); transition:.25s;}
-  .tile .token{position:absolute; bottom:-15px; left:50%; transform:translateX(-50%); font-size:20px; filter:drop-shadow(0 2px 4px #000);}
+  .tile{
+    position:relative; flex:0 0 auto; width:50px; height:50px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; border:1px solid var(--line); background:var(--panel2); line-height:1;
+    transform-style:preserve-3d; transition:transform .25s;
+    box-shadow:0 7px 0 #00000080, 0 9px 8px -2px #000a;   /* extruded block depth */
+  }
+  .tile .ti{font-size:8px; color:var(--dim); position:absolute; top:2px; left:5px; transform:translateZ(1px);}
+  .t-salary{background:linear-gradient(160deg,#274015,#16240c); border-color:#3c5a1e;}
+  .t-good{background:linear-gradient(160deg,#15402f,#0c2218); border-color:#1e5a44;}
+  .t-bad{background:linear-gradient(160deg,#401a1a,#240e0e); border-color:#5a1e1e;}
+  .t-bonus{background:linear-gradient(160deg,#403515,#241f0c); border-color:#5a4a1e;}
+  .t-event{background:linear-gradient(160deg,#2c2147,#160f24); border-color:#43306a;}
+  .t-encounter{background:linear-gradient(160deg,#153642,#0c1e24); border-color:#1e4a5a;}
+  .t-illness{background:linear-gradient(160deg,#3f1a2c,#240f18); border-color:#5a1e3a;}
+  .t-branch{background:linear-gradient(160deg,#342147,#1a1024); border-color:#5a3d6a;}
+  .t-rest{background:linear-gradient(160deg,#24243a,#13131f); border-color:#33334a;}
+  .t-setback{background:linear-gradient(160deg,#401a26,#240e15); border-color:#5a1e2e;}
+  .t-goal{background:linear-gradient(135deg,#ff8a3d,#ff3da1); border:none; color:#1a0a05; font-size:24px;
+    box-shadow:0 7px 0 #7a1f3d, 0 12px 14px -2px #000, 0 0 22px -2px var(--mag);}
+  .tile.here{transform:translateY(-16px) translateZ(26px) scale(1.1);
+    box-shadow:0 18px 0 #00000080, 0 24px 22px -4px #000, 0 0 0 2px var(--fire), 0 0 22px var(--fire);}
+  .tile .token{position:absolute; top:-30px; left:50%; transform:translateX(-50%) translateZ(8px); font-size:30px;
+    filter:drop-shadow(0 6px 5px #000c); animation:tokenBob 1.1s ease-in-out infinite;}
+  @keyframes tokenBob{0%,100%{transform:translateX(-50%) translateZ(8px) translateY(0);} 50%{transform:translateX(-50%) translateZ(8px) translateY(-5px);}}
   #board-stage{margin-top:auto; padding-top:8px;}
   .die{font-size:54px; line-height:1; text-align:center; color:var(--fire); filter:drop-shadow(0 0 16px var(--fire));}
   .board-msg{font-size:clamp(13.5px,3.6vw,15px); color:#e7e2da; white-space:pre-wrap;}
   .board-msg .mh{font-weight:800; font-size:clamp(15px,4vw,18px); margin:0 0 6px; color:var(--txt);}
   .comp{display:inline-flex; gap:2px; align-items:center;}
   #sound-btn.off{opacity:.5;}
+  /* floating +/- stat & cash pops */
+  .stat{position:relative;} .hud{position:relative;}
+  .pop{position:absolute; top:-8px; right:5px; font-size:11px; font-weight:800; pointer-events:none; z-index:5;
+    text-shadow:0 1px 4px #000, 0 0 6px currentColor; animation:popUp 1.25s ease-out forwards;}
+  .pop.up{color:var(--good);} .pop.down{color:var(--bad);}
+  @keyframes popUp{0%{opacity:0; transform:translateY(9px) scale(.8);} 18%{opacity:1; transform:translateY(0) scale(1.1);} 100%{opacity:0; transform:translateY(-20px) scale(1);}}
   /* ---- 3D dice ---- */
   .dice-area{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 0 2px;}
   .dice-scene{width:64px; height:64px; perspective:300px;}
@@ -233,6 +252,8 @@ const UI = {
     en:'This is the story of a single life.\nThere will be hard days, even betrayals.\nAnd yet — keep choosing, and a light will glow.'},
   start_note:{ja:'所要 約5〜8分 / 選択で結末が変わります',en:'About 5–8 min / your choices shape the ending'},
   start_btn:{ja:'人生を始める',en:'Begin a life'},
+  skip_story:{ja:'ストーリーを省略してボードへ',en:'Skip the story → board'},
+  resume_board:{ja:'前回の続きから再開',en:'Resume your board'},
   already_today:{ja:'本日の報酬は受け取り済みです。プレイは自由にできます。',en:'Today’s reward is already claimed. You can still play freely.'},
   stat_money:{ja:'お金',en:'Money'}, stat_trust:{ja:'信頼',en:'Trust'},
   stat_health:{ja:'健康',en:'Health'}, stat_mind:{ja:'心',en:'Mind'}, stat_bond:{ja:'縁',en:'Bonds'},
@@ -627,9 +648,10 @@ function renderStats(changed){
   el.style.gridTemplateColumns='repeat(5,1fr)';
   el.innerHTML = STAT_KEYS.map(k=>{
     const m = STAT_META[k];
-    const fl = (changed && changed[k]) ? ' flash':'';
-    return `<div class="stat ${m.cls}${fl}">
-      <div class="ico">${m.ico}</div>
+    const d = changed && changed[k];
+    const pop = d ? `<span class="pop ${d>0?'up':'down'}">${d>0?'▲+':'▼'}${d}</span>` : '';
+    return `<div class="stat ${m.cls}${d?' flash':''}">
+      ${pop}<div class="ico">${m.ico}</div>
       <div class="lbl">${T(UI[m.ui])}</div>
       <div class="bar"><i style="width:${S[k]}%"></i></div>
       <div class="num">${S[k]}</div>
@@ -661,6 +683,8 @@ function showTitle(){
     <p class="scene-body">${T(UI.start_lead)}</p>
     <div class="actions">
       <button class="btn-primary" onclick="startRun()">${T(UI.start_btn)}</button>
+      ${(gsave&&gsave.board)?`<button class="btn-ghost" onclick="resumeBoard()">▶ ${T(UI.resume_board)}</button>`:''}
+      ${(gsave&&gsave.story)?`<button class="btn-ghost" onclick="skipToBoard()">⏩ ${T(UI.skip_story)}</button>`:''}
       <p class="muted">${T(UI.start_note)}</p>
       ${playedNote}
     </div>`;
@@ -751,6 +775,7 @@ function showStoryEnding(){
   phase='storyend';
   renderProgress();
   storyEndingId = decideEnding();
+  saveStoryResult();   // enables "skip story" on later plays
   const e = ENDINGS[storyEndingId];
   scene().className='center fade';
   scene().scrollTop=0;
@@ -772,6 +797,7 @@ function showStoryEnding(){
 /* ---- final result (after the board) + reward ---- */
 function showFinalResult(){
   phase='final';
+  clearBoardState();   // board finished — no resume; story stays for skip-story
   const id = decideBoardEnding();
   const coins = calcBoardCoins();
   const firstClaimToday = !daily.playedToday;
@@ -882,6 +908,43 @@ function loadDaily(){
 }
 function saveDaily(){ try{ localStorage.setItem('ignis_lifegame_daily', JSON.stringify(daily)); }catch(e){} }
 
+/* ---- progress save: skip-story (2nd+) and resume-board ---- */
+let gsave = {story:null, board:null};
+function loadSave(){ try{ const r=JSON.parse(localStorage.getItem('ignis_lifegame_save')||'null'); gsave = r||{story:null,board:null}; }catch(e){ gsave={story:null,board:null}; } }
+function persistSave(){ try{ localStorage.setItem('ignis_lifegame_save', JSON.stringify(gsave)); }catch(e){} }
+function saveStoryResult(){ gsave.story={S:Object.assign({},S), storyEndingId, quality}; persistSave(); }
+function saveBoardState(){
+  if(!board) return;
+  gsave.board={ occ:board.occ, cash:board.cash, pos:board.pos, turn:board.turn, maxTurns:board.maxTurns,
+    companions:board.companions, boardQuality:board.boardQuality, reachedGoal:board.reachedGoal,
+    skipNext:board.skipNext, firstSalaryHalf:board.firstSalaryHalf, tiles:board.tiles,
+    S:Object.assign({},S), storyEndingId, quality };
+  persistSave();
+}
+function clearBoardState(){ gsave.board=null; persistSave(); }
+
+function skipToBoard(){
+  if(!gsave || !gsave.story){ startRun(); return; }
+  audioKick(); Sfx.play('start');
+  const st=gsave.story;
+  S=Object.assign({money:30,trust:50,health:70,mind:60,bond:40}, st.S);
+  storyEndingId=st.storyEndingId; quality=st.quality||0;
+  startBoard();
+}
+function resumeBoard(){
+  if(!gsave || !gsave.board){ showTitle(); return; }
+  audioKick(); Sfx.play('start');
+  const b=gsave.board;
+  S=Object.assign({money:30,trust:50,health:70,mind:60,bond:40}, b.S);
+  storyEndingId=b.storyEndingId; quality=b.quality||0;
+  board={ occ:b.occ, cash:b.cash, pos:b.pos, turn:b.turn, maxTurns:b.maxTurns,
+    companions:b.companions, boardQuality:b.boardQuality, reachedGoal:!!b.reachedGoal,
+    skipNext:!!b.skipNext, busy:false, cont:null, curEvent:null, tiles:b.tiles,
+    firstSalaryHalf:!!b.firstSalaryHalf };
+  phase='board';
+  renderBoard();
+}
+
 /* =========================================================================
    LANG TOGGLE
    ========================================================================= */
@@ -893,16 +956,15 @@ function applyLangChrome(){
 function toggleLang(){
   lang = (lang==='ja')?'en':'ja';
   applyLangChrome();
-  // re-render current view
-  if(!picks){ showTitle(); }
-  else { renderStats(); rerenderCurrent(); }
+  rerenderCurrent();
 }
 function rerenderCurrent(){
   // re-render the current phase in the new language (keep earned state — never re-decide/re-send).
   if(phase==='final' && lastResult){ renderFinal(); }
-  else if(phase==='board'){ renderBoard(); }
+  else if(phase==='board'){ renderBoardStats(); renderBoard(); }
   else if(phase==='storyend'){ showStoryEnding(); }
-  else { showChapter(); }
+  else if(phase==='story'){ renderStats(); showChapter(); }
+  else { showTitle(); }
 }
 
 /* =========================================================================
@@ -1771,6 +1833,92 @@ const EXTRA_EVENTS4 = [
 ];
 BOARD_EVENTS.push(...EXTRA_EVENTS4);
 
+/* ---- expanded event pool (batch 5: requested heavy scenes — every outcome ends on a + note) ---- */
+const EXTRA_EVENTS5 = [
+ {icon:'🔥', theme:'loss', title:{ja:'我が家が燃えた',en:'Your Home Burns'}, body:{ja:'帰宅すると、住み慣れた家が炎に包まれていた。思い出ごと、灰になっていく。',en:'You come home to find the house you knew wrapped in flames. Memories turning to ash.'},
+  choices:[
+   {label:{ja:'差し伸べられた手を、受け入れる',en:'Accept the hands reaching out'}, eff:{cash:-20,bond:10,mind:6}, good:2,
+     result:{ja:'家は失った。でも、駆けつけてくれた人がいた。\n——壁は燃えても、人とのつながりは、燃えない。',en:'The house is gone. But people came running.\n— Walls burn; the ties between people do not.'}},
+   {label:{ja:'歯を食いしばり、再建を誓う',en:'Grit your teeth; vow to rebuild'}, eff:{cash:-16,mind:8,health:-4},
+     result:{ja:'呆然と立ち尽くした。けれど、ゼロからでも、また建てればいい。\n——形あるものは、何度でも作り直せる。',en:'You stood stunned. But from zero, you can build again.\n— What has shape can always be remade.'}},
+  ]},
+ {icon:'🥀', theme:'betrayal', title:{ja:'親友の裏切り',en:'A Best Friend’s Betrayal'}, body:{ja:'最も信じていた親友に、足をすくわれた。収入も、周りからの信頼も、音を立てて崩れていく。',en:'The friend you trusted most cut you down. Your income and your standing crumble with a roar.'},
+  choices:[
+   {label:{ja:'時間をかけ、信頼を築き直す',en:'Rebuild trust, over time'}, hint:{ja:'誠実さが、いつか実を結ぶ',en:'Sincerity bears fruit in time'},
+     check:{stat:'trust',dc:55,eff_fail:{cash:-12,mind:-4,trust:2},result_fail:{ja:'すぐには戻らない。それでも、誠実に生きる姿を、誰かは必ず見ている。\n——失った信頼は、行いで取り戻せる。',en:'It won’t return at once. Still, someone always sees an honest life.\n— Lost trust can be won back through deeds.'}},
+     eff:{cash:-8,trust:8,mind:6}, good:2, result:{ja:'裏切りの痛みを、誠実さで上書きしていった。\n——本物の信頼は、こうして、より深く根を張る。',en:'You overwrote the pain of betrayal with sincerity.\n— Real trust roots deeper this way.'}},
+   {label:{ja:'去る者は追わず、前を向く',en:'Don’t chase the one who left; face forward'}, eff:{cash:-10,mind:6,bond:-3},
+     result:{ja:'失ったものは大きい。でも、本当に大切な人が、誰かを教えてくれた。\n——膿が出たと思えば、ここからが本当の再出発だ。',en:'You lost much. But it showed you who truly matters.\n— Call it a wound drained; from here, the real restart begins.'}},
+  ]},
+ {icon:'📲', theme:'fraud', title:{ja:'乗っ取られた信用',en:'A Hijacked Account'}, body:{ja:'SNSのアカウントが、知らぬ間に乗っ取られていた。気づいた時には、詐欺の片棒を担がされ、被害が広がっていた。',en:'Your social account was hijacked without your knowing. By the time you noticed, it had been used for fraud, and damage had spread.'},
+  choices:[
+   {label:{ja:'すぐ公表し、誠実に対応する',en:'Go public fast; respond honestly'}, eff:{cash:-8,trust:6,mind:4}, good:2,
+     result:{ja:'隠さず、被害者に頭を下げて回った。\n——逃げずに向き合う姿が、失いかけた信用を、少しずつ取り戻した。',en:'You hid nothing and bowed to those harmed.\n— Facing it head-on slowly won back the trust you’d nearly lost.'}},
+   {label:{ja:'専門家と、復旧に全力を注ぐ',en:'Work with experts to recover'}, check:{stat:'mind',dc:52,eff_fail:{cash:-12,mind:-3},result_fail:{ja:'復旧には時間がかかった。でも、痛い経験が、あなたを誰より慎重にした。\n——転んだ場所に、次の備えが生まれる。',en:'Recovery took time. But the painful lesson made you the most careful of all.\n— Where you fell, your next defense was born.'}},
+     eff:{cash:-6,trust:4,mind:5}, good:1, result:{ja:'冷静に手を打ち、被害を最小限に抑えた。\n——危機の中でこそ、人の本当の力が出る。',en:'You acted calmly and held the damage down.\n— Crisis is where a person’s real strength shows.'}},
+  ]},
+ {icon:'💗', theme:'love', title:{ja:'となりにいる人',en:'The One Beside You'}, body:{ja:'すべてを失いかけた夜。気づけば、文句ひとつ言わず、妻がそばにいてくれた。その存在の大きさに、改めて胸を打たれる。',en:'On a night you nearly lost everything, your wife was there — without a single complaint. The weight of her presence strikes you anew.'},
+  choices:[
+   {label:{ja:'まっすぐ、感謝を伝える',en:'Tell her thank you, plainly'}, eff:{bond:12,mind:10}, good:3,
+     result:{ja:'「ずっと、ありがとう」。照れくさい言葉が、二人の絆を、さらに固くした。\n——財産は消えても、この人がいれば、もう一度立てる。',en:'“Thank you, for everything.” The bashful words bound you both tighter.\n— Wealth may vanish, but with her, you can rise again.'}},
+   {label:{ja:'態度と行動で、示していく',en:'Show it through how you act'}, eff:{bond:8,mind:8,health:3}, good:2,
+     result:{ja:'言葉は不器用でも、日々の行いで返そうと決めた。\n——支え合える人がいることこそ、何よりの財産だ。',en:'Clumsy with words, you resolved to repay her through your days.\n— Having someone to lean on is the greatest wealth of all.'}},
+  ]},
+ {icon:'📜', theme:'betrayal', title:{ja:'身に覚えのない請求',en:'A Bill You Don’t Owe'}, body:{ja:'裏切った相手の弁護士から、事実とまるで違う内容の、高額な請求書が届いた。読むだけで、胃が痛くなる。',en:'From the betrayer’s lawyer comes a high bill, its claims utterly false. Just reading it turns your stomach.'},
+  choices:[
+   {label:{ja:'専門家に相談し、堂々と反論する',en:'Consult a pro; refute it squarely'}, hint:{ja:'心が高いと冷静に対処',en:'A calm mind handles it'},
+     check:{stat:'mind',dc:54,eff_fail:{cash:-8,mind:-3},result_fail:{ja:'対応に骨が折れた。でも、泣き寝入りはしなかった。\n——理不尽に「おかしい」と言える人は、強い。',en:'It was a grind. But you didn’t suffer in silence.\n— Those who can call out injustice are strong.'}},
+     eff:{cash:-3,trust:5,mind:5}, good:2, result:{ja:'事実を整え、正面から反論した。不当な請求は、退けられた。\n——正しさは、声を上げる人の味方をする。',en:'You marshaled the facts and pushed back. The false claim was thrown out.\n— Truth sides with those who speak up.'}},
+   {label:{ja:'まともに取り合わず、しかとする',en:'Don’t engage; ignore it'}, check:{stat:'trust',dc:50,eff_fail:{cash:-10,mind:-4},result_fail:{ja:'放っておいたら、話がこじれた。でも、しかるべき所に相談すれば、道はある。\n——一人で抱え込まないこと。それが、最初の一歩。',en:'Ignoring it tangled things. But consult the right people, and there’s a way.\n— Don’t carry it alone. That’s the first step.'}},
+     eff:{mind:4,trust:2}, good:1, result:{ja:'根拠のない脅しと見抜き、相手にしなかった。やがて、向こうが引き下がった。\n——動じない心が、いちばんの盾になる。',en:'You saw it as a baseless bluff and didn’t bite. In time, they backed off.\n— An unshaken heart is the best shield.'}},
+  ]},
+ {icon:'🚷', theme:'fraud', title:{ja:'卑劣な揺さぶり',en:'A Cowardly Ploy'}, body:{ja:'裏切った相手が、今度は異性を使い、あなたを陥れようと近づいてきた。甘い言葉の裏に、罠の匂いがする。',en:'The betrayer now sends someone to seduce and trap you. Behind the sweet words, the scent of a snare.'},
+  choices:[
+   {label:{ja:'毅然と断り、やり取りを記録する',en:'Refuse firmly; record everything'}, hint:{ja:'心が高いと罠を見抜く',en:'A clear mind sees the trap'},
+     check:{stat:'mind',dc:56,eff_fail:{cash:-6,mind:-4,trust:2},result_fail:{ja:'危うかった。でも、寸前で目が覚めた。\n——過ちかけても、引き返せる。それも強さだ。',en:'It was close. But you woke up just in time.\n— Even near a mistake, you can turn back. That’s strength too.'}},
+     eff:{trust:6,mind:6}, good:2, result:{ja:'誘いをきっぱり断り、証拠を残した。卑劣な企みは、空振りに終わった。\n——筋を通す人を、罠は捕らえられない。',en:'You refused outright and kept the proof. The vile scheme came to nothing.\n— Traps can’t catch those who hold their line.'}},
+   {label:{ja:'信頼できる人に、すぐ相談する',en:'Consult someone you trust, at once'}, eff:{bond:6,mind:5,trust:3}, good:2,
+     result:{ja:'一人で抱えず、味方に打ち明けた。客観的な目が、罠をはっきり照らした。\n——頼れる人がいれば、卑劣さは怖くない。',en:'You didn’t bear it alone; you confided in an ally. Their clear eyes lit up the trap.\n— With someone to lean on, cowardice loses its teeth.'}},
+  ]},
+ {icon:'📰', theme:'loss', title:{ja:'マスコミ沙汰',en:'A Media Storm'}, body:{ja:'仕事で大きなミスをした。それが報じられ、見ず知らずの人々からも、責める声が降りそそぐ。',en:'You made a major mistake at work. It hits the news, and even strangers rain blame on you.'},
+  choices:[
+   {label:{ja:'逃げず、誠実に謝罪し対応する',en:'Don’t flee; apologize and act sincerely'}, eff:{cash:-8,trust:8,mind:4}, good:2,
+     result:{ja:'言い訳せず、頭を下げ、再発を防ぐ手を打った。\n——失敗そのものより、その後の姿を、人は見ている。',en:'No excuses — you bowed and put fixes in place.\n— More than the failure, people watch what you do after.'}},
+   {label:{ja:'嵐が過ぎるまで、誠実に耐える',en:'Endure honestly until the storm passes'}, check:{stat:'mind',dc:52,eff_fail:{mind:-6,health:-3},result_fail:{ja:'心がすり減った。でも、朝が来ない夜はない。\n——どんな騒ぎも、いつか必ず、静かになる。',en:'It wore your heart thin. But no night lacks a morning.\n— Every uproar, in time, falls quiet.'}},
+     eff:{mind:5,trust:3}, good:1, result:{ja:'噂は、思ったより早く忘れられた。腐らず過ごした日々が、信用を守った。\n——過ちは、挽回できる。',en:'The gossip faded faster than you feared. Keeping your head held your credit.\n— A mistake can be redeemed.'}},
+  ]},
+ {icon:'🚗', theme:'loss', title:{ja:'事故、そして訴え',en:'An Accident, and a Suit'}, body:{ja:'思いがけない交通事故。さらに相手から、起訴されることになった。心も体も、深く沈む。',en:'An unexpected traffic accident. Then, the other party files suit. Body and heart sink deep.'},
+  choices:[
+   {label:{ja:'誠実に向き合い、正しく対応する',en:'Face it honestly; respond properly'}, eff:{cash:-12,trust:5,mind:5}, good:2,
+     result:{ja:'保険や専門家の力を借り、逃げずに対応した。\n——誠実さは、いちばん確かな備えになる。',en:'With insurance and experts, you faced it without fleeing.\n— Sincerity is the surest safeguard.'}},
+   {label:{ja:'落ち込みつつも、前を向き直す',en:'Sink, then turn to face forward'}, eff:{cash:-8,health:-4,mind:6},
+     result:{ja:'眠れぬ夜もあった。それでも、命があっただけで、もうけものだ。\n——失ったものを数えるより、残ったものを大切にしよう。',en:'There were sleepless nights. Still, being alive is already a gift.\n— Rather than count what’s lost, treasure what remains.'}},
+  ]},
+ {icon:'🏎️', theme:'windfall', title:{ja:'憧れの高級車',en:'The Dream Car'}, body:{ja:'ずっと焦がれていた高級車を、ついに手に入れた。きらびやかなセレブの世界が、扉を開けて待っている。',en:'You finally got the luxury car you long yearned for. A glittering world of the elite opens its doors.'},
+  choices:[
+   {label:{ja:'楽しみつつ、足元も見失わない',en:'Enjoy it, but stay grounded'}, eff:{cash:-10,mind:8,bond:5,trust:3}, good:2,
+     result:{ja:'華やかな世界を味わいながら、初心を忘れなかった。\n——成功を楽しめる人は、それを失っても、また笑える。',en:'You savored the dazzle without forgetting your roots.\n— Those who can enjoy success can smile again even if it goes.'}},
+   {label:{ja:'思いきり、贅沢を満喫する',en:'Indulge in luxury to the fullest'}, eff:{cash:-16,mind:10,bond:3},
+     result:{ja:'夢だった暮らしに、胸が躍った。頑張った自分への、最高のご褒美だ。\n——時に思いきり楽しむことも、生きる力になる。',en:'The life you dreamed of thrilled you — the finest reward for your hard work.\n— Sometimes, indulging fully is fuel for living too.'}},
+  ]},
+ {icon:'🏨', theme:'luck', title:{ja:'おもてなしの輪',en:'A Circle of Hospitality'}, body:{ja:'いつも丁寧に人と接してきた。その積み重ねで、高級ホテルのスタッフと顔なじみになり、心づくしのサービスを受けられるように。',en:'You always treated people with care. That buildup made you a familiar face to a luxury hotel’s staff, who now lavish heartfelt service on you.'},
+  choices:[
+   {label:{ja:'感謝を返し、関係を大切にする',en:'Return the gratitude; cherish the bond'}, eff:{cash:4,bond:10,trust:6}, good:2,
+     result:{ja:'受けた親切に、こちらも心で応えた。\n——丁寧に生きてきた人の周りには、自然と優しさが集まる。',en:'You met their kindness with heart of your own.\n— Kindness gathers naturally around those who live with care.'}},
+   {label:{ja:'特別待遇を、存分に味わう',en:'Savor the VIP treatment fully'}, eff:{cash:2,mind:8,bond:4}, good:1,
+     result:{ja:'極上のもてなしに、日頃の疲れもほどけた。\n——人を大切にした分が、巡り巡って自分に返ってくる。',en:'The finest hospitality melted away your fatigue.\n— The care you gave others circles back to you.'}},
+  ]},
+ {icon:'🌐', theme:'city', title:{ja:'広がる人脈',en:'A Widening Network'}, body:{ja:'誠実な仕事ぶりが評判を呼び、国内外に、人とのつながりが大きく広がっていった。',en:'Your sincere work earned a reputation, and your connections spread wide — at home and abroad.'},
+  choices:[
+   {label:{ja:'ご縁を、丁寧に育てていく',en:'Nurture each tie with care'}, eff:{cash:8,bond:10,trust:6}, good:2, addCompanion:true,
+     result:{ja:'数より、一つひとつのご縁を大事にした。\n——世界中に味方がいる。それは、何より心強い財産だ。',en:'You valued each bond over mere numbers.\n— Allies the world over — the most reassuring wealth there is.'}},
+   {label:{ja:'新しい世界へ、挑戦を広げる',en:'Reach into new worlds'}, hint:{ja:'心が高いと飛躍する',en:'A bold mind leaps far'},
+     check:{stat:'mind',dc:54,eff_fail:{cash:6,mind:3},result_fail:{ja:'すべては実らなかった。でも、踏み出した先で見た景色は、確かな糧になった。\n——世界は、思っていたより広く、優しい。',en:'Not all of it bore fruit. But the sights beyond your step became real nourishment.\n— The world is wider, and kinder, than you thought.'}},
+     eff:{cash:14,mind:8,bond:6}, good:1, result:{ja:'広げた縁が、新たな舞台へと導いてくれた。\n——人とのつながりは、どこまでも自分を連れていってくれる。',en:'The ties you built led you to new stages.\n— Human connection can carry you anywhere.'}},
+  ]},
+];
+BOARD_EVENTS.push(...EXTRA_EVENTS5);
+
 /* ---- mapping: story result → board start ---- */
 function chooseOccupation(){
   if(storyEndingId==='lonely') return 'restart';
@@ -1813,8 +1961,9 @@ function renderBoardStats(changed){
   const el = statsEl(); el.setAttribute('aria-hidden','false');
   el.style.gridTemplateColumns='repeat(4,1fr)';
   el.innerHTML = ['trust','health','mind','bond'].map(k=>{
-    const m = STAT_META[k]; const fl = (changed && changed[k]) ? ' flash':'';
-    return `<div class="stat ${m.cls}${fl}"><div class="ico">${m.ico}</div><div class="lbl">${T(UI[m.ui])}</div>
+    const m = STAT_META[k]; const d = changed && changed[k];
+    const pop = d ? `<span class="pop ${d>0?'up':'down'}">${d>0?'▲+':'▼'}${d}</span>` : '';
+    return `<div class="stat ${m.cls}${d?' flash':''}">${pop}<div class="ico">${m.ico}</div><div class="lbl">${T(UI[m.ui])}</div>
       <div class="bar"><i style="width:${S[k]}%"></i></div><div class="num">${S[k]}</div></div>`;
   }).join('');
 }
@@ -1837,18 +1986,20 @@ function scrollToken(){
 
 function renderBoardFrame(stageHtml){
   phase='board';
-  renderBoardStats();
+  const fx = board.statFx; board.statFx = null;
+  renderBoardStats(fx);
   document.getElementById('progress').innerHTML='';
   const occ = OCC[board.occ];
+  const cashPop = (fx && fx.cash) ? `<span class="pop ${fx.cash>0?'up':'down'}">${fx.cash>0?'▲+':'▼'}${fx.cash}${T(UI.man)}</span>` : '';
   scene().className='';
   scene().innerHTML = `
     <div id="board-hud">
       <div class="hud"><div class="hl">${T(UI.job_label)}</div><div class="hv">${occ.icon} <small>${T(occ.name)}</small></div></div>
-      <div class="hud cash ${board.cash<0?'neg':''}"><div class="hl">${T(UI.cash_label)}</div><div class="hv">¥${board.cash}<small>${T(UI.man)}</small></div></div>
+      <div class="hud cash ${board.cash<0?'neg':''}">${cashPop}<div class="hl">${T(UI.cash_label)}</div><div class="hv">¥${board.cash}<small>${T(UI.man)}</small></div></div>
       <div class="hud"><div class="hl">${T(UI.turn_label)}</div><div class="hv">${Math.min(board.turn,board.maxTurns)}/${board.maxTurns}</div></div>
       <div class="hud"><div class="hl">${T(UI.comp_label)}</div><div class="hv">🤝 ${board.companions}</div></div>
     </div>
-    <div id="board-track">${renderTrackHTML()}</div>
+    <div id="board-track"><div class="track-rail">${renderTrackHTML()}</div></div>
     <div id="board-stage">${stageHtml}</div>`;
   scrollToken();
 }
@@ -1876,6 +2027,7 @@ function renderBoardIntro(){
 
 function renderBoard(){
   board.busy=false; board.cont=null;
+  saveBoardState();   // checkpoint at each roll-ready turn → enables "resume"
   renderBoardFrame(`<div class="die">🎲</div>
     <div class="choices"><button class="btn-primary" onclick="rollDice()">🎲 ${T(UI.roll)}</button></div>`);
 }
@@ -1898,11 +2050,15 @@ function rollDice(){
 }
 
 function moveBy(d){
-  let target = board.pos + d;
-  if(target >= GOAL) target = GOAL;
-  board.pos = target; board.turn++;
-  renderBoardFrame(`<div class="muted" style="text-align:center">${T(UI.moving)}</div>`);
-  setTimeout(()=>resolveTile(board.pos), 480);
+  board.turn++;
+  let steps = Math.min(d, GOAL - board.pos);   // never overshoot the goal
+  (function step(){
+    if(steps<=0){ setTimeout(()=>resolveTile(board.pos), 360); return; }
+    board.pos++; steps--;
+    renderBoardFrame(`<div class="muted" style="text-align:center">${T(UI.moving)} (${board.pos})</div>`);
+    Sfx.play('click');   // one hop per tile
+    setTimeout(step, 250);
+  })();
 }
 
 /* ---- continue plumbing ---- */
@@ -1921,6 +2077,7 @@ function panelHTML(title, body, eff, contLabel){
 }
 function showPanel(title, body, eff, contFn, contLabel){
   board.cont = contFn || afterResolve;
+  board.statFx = eff || null;   // drives the floating +/- pops on the stat bars & cash
   renderBoardFrame(panelHTML(title, body, eff||{}, contLabel));
 }
 
@@ -2064,6 +2221,7 @@ function calcBoardCoins(){
 (function init(){
   applyLangChrome();
   loadDaily();
+  loadSave();
   showTitle();
 })();
 </script>

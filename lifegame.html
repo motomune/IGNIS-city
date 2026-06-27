@@ -37,6 +37,8 @@
       margin-bottom:0; overflow-y:auto; min-height:0; }
     #app>#scene{ grid-area:scene; min-height:0; }
     #app>#progress{ grid-area:prog; }
+    /* タイトルや結果など、ステータス無し画面は2分割せず中央1カラムに */
+    #app.titlemode{ display:flex; flex-direction:column; max-width:760px; }
   }
   /* ---- header ---- */
   header{display:flex; align-items:center; gap:10px; padding:4px 2px 8px; flex-shrink:0;}
@@ -178,9 +180,9 @@
     box-shadow:0 7px 0 #7a1f3d, 0 12px 14px -2px #000, 0 0 22px -2px var(--mag);}
   .tile.here{transform:translateY(-13px) translateZ(22px) scale(1.1);
     box-shadow:0 16px 0 #00000080, 0 22px 20px -4px #000, 0 0 0 2px var(--fire), 0 0 22px var(--fire);}
-  .tile .token{position:absolute; top:-26px; left:50%; transform:translateX(-50%) translateZ(8px); font-size:28px;
+  .tile .token{position:absolute; top:-26px; left:50%; transform:translateX(-50%) translateZ(8px) scaleX(-1); font-size:28px;
     filter:drop-shadow(0 6px 5px #000c); animation:tokenBob 1.1s ease-in-out infinite;}
-  @keyframes tokenBob{0%,100%{transform:translateX(-50%) translateZ(8px) translateY(0);} 50%{transform:translateX(-50%) translateZ(8px) translateY(-5px);}}
+  @keyframes tokenBob{0%,100%{transform:translateX(-50%) translateZ(8px) translateY(0) scaleX(-1);} 50%{transform:translateX(-50%) translateZ(8px) translateY(-5px) scaleX(-1);}}
   #board-stage{margin-top:auto; padding-top:8px;}
   .die{font-size:54px; line-height:1; text-align:center; color:var(--fire); filter:drop-shadow(0 0 16px var(--fire));}
   .board-msg{font-size:clamp(13.5px,3.6vw,15px); color:#e7e2da; white-space:pre-wrap;}
@@ -585,16 +587,16 @@ const ACT2 = [ // hardships — kept serious but not heavy-handed; each ends wit
  },
  {
   tag:{ja:'第二章 ・ 奈落',en:'Chapter II · The Abyss'},
-  title:{ja:'すべてを失った日',en:'The Day You Lost Everything'},
-  body:{ja:'信じきっていた話は、巧妙な詐欺だった。財産は根こそぎ消え、借金だけが残った。\nだが——そんなどん底の時に、見返りも求めず、黙ってそばにいてくれる人がいた。',
-    en:'The deal you wholly believed was an elaborate scam. Your fortune vanished to the roots, leaving only debt.\nAnd yet — at rock bottom, someone stayed quietly beside you, asking nothing in return.'},
+  title:{ja:'巧妙な詐欺',en:'An Elaborate Scam'},
+  body:{ja:'信じきっていた話は、巧妙な詐欺だった。所持金の3割を失い、大きな痛手を負った。\nだが——そんな時に、見返りも求めず、黙ってそばにいてくれる人がいた。',
+    en:'The deal you wholly believed was an elaborate scam. You lost 30% of your money — a heavy blow.\nAnd yet — at that moment, someone stayed quietly beside you, asking nothing in return.'},
   choices:[
    {label:{ja:'差し出された手を、握り返す',en:'Grip the hand that reached out'},
-    eff:{money:-100, bond:+18, mind:+12, trust:+6}, good:3, allies:1, debt:15,
-    result:{ja:'お金は、全部消えた。借金も残った。でも、本物の仲間がいると、はっきり気づけた。\n——失ったものは大きい。けれど、こんな時に隣にいてくれる人こそ、何より大きな財産だ。',
-      en:'The money is all gone. The debt remains. But you saw, clearly, who your true friends are.\n— You lost much. Yet the one beside you in a moment like this is the greatest wealth of all.'}},
+    eff:{moneyPct:-0.3, bond:+18, mind:+12, trust:+6}, good:3, allies:1,
+    result:{ja:'所持金の3割が消えた。でも、本物の仲間がいると、はっきり気づけた。\n——失ったものは大きい。けれど、こんな時に隣にいてくれる人こそ、何より大きな財産だ。',
+      en:'You lost 30% of your money. But you saw, clearly, who your true friends are.\n— You lost much. Yet the one beside you in a moment like this is the greatest wealth of all.'}},
    {label:{ja:'恥じて、一人で闇に沈もうとする',en:'In shame, try to sink into the dark alone'},
-    eff:{money:-100, mind:-6, bond:+4}, good:1, debt:10,
+    eff:{moneyPct:-0.3, mind:-6, bond:+4}, good:1,
     result:{ja:'誰にも言えなかった。それでも、心配して連絡をくれる人がいた。\n——どんなに沈んでも、あなたを気にかける誰かは、ちゃんといる。底を知った人は、もう一度立てる。',
       en:'You couldn’t tell a soul. Still, someone worried and reached out.\n— However far you sink, someone does care. Those who’ve hit bottom can rise again.'}},
   ]
@@ -860,6 +862,7 @@ const scene = () => document.getElementById('scene');
 const statsEl = () => document.getElementById('stats');
 
 function renderStats(changed){
+  document.getElementById('app').classList.remove('titlemode');
   const el = statsEl(); el.setAttribute('aria-hidden','false');
   el.style.gridTemplateColumns='repeat(5,1fr)';
   el.classList.remove('big-stats');
@@ -891,6 +894,7 @@ function renderProgress(){
 function showTitle(){
   phase='title';
   statsEl().setAttribute('aria-hidden','true'); statsEl().innerHTML='';
+  document.getElementById('app').classList.add('titlemode'); // 2分割せず中央に
   document.getElementById('progress').innerHTML='';
   const playedNote = daily.playedToday
     ? `<p class="muted" style="margin-top:14px;">${T(UI.already_today)}</p>` : '';
@@ -938,7 +942,13 @@ function showChapter(){
 
 function applyEff(eff){
   const changed={};
-  for(const k in eff){ const before=S[k]; S[k]=clamp(S[k]+eff[k]); if(S[k]!==before) changed[k]=eff[k]; }
+  for(const k in eff){
+    if(k==='moneyPct'){ // 所持金を割合で増減（例 -0.3 = 3割減）
+      const before=S.money; S.money=clamp(Math.round(S.money*(1+eff.moneyPct)));
+      if(S.money!==before) changed.money=(S.money-before); continue;
+    }
+    const before=S[k]; S[k]=clamp(S[k]+eff[k]); if(S[k]!==before) changed[k]=eff[k];
+  }
   return changed;
 }
 
@@ -2266,6 +2276,7 @@ function genTrack(){
 
 /* ---- rendering ---- */
 function renderBoardStats(changed){
+  document.getElementById('app').classList.remove('titlemode');
   const el = statsEl(); el.setAttribute('aria-hidden','false');
   el.style.gridTemplateColumns='repeat(4,1fr)';
   el.classList.add('big-stats');

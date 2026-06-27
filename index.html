@@ -1433,6 +1433,7 @@
         <button id="sound-toggle" class="rail-btn" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ" style="flex:1;">🔊</button>
       </div>
       <button id="x-rewards-btn" class="rail-btn" type="button" onclick="openXShare()" title="Xでシェア">📤 Xでシェア</button>
+      <button id="xname-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleShowXName()" title="ビル詳細・ランキングでのXユーザー名の表示/非表示">🪪 X名: 表示</button>
       <button id="sub-btn" class="rail-btn li-only" type="button" onclick="openSubModal()" title="サブスク登録・解約" style="background:linear-gradient(135deg,#b8860b,#ffd54f);color:#3a2a00;font-weight:800;">💎 サブスク</button>
       <div id="premium-bar" style="display:none;" title="プレミアム会員の紹介"><div id="premium-track"></div></div>
       <span id="user-name" style="display:none;" aria-hidden="true"></span>
@@ -1444,7 +1445,6 @@
         <div id="dawn-goal-line"></div>
         <div id="weekly-goal-line"></div>
       </div>
-      <button id="xname-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleShowXName()" title="ビル詳細・ランキングでのXユーザー名の表示/非表示">🪪 X名: 表示</button>
     </div>
     <div id="ad-slot-wrap">
       <div id="ad-slot" aria-label="広告枠"></div>
@@ -1982,7 +1982,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-21-v174';
+    const IGNIS_BUILD='2026-06-28-v175';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;

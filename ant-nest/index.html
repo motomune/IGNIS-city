@@ -8,13 +8,14 @@
   html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #1a120b; font-family: "Segoe UI", system-ui, sans-serif; }
   #game { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
   #hud {
-    position: fixed; top: 10px; left: 10px; color: #fff; font-size: 13px;
-    text-shadow: 0 1px 3px #000; pointer-events: none; line-height: 1.45;
-    background: rgba(10,8,4,.4); padding: 8px 12px; border-radius: 10px; max-width: 320px;
+    position: fixed; top: 10px; left: 10px; color: #fff; font-size: 11px;
+    text-shadow: 0 1px 3px #000; pointer-events: none; line-height: 1.32;
+    background: rgba(10,8,4,.4); padding: 6px 9px; border-radius: 9px; max-width: 240px;
   }
-  #hud .bar { width: 180px; height: 11px; background: rgba(0,0,0,.5); border: 1px solid #000; border-radius: 6px; overflow: hidden; margin: 2px 0 5px; }
+  #hud .bar { width: 128px; height: 8px; background: rgba(0,0,0,.5); border: 1px solid #000; border-radius: 6px; overflow: hidden; margin: 2px 0 4px; }
   #hud .bar > span { display: block; height: 100%; transition: width .12s linear; }
-  #stage { font-size: 16px; font-weight: 700; }
+  #xpPct { color:#9fdcff; font-weight:800; }
+  #stage { font-size: 13.5px; font-weight: 700; }
   #colony { margin-top: 3px; color: #ffd9a0; white-space: pre-line; }
   #quest { margin-top: 5px; color: #9fe8ff; font-weight: 700; }
   #help {
@@ -27,9 +28,11 @@
          color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;
          text-align:center; line-height:1.15; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .btn:active, .btn.on { background:rgba(150,110,50,.85); transform:scale(0.96); }
-  #dpad { left:16px; bottom:16px; display:grid; grid-template-columns:repeat(3,56px); grid-template-rows:repeat(3,56px); gap:5px; }
-  #dpad .btn { border-radius:50%; font-size:20px; }
-  #dpad .sp { visibility:hidden; }
+  #joy { left:20px; bottom:20px; width:120px; height:120px; border-radius:50%;
+         background:rgba(44,32,18,.4); border:2px solid rgba(255,255,255,.25); touch-action:none; }
+  #joyKnob { position:absolute; left:50%; top:50%; width:54px; height:54px; margin:-27px 0 0 -27px;
+             border-radius:50%; background:rgba(200,150,70,.85); border:2px solid rgba(255,255,255,.45);
+             box-shadow:0 3px 10px rgba(0,0,0,.4); transition:transform .04s linear; pointer-events:none; }
   #acts { right:14px; bottom:16px; display:grid; grid-template-columns:repeat(3,76px); grid-auto-rows:48px; gap:7px; }
   #shareBox { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:11; display:none;
     background:rgba(15,12,8,.9); border:2px solid #ffd86a; border-radius:12px; padding:10px 12px; color:#fff;
@@ -58,7 +61,7 @@
   <div id="stage">🥚 たまご</div>
   <div>体力</div>
   <div class="bar"><span id="hpBar" style="width:100%;background:#e44;"></span></div>
-  <div>進化ゲージ</div>
+  <div>進化ゲージ <span id="xpPct">0%</span></div>
   <div class="bar"><span id="xpBar" style="width:0%;background:#5cf;"></span></div>
   <div id="stats"></div>
   <div id="colony"></div>
@@ -73,20 +76,16 @@
 <div id="help">
   画面ボタンで操作 ・ 🍖食料調達=働きアリに死骸/ゴミを運ばせる ・ 触れた虫は攻撃＆食料で回復 ・ 🪙コインはタッチで回収(1日30) ・ 🔴赤/⚪白アリ誕生で𝕏シェア ・ 自動セーブ
 </div>
-<!-- 画面操作：移動Dパッド -->
-<div id="dpad" class="ctrl">
-  <div class="sp"></div><div class="btn" data-k="w">▲</div><div class="sp"></div>
-  <div class="btn" data-k="a">◀</div><div class="sp"></div><div class="btn" data-k="d">▶</div>
-  <div class="sp"></div><div class="btn" data-k="s">▼</div><div class="sp"></div>
-</div>
+<!-- 画面操作：移動ジョイスティック -->
+<div id="joy" class="ctrl"><div id="joyKnob"></div></div>
 <!-- 画面操作：アクション -->
 <div id="acts" class="ctrl">
-  <div class="btn" data-act="dig">⛏掘る/置く</div>
-  <div class="btn" data-act="grab">🦷咥/納品</div>
+  <div class="btn" data-act="grabdig">🤏掴む/置く</div>
   <div class="btn" data-act="lay">🥚産卵</div>
-  <div class="btn" data-act="gather">🍖食料調達</div>
+  <div class="btn" data-act="gather">🍖運搬</div>
   <div class="btn" data-act="digrole">⛏任命</div>
   <div class="btn" data-act="soldier">⚔兵隊任命</div>
+  <div class="btn" data-act="map">🗺地図</div>
   <div class="btn" data-act="bgm">🎵BGM</div>
 </div>
 <!-- レアアリ誕生時のXシェア -->
@@ -327,6 +326,7 @@ function sfx(n){
   if (n==="quest"){ beep(660,660,0.09,"sine",0.07); beep(880,880,0.09,"sine",0.07,0.1); beep(990,1320,0.16,"sine",0.08,0.2); }
   if (n==="roar")   beep(90, 38, 0.8, "sawtooth", 0.12);
   if (n==="evolve"){ beep(440,440,0.1,"sine",0.07); beep(554,554,0.1,"sine",0.07,0.1); beep(659,880,0.16,"sine",0.08,0.2); }
+  if (n==="coin"){ beep(1318,1760,0.08,"triangle",0.21); beep(1976,2637,0.12,"triangle",0.18,0.05); } // チャリン（通常の約3倍）
 }
 
 // ---- BGM（レトロ・チップチューン）----
@@ -582,17 +582,7 @@ function nearestFill(w){
 const WSPD = 60;                       // 旧120から半減
 function updateDigger(w, dt){
   if (w.wait>0){ w.wait-=dt; return; }
-  // 夜は作業を中断して巣の奥へ退避（兵隊だけが戦う）
-  if (isNight){
-    if (w.haul) releaseHaul(w);
-    if (w.mode!=="hide"){ w.mode="hide"; w.path=null; w.spread=false; if (w.carrying){ dropSandNear(w); w.carrying=false; } }
-    if (followPath(w, dt, WSPD)==="moving") return;
-    const cx=Math.max(0,Math.min(COLS-1,(w.x/CELL)|0)), cy=(w.y/CELL)|0;
-    if (cy>=surfaceH[cx]+3){ w.wait=0.8; return; }
-    w.path=bfsPath(cx, cy, (x,y)=> y>=surfaceH[x]+3); w.pi=0;
-    if (!w.path) w.wait=1.2;
-    return;
-  }
+  // 夜も働きアリは通常どおり作業する（退避しない）
   if (w.mode==="hide"){ w.mode="idle"; w.path=null; }
   const full = w.load>=w.carryCap || (w.load>0 && w.noMore);
   if (full){ updateSandCarry(w, dt); return; }           // 満載 or もう掘れない→運搬
@@ -989,7 +979,7 @@ function updateGarbage(dt){
 function collectCoin(c){
   const i=coins.indexOf(c); if(i<0) return;
   // ゲーム内のコイン回収は無制限。IGNISへ反映されるのは1日30枚まで（親側RPCで制御）
-  coins.splice(i,1); coinCount++; coinsToday++; sfx("eat");
+  coins.splice(i,1); coinCount++; coinsToday++; sfx("coin");
   puff(c.x,c.y,8,"#ffe27a",90,-50); dmgText(c.x,c.y-10,"+1🪙","#ffe27a");
   toast(`🪙 コイン回収！ 計${coinCount}枚（本日${coinsToday}枚）`, "#fe9", 0.9);
   if(typeof updateCoinHud==='function') updateCoinHud();
@@ -1300,7 +1290,7 @@ function currentQuest(){
   if (questIdx<questDefs.length) return questDefs[questIdx];
   return {t:`夜を通算${nextSurvN}回生き延びる`, c:()=>survivedNights>=nextSurvN, p:()=>[Math.min(survivedNights,nextSurvN),nextSurvN], surv:true};
 }
-function questText(){ const q=currentQuest(), [c,t]=q.p(); return `🎯 ${q.t}  ${c}/${t}　報酬→🐞`; }
+function questText(){ const q=currentQuest(), [c,t]=q.p(); const rw=(!q.surv && questIdx<3)?'🐜働きアリ':'🐞アブラムシ'; return `🎯 ${q.t}  ${c}/${t}　報酬→${rw}`; }
 function gainAphidReward(){      // クエスト報酬：飼育済みアブラムシ1匹（甘露で食料）
   const cx=Math.max(3,Math.min(COLS-4, colonyCx+((Math.random()*8-4)|0))), cy=groundY(cx);
   aphids.push({x:cx*CELL+13, y:(cy-1)*CELL+12, state:"ranched", prod:8, vx:10, t:0});
@@ -1372,15 +1362,36 @@ document.getElementById("over").addEventListener("click", ()=>location.reload())
 
 // ---- 画面操作ボタン（タッチ/クリック）----
 function bgmInit(){ ensureAudio(); if(!window.__bgmInit){ window.__bgmInit=true; bgmOn=true; startBGM(); } }
-document.querySelectorAll("#dpad .btn").forEach(b=>{
-  const k=b.dataset.k;
-  const dn=e=>{ e.preventDefault(); bgmInit(); keys[k]=true; b.classList.add("on"); };
-  const up=e=>{ e.preventDefault(); keys[k]=false; b.classList.remove("on"); };
-  b.addEventListener("pointerdown",dn); b.addEventListener("pointerup",up);
-  b.addEventListener("pointerleave",up); b.addEventListener("pointercancel",up);
-});
-const ACT={ dig:()=>doDigOrDrop(), grab:()=>playerGrabDrop(), lay:()=>layEgg(), gather:()=>gatherCmd(),
-            digrole:()=>reassignJob("dig"), soldier:()=>reassignJob("soldier"), bgm:()=>toggleBGM() };
+// 移動ジョイスティック（8方向：傾けた向きに w/a/s/d をセット）
+(function(){
+  const joy=document.getElementById("joy"), knob=document.getElementById("joyKnob");
+  if(!joy||!knob) return;
+  let active=false, cx0=0, cy0=0; const R=46, TH=14;
+  function setKeys(dx,dy){ keys["a"]=dx<-TH; keys["d"]=dx>TH; keys["w"]=dy<-TH; keys["s"]=dy>TH; }
+  function clr(){ keys["a"]=keys["d"]=keys["w"]=keys["s"]=false; knob.style.transform="translate(0px,0px)"; }
+  function start(e){ e.preventDefault(); bgmInit(); active=true; const r=joy.getBoundingClientRect(); cx0=r.left+r.width/2; cy0=r.top+r.height/2; try{joy.setPointerCapture(e.pointerId);}catch(_){} move(e); }
+  function move(e){ if(!active) return; e.preventDefault(); let dx=e.clientX-cx0, dy=e.clientY-cy0; const d=Math.hypot(dx,dy)||1; if(d>R){ dx=dx/d*R; dy=dy/d*R; } knob.style.transform=`translate(${dx}px,${dy}px)`; setKeys(dx,dy); }
+  function end(){ active=false; clr(); }
+  joy.addEventListener("pointerdown",start);
+  joy.addEventListener("pointermove",move);
+  joy.addEventListener("pointerup",end);
+  joy.addEventListener("pointercancel",end);
+  joy.addEventListener("pointerleave",end);
+})();
+// 掴む/置く と 掘る/置く を1ボタンに統合
+function grabOrDig(){
+  if (stage().speed===0) return;
+  if (ant.cargo){ playerGrabDrop(); return; }    // 死骸を運搬中 → 納品/その場に置く
+  if (ant.carrying){ doDigOrDrop(); return; }     // 砂を運搬中 → 置く（アリ塚/埋め戻し）
+  // 手ぶら：近くに死骸があれば掴む、なければ掘る
+  let near=false;
+  for (const c of carcasses){ if(c.carrier) continue; if((c.x-ant.x)**2+(c.y-ant.y)**2 < (ant.r+24)**2){ near=true; break; } }
+  if (near) playerGrabDrop(); else doDigOrDrop();
+}
+let mmShrunk=false;
+function toggleMinimapSize(){ mmShrunk=!mmShrunk; toast(mmShrunk?"🗺 地図を縮小":"🗺 地図を拡大","#cdf",0.8); }
+const ACT={ grabdig:()=>grabOrDig(), dig:()=>doDigOrDrop(), grab:()=>playerGrabDrop(), lay:()=>layEgg(), gather:()=>gatherCmd(),
+            digrole:()=>reassignJob("dig"), soldier:()=>reassignJob("soldier"), map:()=>toggleMinimapSize(), bgm:()=>toggleBGM() };
 document.querySelectorAll("#acts .btn").forEach(b=>{
   b.addEventListener("pointerdown",e=>{ e.preventDefault(); bgmInit(); if(gameOver){location.reload();return;} (ACT[b.dataset.act]||(()=>{}))(); });
 });
@@ -1707,7 +1718,9 @@ function update(dt){
     st.name + (st.speed===0?`（あと ${Math.max(0,st.hatch-ant.hatchT).toFixed(1)}s）`:"");
   document.getElementById("hpBar").style.width=Math.max(0,ant.hp/st.maxHp*100)+"%";
   const xpPct = st.xpNext===Infinity?100:(st.xpNext?ant.xp/st.xpNext*100:0);
-  document.getElementById("xpBar").style.width=Math.max(0,Math.min(100,xpPct))+"%";
+  const xpClamped=Math.max(0,Math.min(100,xpPct));
+  document.getElementById("xpBar").style.width=xpClamped+"%";
+  { const pe=document.getElementById("xpPct"); if(pe) pe.textContent=Math.round(xpClamped)+"%"; }
   const pb = BIOMES[biomeIdx(Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0)))].name;
   const wIcon = weather==="rain"?"🌧":weather==="snow"?"❄":(isNight?"🌙":"☀");
   document.getElementById("stats").textContent =
@@ -2195,7 +2208,8 @@ function render(){
   drawWeather();
 
   // --- ミニマップ ---
-  const mw=COLS*1.5, mh=ROWS*1.5, mx=W-mw-10, my=10;
+  const ms=mmShrunk?0.8:1.5;
+  const mw=COLS*ms, mh=ROWS*ms, mx=W-mw-10, my=10;
   ctx.imageSmoothingEnabled=false;
   ctx.globalAlpha=0.92;
   ctx.drawImage(mm, mx, my, mw, mh);

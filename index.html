@@ -1969,7 +1969,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-21-v170';
+    const IGNIS_BUILD='2026-06-21-v171';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3906,11 +3906,14 @@
       if(f)f.src='lifegame.html'+(currentLang==='en'?'?lang=en':'')+'#'+Date.now();
       const ov=document.getElementById('lifegame-overlay');if(ov)ov.style.display='block';
       if(typeof setScenePaused==='function')setScenePaused(true); // 表示中は3D停止＝軽い
+      // IGNIS本体のBGMを止めて、人生ゲームの音だけにする
+      try{IgnisAudio.stopBgm();IgnisAudio.stopRetroBgm&&IgnisAudio.stopRetroBgm();}catch(_){}
     }
     function closeCoinGame(){
       const ov=document.getElementById('lifegame-overlay');if(ov)ov.style.display='none';
       const f=document.getElementById('lifegame-frame');if(f)f.src='about:blank';
       if(typeof setScenePaused==='function')setScenePaused(false);
+      try{refreshCityBgm();}catch(_){} // IGNISのBGMを戻す
     }
     // lifegame.html からの結果を受信してコインを付与
     window.addEventListener('message', async (e) => {

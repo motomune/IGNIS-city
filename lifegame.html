@@ -134,7 +134,7 @@
   .hud.cash .hv{color:var(--money);} .hud.cash.neg .hv{color:var(--bad);}
   /* ---- 3D board track (perspective road of raised blocks) ---- */
   #board-track{
-    overflow-x:auto; overflow-y:hidden; padding:50px 10px 26px; flex-shrink:0;
+    overflow-x:auto; overflow-y:hidden; padding:38px 10px 18px; flex-shrink:0;
     -webkit-overflow-scrolling:touch; scrollbar-width:thin; perspective:760px;
     background:linear-gradient(180deg,#0c0c16 0%,#07070d 100%);
     border-radius:14px; border:1px solid #1c1c2c; box-shadow:inset 0 14px 30px -16px #000, inset 0 -10px 24px -14px #000;
@@ -165,9 +165,9 @@
   .t-setback{background:linear-gradient(160deg,#401a26,#240e15); border-color:#5a1e2e;}
   .t-goal{background:linear-gradient(135deg,#ff8a3d,#ff3da1); border:none; color:#1a0a05; font-size:24px;
     box-shadow:0 7px 0 #7a1f3d, 0 12px 14px -2px #000, 0 0 22px -2px var(--mag);}
-  .tile.here{transform:translateY(-16px) translateZ(26px) scale(1.1);
-    box-shadow:0 18px 0 #00000080, 0 24px 22px -4px #000, 0 0 0 2px var(--fire), 0 0 22px var(--fire);}
-  .tile .token{position:absolute; top:-30px; left:50%; transform:translateX(-50%) translateZ(8px); font-size:30px;
+  .tile.here{transform:translateY(-13px) translateZ(22px) scale(1.1);
+    box-shadow:0 16px 0 #00000080, 0 22px 20px -4px #000, 0 0 0 2px var(--fire), 0 0 22px var(--fire);}
+  .tile .token{position:absolute; top:-26px; left:50%; transform:translateX(-50%) translateZ(8px); font-size:28px;
     filter:drop-shadow(0 6px 5px #000c); animation:tokenBob 1.1s ease-in-out infinite;}
   @keyframes tokenBob{0%,100%{transform:translateX(-50%) translateZ(8px) translateY(0);} 50%{transform:translateX(-50%) translateZ(8px) translateY(-5px);}}
   #board-stage{margin-top:auto; padding-top:8px;}
@@ -241,13 +241,34 @@
   @keyframes mRise{0%{transform:translateY(12vh) scale(.6); opacity:0;} 18%{opacity:1;} 100%{transform:translateY(-72vh) scale(1); opacity:0;}}
   @keyframes mTwinkle{0%,100%{opacity:0; transform:scale(.4);} 50%{opacity:1; transform:scale(1.15);}}
   @keyframes mDrift{0%{transform:translate(0,0) scale(.8); opacity:0;} 30%{opacity:.5;} 100%{transform:translate(var(--dx),var(--dy)) scale(1.3); opacity:0;}}
-  /* landscape phones: shrink stats */
+  /* landscape phones: compress everything so the dice/roll button stays on screen */
   @media (max-height:480px){
-    #stats .lbl{display:none;} .stat{padding:5px 4px;} .scene-title{margin-bottom:8px;}
-    #scene{padding:12px 14px;}
-    .tile{width:40px; height:40px; font-size:16px;}
-    #board-hud .hl{display:none;}
+    #app{padding:5px 12px;}
+    header{padding:2px 2px 3px;}
+    .die{font-size:30px;}
+    .logo{font-size:13px;} .logo small{display:none;}
+    #avatar{width:30px; height:30px; min-width:30px; font-size:18px;}
+    .iconbtn{min-height:30px; padding:5px 8px; font-size:11px;}
+    #stats{margin-bottom:5px;} .stat{padding:4px 4px;}
+    #stats .lbl{display:none;} #stats.big-stats .lbl{display:none;}
+    #stats.big-stats .num{font-size:12px;} #stats.big-stats .ico{font-size:15px;} #stats.big-stats .bar{height:5px;}
+    .scene-title{margin-bottom:8px;}
+    #scene{padding:10px 14px;}
+    #board-hud{margin-bottom:5px; gap:5px;} .hud{padding:4px 3px;} .hud .hv{font-size:12px;} #board-hud .hl{display:none;}
+    #board-track{padding:24px 8px 8px; perspective:620px;}
+    .track-rail{transform:rotateX(15deg); gap:8px;}
+    .tile{width:34px; height:34px; font-size:15px; box-shadow:0 5px 0 #00000080, 0 7px 7px -2px #000a;}
+    .tile .token{top:-22px; font-size:22px;}
+    .tile.here{transform:translateY(-9px) translateZ(16px) scale(1.08);}
+    #board-stage{padding-top:4px;}
+    .dice-area{transform:scale(.78); margin:-8px 0;}
+    .board-msg .mh{font-size:15px; margin-bottom:3px;}
+    .board-msg{font-size:12.5px;}
+    .btn-primary{padding:10px; font-size:14px;}
+    .choice{padding:9px 11px; font-size:13px;}
     #fx-overlay .fx-emoji{font-size:clamp(48px,16vh,84px);}
+    #fx-overlay .fx-label{font-size:clamp(14px,5vh,18px); margin-top:10px;}
+    .fx-core{width:clamp(90px,26vh,130px); height:clamp(90px,26vh,130px);}
   }
 </style>
 </head>
@@ -2247,7 +2268,7 @@ function renderTrackHTML(){
   let h='';
   for(let i=0;i<board.tiles.length;i++){
     const here = i===board.pos;
-    const off = Math.round(Math.sin(i*0.55)*16) + 20;   // winding road
+    const off = Math.round(Math.sin(i*0.55)*11) + 14;   // winding road (compact)
     h += `<div class="tile t-${board.tiles[i].type}${here?' here':''}" style="margin-top:${off}px">
       <span class="ti">${i}</span>${TILE_ICON[board.tiles[i].type]||'·'}
       ${here?'<div class="token">🚶</div>':''}</div>`;

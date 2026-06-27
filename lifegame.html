@@ -1181,7 +1181,7 @@ function rerenderCurrent(){
 const Sfx = (function(){
   let ctx=null, master=null, muted=false;
   function ensure(){ if(ctx) return ctx; try{ ctx=new (window.AudioContext||window.webkitAudioContext)();
-    master=ctx.createGain(); master.gain.value=0.6; master.connect(ctx.destination);}catch(e){ctx=null;} return ctx; }
+    master=ctx.createGain(); master.gain.value=1.8; master.connect(ctx.destination);}catch(e){ctx=null;} return ctx; }
   function now(){ return ctx?ctx.currentTime:0; }
   function blip(f,t,dur,type,vol){ if(!ctx)return; const o=ctx.createOscillator(),g=ctx.createGain();
     o.type=type||'sine'; o.frequency.setValueAtTime(f,t);

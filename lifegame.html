@@ -27,6 +27,17 @@
     max-width:760px; margin:0 auto;
     padding:max(10px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom));
   }
+  /* 広い/横長画面：中央から左＝ステータス、右＝物語/質問・ボード の2カラム */
+  @media (min-width:680px){
+    #app{ max-width:1000px; display:grid; column-gap:16px;
+      grid-template-columns:minmax(150px,30%) 1fr; grid-template-rows:auto minmax(0,1fr) auto;
+      grid-template-areas:"head head" "stats scene" "prog prog"; }
+    #app>header{ grid-area:head; }
+    #app>#stats{ grid-area:stats; grid-template-columns:1fr !important; align-content:start;
+      margin-bottom:0; overflow-y:auto; min-height:0; }
+    #app>#scene{ grid-area:scene; min-height:0; }
+    #app>#progress{ grid-area:prog; }
+  }
   /* ---- header ---- */
   header{display:flex; align-items:center; gap:10px; padding:4px 2px 8px; flex-shrink:0;}
   .logo{font-weight:800; letter-spacing:.04em; font-size:clamp(14px,3.6vw,17px);
@@ -187,6 +198,7 @@
   #avatar{font-size:22px; line-height:1; width:38px; height:38px; min-width:38px; border-radius:10px;
     display:flex; align-items:center; justify-content:center; background:var(--panel); border:1px solid var(--line);
     filter:drop-shadow(0 0 6px #ff8a3d55); transition:transform .2s;}
+  #avatar.faceR{transform:scaleX(-1);}  /* すごろく中は進行方向（右）を向く */
   #avatar.bump{animation:avBump .5s ease;}
   @keyframes avBump{0%{transform:scale(1);} 40%{transform:scale(1.35) rotate(-6deg);} 100%{transform:scale(1);}}
   /* floating +/- stat & cash pops */
@@ -832,7 +844,9 @@ function calcCoins(endingId){
    FLOW
    ========================================================================= */
 function buildRun(){
-  S = {money:30, trust:50, health:70, mind:60, bond:40};
+  // お金（所持金/cash）は前回からの引き継ぎ（board.cash → gsave.carry）で反映。
+  // それ以外のステータスは毎回30からスタート。
+  S = {money:30, trust:30, health:30, mind:30, bond:30};
   quality = 0; bonusAllies = 0; storyDebt = 0;
   const a1 = shuffle(ACT1).slice(0,2);
   const a2 = shuffle(ACT2).slice(0, 3); // 3 trials → more of life's big upheavals each run
@@ -1342,6 +1356,7 @@ function updateAvatar(bump){
   const nf=avatarEmoji();
   if(bump && a.textContent!==nf){ a.classList.remove('bump'); void a.offsetWidth; a.classList.add('bump'); }
   a.textContent=nf;
+  a.classList.toggle('faceR', phase==='board'); // ボード中は右向き
 }
 
 /* ---- story chapter theme (for the cinematic scene on each choice) ---- */

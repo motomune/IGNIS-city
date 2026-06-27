@@ -1,0 +1,2458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>アリの巣 - ANT NEST v3 コロニーサバイバル</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #1a120b; font-family: "Segoe UI", system-ui, sans-serif; }
+  #game { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+  #hud {
+    position: fixed; top: 10px; left: 10px; color: #fff; font-size: 13px;
+    text-shadow: 0 1px 3px #000; pointer-events: none; line-height: 1.45;
+    background: rgba(10,8,4,.4); padding: 8px 12px; border-radius: 10px; max-width: 320px;
+  }
+  #hud .bar { width: 180px; height: 11px; background: rgba(0,0,0,.5); border: 1px solid #000; border-radius: 6px; overflow: hidden; margin: 2px 0 5px; }
+  #hud .bar > span { display: block; height: 100%; transition: width .12s linear; }
+  #stage { font-size: 16px; font-weight: 700; }
+  #colony { margin-top: 3px; color: #ffd9a0; white-space: pre-line; }
+  #quest { margin-top: 5px; color: #9fe8ff; font-weight: 700; }
+  #help {
+    position: fixed; bottom: 96px; left: 10px; right: 10px; color: #e3d5bb; font-size: 11px;
+    text-shadow: 0 1px 2px #000; pointer-events: none; text-align: center; opacity:.85;
+  }
+  /* 画面操作ボタン */
+  .ctrl { position: fixed; z-index: 8; user-select:none; -webkit-user-select:none; touch-action:none; }
+  .btn { background:rgba(44,32,18,.55); border:2px solid rgba(255,255,255,.28); border-radius:14px;
+         color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;
+         text-align:center; line-height:1.15; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .btn:active, .btn.on { background:rgba(150,110,50,.85); transform:scale(0.96); }
+  #dpad { left:16px; bottom:16px; display:grid; grid-template-columns:repeat(3,56px); grid-template-rows:repeat(3,56px); gap:5px; }
+  #dpad .btn { border-radius:50%; font-size:20px; }
+  #dpad .sp { visibility:hidden; }
+  #acts { right:14px; bottom:16px; display:grid; grid-template-columns:repeat(3,76px); grid-auto-rows:48px; gap:7px; }
+  #shareBox { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:11; display:none;
+    background:rgba(15,12,8,.9); border:2px solid #ffd86a; border-radius:12px; padding:10px 12px; color:#fff;
+    font-size:13px; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(0,0,0,.5); }
+  #shareBox.on { display:flex; }
+  #shareMsg { max-width:230px; line-height:1.3; }
+  #shareBtn { background:#111; color:#fff; border:1px solid #555; border-radius:8px; padding:8px 12px; font-weight:700; cursor:pointer; }
+  #shareClose { background:transparent; color:#aaa; border:none; font-size:20px; cursor:pointer; }
+  #toast {
+    position: fixed; top: 40%; left: 50%; transform: translate(-50%,-50%);
+    color: #fff; font-size: 27px; font-weight: 800; text-shadow: 0 2px 8px #000;
+    pointer-events: none; opacity: 0; transition: opacity .3s; text-align:center; max-width: 90vw;
+  }
+  #over {
+    position: fixed; inset: 0; background: rgba(8,4,2,.82); display: none;
+    flex-direction: column; align-items: center; justify-content: center; color: #fff; z-index: 10;
+  }
+  #over h1 { font-size: 42px; margin: 0 0 14px; text-shadow: 0 3px 10px #000; }
+  #over p { font-size: 18px; margin: 6px 0; color: #ffd9a0; }
+  #over .retry { margin-top: 22px; font-size: 16px; color: #9fe8ff; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud">
+  <div id="stage">🥚 たまご</div>
+  <div>体力</div>
+  <div class="bar"><span id="hpBar" style="width:100%;background:#e44;"></span></div>
+  <div>進化ゲージ</div>
+  <div class="bar"><span id="xpBar" style="width:0%;background:#5cf;"></span></div>
+  <div id="stats"></div>
+  <div id="colony"></div>
+  <div id="quest"></div>
+</div>
+<div id="toast"></div>
+<div id="over">
+  <h1>💀 コロニー全滅…</h1>
+  <p id="overStats"></p>
+  <p class="retry">R キー または クリック で再挑戦</p>
+</div>
+<div id="help">
+  画面ボタンで操作 ・ 🍖食料調達=働きアリに死骸/ゴミを運ばせる ・ 触れた虫は攻撃＆食料で回復 ・ 🪙コインはタッチで回収(1日30) ・ 🔴赤/⚪白アリ誕生で𝕏シェア ・ 自動セーブ
+</div>
+<!-- 画面操作：移動Dパッド -->
+<div id="dpad" class="ctrl">
+  <div class="sp"></div><div class="btn" data-k="w">▲</div><div class="sp"></div>
+  <div class="btn" data-k="a">◀</div><div class="sp"></div><div class="btn" data-k="d">▶</div>
+  <div class="sp"></div><div class="btn" data-k="s">▼</div><div class="sp"></div>
+</div>
+<!-- 画面操作：アクション -->
+<div id="acts" class="ctrl">
+  <div class="btn" data-act="dig">⛏掘る/置く</div>
+  <div class="btn" data-act="grab">🦷咥/納品</div>
+  <div class="btn" data-act="lay">🥚産卵</div>
+  <div class="btn" data-act="gather">🍖食料調達</div>
+  <div class="btn" data-act="digrole">⛏任命</div>
+  <div class="btn" data-act="soldier">⚔兵隊任命</div>
+  <div class="btn" data-act="bgm">🎵BGM</div>
+</div>
+<!-- レアアリ誕生時のXシェア -->
+<div id="shareBox"><div id="shareMsg"></div><button id="shareBtn">𝕏 にシェア</button><button id="shareClose">×</button></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   アリの巣 ANT NEST v4 — コロニーサバイバル + バイオーム
+   重力/壁登り(飛行不可) / 巣の設計図に沿った採掘 / 森・畑・都市バイオーム
+   昼=発展 / 夜=防衛ウェーブ(地域別の外敵) / アリクイ / 兵隊 / アブラムシ / クエスト
+   ===================================================================== */
+const TAU = Math.PI * 2;
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+// ---- World ----
+const CELL = 26, COLS = 180, ROWS = 70, SURFACE = 14;
+const WORLD_W = COLS * CELL, WORLD_H = ROWS * CELL;
+const AIR = 0, DIRT = 1, ROCK = 2, SAND = 3;
+const grid = new Int8Array(COLS * ROWS);
+const surfaceH = new Int16Array(COLS);
+const gi = (cx, cy) => cy * COLS + cx;
+const inBounds = (cx, cy) => cx >= 0 && cx < COLS && cy >= 0 && cy < ROWS;
+const cellAt = (cx, cy) => inBounds(cx, cy) ? grid[gi(cx, cy)] : ROCK;
+const setCell = (cx, cy, v) => { if (inBounds(cx, cy)) grid[gi(cx, cy)] = v; };
+const colonyCx = (COLS / 2) | 0;
+
+// ---- バイオーム（森 / 畑 / 都市）。巣は中央の「畑」にある ----
+const BIOME_W = COLS / 3;
+function biomeIdx(cx){ return cx < BIOME_W ? 0 : cx < BIOME_W*2 ? 1 : 2; }
+const BIOMES = [
+  { key:"forest", name:"🌲森",   night:["beetle","stag","centipede","mantis"], day:["beetle","grub"] },
+  { key:"farm",   name:"🌾畑",   night:["locust","caterpillar","beetle"],      day:["locust","caterpillar"] },
+  { key:"city",   name:"🏙都市", night:["roach","spider","centipede"],         day:["roach","spider"] },
+];
+
+// ---- 巣の設計図 & 役割別の部屋 ----
+const nestPlan = [];                 // 掘る予定セル {cx,cy,k}
+const nestPlanSet = new Set();
+const planRoom = new Map();          // k -> roomId（部屋）/ -1（通路・縦坑）
+function planAdd(cx, cy){
+  if (!inBounds(cx,cy) || cy < surfaceH[cx] || cy >= ROWS-2) return;
+  const k = cy*COLS + cx;
+  if (grid[k]===ROCK) grid[k]=DIRT;        // 設計図上の岩盤は掘れる土に（縦坑が詰まらないように）
+  if (!planRoom.has(k)) planRoom.set(k, -1);
+  if (!nestPlanSet.has(k)){ nestPlanSet.add(k); nestPlan.push({cx,cy,k}); }
+}
+// このセルを掘ると別々の部屋同士が直接つながってしまうか（壁を1マス残すための判定）
+function wouldMergeRooms(cx,cy){
+  const ids=new Set();
+  const self=planRoom.get(cy*COLS+cx); if (self>=0) ids.add(self);
+  for (const [dx,dy] of NB){ const nx=cx+dx, ny=cy+dy;
+    if (cellAt(nx,ny)===AIR){ const id=planRoom.get(ny*COLS+nx); if (id>=0) ids.add(id); } }
+  return ids.size>=2;                 // 2部屋以上に接する＝掘ると壁が消える→掘らせない
+}
+function planTunnel(x0, y, x1){ for (let x=Math.min(x0,x1); x<=Math.max(x0,x1); x++) planAdd(x,y); }
+
+// 巣の部屋：queen=女王の間 / nursery=育児室 / food=食料庫 / waste=ゴミ捨て場
+const rooms = [];                    // {type, cells:[{cx,cy,k}], cx, cy, built}
+const roomCellType = new Map();      // k -> type（完成した部屋のセル）
+const ROOM_META = {
+  queen:  {label:"👑女王の間",   tint:"rgba(170,110,210,0.13)"},
+  nursery:{label:"🥚育児室",     tint:"rgba(120,205,130,0.13)"},
+  food:   {label:"🍖食料庫",     tint:"rgba(225,175,80,0.13)"},
+  waste:  {label:"🗑ゴミ捨て場", tint:"rgba(140,125,100,0.13)"},
+};
+function addRoom(type, ccx, ccy, rw, rh){
+  const id=rooms.length, cells=[];
+  for (let dx=-rw;dx<=rw;dx++) for (let dy=-rh;dy<=rh;dy++)
+    if ((dx*dx)/(rw*rw)+(dy*dy)/(rh*rh) <= 1.05){
+      const cx=ccx+dx, cy=ccy+dy, k=cy*COLS+cx;
+      if (!inBounds(cx,cy) || cy<surfaceH[cx] || cy>=ROWS-2) continue;
+      if (planRoom.has(k) && planRoom.get(k)>=0 && planRoom.get(k)!==id) continue; // 他の部屋を侵食しない
+      planAdd(cx,cy); planRoom.set(k,id); cells.push({cx,cy,k});
+    }
+  rooms.push({type, cells, cx:ccx, cy:ccy, built:false});
+}
+function builtRoom(type){ for (const r of rooms) if (r.built && r.type===type) return r; return null; }
+function roomTypeAt(x,y){ return roomCellType.get(((y/CELL)|0)*COLS + ((x/CELL)|0)) || null; }
+function baseBuilt(){ return ["queen","nursery","food","waste"].every(t=>builtRoom(t)); }
+// 最初の巣：縦坑に女王の間→育児室→食料庫→ゴミ捨て場を順に接続
+function buildBaseNest(){
+  const ex=colonyCx, top=surfaceH[ex];
+  // 浅い順に4部屋。最深がreorgで女王室になる（=地上から最も遠く、通路のみで接続）
+  const layout=[
+    {type:"waste",   d:5,  side:-1, rw:2, rh:2, br:8},
+    {type:"food",    d:10, side:1,  rw:3, rh:2, br:9},
+    {type:"nursery", d:15, side:-1, rw:3, rh:2, br:8},
+    {type:"queen",   d:20, side:1,  rw:3, rh:2, br:9},
+  ];
+  const maxY=Math.min(ROWS-4, top+20);
+  for (let y=top; y<=maxY; y++) planAdd(ex,y);          // 主縦坑（地上と巣をつなぐ唯一の口）
+  for (const L of layout){
+    const ry=Math.min(ROWS-4, top+L.d);
+    const rcx=Math.max(3,Math.min(COLS-4, ex+L.side*L.br));   // 長めの枝通路
+    planTunnel(ex, ry, rcx);
+    addRoom(L.type, rcx, ry, L.rw, L.rh);
+  }
+}
+// 部屋の完成判定（岩盤セルは無視して、土/砂が無くなれば完成）
+function updateRooms(){
+  for (const r of rooms){
+    if (r.built) continue;
+    let done=true;
+    // 壁として残すセル(別部屋に接する)は掘らないので完成判定から除外
+    for (const c of r.cells){ const v=grid[c.k]; if ((v===DIRT||v===SAND) && !wouldMergeRooms(c.cx,c.cy)){ done=false; break; } }
+    if (done){
+      r.built=true;
+      for (const c of r.cells) roomCellType.set(c.k, r.type);
+      toast(`🏠 ${ROOM_META[r.type].label} が完成！`, "#cfe", 1.6); sfx("hatch");
+      if (matured) reorganizeNest();   // 新しい部屋が完成するたび役割を深さで再編（女王=最深に再交換）
+    }
+  }
+}
+// 役割を深さで再割当：最深=女王, 次=育児室, 以降=食料/ゴミ。女王室が必ず存在し最深になる
+function reorganizeNest(){
+  const built=rooms.filter(r=>r.built);
+  if (built.length<4) return;
+  built.sort((a,b)=> b.cy-a.cy || a.cx-b.cx);          // 深い順
+  const roles=["queen","nursery","food","waste"];
+  built.forEach((r,i)=>{ r.type = i<roles.length ? roles[i] : (i%2 ? "food" : "waste"); });
+  roomCellType.clear();
+  for (const r of rooms) if (r.built) for (const c of r.cells) roomCellType.set(c.k, r.type);
+}
+// 人口連動の拡大：30匹ごとに部屋を増設（縦に深く / 横に広く 交互）。生まれたアリが巣を広げる
+let expandTier=0;
+function maybeExpand(){
+  if (!baseBuilt() || expandTier>=6) return;
+  const pop=workers.length+1;
+  if (pop >= 30*(expandTier+1)){
+    expandTier++;
+    const ex=colonyCx, top=surfaceH[ex];
+    if (expandTier%2===1){                              // 縦に深く（→新最深部。完成時に女王室と交換）
+      const ry=Math.min(ROWS-4, top+16+expandTier*3);
+      for (let y=top; y<=ry; y++) planAdd(ex,y);
+      const side=expandTier%4<2?1:-1, rcx=Math.max(3,Math.min(COLS-4, ex+side*6));
+      planTunnel(ex, ry, rcx); addRoom("food", rcx, ry, 3, 2);
+    } else {                                            // 横に広く
+      const ry=Math.min(ROWS-4, top+8+(expandTier|1));
+      const side=expandTier%4<2?-1:1, rcx=Math.max(3,Math.min(COLS-4, ex+side*11));
+      planTunnel(ex, ry, rcx); addRoom("food", rcx, ry, 3, 2);
+    }
+    toast(`🏗 コロニー拡大！(${pop}匹) 部屋を増設`, "#fea", 2); sfx("quest");
+  }
+}
+// 部屋を周囲に掘り広げて拡張
+function enlargeRoom(r, rw, rh){
+  const id=rooms.indexOf(r);
+  for (let dx=-rw;dx<=rw;dx++) for (let dy=-rh;dy<=rh;dy++)
+    if ((dx*dx)/(rw*rw)+(dy*dy)/(rh*rh) <= 1.05){
+      const cx=r.cx+dx, cy=r.cy+dy, k=cy*COLS+cx;
+      if (!inBounds(cx,cy)||cy<surfaceH[cx]||cy>=ROWS-2) continue;
+      if (grid[k]===AIR) continue;                                       // 既に開いた所(通路等)は触らない
+      if (planRoom.has(k) && planRoom.get(k)>=0 && planRoom.get(k)!==id) continue; // 他室は侵食しない
+      planAdd(cx,cy); planRoom.set(k,id);
+      if (!r.cells.some(c=>c.k===k)) r.cells.push({cx,cy,k});
+    }
+  r.built=false;     // 拡張分を掘るまで未完了に戻す
+}
+// 役割部屋が揃ったら成熟：女王室を最深部へ（ゴミ部屋と役割交換）＋各部屋を拡張
+let matured=false;
+function matureNest(){
+  if (matured || !baseBuilt()) return;
+  matured=true;
+  reorganizeNest();                                  // 深さで役割再編（女王=最深, 育児室=その隣）
+  for (const r of rooms.slice()) enlargeRoom(r, 3, 2);   // 各部屋を拡張（再掘削）
+  banner("🏛 巣が成熟：女王室を最深部へ、育児室をその隣へ再編＋拡張", "#cfe", 2.6); sfx("quest");
+}
+
+function genWorld(){
+  for (let cx = 0; cx < COLS; cx++){
+    const surf = SURFACE + Math.round(Math.sin(cx*0.18)*1.5 + Math.sin(cx*0.05)*2);
+    surfaceH[cx] = surf;
+    for (let cy = 0; cy < ROWS; cy++){
+      let v = AIR;
+      if (cy >= surf) v = DIRT;
+      if (cy >= ROWS - 2) v = ROCK;
+      if (v === DIRT && cy > surf+2 && Math.random() < 0.02) v = ROCK;
+      grid[gi(cx,cy)] = v;
+    }
+  }
+}
+
+// ---- Camera / resize ----
+const cam = { x: 0, y: 0 };
+const darkC = document.createElement("canvas");
+const dctx = darkC.getContext("2d");
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; darkC.width = canvas.width; darkC.height = canvas.height; }
+addEventListener("resize", resize); resize();
+
+// ---- フェロモン道 / 季節・天候 / 飢餓 ----
+const pher = new Float32Array(COLS*ROWS);          // 餌道フェロモンの強さ
+let pherDecayT = 0;
+function pherAt(cx,cy){ return inBounds(cx,cy)?pher[cy*COLS+cx]:0; }
+function depositPher(cx,cy,amt){ if(inBounds(cx,cy)){ const k=cy*COLS+cx; pher[k]=Math.min(8, pher[k]+amt); } }
+const SEASONS=[
+  {n:"🌸 春", rain:0.40, cold:0.05},
+  {n:"☀ 夏", rain:0.22, cold:0.00},
+  {n:"🍂 秋", rain:0.45, cold:0.20},
+  {n:"❄ 冬", rain:0.00, cold:0.60},
+];
+function seasonIdx(){ return Math.floor((dayNum-1)/3)%4; }
+function curSeason(){ return SEASONS[seasonIdx()]; }
+let weather="clear", weatherT=14;                  // clear / rain / snow
+let envSlow=1;                                      // 寒さ・雨による減速係数(NPC・敵)
+let starving=false;
+const drops=[];                                     // 雨/雪の粒（描画用、再利用）
+let erodeT=0;
+let AC = null;
+function ensureAudio(){
+  if (!AC){ try { AC = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} }
+  if (AC && AC.state === "suspended") AC.resume();
+}
+function beep(f0, f1, dur, type, vol, delay){
+  if (!AC) return;
+  const t0 = AC.currentTime + (delay||0);
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type||"sine";
+  o.frequency.setValueAtTime(f0, t0);
+  o.frequency.exponentialRampToValueAtTime(Math.max(1,f1), t0+dur);
+  g.gain.setValueAtTime(vol||0.07, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  o.connect(g); g.connect(AC.destination);
+  o.start(t0); o.stop(t0+dur+0.03);
+}
+function sfx(n){
+  if (n==="dig")    beep(140, 55, 0.07, "square", 0.05);
+  if (n==="drop")   beep(220, 70, 0.09, "sine", 0.08);
+  if (n==="eat")    beep(420, 880, 0.11, "sine", 0.07);
+  if (n==="hurt")   beep(320, 90, 0.16, "sawtooth", 0.07);
+  if (n==="hatch")  beep(600, 980, 0.12, "sine", 0.07);
+  if (n==="lay")    beep(300, 520, 0.12, "sine", 0.06);
+  if (n==="bite")   beep(900, 300, 0.05, "square", 0.05);
+  if (n==="eggeat") beep(500, 120, 0.3, "triangle", 0.08);
+  if (n==="night"){ beep(180, 120, 0.5, "triangle", 0.08); beep(140, 90, 0.6, "triangle", 0.08, 0.4); }
+  if (n==="dawn"){  beep(520, 660, 0.18, "sine", 0.06); beep(660, 880, 0.25, "sine", 0.06, 0.18); }
+  if (n==="quest"){ beep(660,660,0.09,"sine",0.07); beep(880,880,0.09,"sine",0.07,0.1); beep(990,1320,0.16,"sine",0.08,0.2); }
+  if (n==="roar")   beep(90, 38, 0.8, "sawtooth", 0.12);
+  if (n==="evolve"){ beep(440,440,0.1,"sine",0.07); beep(554,554,0.1,"sine",0.07,0.1); beep(659,880,0.16,"sine",0.08,0.2); }
+}
+
+// ---- BGM（レトロ・チップチューン）----
+// GitHub等のレトロBGMを使う場合はraw URLを設定（.mp3/.ogg）。空なら内蔵チップチューンを再生。
+const BGM_URL = "bgm.mp3";   // IGNIS CITYリポジトリのレトロBGM（読み込み失敗時は内蔵チップチューン）
+let bgmOn=false, bgmTimer=null, bgmStep=0, bgmEl=null;
+const BGM_SCALE=[262,294,330,349,392,440,494,523];          // Cメジャー
+const BGM_MEL =[0,2,4,2, 5,4,2,0, 4,5,7,5, 4,2,4,2];        // メロディ（音度,-1=休符）
+const BGM_BASS=[0,0,4,4, 5,5,4,4, 3,3,5,5, 0,0,4,4];
+function bgmNote(f,dur,type,vol){ beep(f,f,dur,type,vol); }
+function bgmTick(){
+  if (!AC || !bgmOn) return;
+  const i=bgmStep&15, m=BGM_MEL[i];
+  if (m>=0) bgmNote(BGM_SCALE[m], 0.16, "square", 0.04);                 // メロディ
+  if ((i&1)===0) bgmNote(BGM_SCALE[BGM_BASS[i]]/2, 0.22, "triangle", 0.05); // ベース
+  if ((i&3)===0) bgmNote(60, 0.06, "square", 0.05);                      // キック
+  if ((i&3)===2) bgmNote(1600, 0.02, "square", 0.018);                   // ハイハット
+  bgmStep++;
+}
+function startBGM(){
+  ensureAudio();
+  if (BGM_URL){                                  // 外部(GitHub等)の音源があれば使用、失敗時は内蔵へ
+    if (!bgmEl){ bgmEl=new Audio(BGM_URL); bgmEl.loop=true; bgmEl.volume=0.4;
+      bgmEl.onerror=()=>{ bgmEl=null; if(bgmOn && !bgmTimer) bgmTimer=setInterval(bgmTick,190); }; }
+    bgmEl.play().catch(()=>{ bgmEl=null; if(!bgmTimer) bgmTimer=setInterval(bgmTick,190); });
+    return;
+  }
+  bgmStep=0; if(!bgmTimer) bgmTimer=setInterval(bgmTick,190);
+}
+function stopBGM(){ if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; } if(bgmEl) bgmEl.pause(); }
+function toggleBGM(){ bgmOn=!bgmOn; if(bgmOn) startBGM(); else stopBGM(); toast(bgmOn?"🎵 BGM ON":"🔇 BGM OFF","#cef",0.9); }
+
+// ---- Stages ----
+const STAGES = [
+  { name:"🥚 たまご",   key:"egg",    color:"#f3e3c0", r:5.5, speed:0,   maxHp:60,  hatch:2.5 },
+  { name:"🐛 幼虫",     key:"larva",  color:"#e8d3a0", r:6,   speed:0,   maxHp:70,  hatch:2.5 },
+  { name:"🛡 さなぎ",   key:"pupa",   color:"#c8a87a", r:6,   speed:0,   maxHp:80,  hatch:2.5 },
+  { name:"🐜 働きアリ", key:"worker", color:"#3a2418", r:6.5, speed:140, maxHp:110, xpNext:20 },
+  { name:"🪽 羽アリ",   key:"winged", color:"#2b1c12", r:7.5, speed:170, maxHp:150, xpNext:40 },
+  { name:"👑 女王アリ", key:"queen",  color:"#2a1340", r:9,   speed:145, maxHp:240, xpNext:Infinity },
+];
+
+// ---- Player ----
+const ant = {
+  x: colonyCx*CELL, y: 5*CELL, stage:0, r:7, hp:60, xp:0,
+  vx:0, vy:0, dir:{x:0,y:1}, facing:1, carrying:false, cargo:null,
+  hatchT:0, digCD:0, attackFlash:0, phase:0, layCD:0,
+};
+const stage = () => STAGES[ant.stage];
+
+function spawnEgg(){
+  const cx = colonyCx;
+  let cy = 0; while (cellAt(cx, cy) === AIR && cy < ROWS) cy++;
+  ant.x = cx*CELL + CELL/2; ant.y = (cy-1)*CELL + CELL/2;
+  ant.vx = ant.vy = 0; ant.stage = 0; ant.r = STAGES[0].r;
+  ant.hp = STAGES[0].maxHp; ant.xp = 0; ant.carrying = false; ant.cargo = null;
+  ant.hatchT = 0; ant.digCD = 0;
+}
+
+function gainXp(n){
+  ant.xp += n;
+  const st = stage();
+  if (st.xpNext && st.xpNext !== Infinity && ant.xp >= st.xpNext && ant.stage < STAGES.length-1){
+    ant.xp = 0; ant.stage++;
+    const ns = stage();
+    ant.hp = Math.min(ant.hp + 50, ns.maxHp);
+    toast("✨ 進化！ " + ns.name, "#aef", 1.6);
+    sfx("evolve"); shake = Math.max(shake, 5);
+    puff(ant.x, ant.y, 16, "#ffe9a0", 150, -90);
+    if (ns.key === "queen") setTimeout(()=>toast("👑 Eキーで巣の中に産卵できる！", "#fdb", 2.5), 1700);
+  }
+}
+
+// ---- Colony / counters ----
+const workers = [];
+const eggsArr = [];
+let colonyFood = 3;
+let droppedCount = 0, nestCells = 0, killCount = 0, laidCount = 0, maxColony = 1;
+let dayNum = 1, isNight = false, survivedNights = 0;
+let shake = 0, gameOver = false, saveFlash = 0;
+
+// 遺伝：1/20=赤アリ(攻撃&速度2倍), 1/60=白アリ(掘削3マス保持/速度3倍/攻撃&体力0.75倍)
+const VARIANTS={
+  normal:{col:null,      speedMul:1, atkMul:1,    hpMul:1,    carryCap:1},
+  red:   {col:"#b83020", speedMul:2, atkMul:2,    hpMul:1,    carryCap:1},
+  white: {col:"#e8e2d6", speedMul:3, atkMul:0.75, hpMul:0.75, carryCap:3},
+};
+function antVariant(){
+  const r=Math.random(), v = r<1/60 ? "white" : (r<1/60+1/20 ? "red" : "normal");
+  return Object.assign({variant:v}, VARIANTS[v]);
+}
+function makeWorker(x, y){
+  const g=antVariant(), hp=Math.round(30*g.hpMul);
+  return { x, y, facing:1, phase:Math.random()*6, carrying:false, load:0, spread:false,
+           mode:"idle", path:null, pi:0, digCell:null, wait:Math.random()*1.5,
+           job:"dig", hp, maxHp:hp, atkCD:0, retarget:0, haul:null,
+           size:0.85+Math.random()*0.3, forage:Math.random()<0.25,
+           variant:g.variant, col:g.col, speedMul:g.speedMul, atkMul:g.atkMul, hpMul:g.hpMul, carryCap:g.carryCap };
+}
+function reassignJob(to){
+  const from = to==="dig" ? "soldier" : "dig";
+  const w = workers.find(w=>w.job===from);
+  if (!w){ toast(from==="dig"?"⛏ 採掘アリがいない":"⚔ 兵隊アリがいない", "#fca", 0.8); return; }
+  w.job=to; w.path=null; w.mode="idle"; w.spread=false;
+  if (to==="soldier"){ w.maxHp=Math.round(70*(w.hpMul||1)); w.hp=w.maxHp; toast("⚔ 兵隊アリを任命！巣を守ってくれる", "#fda", 1.1); }
+  else { w.maxHp=Math.round(30*(w.hpMul||1)); w.hp=w.maxHp; toast("⛏ 採掘アリに戻した", "#dfc", 0.9); }
+  sfx("quest");
+}
+
+// ---- BFS ----
+const bfsParent = new Int32Array(COLS*ROWS);
+const bfsVisited = new Uint8Array(COLS*ROWS);
+const NB = [[0,1],[0,-1],[-1,0],[1,0]];
+function walkable(cx, cy){
+  return inBounds(cx,cy) && cellAt(cx,cy)===AIR &&
+         cy >= surfaceH[cx]-4 && Math.abs(cx-colonyCx) <= 42;
+}
+function rebuildPath(endIdx){
+  const path=[]; let c=endIdx;
+  while (c>=0){ path.push({cx:c%COLS, cy:(c/COLS)|0}); c=bfsParent[c]; }
+  return path.reverse();
+}
+// 開始セルが砂などで塞がれていたら近くの空気セルへスナップ（埋もれ対策）
+function nearestAir(scx, scy){
+  if (cellAt(scx,scy)===AIR) return [scx,scy];
+  for (let r=1;r<=3;r++)
+    for (let dy=-r;dy<=r;dy++) for (let dx=-r;dx<=r;dx++)
+      if (cellAt(scx+dx,scy+dy)===AIR) return [scx+dx,scy+dy];
+  return null;
+}
+function bfsPath(scx, scy, targetFn){
+  const s=nearestAir(scx,scy); if (!s) return null; scx=s[0]; scy=s[1];
+  bfsVisited.fill(0);
+  const start = gi(scx,scy);
+  const q=[start]; bfsVisited[start]=1; bfsParent[start]=-1;
+  let qi=0;
+  while (qi<q.length && q.length<7000){
+    const cur=q[qi++], cx=cur%COLS, cy=(cur/COLS)|0;
+    if (targetFn(cx,cy)) return rebuildPath(cur);
+    for (const [dx,dy] of NB){
+      const nx=cx+dx, ny=cy+dy, ni=gi(nx,ny);
+      if (walkable(nx,ny) && !bfsVisited[ni]){ bfsVisited[ni]=1; bfsParent[ni]=cur; q.push(ni); }
+    }
+  }
+  return null;
+}
+function findDigPath(scx, scy){
+  if (!inBounds(scx,scy) || cellAt(scx,scy)!==AIR) return null;
+  bfsVisited.fill(0);
+  const start = gi(scx,scy);
+  const q=[start]; bfsVisited[start]=1; bfsParent[start]=-1;
+  let qi=0; const cands=[];
+  while (qi<q.length && q.length<7000){
+    const cur=q[qi++], cx=cur%COLS, cy=(cur/COLS)|0;
+    if (Math.abs(cx-colonyCx) <= 34){
+      for (const [dx,dy] of [[0,1],[-1,0],[1,0]]){
+        const nx=cx+dx, ny=cy+dy;
+        if (inBounds(nx,ny) && cellAt(nx,ny)===DIRT && ny>=surfaceH[nx]){
+          cands.push({cur, depth:ny, dig:{cx:nx,cy:ny}}); break;
+        }
+      }
+    }
+    for (const [dx,dy] of NB){
+      const nx=cx+dx, ny=cy+dy, ni=gi(nx,ny);
+      if (walkable(nx,ny) && !bfsVisited[ni]){ bfsVisited[ni]=1; bfsParent[ni]=cur; q.push(ni); }
+    }
+  }
+  if (!cands.length) return null;
+  cands.sort((a,b)=>b.depth-a.depth);
+  const pick = cands[(Math.random()*Math.min(6,cands.length))|0];
+  return { path: rebuildPath(pick.cur), dig: pick.dig };
+}
+// 設計図に沿って掘る: 既存トンネルから最も近い「未掘削の予定セル」を探す
+function findNestDigPath(scx, scy){
+  const s=nearestAir(scx,scy); if (!s) return null; scx=s[0]; scy=s[1];
+  bfsVisited.fill(0);
+  const start = gi(scx,scy);
+  const q=[start]; bfsVisited[start]=1; bfsParent[start]=-1;
+  let qi=0;
+  while (qi<q.length && q.length<9000){
+    const cur=q[qi++], cx=cur%COLS, cy=(cur/COLS)|0;
+    for (const [dx,dy] of NB){                    // 隣に「予定地かつまだ土/砂」があれば掘削対象
+      const nx=cx+dx, ny=cy+dy;
+      if (nestPlanSet.has(ny*COLS+nx)){
+        const v=cellAt(nx,ny);
+        if ((v===DIRT || v===SAND) && !wouldMergeRooms(nx,ny))   // 部屋同士の壁は残す
+          return { path: rebuildPath(cur), dig:{cx:nx,cy:ny} };
+      }
+    }
+    for (const [dx,dy] of NB){
+      const nx=cx+dx, ny=cy+dy, ni=gi(nx,ny);
+      if (walkable(nx,ny) && !bfsVisited[ni]){ bfsVisited[ni]=1; bfsParent[ni]=cur; q.push(ni); }
+    }
+  }
+  return null;
+}
+
+// 経路追従: "arrived"|"moving"|"blocked"|"none"
+function followPath(w, dt, sp){
+  if (!w.path) return "none";
+  const node = w.path[w.pi];
+  if (!node){ w.path=null; return "arrived"; }
+  if (cellAt(node.cx,node.cy)!==AIR){ w.path=null; return "blocked"; }
+  const tx=node.cx*CELL+CELL/2, ty=node.cy*CELL+CELL/2;
+  const dx=tx-w.x, dy=ty-w.y, dist=Math.hypot(dx,dy);
+  if (dist<3){ w.pi++; return "moving"; }
+  const spd=sp*envSlow*(w.speedMul||1);                // 個体の速度倍率（赤=2,白=3）
+  w.x += dx/dist*spd*dt; w.y += dy/dist*spd*dt;
+  if (Math.abs(dx)>1) w.facing = dx>0?1:-1;
+  return "moving";
+}
+
+function dropSandNear(e){
+  const cx=(e.x/CELL)|0, cy=(e.y/CELL)|0;
+  const tries=[[cx+e.facing,cy],[cx-e.facing,cy],[cx+e.facing,cy-1],[cx,cy-1]];  // 自分の真上には置かない
+  for (const [tx,ty] of tries){
+    if (inBounds(tx,ty) && cellAt(tx,ty)===AIR && ty < surfaceH[tx]){ setCell(tx,ty,SAND); return true; }
+  }
+  return false;
+}
+// 土を薄く広く撒くための補助：列の砂の積み高さ
+function sandPile(cx){ let h=0; for (let cy=surfaceH[cx]-1; cy>=surfaceH[cx]-8 && cellAt(cx,cy)===SAND; cy--) h++; return h; }
+let dumpSide=1;
+// 入口から離れ、まだ低い列を選んで土を撒く（山にせず奥まで広げる）
+function pickDumpColumn(){
+  dumpSide=-dumpSide;
+  for (const s of [dumpSide,-dumpSide])
+    for (let d=4; d<10; d++){ const cx=colonyCx+s*d; if (cx<2||cx>=COLS-2) break; if (sandPile(cx)<3) return cx; }
+  // 近くが埋まったら更に外側へ薄く
+  for (const s of [dumpSide,-dumpSide])
+    for (let d=10; d<26; d++){ const cx=colonyCx+s*d; if (cx<2||cx>=COLS-2) break; if (sandPile(cx)<3) return cx; }
+  return Math.max(2,Math.min(COLS-3, colonyCx+dumpSide*((Math.random()*16+5)|0)));
+}
+// 巣の再構築（埋め戻し）対象：掘った土でここを埋めて整える
+const fillTargets=[]; const fillSet=new Set();
+function markFill(cx,cy){
+  if (!inBounds(cx,cy) || cy<surfaceH[cx]) return;
+  const k=cy*COLS+cx; if (fillSet.has(k)) return;
+  fillSet.add(k); fillTargets.push({cx,cy,k});
+}
+// 入口を広く掘った余分な幅を埋め戻して1マス幅の整った縦坑に再構築
+function remodelEntrance(){
+  const ex=colonyCx, top=surfaceH[ex];
+  for (const dx of [-1,1]) for (let cy=top; cy<top+2; cy++) markFill(ex+dx, cy);
+}
+function nearestFill(w){
+  let best=null, bd=1e9;
+  for (const t of fillTargets){ if (grid[t.k]!==AIR) continue; const d=(t.cx*CELL-w.x)**2+(t.cy*CELL-w.y)**2; if (d<bd){ bd=d; best=t; } }
+  return best;
+}
+
+// ---- NPC: 働きアリ（移動はゆっくり=WSPD）----
+const WSPD = 60;                       // 旧120から半減
+function updateDigger(w, dt){
+  if (w.wait>0){ w.wait-=dt; return; }
+  // 夜は作業を中断して巣の奥へ退避（兵隊だけが戦う）
+  if (isNight){
+    if (w.haul) releaseHaul(w);
+    if (w.mode!=="hide"){ w.mode="hide"; w.path=null; w.spread=false; if (w.carrying){ dropSandNear(w); w.carrying=false; } }
+    if (followPath(w, dt, WSPD)==="moving") return;
+    const cx=Math.max(0,Math.min(COLS-1,(w.x/CELL)|0)), cy=(w.y/CELL)|0;
+    if (cy>=surfaceH[cx]+3){ w.wait=0.8; return; }
+    w.path=bfsPath(cx, cy, (x,y)=> y>=surfaceH[x]+3); w.pi=0;
+    if (!w.path) w.wait=1.2;
+    return;
+  }
+  if (w.mode==="hide"){ w.mode="idle"; w.path=null; }
+  const full = w.load>=w.carryCap || (w.load>0 && w.noMore);
+  if (full){ updateSandCarry(w, dt); return; }           // 満載 or もう掘れない→運搬
+  if (w.load>0){ updateDig(w, dt); return; }             // 積載中(白アリ)→さらに掘る
+  if (w.haul){ updateHaul(w, dt); return; }              // 物資の運搬を継続
+  if (assignHaul(w)){ updateHaul(w, dt); return; }       // 卵/死骸/ゴミの運搬を優先
+  if (w.forage && gatherT<=0){ updateForage(w, dt); return; }   // 探索（食料調達中は運搬優先）
+  updateDig(w, dt);                                      // 採掘アリ：設計図を掘る
+}
+// 探索アリ：地表を歩き、餌道フェロモンの強い方へ向かう（餌を見つけたらassignHaulが拾う）
+function updateForage(w, dt){
+  if (followPath(w, dt, WSPD)==="moving") return;
+  // フェロモンの強い地表セルを優先して次の目的地に
+  let best=null, bv=-1;
+  for (let s=0;s<10;s++){
+    const cx=Math.max(2,Math.min(COLS-3, colonyCx + ((Math.random()*70-35)|0)));
+    const cy=surfaceH[cx]-1;
+    const v=pherAt(cx,cy)*2 + Math.random()*0.6 - Math.abs(cx-(w.x/CELL))*0.01;
+    if (v>bv){ bv=v; best={cx,cy}; }
+  }
+  if (best){ w.path=bfsPath((w.x/CELL)|0,(w.y/CELL)|0,(x,y)=>x===best.cx&&y===best.cy); w.pi=0; }
+  if (!w.path) w.wait=0.6+Math.random();
+}
+// 掘った砂を①埋め戻し(再構築)に再利用 ②なければ地上へ薄く広く撒く
+function updateSandCarry(w, dt){
+  // ① 埋め戻し優先（巣の余分を土で埋めて再構築）
+  const t = nearestFill(w);
+  if (t){
+    const wcx=(w.x/CELL)|0, wcy=(w.y/CELL)|0;
+    if (Math.abs(wcx-t.cx)<=1 && Math.abs(wcy-t.cy)<=1){      // 隣接→埋める（積載は全部おろす）
+      setCell(t.cx,t.cy,DIRT); nestPlanSet.delete(t.k);
+      const fi=fillTargets.indexOf(t); if (fi>=0) fillTargets.splice(fi,1);
+      puff(t.cx*CELL+13,t.cy*CELL+13,4,"#8a6035",40,-10);
+      w.load=0; w.carrying=false; w.spread=false; w.noMore=false; w.path=null; w.wait=0.2; return;
+    }
+    if (!w.path){ w.path=bfsPath(wcx,wcy,(x,y)=>Math.abs(x-t.cx)<=1&&Math.abs(y-t.cy)<=1); w.pi=0; }
+    if (w.path){ if (followPath(w,dt,WSPD)==="blocked") w.path=null; return; }
+  }
+  // ② 地上へ運んで薄く広く撒く（入口から離れ・低い列へ・左右交互に）
+  if (followPath(w, dt, WSPD)==="moving") return;
+  const cx=(w.x/CELL)|0, cy=(w.y/CELL)|0;
+  if (cy >= surfaceH[cx]){                              // まだ地中 → 地上へ
+    const p=bfsPath(cx, cy, (x,y)=> y < surfaceH[x]);
+    if (p){ w.path=p; w.pi=0; return; }
+  }
+  if (!w.spread){
+    w.spread=true;
+    const tx=pickDumpColumn();
+    const p=bfsPath(cx, cy, (x,y)=> x===tx && y<surfaceH[x]);
+    if (p){ w.path=p; w.pi=0; return; }
+  }
+  const n=Math.max(1,w.load||1);
+  for (let k=0;k<n;k++) dropSandNear(w);                  // 積載分の砂をまとめて捨てる
+  droppedCount+=n; w.load=0; w.carrying=false; w.spread=false; w.noMore=false; w.wait=0.3+Math.random()*0.4;
+}
+// 設計図に沿って掘る
+function updateDig(w, dt){
+  if (w.path){
+    const st=followPath(w, dt, WSPD);
+    if (st==="moving") return;
+    if (st==="arrived" && w.digCell){
+      const {cx,cy}=w.digCell, v=cellAt(cx,cy);
+      if (v===DIRT||v===SAND){ setCell(cx,cy,AIR); w.load=(w.load||0)+1; w.carrying=true; w.spread=false; puff(cx*CELL+13,cy*CELL+13,4,"#8a6035",60,-30); w.wait=0.1; }
+      w.digCell=null; return;
+    }
+    w.path=null;
+  }
+  const cx=(w.x/CELL)|0, cy=(w.y/CELL)|0;
+  const r=findNestDigPath(cx, cy);
+  if (r){ w.path=r.path; w.pi=0; w.digCell=r.dig; w.noMore=false; }
+  else if (w.load>0) w.noMore=true;                      // もう掘れない→運んで捨てる
+  else w.wait=1+Math.random()*2;                         // 設計図を掘り終えた→待機（拡大は人口で発生）
+}
+// ---- 運搬タスク（卵→育児室 / 死骸→食料庫 / ゴミ→ゴミ捨て場）----
+function targetType(kind){ return kind==="egg"?"nursery" : kind==="carcass"?"food" : "waste"; }
+function itemArr(kind){ return kind==="egg"?eggsArr : kind==="carcass"?carcasses : garbage; }
+function itemAlive(kind,it){ return itemArr(kind).includes(it); }
+function assignHaul(w){
+  if (builtRoom("nursery")) for (const e of eggsArr)   if (e.state==="queen" && !e.carrier){ e.carrier=w; w.haul={kind:"egg",     item:e, phase:"toItem", fail:0}; return true; }
+  if (builtRoom("food"))    for (const c of carcasses) if (!c.carrier && !c.stored){          c.carrier=w; w.haul={kind:"carcass", item:c, phase:"toItem", fail:0}; return true; }
+  if (builtRoom("waste"))   for (const g of garbage)   if (!g.inMidden && !g.carrier){        g.carrier=w; w.haul={kind:"garbage", item:g, phase:"toItem", fail:0}; return true; }
+  return false;
+}
+function releaseHaul(w){
+  if (w.haul && w.haul.item){ w.haul.item.carrier=null; if (w.haul.kind==="egg") w.haul.item.state="queen"; }
+  w.haul=null; w.path=null;
+}
+function updateHaul(w, dt){
+  const h=w.haul, it=h.item;
+  if (!itemAlive(h.kind,it)){ w.haul=null; w.path=null; return; }
+  if (h.phase==="toItem"){
+    const wcx=(w.x/CELL)|0, wcy=(w.y/CELL)|0, icx=(it.x/CELL)|0, icy=(it.y/CELL)|0;
+    if (Math.abs(wcx-icx)<=1 && Math.abs(wcy-icy)<=1){ h.phase="toRoom"; w.path=null; return; } // 隣接で拾う
+    if (!w.path){
+      w.path=bfsPath(wcx,wcy,(x,y)=>Math.abs(x-icx)<=1&&Math.abs(y-icy)<=1); w.pi=0;
+      if (!w.path){ if (++h.fail>3){ releaseHaul(w); } else w.wait=0.5; return; }
+    }
+    if (followPath(w, dt, WSPD)==="blocked") w.path=null;
+    return;
+  }
+  // 荷物を運搬中（自分の位置に追従）。餌を巣へ運ぶアリは餌道フェロモンを残す
+  it.x=w.x; it.y=w.y-3;
+  if (h.kind==="carcass") depositPher((w.x/CELL)|0,(w.y/CELL)|0, 0.7);
+  const room=builtRoom(targetType(h.kind));
+  if (!room){ releaseHaul(w); return; }
+  if (roomTypeAt(w.x,w.y)===room.type){ depositItem(w,h); return; }
+  if (!w.path){
+    w.path=bfsPath((w.x/CELL)|0,(w.y/CELL)|0,(x,y)=>x===room.cx&&y===room.cy); w.pi=0;
+    if (!w.path){ if (++h.fail>4){ releaseHaul(w); } else w.wait=0.5; return; }
+  }
+  if (followPath(w, dt, WSPD)==="blocked") w.path=null;
+}
+// 部屋内の、既存アイテムから離れた空きセルを返す（重ならないよう配置）
+function freeRoomCell(room, occupied, minD){
+  if (!room) return null;
+  for (let tries=0; tries<room.cells.length+6; tries++){
+    const c=room.cells[(Math.random()*room.cells.length)|0];
+    if (grid[c.k]!==AIR) continue;
+    const px=c.cx*CELL+13, py=c.cy*CELL+13;
+    let ok=true;
+    for (const it of occupied){ if ((it.x-px)**2+(it.y-py)**2 < minD*minD){ ok=false; break; } }
+    if (ok) return {x:px,y:py};
+  }
+  return {x:room.cx*CELL+13, y:room.cy*CELL+13};
+}
+function depositItem(w, h){
+  const it=h.item;
+  if (h.kind==="egg"){
+    const room=builtRoom("nursery");
+    const p=freeRoomCell(room, eggsArr.filter(e=>e!==it && e.state==="nursery"), 18) || {x:w.x,y:w.y};
+    it.carrier=null; it.state="nursery"; it.t=0; it.x=p.x; it.y=p.y;   // 部屋の奥に重ならず置く
+  } else if (h.kind==="carcass"){
+    const room=builtRoom("food"); colonyFood+=it.value||1;
+    const stored=carcasses.filter(c=>c.stored);
+    if (stored.length<8){ const p=freeRoomCell(room, stored, 18) || {x:w.x,y:w.y};
+      it.carrier=null; it.stored=true; it.vy=0; it.x=p.x; it.y=p.y; }    // 食料庫に貯蔵（触れると回復）
+    else { const i=carcasses.indexOf(it); if (i>=0) carcasses.splice(i,1); }
+    puff(w.x,w.y,4,"#fd8",40,-20);
+  } else { it.carrier=null; it.inMidden=true; it.t=0; }
+  w.haul=null; w.path=null; w.wait=0.3;
+}
+
+// ---- NPC: 兵隊アリ ----
+function updateSoldier(w, dt){
+  w.atkCD=Math.max(0,w.atkCD-dt);
+  w.retarget-=dt;
+  let tgt=null, td=Infinity, tp=null;
+  for (const e of invaders){
+    if (e.flee) continue;
+    const d=(e.x-w.x)**2+(e.y-w.y)**2;
+    if (d<td){ td=d; tgt=e; tp=null; }
+  }
+  if (anteater && !anteater.flee){
+    const t=anteaterTip();
+    if (t){ const d=(t.x-w.x)**2+(t.y-w.y)**2; if (d<td){ td=d; tgt=null; tp=t; } }
+  }
+  if ((tgt||tp) && td < 560*560){
+    const tx = tp?tp.x:tgt.x, ty = tp?tp.y:tgt.y;
+    if (Math.sqrt(td) < 26){
+      if (w.atkCD<=0){
+        w.atkCD=0.5;
+        const dmg=w.atkMul||1;                 // 赤=2,白=0.75
+        if (tp) hitAnteater(dmg, tp.x, tp.y);
+        else hitEnemy(tgt, dmg);
+      }
+      return;
+    }
+    if (!w.path || w.retarget<=0){
+      w.retarget=0.9;
+      const tcx=(tx/CELL)|0, tcy=(ty/CELL)|0;
+      w.path = bfsPath((w.x/CELL)|0, (w.y/CELL)|0, (x,y)=> Math.abs(x-tcx)<=1 && Math.abs(y-tcy)<=1);
+      w.pi=0;
+    }
+    followPath(w, dt, 115);
+    return;
+  }
+  // 平時パトロール
+  if (w.wait>0){ w.wait-=dt; return; }
+  const st = followPath(w, dt, 70);
+  if (st==="moving") return;
+  const cx=(w.x/CELL)|0, cy=(w.y/CELL)|0;
+  const rx=cx+((Math.random()*16)|0)-8, ry=cy+((Math.random()*10)|0)-5;
+  w.path = bfsPath(cx, cy, (x,y)=> x===rx && y===ry); w.pi=0;
+  if (!w.path) w.wait=0.8;
+}
+
+// ---- 産卵 ----
+// プレイヤーが死骸を咥える / 置く・納品する（F）
+function playerGrabDrop(){
+  if (stage().speed===0) return;
+  if (ant.cargo){
+    if (roomTypeAt(ant.x,ant.y)==="food"){
+      colonyFood += ant.cargo.value||1; ant.cargo=null;
+      toast("🍖 食料庫に納品！", "#fd8", 1); puff(ant.x,ant.y,5,"#fd8",60,-30); sfx("eat");
+    } else {
+      const c=ant.cargo; c.x=ant.x; c.y=ant.y; c.carrier=null; c.vy=0; carcasses.push(c); ant.cargo=null;
+      toast("死骸を置いた", "#dca", 0.7);
+    }
+    return;
+  }
+  if (ant.carrying){ toast("砂を運搬中は咥えられない", "#caa", 0.7); return; }
+  let best=null, bd=1e9;
+  for (const c of carcasses){ if (c.carrier) continue; const d=(c.x-ant.x)**2+(c.y-ant.y)**2; if (d<bd){ bd=d; best=c; } }
+  if (best && bd < (ant.r+24)**2){
+    carcasses.splice(carcasses.indexOf(best),1); best.carrier="player"; ant.cargo=best;
+    toast("🦷 死骸を咥えた（Fで食料庫に納品/その場で離す）", "#cfe", 1.4); sfx("bite");
+  } else toast("近くに死骸がない", "#caa", 0.7);
+}
+// silent=true は女王の自動産卵（失敗時もトースト出さない）
+function layEgg(silent){
+  if (stage().key!=="queen" || ant.layCD>0) return;
+  if (workers.length+1 >= 150){ if(!silent) toast("コロニーは上限の150匹", "#fca", 1.2); return; }
+  if (roomTypeAt(ant.x,ant.y)!=="queen"){ if(!silent) toast("👑 女王の間に入って産卵しよう", "#fca", 1.4); return; }
+  if (colonyFood < 1){ if(!silent) toast("🍖 食料が足りない（虫を倒して確保！）", "#fca", 1.2); return; }
+  if (eggsArr.length >= 10){ if(!silent) toast("育児が追いつかない（卵が多すぎ）", "#fca", 1); return; }
+  colonyFood--; ant.layCD=1.5; laidCount++;
+  eggsArr.push({x:ant.x, y:ant.y+6, t:0, state:"queen", stage2:"egg", carrier:null});
+  const fr=builtRoom("food"); spawnGarbageAt(fr?fr.cx*CELL+13:ant.x, fr?fr.cy*CELL+13:ant.y); // 餌を消費→ゴミ
+  if (!silent){ toast("🥚 産卵！ 働きアリが育児室へ運ぶ", "#ffd", 1.4); sfx("lay"); }
+}
+function updateEggs(dt){
+  for (let i=eggsArr.length-1;i>=0;i--){
+    const e=eggsArr[i];
+    // 運搬者が消えていたら解放（卵が永久に止まるバグ防止）
+    if (e.carrier){
+      if (e.carrier!=="player" && !workers.includes(e.carrier)){ e.carrier=null; e.state="queen"; }
+      else continue;
+    }
+    // 育児室にあると速く育つ。運び手がいなくても最低限その場で育つ（必ず孵化する）
+    const rate = (e.state==="nursery" ? 1 : 0.45) * (starving ? 0.25 : (curSeason().cold>0.5 ? 0.5 : 1));
+    e.t += dt * rate;
+    e.stage2 = e.t<5 ? "egg" : e.t<10 ? "larva" : "pupa";
+    if (e.t>=15 && workers.length+1<150){
+      eggsArr.splice(i,1);
+      const nw=makeWorker(e.x,e.y); workers.push(nw);
+      sfx("hatch"); puff(e.x,e.y,8,"#fff",70,-40);
+      if (nw.variant!=="normal") offerShare(nw.variant);       // レアアリ誕生→Xシェア提案
+      else toast("🐜 羽化！ 新しい働きアリ（[2]で兵隊に）", "#cfc", 1.2);
+    }
+  }
+}
+
+// ---- 砂物理 ----
+let sandAcc=0, sandFlip=false;
+function stepSand(){
+  sandFlip=!sandFlip;
+  const pcx=(ant.x/CELL)|0, pcy=(ant.y/CELL)|0;
+  for (let cy=ROWS-2; cy>=0; cy--){
+    for (let i=0;i<COLS;i++){
+      const cx = sandFlip ? i : COLS-1-i;
+      if (grid[gi(cx,cy)]!==SAND) continue;
+      // 砂は地表より下（巣の空間）へは流れ込めない＝アリ塚は地上に積もり巣は埋まらない
+      const free=(tx,ty)=> cellAt(tx,ty)===AIR && ty < surfaceH[tx] && !(tx===pcx&&ty===pcy);
+      if (free(cx,cy+1)){ grid[gi(cx,cy)]=AIR; grid[gi(cx,cy+1)]=SAND; }
+      else {
+        const d = sandFlip?1:-1;
+        if (free(cx+d,cy+1)&&free(cx+d,cy)){ grid[gi(cx,cy)]=AIR; grid[gi(cx+d,cy+1)]=SAND; }
+        else if (free(cx-d,cy+1)&&free(cx-d,cy)){ grid[gi(cx,cy)]=AIR; grid[gi(cx-d,cy+1)]=SAND; }
+      }
+    }
+  }
+}
+
+// ---- 地面歩行（虫・アブラムシ共通） ----
+function groundY(cx){ let cy=0; while (cellAt(cx,cy)===AIR && cy<ROWS) cy++; return cy; }
+const solidPt = (x,y)=> { const v=cellAt((x/CELL)|0,(y/CELL)|0); return v===DIRT||v===ROCK||v===SAND; };
+function walkGround(e, dt){
+  if (!solidPt(e.x, e.y+11)) { e.y += 90*dt; return; }
+  const dir = Math.sign(e.vx)||1;
+  const aheadX = e.x + dir*13;
+  if (solidPt(aheadX, e.y)){
+    if (!solidPt(aheadX, e.y-CELL) && !solidPt(e.x, e.y-CELL)) e.y -= 95*dt;
+    else e.vx *= -1;
+  }
+  e.x += e.vx*envSlow*dt;
+  if (e.x<CELL){e.x=CELL; e.vx=Math.abs(e.vx);}
+  if (e.x>WORLD_W-CELL){e.x=WORLD_W-CELL; e.vx=-Math.abs(e.vx);}
+}
+
+// ---- 昼の虫（餌・無害寄り） ----
+const bugs = [];
+const foods = [];
+let bugTimer = 4;
+function spawnBug(){
+  const cx = Math.max(2, Math.min(COLS-3, ((ant.x/CELL)|0) + ((Math.random()*60-30)|0)));
+  const cy = groundY(cx);
+  const pool = BIOMES[biomeIdx(cx)].day;
+  const kind = pool[(Math.random()*pool.length)|0];
+  const d = ENEMY[kind];
+  bugs.push({ kind, shape:d.shape, col:d.col, r:d.r,
+              x:cx*CELL+CELL/2, y:(cy-1)*CELL+10, hp:3, vx:(Math.random()<.5?-1:1)*32,
+              cool:0, hit:0, facing:1, trail:[] });
+}
+function updateBugs(dt){
+  bugTimer -= dt;
+  if (!isNight && bugTimer<=0 && bugs.length<5){ spawnBug(); bugTimer = 5+Math.random()*6; }
+  for (let i=bugs.length-1;i>=0;i--){
+    const b=bugs[i];
+    b.hit=Math.max(0,b.hit-dt);
+    walkGround(b, dt);
+    b.facing = b.vx>0?1:-1;
+    const d2=(b.x-ant.x)**2+(b.y-ant.y)**2;
+    if (d2 < (ant.r+13)**2 && stage().speed>0){
+      // 触れたら（静止中でも）プレイヤーが攻撃する
+      if (b.hit<=0){
+        b.hp--; b.hit=0.35; b.vx=Math.sign(b.x-ant.x||1)*90;
+        ant.attackFlash=0.15;
+        dmgText(b.x,b.y-12,"-1","#ffd0d0"); sfx("bite"); shake=Math.max(shake,2);
+        puff(b.x,b.y,5,"#cfe07a",90,-50);
+        if (b.hp<=0){
+          spawnCarcass(b.x, b.y, b.kind||"grub", 1);
+          bugs.splice(i,1);
+          killCount++; gainXp(4); shake=Math.max(shake,4);
+          toast("🐛 撃退！ アリが食料庫へ運ぶ", "#bfb", 0.9);
+          continue;
+        }
+      }
+      // 虫も時々噛んでくる（反撃ダメージ）
+      b.cool-=dt;
+      if (b.cool<=0){ b.cool=0.9; damagePlayer(4); }
+    }
+  }
+}
+function updateFoods(dt){
+  for (let i=foods.length-1;i>=0;i--){
+    const f=foods[i]; f.t+=dt;
+    if (!solidPt(f.x, f.y+8)) f.y += 60*dt;
+    const d2=(f.x-ant.x)**2+(f.y-ant.y)**2;
+    if (d2 < (ant.r+13)**2 && stage().speed>0){
+      const st=stage();
+      if (ant.hp < st.maxHp*0.75){
+        ant.hp=Math.min(st.maxHp, ant.hp+40);
+        toast("🍖 もぐもぐ…体力回復！", "#fe9", 0.8);
+      } else {
+        colonyFood++;
+        toast("🍖 コロニー食料に貯蔵 (+1)", "#fd8", 0.8);
+      }
+      gainXp(2); sfx("eat");
+      foods.splice(i,1);
+    }
+  }
+  if (foods.length>25) foods.splice(0, foods.length-25);
+}
+
+// ---- 死骸（撃退した虫＝ひっくり返る）/ ゴミ ----
+const carcasses = [];   // {x,y,kind,shape,col,r,value,carrier,vy,facing}
+const garbage   = [];   // {x,y,carrier,inMidden,t,vy}
+const coins     = [];   // ゴミが最終的にコインになる {x,y,t,vy}
+let coinCount   = 0, coinsToday = 0;   // 1日の獲得上限30枚
+function spawnCarcass(x,y,kind,value){
+  const d=ENEMY[kind]||{shape:"bug",col:"#7a7a5a",r:11};
+  carcasses.push({x,y,kind,shape:d.shape,col:d.col,r:d.r,value:value||1,carrier:null,vy:0,facing:1});
+  if (carcasses.length>30) carcasses.shift();
+}
+function spawnGarbageAt(x,y){ garbage.push({x,y,carrier:null,inMidden:false,t:0,vy:0}); if(garbage.length>40) garbage.shift(); }
+function updateCarcasses(dt){
+  for (let i=carcasses.length-1;i>=0;i--){
+    const c=carcasses[i];
+    if (c.carrier) continue;                       // 運搬中は worker が位置更新
+    if (!c.stored && !solidPt(c.x,c.y+8)){ c.vy+=400*dt; c.y+=c.vy*dt; } else c.vy=0;
+    // 食料庫に貯蔵された死骸：触れると体力回復。食べた後はゴミになりゴミ部屋へ運ばれる
+    if (c.stored){
+      if (stage().speed>0 && (c.x-ant.x)**2+(c.y-ant.y)**2<(ant.r+14)**2){   // プレイヤー
+        ant.hp=Math.min(stage().maxHp, ant.hp+35); sfx("eat");
+        puff(c.x,c.y,5,"#fd8",60,-30); spawnGarbageAt(c.x,c.y); carcasses.splice(i,1);
+        toast("🍖 食料庫の餌で回復！", "#fe9", 0.8); continue;
+      }
+      for (const w of workers){    // 弱った働きアリも食べて回復（残りはゴミに→ゴミ部屋へ）
+        if (w.hp<w.maxHp*0.6 && (c.x-w.x)**2+(c.y-w.y)**2<16*16){
+          w.hp=Math.min(w.maxHp, w.hp+35); puff(c.x,c.y,4,"#fd8",40,-20);
+          spawnGarbageAt(c.x,c.y); carcasses.splice(i,1); break;
+        }
+      }
+      continue;
+    }
+    // 地表の死骸：プレイヤーが空腹なら緊急で食べる
+    if (stage().speed>0 && ant.hp<stage().maxHp*0.5 && (c.x-ant.x)**2+(c.y-ant.y)**2<(ant.r+12)**2){
+      ant.hp=Math.min(stage().maxHp, ant.hp+30); sfx("eat");
+      spawnGarbageAt(ant.x, ant.y); carcasses.splice(i,1);
+    }
+  }
+}
+function updateGarbage(dt){
+  for (let i=garbage.length-1;i>=0;i--){
+    const g=garbage[i];
+    if (g.carrier) continue;
+    if (!g.inMidden && !solidPt(g.x,g.y+8)){ g.vy+=400*dt; g.y+=g.vy*dt; } else g.vy=0;
+    if (g.inMidden){ g.t+=dt; if (g.t>=DAY_LEN){       // ゴミ捨て場で1日経つとコインになる（演出）
+      coins.push({x:g.x, y:g.y, t:0, vy:0});
+      puff(g.x,g.y,12,"#ffe27a",110,-70); dmgText(g.x,g.y-12,"🪙","#ffd"); sfx("quest"); garbage.splice(i,1);
+    } }
+  }
+}
+function collectCoin(c){
+  const i=coins.indexOf(c); if(i<0) return;
+  // ゲーム内のコイン回収は無制限。IGNISへ反映されるのは1日30枚まで（親側RPCで制御）
+  coins.splice(i,1); coinCount++; coinsToday++; sfx("eat");
+  puff(c.x,c.y,8,"#ffe27a",90,-50); dmgText(c.x,c.y-10,"+1🪙","#ffe27a");
+  toast(`🪙 コイン回収！ 計${coinCount}枚（本日${coinsToday}枚）`, "#fe9", 0.9);
+  if(typeof updateCoinHud==='function') updateCoinHud();
+  if(typeof reportCoinsToIgnis==='function') reportCoinsToIgnis();
+}
+function updateCoins(dt){
+  for (let i=coins.length-1;i>=0;i--){
+    const c=coins[i]; c.t+=dt;
+    if (!solidPt(c.x,c.y+8)){ c.vy+=400*dt; c.y+=c.vy*dt; } else c.vy=0;
+    if (stage().speed>0 && (c.x-ant.x)**2+(c.y-ant.y)**2 < (ant.r+16)**2) collectCoin(c);  // 接近で回収
+  }
+}
+
+// ---- 夜の侵入者 ----
+const invaders = [];
+// 外敵図鑑（バイオーム別に出現）。shape=描画形, col=色, r=大きさ
+const ENEMY = {
+  beetle:     {hp:5, spd:90, dmg:7, r:13, shape:"beetle", col:"#2a3550"}, // カブトムシ
+  stag:       {hp:7, spd:80, dmg:9, r:13, shape:"stag",   col:"#3a2614"}, // クワガタ
+  centipede:  {hp:9, spd:55, dmg:9, r:10, shape:"centi",  col:"#8a3a24"}, // ムカデ
+  mantis:     {hp:7, spd:88, dmg:9, r:14, shape:"mantis", col:"#5fae46"}, // カマキリ
+  locust:     {hp:4, spd:125,dmg:6, r:12, shape:"locust", col:"#9a9a40"}, // バッタ
+  caterpillar:{hp:6, spd:42, dmg:5, r:11, shape:"cater",  col:"#9bc24a"}, // イモムシ
+  roach:      {hp:4, spd:140,dmg:6, r:11, shape:"roach",  col:"#5a3818"}, // ゴキブリ
+  spider:     {hp:5, spd:105,dmg:8, r:11, shape:"spider", col:"#2e2630"}, // クモ
+  grub:       {hp:3, spd:35, dmg:4, r:10, shape:"cater",  col:"#d8cb9a"}, // 幼虫(餌)
+};
+function makeInvader(kind, x, y, vx){
+  const d=ENEMY[kind], pop=workers.length+1;
+  // 日数＋コロニーの規模に応じて強くなる（アリが増えるほど手強い）
+  const hp=Math.round(d.hp + dayNum*0.6 + pop*0.35);
+  const dmg=Math.round(d.dmg + pop*0.12);
+  return { kind, shape:d.shape, col:d.col, r:d.r, x, y, hp, maxHp:hp, spd:d.spd, dmg,
+           atkT:Math.random()*0.5, hit:0, path:null, pi:0, ret:0, facing:1, trail:[], flee:false, fade:1, vx };
+}
+function spawnWave(){
+  const n = Math.min(9, 1+dayNum);
+  // たいていは巣のある「畑」だが、たまに森や都市から群れが流れ込む
+  let theme = biomeIdx(colonyCx);
+  if (dayNum>=2 && Math.random()<0.4) theme = Math.random()<0.5 ? 0 : 2;
+  const pool = BIOMES[theme].night;
+  for (let i=0;i<n;i++){
+    const side=Math.random()<0.5?-1:1;
+    const cx=Math.max(2,Math.min(COLS-3, colonyCx+side*(14+((Math.random()*16)|0))));
+    const cy=groundY(cx);
+    let kind=pool[(Math.random()*pool.length)|0];
+    if (dayNum<2 && (kind==="centipede"||kind==="mantis"||kind==="stag")) kind=pool[0]; // 序盤は弱め
+    invaders.push(makeInvader(kind, cx*CELL+13, (cy-1)*CELL+10, (side<0?1:-1)*40));
+  }
+  banner(`🌙 第${dayNum}夜 — ${BIOMES[theme].name}の外敵 ${n}匹！卵を守れ！`, "#fbb");
+  sfx("night"); shake=Math.max(shake,4);
+  if (dayNum%5===0) spawnAnteater();
+}
+function hitEnemy(e, dmg){
+  e.hp-=dmg; e.hit=0.3;
+  dmgText(e.x, e.y-12, "-"+dmg, "#ffd0d0");
+  sfx("bite"); shake=Math.max(shake,2.5);
+  puff(e.x,e.y,4,"#d8e07a",80,-40);
+  if (e.hp<=0) killInvader(e);
+}
+function killInvader(e){
+  const i=invaders.indexOf(e); if (i<0) return;
+  invaders.splice(i,1);
+  const big = e.shape==="centi"||e.shape==="mantis"||e.shape==="stag";
+  const drops = big?3 : e.r>=12?2 : 1;
+  spawnCarcass(e.x, e.y, e.kind, drops);     // ひっくり返った死骸→アリが食料庫へ運ぶ
+  killCount++; gainXp(big?8:4);
+  shake=Math.max(shake,4);
+  toast("💥 撃退！", "#bfb", 0.6);
+}
+function damagePlayer(d){
+  if (stage().speed===0 && ant.stage===0) d*=1.5; // 卵は脆い
+  ant.hp-=d; shake=Math.max(shake,5); sfx("hurt");
+  dmgText(ant.x, ant.y-16, "-"+(d|0), "#ff8080");
+}
+function updateInvaders(dt){
+  for (let i=invaders.length-1;i>=0;i--){
+    const e=invaders[i];
+    e.hit=Math.max(0,e.hit-dt); e.atkT=Math.max(0,e.atkT-dt);
+    if (e.flee){
+      e.fade-=dt/1.5;
+      if (e.fade<=0){ invaders.splice(i,1); continue; }
+      e.y-=20*dt; continue;
+    }
+    // ターゲット選択（卵優先→アリ）
+    e.ret-=dt;
+    if (e.ret<=0){
+      e.ret=1.6;
+      let best=null, bd=Infinity;
+      for (const g of eggsArr){ const d=(g.x-e.x)**2+(g.y-e.y)**2; if (d<bd){bd=d; best=g;} }
+      if (!best){
+        const tgts=[ant, ...workers];
+        for (const t of tgts){ const d=(t.x-e.x)**2+(t.y-e.y)**2; if (d<bd){bd=d; best=t;} }
+      }
+      if (best){
+        const tcx=(best.x/CELL)|0, tcy=(best.y/CELL)|0;
+        e.path = bfsPath((e.x/CELL)|0, (e.y/CELL)|0, (x,y)=> Math.abs(x-tcx)<=1 && Math.abs(y-tcy)<=1);
+        e.pi=0;
+      }
+    }
+    if (e.path) followPath(e, dt, e.spd);
+    else { // 巣に入れない→地表をうろついて入口を探す
+      e.vx = Math.abs(e.vx)<5 ? 40*Math.sign(colonyCx*CELL-e.x||1) : e.vx;
+      walkGround(e, dt);
+      e.facing = e.vx>0?1:-1;
+    }
+    // ムカデの体は頭が通った道（=トンネル内）を記録して追従させる
+    if (e.shape==="centi"){
+      const last=e.trail[0];
+      if (!last || (e.x-last[0])**2+(e.y-last[1])**2 > 16){ e.trail.unshift([e.x,e.y]); if (e.trail.length>80) e.trail.pop(); }
+    }
+    // 卵を食べる
+    for (let g=eggsArr.length-1;g>=0;g--){
+      const eg=eggsArr[g];
+      if ((eg.x-e.x)**2+(eg.y-e.y)**2 < 16*16){
+        eggsArr.splice(g,1);
+        e.hp=Math.min(e.maxHp, e.hp+2);
+        toast("😱 卵が食べられた！", "#f88", 1.2);
+        sfx("eggeat"); shake=Math.max(shake,6);
+        break;
+      }
+    }
+    // アリへの攻撃
+    if (e.atkT<=0){
+      if ((e.x-ant.x)**2+(e.y-ant.y)**2 < (ant.r+13)**2){ damagePlayer(e.dmg); e.atkT=0.8; }
+      else {
+        for (const w of workers){
+          if ((e.x-w.x)**2+(e.y-w.y)**2 < 20*20){
+            w.hp-=e.dmg; dmgText(w.x,w.y-12,"-"+e.dmg,"#f99"); e.atkT=0.8; break;
+          }
+        }
+      }
+    }
+    // 触れたら（静止中でも）プレイヤーが攻撃する
+    if (stage().speed>0 && e.hit<=0 && (e.x-ant.x)**2+(e.y-ant.y)**2 < (ant.r+13)**2){
+      ant.attackFlash=0.15;
+      hitEnemy(e, 1);
+    }
+  }
+}
+
+// ---- アリクイ（ボス） ----
+let anteater = null;
+function spawnAnteater(){
+  const dir=Math.random()<0.5?-1:1;
+  const cx=Math.max(4,Math.min(COLS-5, colonyCx+dir*9));
+  const cy=groundY(cx);
+  anteater={x:cx*CELL, y:cy*CELL-22, hp:18+dayNum, maxHp:18+dayNum, dir:-dir,
+            tongue:[], tt:0.15, ttd:1, rec:0, atkT:0, hit:0, flee:false};
+  banner("🐜⚠ アリクイ襲来！！ 舌を噛んで撃退しろ！", "#f77");
+  sfx("roar"); shake=12;
+}
+function entranceCell(){
+  for (let d=0; d<14; d++){
+    for (const s of [1,-1]){
+      const cx=colonyCx+d*s;
+      if (cx<1||cx>=COLS-1) continue;
+      if (cellAt(cx,surfaceH[cx])===AIR) return {cx, cy:surfaceH[cx]};
+    }
+  }
+  return null;
+}
+function rebuildTongue(){
+  const a=anteater;
+  const pts=[[a.x+a.dir*34, a.y-2]];
+  const e=entranceCell();
+  if (!e){ a.tongue=pts; return; }
+  pts.push([e.cx*CELL+13, (e.cy-1)*CELL+13]);
+  let cur={cx:e.cx, cy:e.cy};
+  pts.push([cur.cx*CELL+13, cur.cy*CELL+13]);
+  const seen=new Set([cur.cx+","+cur.cy]);
+  for (let i=0;i<22;i++){
+    const opts=[[0,1],[1,0],[-1,0],[0,-1]]
+      .map(([dx,dy])=>({cx:cur.cx+dx, cy:cur.cy+dy}))
+      .filter(c=>inBounds(c.cx,c.cy)&&cellAt(c.cx,c.cy)===AIR&&c.cy>=surfaceH[c.cx]&&!seen.has(c.cx+","+c.cy));
+    if (!opts.length) break;
+    opts.sort((p,q)=> q.cy-p.cy || Math.random()-0.5);
+    cur=opts[0]; seen.add(cur.cx+","+cur.cy);
+    pts.push([cur.cx*CELL+13, cur.cy*CELL+13]);
+  }
+  a.tongue=pts;
+}
+function tonguePoint(t){
+  const p=anteater.tongue;
+  if (!p || p.length<2) return p&&p[0]?{x:p[0][0],y:p[0][1]}:null;
+  const seg=t*(p.length-1);
+  const i=Math.min(p.length-2, seg|0), f=seg-i;
+  return {x:p[i][0]+(p[i+1][0]-p[i][0])*f, y:p[i][1]+(p[i+1][1]-p[i][1])*f};
+}
+function anteaterTip(){ return anteater ? tonguePoint(anteater.tt) : null; }
+function hitAnteater(d, x, y){
+  const a=anteater; if (!a) return;
+  a.hp-=d; a.hit=0.3;
+  dmgText(x, y-10, "-"+d, "#ffd0d0");
+  sfx("bite"); shake=Math.max(shake,3.5);
+  puff(x,y,5,"#ffb0c0",90,-40);
+  if (a.hp<=0){
+    for (let k=0;k<5;k++) foods.push({x:a.x+(k-2)*12, y:a.y+10, t:0});
+    gainXp(15); killCount++;
+    banner("🎉 アリクイを撃退した！！ 🍖×5", "#ffd");
+    shake=12; sfx("evolve");
+    anteater=null;
+  }
+}
+function updateAnteater(dt){
+  const a=anteater; if (!a) return;
+  a.hit=Math.max(0,a.hit-dt); a.atkT=Math.max(0,a.atkT-dt);
+  // 接地（足元の地形が崩れたら落ちる）
+  if (!solidPt(a.x, a.y+24) && !solidPt(a.x-20, a.y+24) && !solidPt(a.x+20, a.y+24)) a.y += 80*dt;
+  if (a.flee){
+    a.x += -a.dir*100*dt;
+    if (a.x<CELL || a.x>WORLD_W-CELL) anteater=null;
+    return;
+  }
+  a.rec-=dt;
+  if (a.rec<=0){ rebuildTongue(); a.rec=1.5; }
+  a.tt += a.ttd*dt*0.45;
+  if (a.tt>1){ a.tt=1; a.ttd=-1; }
+  if (a.tt<0.15){ a.tt=0.15; a.ttd=1; }
+  const tip=tonguePoint(a.tt);
+  if (!tip) return;
+  // 吸引
+  const pull=(o)=>{
+    const dx=tip.x-o.x, dy=tip.y-o.y, d=Math.hypot(dx,dy);
+    if (d<85 && d>2){ o.x+=dx/d*55*dt; o.y+=dy/d*55*dt; }
+  };
+  if (stage().speed>0) pull(ant);
+  for (const w of workers) pull(w);
+  for (const f of foods) pull(f);
+  // 舌先ダメージ
+  if (a.atkT<=0){
+    if (stage().speed>0 && (tip.x-ant.x)**2+(tip.y-ant.y)**2 < 16*16){ damagePlayer(8); a.atkT=0.7; }
+    else {
+      for (const w of workers){
+        if ((tip.x-w.x)**2+(tip.y-w.y)**2 < 14*14){ w.hp-=8; dmgText(w.x,w.y-10,"-8","#f99"); a.atkT=0.7; break; }
+      }
+    }
+  }
+  // プレイヤー攻撃（舌のどこでも噛める）
+  if (stage().speed>0 && a.hit<=0 && Math.abs(ant.vx)+Math.abs(ant.vy)>10){
+    for (let t=0; t<=1.0001; t+=0.08){
+      const p=tonguePoint(t);
+      if (p && (p.x-ant.x)**2+(p.y-ant.y)**2 < 15*15){ ant.attackFlash=0.15; hitAnteater(1, p.x, p.y); break; }
+    }
+  }
+}
+
+// ---- アブラムシ牧場 ----
+const aphids = [];
+let aphidT = 18;
+function updateAphids(dt){
+  aphidT-=dt;
+  if (aphidT<=0 && aphids.length<4){
+    const cx=Math.max(3,Math.min(COLS-4, colonyCx+(Math.random()<0.5?-1:1)*(14+((Math.random()*12)|0))));
+    const cy=groundY(cx);
+    aphids.push({x:cx*CELL, y:(cy-1)*CELL+12, vx:10, state:"wild", t:0, prod:16});
+    aphidT=28+Math.random()*15;
+  }
+  for (const a of aphids){
+    a.t+=dt;
+    // アリが積み上げた土に埋もれたら、その上に乗る（埋没防止）
+    let safety=0; while (solidPt(a.x, a.y) && safety++<40) a.y -= 4;
+    if (a.state==="wild"){
+      if (Math.random()<0.01) a.vx*=-1;
+      a.vx=Math.sign(a.vx||1)*10;
+      walkGround(a, dt);
+      if (stage().speed>0 && (a.x-ant.x)**2+(a.y-ant.y)**2 < 55*55){
+        a.state="follow";
+        toast("🐞 アブラムシがついてきた！地上づたいに巣の近くへ", "#cfc", 1.5);
+      }
+    } else if (a.state==="follow"){
+      if (isAboveSurface()){
+        const dx=ant.x-a.x, dy=ant.y-a.y, d=Math.hypot(dx,dy);
+        if (d>30){ a.x+=dx/d*72*dt; a.y+=dy/d*72*dt; }
+        const acx=Math.max(0,Math.min(COLS-1,(a.x/CELL)|0));
+        if (Math.abs(acx-colonyCx)<=7 && ((a.y/CELL)|0)<surfaceH[acx] && d<60){
+          a.state="ranched"; a.prod=14;
+          toast("🐞 アブラムシを飼育開始！甘露(🍖)を出してくれる", "#cfa", 1.6);
+          sfx("quest");
+        }
+      }
+      if (!solidPt(a.x, a.y+8)) a.y+=40*dt;
+    } else { // ranched
+      if (!solidPt(a.x, a.y+8)) a.y+=40*dt;
+      a.prod-=dt;
+      if (a.prod<=0 && foods.length<25){
+        a.prod=16;
+        foods.push({x:a.x+(Math.random()*20-10), y:a.y-4, t:0});
+        puff(a.x, a.y, 3, "#ffe9a0", 40, -30);
+      }
+    }
+  }
+}
+
+// ---- クエスト ----
+const questDefs=[
+  {t:"巣を15マス掘り広げる",        c:()=>nestCells>=15,        p:()=>[Math.min(nestCells,15),15]},
+  {t:"砂を15個積んでアリ塚を作る",   c:()=>droppedCount>=15,     p:()=>[Math.min(droppedCount,15),15]},
+  {t:"虫を3匹撃退する",            c:()=>killCount>=3,         p:()=>[Math.min(killCount,3),3]},
+  {t:"女王アリに進化する",          c:()=>stage().key==="queen",p:()=>[stage().key==="queen"?1:0,1]},
+  {t:"卵を3個産む",               c:()=>laidCount>=3,         p:()=>[Math.min(laidCount,3),3]},
+  {t:"コロニーを8匹に増やす",       c:()=>workers.length+1>=8,  p:()=>[Math.min(workers.length+1,8),8]},
+  {t:"兵隊アリを2匹任命する",       c:()=>workers.filter(w=>w.job==="soldier").length>=2, p:()=>[Math.min(workers.filter(w=>w.job==="soldier").length,2),2]},
+  {t:"アブラムシを飼育する",        c:()=>aphids.some(a=>a.state==="ranched"), p:()=>[aphids.some(a=>a.state==="ranched")?1:0,1]},
+];
+let questIdx=0, nextSurvN=2;
+function currentQuest(){
+  if (questIdx<questDefs.length) return questDefs[questIdx];
+  return {t:`夜を通算${nextSurvN}回生き延びる`, c:()=>survivedNights>=nextSurvN, p:()=>[Math.min(survivedNights,nextSurvN),nextSurvN], surv:true};
+}
+function questText(){ const q=currentQuest(), [c,t]=q.p(); return `🎯 ${q.t}  ${c}/${t}　報酬→🐞`; }
+function gainAphidReward(){      // クエスト報酬：飼育済みアブラムシ1匹（甘露で食料）
+  const cx=Math.max(3,Math.min(COLS-4, colonyCx+((Math.random()*8-4)|0))), cy=groundY(cx);
+  aphids.push({x:cx*CELL+13, y:(cy-1)*CELL+12, state:"ranched", prod:8, vx:10, t:0});
+}
+function gainWorkerReward(){     // クエスト報酬：働きアリ1匹（巣の入口付近に誕生）
+  if (workers.length+1>=150){ gainAphidReward(); return; }
+  const cx=colonyCx, cy=Math.max(1, surfaceH[cx]-1);
+  const nw=makeWorker(cx*CELL+13, cy*CELL+13); workers.push(nw);
+  puff(nw.x,nw.y,8,"#fff",70,-40);
+  if (nw.variant!=="normal") offerShare(nw.variant);
+}
+function updateQuests(){
+  const q=currentQuest();
+  if (q && q.c()){
+    if (!q.surv && questIdx<3){    // 最初の3つは働きアリ1匹
+      gainWorkerReward();
+      banner("🎉 クエスト達成！ 🐜働きアリ1匹を獲得！", "#ffe", 2.2);
+    } else {
+      gainAphidReward();
+      banner("🎉 クエスト達成！ 🐞アブラムシ1匹を獲得！", "#ffe", 2.2);
+    }
+    sfx("quest");
+    if (q.surv) nextSurvN+=2; else questIdx++;
+  }
+}
+
+// ---- Particles / ダメージ数字 ----
+const parts=[];
+function puff(x,y,n,color,spread,up){
+  for (let k=0;k<n;k++){
+    if (parts.length>300) parts.shift();
+    parts.push({x,y, vx:(Math.random()-0.5)*(spread||80), vy:(up||-40)*Math.random(),
+                t:0, life:0.4+Math.random()*0.4, color, size:2+Math.random()*2.5});
+  }
+}
+function updateParts(dt){
+  for (let i=parts.length-1;i>=0;i--){
+    const p=parts[i]; p.t+=dt;
+    if (p.t>=p.life){ parts.splice(i,1); continue; }
+    p.vy+=170*dt; p.x+=p.vx*dt; p.y+=p.vy*dt;
+  }
+}
+const dmgs=[];
+function dmgText(x,y,txt,color){
+  dmgs.push({x,y,txt,color,t:0});
+  if (dmgs.length>40) dmgs.shift();
+}
+function updateDmgs(dt){
+  for (let i=dmgs.length-1;i>=0;i--){ dmgs[i].t+=dt; if (dmgs[i].t>0.8) dmgs.splice(i,1); }
+}
+
+// ---- Input ----
+const keys = {};
+addEventListener("keydown", e=>{
+  ensureAudio();
+  if (!window.__bgmInit){ window.__bgmInit=true; bgmOn=true; startBGM(); }   // 初回操作でBGM開始
+  if (gameOver){ if (e.key.toLowerCase()==="r") location.reload(); return; }
+  if ([" ","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
+  keys[e.key.toLowerCase()] = true;
+  if (e.key===" ") doDigOrDrop();
+  if (e.key.toLowerCase()==="e") layEgg();
+  if (e.key.toLowerCase()==="f") playerGrabDrop();
+  if (e.key.toLowerCase()==="m") toggleBGM();
+  if (e.key==="1") reassignJob("dig");
+  if (e.key==="2") reassignJob("soldier");
+});
+addEventListener("keyup", e=>{ keys[e.key.toLowerCase()] = false; });
+document.getElementById("over").addEventListener("click", ()=>location.reload());
+
+// ---- 画面操作ボタン（タッチ/クリック）----
+function bgmInit(){ ensureAudio(); if(!window.__bgmInit){ window.__bgmInit=true; bgmOn=true; startBGM(); } }
+document.querySelectorAll("#dpad .btn").forEach(b=>{
+  const k=b.dataset.k;
+  const dn=e=>{ e.preventDefault(); bgmInit(); keys[k]=true; b.classList.add("on"); };
+  const up=e=>{ e.preventDefault(); keys[k]=false; b.classList.remove("on"); };
+  b.addEventListener("pointerdown",dn); b.addEventListener("pointerup",up);
+  b.addEventListener("pointerleave",up); b.addEventListener("pointercancel",up);
+});
+const ACT={ dig:()=>doDigOrDrop(), grab:()=>playerGrabDrop(), lay:()=>layEgg(), gather:()=>gatherCmd(),
+            digrole:()=>reassignJob("dig"), soldier:()=>reassignJob("soldier"), bgm:()=>toggleBGM() };
+document.querySelectorAll("#acts .btn").forEach(b=>{
+  b.addEventListener("pointerdown",e=>{ e.preventDefault(); bgmInit(); if(gameOver){location.reload();return;} (ACT[b.dataset.act]||(()=>{}))(); });
+});
+// 食料調達コマンド：働きアリに死骸を食料庫へ・ゴミをゴミ部屋へ運ばせる
+let gatherT=0;
+function gatherCmd(){
+  gatherT=20;                       // 20秒間は採掘/探索より運搬を優先
+  for (const w of workers){ if (w.job!=="soldier" && w.load===0 && !w.haul){ w.path=null; assignHaul(w); } }
+  toast("🍖 食料調達！死骸を食料庫へ・ゴミをゴミ部屋へ運ばせる", "#fd8", 1.4); sfx("quest");
+}
+// レアアリ誕生→Xシェア
+function offerShare(variant){
+  const info = variant==="red"
+    ? {emo:"🔴", name:"赤アリ", desc:"攻撃力と移動速度が2倍の超レア(1/20)"}
+    : {emo:"⚪", name:"白アリ", desc:"土を3つ運べて速度3倍の激レア(1/60)"};
+  toast(`${info.emo} ${info.name}が誕生！`, "#ffd", 1.6); sfx("evolve");
+  const box=document.getElementById("shareBox");
+  document.getElementById("shareMsg").textContent = `${info.emo} ${info.name}が生まれた！ ${info.desc}`;
+  box.classList.add("on");
+  clearTimeout(offerShare._t); offerShare._t=setTimeout(()=>box.classList.remove("on"), 12000);
+  offerShare.cur = `アリの巣ゲームで${info.emo}${info.name}が誕生！${info.desc} #アリの巣ゲーム #AntNest`;
+}
+document.getElementById("shareBtn").addEventListener("click", ()=>{
+  const txt=encodeURIComponent(offerShare.cur||"アリの巣ゲームで遊んでるよ！ #アリの巣ゲーム");
+  window.open("https://twitter.com/intent/tweet?text="+txt, "_blank");
+});
+document.getElementById("shareClose").addEventListener("click", ()=>document.getElementById("shareBox").classList.remove("on"));
+// コインをタッチ/クリックで回収（プレイ領域）
+canvas.addEventListener("pointerdown", e=>{
+  bgmInit();
+  if (gameOver) return;
+  const wx=cam.x+e.clientX, wy=cam.y+e.clientY;
+  for (const c of coins){ if ((c.x-wx)**2+(c.y-wy)**2 < 24*24){ collectCoin(c); break; } }
+});
+
+// ---- Player actions ----
+function isAboveSurface(){
+  const cx = Math.max(0, Math.min(COLS-1,(ant.x/CELL)|0));
+  return ((ant.y/CELL)|0) < surfaceH[cx];
+}
+function cellClearOfAnt(cx,cy){
+  const rx=Math.max(cx*CELL, Math.min(ant.x, cx*CELL+CELL));
+  const ry=Math.max(cy*CELL, Math.min(ant.y, cy*CELL+CELL));
+  return (ant.x-rx)**2+(ant.y-ry)**2 > (ant.r+2)**2;
+}
+function doDigOrDrop(){
+  const st=stage();
+  if (st.speed===0) return;
+  if (ant.carrying){
+    // 地上＝アリ塚づくり / 地中＝その場に埋め戻し（巣の再構築）。どこでも置ける
+    const cx=(ant.x/CELL)|0, cy=(ant.y/CELL)|0, f=ant.facing;
+    const tries=[[cx+f,cy],[cx-f,cy],[cx,cy+1],[cx+f,cy+1],[cx,cy-1]];
+    for (const [tx,ty] of tries){
+      if (inBounds(tx,ty)&&cellAt(tx,ty)===AIR&&cellClearOfAnt(tx,ty)){
+        setCell(tx,ty,SAND);
+        ant.carrying=false; droppedCount++;
+        gainXp(1); sfx("drop");
+        puff(tx*CELL+13, ty*CELL+13, 4, "#cfa55e", 60, -20);
+        if (ty>=surfaceH[tx]) toast("🧱 土を埋め戻した（巣を再構築）", "#dca", 0.7);  // 地中
+        else if (droppedCount===10) toast("⛰ アリ塚ができはじめた！", "#fea", 1.6);
+        else if (droppedCount===30) toast("⛰ 立派なアリ塚になってきた！", "#fea", 1.6);
+        else if (droppedCount===60) toast("⛰ 巨大アリ塚！すごい！", "#fea", 1.6);
+        return;
+      }
+    }
+    toast("ここには置けない", "#caa", 0.6);
+    return;
+  }
+  if (ant.digCD>0) return;
+  const tx=ant.x+ant.dir.x*ant.r*1.5, ty=ant.y+ant.dir.y*ant.r*1.5;
+  const cx=(tx/CELL)|0, cy=(ty/CELL)|0;
+  const v=cellAt(cx,cy);
+  if (v===DIRT||v===SAND){
+    setCell(cx,cy,AIR);
+    ant.carrying=true; ant.digCD=0.18;
+    sfx("dig");
+    puff(cx*CELL+13, cy*CELL+13, 6, v===SAND?"#cfa55e":"#8a6035", 90, -40);
+  } else if (v===ROCK){
+    toast("⛰ 硬くて掘れない", "#caa", 0.5);
+  }
+}
+
+// ---- Movement / collision ----
+const solidCell=(cx,cy)=>{ const v=cellAt(cx,cy); return v===DIRT||v===ROCK||v===SAND; };
+function circleHitsSolid(px,py,r){
+  const minX=((px-r)/CELL)|0, maxX=((px+r)/CELL)|0;
+  const minY=((py-r)/CELL)|0, maxY=((py+r)/CELL)|0;
+  for (let cy=minY;cy<=maxY;cy++) for (let cx=minX;cx<=maxX;cx++)
+    if (solidCell(cx,cy)){
+      const rx=Math.max(cx*CELL,Math.min(px,cx*CELL+CELL));
+      const ry=Math.max(cy*CELL,Math.min(py,cy*CELL+CELL));
+      if ((px-rx)**2+(py-ry)**2 < r*r) return true;
+    }
+  return false;
+}
+function moveAnt(dt){
+  const st=stage();
+  let ax=0, ay=0;
+  if (keys["a"]||keys["arrowleft"]) ax--;
+  if (keys["d"]||keys["arrowright"]) ax++;
+  if (keys["w"]||keys["arrowup"]) ay--;
+  if (keys["s"]||keys["arrowdown"]) ay++;
+  if (ax||ay){
+    const L=Math.hypot(ax,ay);
+    ant.dir={x:ax/L,y:ay/L};
+    if (ax) ant.facing=ax>0?1:-1;
+    ant.phase += dt*10;
+  }
+  ant.vx = ax*st.speed;
+  const cxi=Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0));
+  const underground = ant.y > surfaceH[cxi]*CELL + 4;   // 地表より下＝巣の空間
+  if (underground){
+    ant.vy = ay*st.speed;                       // 巣の中（地中の空洞）は自由に移動できる
+  } else {
+    const grounded = solidPt(ant.x, ant.y+ant.r+3);
+    const nearWall = solidPt(ant.x-ant.r-3, ant.y) || solidPt(ant.x+ant.r+3, ant.y);
+    if (grounded || nearWall){
+      ant.vy = ay*st.speed;                     // 地面・壁ぎわは自由
+    } else {
+      ant.vy += 1300*dt;                        // 空中：重力で落下（飛べない）
+      if (ant.vy>460) ant.vy=460;
+      if (ay<0){                                // 上昇入力は地表から2マスまで
+        let fr=(ant.y/CELL)|0; while (fr<ROWS && cellAt(cxi,fr)===AIR) fr++;
+        if (ant.y > fr*CELL - 2*CELL) ant.vy = ay*st.speed;
+      }
+    }
+  }
+  const stuck = circleHitsSolid(ant.x,ant.y,ant.r);
+  const nx=ant.x+ant.vx*dt;
+  if (stuck || !circleHitsSolid(nx,ant.y,ant.r)) ant.x=nx;
+  const ny=ant.y+ant.vy*dt;
+  if (stuck || !circleHitsSolid(ant.x,ny,ant.r)) ant.y=ny;
+  else if (ant.vy>0) ant.vy=0;                  // 着地で落下リセット
+  ant.x=Math.max(ant.r,Math.min(WORLD_W-ant.r,ant.x));
+  ant.y=Math.max(ant.r,Math.min(WORLD_H-ant.r,ant.y));
+}
+
+// ---- Day/Night ----
+const DAY_LEN = 100;
+const NIGHT_ON = 0.53, NIGHT_OFF = 0.96;
+let dayT = 0.08;
+let daylight = 1;
+const stars=[];
+for (let i=0;i<90;i++) stars.push({x:Math.random(), y:Math.random()*0.55, s:Math.random()*1.6+0.4});
+const clouds=[];
+for (let i=0;i<5;i++) clouds.push({x:Math.random()*2000, y:30+Math.random()*120, w:90+Math.random()*120, spd:6+Math.random()*8});
+
+function nightStart(){ spawnWave(); }
+function dawnFn(){
+  survivedNights++;
+  dayNum++;
+  coinsToday=0;                        // コインの日次上限リセット
+  for (const e of invaders) e.flee=true;
+  if (anteater) anteater.flee=true;
+  banner(`☀ ${dayNum}日目の朝 — 夜を生き延びた！`, "#ffe");
+  sfx("dawn");
+}
+
+// ---- Toast / banner ----
+const toastEl=document.getElementById("toast");
+let toastT=0;
+function toast(msg,color,dur){
+  toastEl.textContent=msg; toastEl.style.color=color||"#fff";
+  toastEl.style.opacity=1; toastT=dur||1.2;
+}
+const banner=(msg,color)=>toast(msg,color,2.4);
+
+// ---- Minimap ----
+const mm=document.createElement("canvas"); mm.width=COLS; mm.height=ROWS;
+const mmCtx=mm.getContext("2d");
+const mmImg=mmCtx.createImageData(COLS,ROWS);
+let mmTimer=0;
+function updateMinimap(){
+  const d=mmImg.data;
+  let nc=0;
+  for (let cy=0;cy<ROWS;cy++) for (let cx=0;cx<COLS;cx++){
+    const v=grid[gi(cx,cy)], o=(cy*COLS+cx)*4;
+    let r,g,b;
+    if (v===DIRT){ r=138;g=90;b=50; }
+    else if (v===ROCK){ r=85;g=85;b=85; }
+    else if (v===SAND){ r=207;g=165;b=94; }
+    else if (cy>=surfaceH[cx]){ r=26;g=14;b=5; nc++; }
+    else { r=120;g=185;b=230; }
+    d[o]=r; d[o+1]=g; d[o+2]=b; d[o+3]=255;
+  }
+  nestCells=nc;
+  mmCtx.putImageData(mmImg,0,0);
+}
+
+// ---- Main loop ----
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.033,(now-last)/1000); last=now;
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+function update(dt){
+  if (gameOver) return;
+  const st=stage();
+  ant.r=st.r;
+  ant.digCD=Math.max(0,ant.digCD-dt);
+  ant.layCD=Math.max(0,ant.layCD-dt);
+  ant.attackFlash=Math.max(0,ant.attackFlash-dt);
+  shake=Math.max(0, shake-dt*14);
+  saveFlash=Math.max(0, saveFlash-dt);
+  gatherT=Math.max(0, gatherT-dt);
+
+  dayT=(dayT+dt/DAY_LEN)%1;
+  daylight=Math.max(0,Math.min(1, 0.5+Math.sin(dayT*TAU)*1.2));
+  const nowNight = dayT>=NIGHT_ON && dayT<NIGHT_OFF;
+  if (nowNight && !isNight){ isNight=true; nightStart(); }
+  if (!nowNight && isNight){ isNight=false; dawnFn(); }
+
+  // --- 季節・天候 ---
+  weatherT-=dt;
+  if (weatherT<=0){
+    const s=curSeason(), r=Math.random();
+    weather = seasonIdx()===3 ? (r<0.6?"snow":"clear") : (r<s.rain?"rain":"clear");
+    weatherT=15+Math.random()*22; drops.length=0;
+    if (weather==="rain") banner("🌧 雨が降ってきた","#9cf",1.6);
+    else if (weather==="snow") banner("❄ 雪が降ってきた","#cef",1.6);
+  }
+  envSlow = (1 - curSeason().cold*0.45) * (weather==="rain"?0.85:1);   // 冬・雨でNPCと敵が鈍る
+  if (weather==="rain"){ erodeT-=dt; if (erodeT<=0){ erodeT=0.25;     // 雨はアリ塚を少しずつ浸食
+    const cx=Math.max(2,Math.min(COLS-3, colonyCx+((Math.random()*60-30)|0)));
+    for (let cy=surfaceH[cx]-1; cy>=surfaceH[cx]-8; cy--){ if (grid[gi(cx,cy)]===SAND){ grid[gi(cx,cy)]=AIR; break; } }
+  }}
+  // --- フェロモン減衰 ---
+  pherDecayT-=dt; if (pherDecayT<=0){ pherDecayT=0.5; for (let i=0;i<pher.length;i++){ if(pher[i]>0.02) pher[i]*=0.9; else pher[i]=0; } }
+  // --- 食料消費（コロニー維持）と飢餓 ---（消費は控えめ＝餌をたまに運べば維持できる）
+  const pop=workers.length+1;
+  colonyFood = Math.max(0, colonyFood - dt*(0.01 + pop*0.0025));
+  starving = colonyFood < 0.02;
+  if (starving){ for (const w of workers) w.hp -= dt*0.4; ant.hp -= dt*0.7; }  // 飢餓は緩やかに衰弱（即死しない）
+  // --- 女王は女王の間にいる間、自動で産卵（食料に余裕がある時だけ＝産み過ぎで餓死させない）---
+  if (stage().key==="queen" && roomTypeAt(ant.x,ant.y)==="queen" && colonyFood>=4){
+    ant.autoLayT=(ant.autoLayT||0)-dt; if (ant.autoLayT<=0){ ant.autoLayT=7; layEgg(true); }
+  }
+
+  if (st.speed===0){
+    ant.hatchT+=dt;
+    if (ant.hatchT>=st.hatch){
+      ant.hatchT=0; ant.stage++;
+      const ns=stage();
+      ant.hp=ns.maxHp;
+      if (ns.speed>0){ toast("🐜 孵化！ 働きアリ誕生", "#cfc"); sfx("hatch"); }
+      else toast(ns.name+" になった…", "#eed", 1);
+    }
+  } else {
+    moveAnt(dt);
+    ant.hp -= (st.key==="queen"?0.7:1.0)*dt;
+  }
+  // 咥えた死骸は追従＋食料庫で自動納品
+  if (ant.cargo){
+    ant.cargo.x=ant.x + ant.facing*(ant.r+4); ant.cargo.y=ant.y-2;
+    if (roomTypeAt(ant.x,ant.y)==="food"){
+      colonyFood += ant.cargo.value||1; ant.cargo=null;
+      toast("🍖 食料庫に納品！", "#fd8", 1); puff(ant.x,ant.y,5,"#fd8",60,-30); sfx("eat");
+    }
+  }
+
+  sandAcc+=dt; while (sandAcc>0.055){ stepSand(); sandAcc-=0.055; }
+  // 入口の喉を常に開けておく（アリが掻き出す保険）＋完成後は入口を再構築で整える
+  for (let dx=-1;dx<=1;dx++){ const ecx=colonyCx+dx; for (let ey=surfaceH[ecx]-4; ey<surfaceH[ecx]; ey++) if (grid[gi(ecx,ey)]===SAND) grid[gi(ecx,ey)]=AIR; }
+  if (baseBuilt()) remodelEntrance();
+
+  for (let i=workers.length-1;i>=0;i--){
+    const w=workers[i];
+    if (w.hp<=0){
+      if (w.haul) releaseHaul(w);          // 運んでいた卵/餌を解放（放置バグ防止）
+      workers.splice(i,1);
+      puff(w.x,w.y,8,"#caa",90,-50);
+      toast("😢 仲間がやられた…", "#f99", 1);
+      continue;
+    }
+    w.phase+=dt*9;
+    if (w.job==="soldier") updateSoldier(w,dt);
+    else updateDigger(w,dt);
+  }
+  maxColony=Math.max(maxColony, workers.length+1);
+
+  updateRooms();
+  matureNest();
+  if (matured) reorganizeNest();   // 成熟後は常に女王=最深・育児室=その隣を維持（新部屋完成で自動交換）
+  maybeExpand();
+  updateEggs(dt);
+  updateBugs(dt);
+  updateInvaders(dt);
+  updateAnteater(dt);
+  updateAphids(dt);
+  updateCarcasses(dt);
+  updateGarbage(dt);
+  updateCoins(dt);
+  updateFoods(dt);
+  updateParts(dt);
+  updateDmgs(dt);
+  updateQuests();
+
+  if (ant.hp<=0){
+    if (workers.length>0 || eggsArr.length>0){
+      toast("💀 力尽きた…コロニーは健在。たまごから再開", "#fbb", 2);
+      sfx("hurt");
+      spawnEgg();
+    } else {
+      gameOver=true; clearSave();
+      document.getElementById("overStats").textContent =
+        `生存 ${dayNum}日 ／ 巣の広さ ${nestCells}マス ／ 最大コロニー ${maxColony}匹 ／ 撃退 ${killCount}匹`;
+      document.getElementById("over").style.display="flex";
+      return;
+    }
+  }
+
+  cam.x=Math.max(0,Math.min(WORLD_W-canvas.width, ant.x-canvas.width/2));
+  cam.y=Math.max(0,Math.min(WORLD_H-canvas.height, ant.y-canvas.height/2));
+
+  if (toastT>0){ toastT-=dt; if (toastT<=0) toastEl.style.opacity=0; }
+  mmTimer-=dt; if (mmTimer<=0){ updateMinimap(); mmTimer=0.7; }
+  for (const c of clouds){ c.x+=c.spd*dt; if (c.x>2400) c.x=-300; }
+
+  // HUD
+  document.getElementById("stage").textContent =
+    st.name + (st.speed===0?`（あと ${Math.max(0,st.hatch-ant.hatchT).toFixed(1)}s）`:"");
+  document.getElementById("hpBar").style.width=Math.max(0,ant.hp/st.maxHp*100)+"%";
+  const xpPct = st.xpNext===Infinity?100:(st.xpNext?ant.xp/st.xpNext*100:0);
+  document.getElementById("xpBar").style.width=Math.max(0,Math.min(100,xpPct))+"%";
+  const pb = BIOMES[biomeIdx(Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0)))].name;
+  const wIcon = weather==="rain"?"🌧":weather==="snow"?"❄":(isNight?"🌙":"☀");
+  document.getElementById("stats").textContent =
+    `${curSeason().n} ${dayNum}日目 ${wIcon} ｜ ${pb} ｜ 体力 ${Math.ceil(Math.max(0,ant.hp))}/${st.maxHp} ｜ ${ant.carrying?"🟫 運搬中":"手ぶら"}`;
+  const dig=workers.filter(w=>w.job==="dig").length, sol=workers.length-dig;
+  const rm=(t,ic)=>builtRoom(t)?ic:"·";
+  document.getElementById("colony").textContent =
+    `🐜 ${workers.length+1}/150 ｜ ⛏ ${dig} ⚔ ${sol} ｜ 🥚 ${eggsArr.length} ｜ 🍖 ${Math.floor(colonyFood)}${starving?" ⚠飢餓!":""} ｜ 🪙 ${coinCount}` +
+    `\n部屋: ${rm("queen","👑")}${rm("nursery","🥚")}${rm("food","🍖")}${rm("waste","🗑")}` +
+    (anteater?` ｜ 🐜⚠ アリクイ ${Math.max(0,anteater.hp)}`:"") +
+    (invaders.filter(e=>!e.flee).length?` ｜ 👿 ${invaders.filter(e=>!e.flee).length}`:"");
+  document.getElementById("quest").textContent = questText();
+}
+
+// ---- Render ----
+const mix=(a,b,t)=>a+(b-a)*t;
+const DIRT_CACHE=new Array(60*16);
+function dirtCol(depth,n){
+  const d=Math.min(59,depth), i=d*16+n;
+  if (!DIRT_CACHE[i]){
+    const k=Math.max(0.55,1-d*0.008);
+    DIRT_CACHE[i]=`rgb(${((110+n)*k)|0},${((76+n*0.8)*k)|0},${((46+n*0.5)*k)|0})`;
+  }
+  return DIRT_CACHE[i];
+}
+const SAND_COLS=Array.from({length:14},(_,n)=>`rgb(${198+n},${158+n},${92+n})`);
+const DARK_COLS=Array.from({length:16},(_,d)=>`rgba(4,2,0,${Math.min(0.88,0.22+d*0.065).toFixed(3)})`);
+function skyCol(t){
+  const d=daylight;
+  const top=[mix(10,126,d), mix(16,195,d), mix(42,234,d)];
+  const bot=[mix(24,217,d), mix(34,239,d), mix(52,218,d)];
+  return t===0?`rgb(${top[0]|0},${top[1]|0},${top[2]|0})`:`rgb(${bot[0]|0},${bot[1]|0},${bot[2]|0})`;
+}
+
+// ---- 生物の描画（外敵・昼の虫 共通）----
+function drawCenti(e){
+  // 頭が通った道(=トンネル内)を一定間隔でサンプルし、その上に体節を並べる→道に沿って屈曲・縦移動
+  const f=e.facing||1, SP=9, pts=[[e.x,e.y]];
+  let acc=0;
+  for (let i=1;i<e.trail.length && pts.length<10;i++){
+    const a=e.trail[i-1], b=e.trail[i];
+    acc += Math.hypot(b[0]-a[0], b[1]-a[1]);
+    if (acc>=SP){ acc=0; pts.push(b); }
+  }
+  while (pts.length<7){ const last=pts[pts.length-1]; pts.push([last[0]-f*SP, last[1]]); } // 出現直後の補完
+  for (let i=pts.length-1;i>=0;i--){
+    const sx=pts[i][0]-cam.x, sy=pts[i][1]-cam.y, r=i===0?10:Math.max(4.5,9-i*0.5);
+    const p=pts[Math.max(0,i-1)], dx=p[0]-pts[i][0], dy=p[1]-pts[i][1];
+    const len=Math.hypot(dx,dy)||1, nx=-dy/len, ny=dx/len;            // 進行方向に直交する脚
+    const lw=2+Math.abs(Math.sin(performance.now()/120 + i));
+    ctx.strokeStyle=e.hit>0?"#fff":"#4a1a0e"; ctx.lineWidth=1.7;
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx+nx*(r+4*lw/2), sy+ny*(r+5)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx-nx*(r+5), sy-ny*(r+5)); ctx.stroke();
+    ctx.fillStyle=e.hit>0?"#fff":(i===0?"#7a2a18":e.col);
+    ctx.beginPath(); ctx.arc(sx,sy,r,0,TAU); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.14)"; ctx.beginPath(); ctx.ellipse(sx-r*0.2,sy-r*0.35,r*0.45,r*0.2,0,0,TAU); ctx.fill();
+  }
+  const hx=e.x-cam.x, hy=e.y-cam.y;                                   // 頭：目・触角
+  ctx.fillStyle="#ffd84a"; ctx.beginPath(); ctx.arc(hx+f*4,hy-3,2,0,TAU); ctx.fill();
+  ctx.strokeStyle="#4a1a0e"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(hx+f*7,hy-4); ctx.lineTo(hx+f*15,hy-11); ctx.stroke();
+}
+function drawCreature(e, flip){
+  if (e.shape==="centi" && !flip){ drawCenti(e); return; }
+  const x=e.x-cam.x, y=e.y-cam.y, f=e.facing||1, r=e.r||11;
+  const col=e.hit>0?"#fff":(flip?"#6f6a5a":e.col);    // 死骸は色あせて脚が上向き
+  ctx.save(); ctx.translate(x,y);
+  if (!flip){ ctx.fillStyle="rgba(0,0,0,.16)"; ctx.beginPath(); ctx.ellipse(0,r*0.95,r*1.3,r*0.4,0,0,TAU); ctx.fill(); } // 影
+  ctx.scale(f, flip?-1:1);
+  ctx.strokeStyle=col; ctx.lineWidth=1.5;
+  if (e.shape==="beetle"){
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(k*5,r*0.5);ctx.lineTo(k*6,r*0.95);ctx.stroke();}
+    ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(0,0,r,r*0.7,0,0,TAU); ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.18)"; ctx.beginPath(); ctx.moveTo(0,-r*0.6); ctx.lineTo(0,r*0.6); ctx.stroke();
+    ctx.fillStyle="#10151f"; ctx.beginPath(); ctx.arc(r*0.7,-1,r*0.32,0,TAU); ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(r*0.95,-2); ctx.quadraticCurveTo(r*1.6,-r,r*1.7,-r*0.2); ctx.stroke();
+  } else if (e.shape==="stag"){
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(k*5,r*0.5);ctx.lineTo(k*6,r*0.95);ctx.stroke();}
+    ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(0,0,r,r*0.7,0,0,TAU); ctx.fill();
+    ctx.fillStyle="#1a1006"; ctx.beginPath(); ctx.arc(r*0.7,0,r*0.4,0,TAU); ctx.fill();
+    ctx.strokeStyle="#1a1006"; ctx.lineWidth=2.5; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(r*1.0,-3); ctx.quadraticCurveTo(r*1.9,-9,r*1.5,-2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*1.0,3); ctx.quadraticCurveTo(r*1.9,9,r*1.5,2); ctx.stroke();
+    ctx.lineCap="butt";
+  } else if (e.shape==="mantis"){
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(k*5,r*0.3);ctx.lineTo(k*6,r*0.9);ctx.stroke();}
+    ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(-r*0.3,0,r*0.95,r*0.42,0,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(r*0.55,-r*0.35); ctx.lineTo(r*1.15,-r*0.6); ctx.lineTo(r*1.05,r*0.05); ctx.closePath(); ctx.fill();
+    ctx.fillStyle="#15300c"; ctx.beginPath(); ctx.arc(r*1.0,-r*0.45,1.8,0,TAU); ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(r*0.5,r*0.1); ctx.lineTo(r*1.0,r*0.55); ctx.lineTo(r*1.5,r*0.15); ctx.stroke();
+  } else if (e.shape==="locust"){
+    ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(0,0,r,r*0.5,0,0,TAU); ctx.fill();
+    ctx.fillStyle="#5e5e22"; ctx.beginPath(); ctx.arc(r*0.8,-1,r*0.34,0,TAU); ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(-r*0.2,r*0.2); ctx.lineTo(-r*0.6,-r*0.55); ctx.lineTo(-r*1.0,r*0.7); ctx.stroke();
+    ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(r*1.05,-3); ctx.lineTo(r*1.6,-r*0.9); ctx.stroke();
+  } else if (e.shape==="cater"){
+    ctx.fillStyle=col;
+    for(let k=-2;k<=2;k++){ ctx.beginPath(); ctx.arc(k*r*0.42,0,r*0.45,0,TAU); ctx.fill(); }
+    ctx.strokeStyle=col; ctx.lineWidth=1.5;
+    for(let k=-2;k<=2;k++){ ctx.beginPath(); ctx.moveTo(k*r*0.42,r*0.4); ctx.lineTo(k*r*0.42,r*0.75); ctx.stroke(); }
+    ctx.fillStyle="#3a5618"; ctx.beginPath(); ctx.arc(r*0.9,-2,r*0.45,0,TAU); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(r*1.05,-3,1.4,0,TAU); ctx.fill();
+  } else if (e.shape==="roach"){
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(k*5,r*0.5);ctx.lineTo(k*7,r*0.9);ctx.stroke();}
+    ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(0,0,r,r*0.62,0,0,TAU); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.12)"; ctx.beginPath(); ctx.ellipse(-r*0.2,-r*0.2,r*0.5,r*0.24,0,0,TAU); ctx.fill();
+    ctx.fillStyle="#2a1808"; ctx.beginPath(); ctx.arc(r*0.7,0,r*0.3,0,TAU); ctx.fill();
+    ctx.strokeStyle="#2a1808"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(r*0.9,-2); ctx.quadraticCurveTo(r*1.8,-r,r*2.1,-r*1.3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*0.9,2); ctx.quadraticCurveTo(r*1.8,r*0.2,r*2.1,r*0.6); ctx.stroke();
+  } else if (e.shape==="spider"){
+    ctx.strokeStyle=col; ctx.lineWidth=1.6;
+    for(let k=0;k<4;k++){ const ang=0.45+k*0.36;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(ang)*r*1.6,Math.sin(ang)*r*1.2-r*0.3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-Math.cos(ang)*r*1.6,Math.sin(ang)*r*1.2-r*0.3); ctx.stroke();
+    }
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(-r*0.35,0,r*0.72,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(r*0.5,0,r*0.42,0,TAU); ctx.fill();
+    ctx.fillStyle="#f55"; ctx.beginPath(); ctx.arc(r*0.6,-2,1.3,0,TAU); ctx.fill();
+  } else { // 既定の虫
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(k*5,r*0.5);ctx.lineTo(k*6,r*0.9);ctx.stroke();}
+    ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(0,0,r,r*0.7,0,0,TAU); ctx.fill();
+    ctx.fillStyle="#324a18"; ctx.beginPath(); ctx.arc(r*0.7,-2,r*0.4,0,TAU); ctx.fill();
+    ctx.fillStyle="#ff6"; ctx.beginPath(); ctx.arc(r*0.8,-3,1.5,0,TAU); ctx.fill();
+  }
+  if (!flip){ ctx.fillStyle="rgba(255,255,255,0.13)"; ctx.beginPath(); ctx.ellipse(-r*0.1,-r*0.4,r*0.55,r*0.22,0,0,TAU); ctx.fill(); } // 艶
+  ctx.restore();
+}
+
+// ---- バイオーム背景（森 / 畑 / 都市）視差スクロール ----
+function bgRnd(s){ const x=Math.sin(s*127.1)*43758.5; return x-Math.floor(x); }
+function drawBgElement(b, sx, hy, seed){
+  const dl=daylight, t=(v)=>(v*(0.35+0.65*dl))|0;
+  if (b===2){ // 都市：ビル
+    const h=80+bgRnd(seed)*150, w=58+bgRnd(seed+9)*44, base=44+bgRnd(seed+2)*26;
+    ctx.fillStyle=`rgb(${t(base+12)},${t(base+18)},${t(base+30)})`;
+    ctx.fillRect(sx, hy-h, w, h);
+    for (let yy=hy-h+10; yy<hy-10; yy+=16)
+      for (let xx=sx+6; xx<sx+w-8; xx+=13){
+        const lit=bgRnd(seed+xx*0.7+yy)> (dl>0.4?0.72:0.3);
+        ctx.fillStyle= lit ? `rgba(255,228,150,${0.35+0.55*(1-dl)})` : "rgba(15,20,30,.45)";
+        ctx.fillRect(xx,yy,7,9);
+      }
+  } else if (b===0){ // 森：木
+    const h=70+bgRnd(seed)*70;
+    ctx.fillStyle=`rgb(${t(70)},${t(48)},${t(28)})`;
+    ctx.fillRect(sx+30, hy-h*0.42, 9, h*0.42);
+    const g=120+bgRnd(seed+3)*60;
+    ctx.fillStyle=`rgb(${t(28)},${t(g)},${t(44)})`;
+    ctx.beginPath(); ctx.arc(sx+34, hy-h*0.58, h*0.44, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx+18, hy-h*0.42, h*0.3, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx+50, hy-h*0.42, h*0.3, 0, TAU); ctx.fill();
+  } else { // 畑：納屋／作物の列
+    if (bgRnd(seed)>0.72){
+      const h=58+bgRnd(seed+1)*30;
+      ctx.fillStyle=`rgb(${t(140)},${t(60)},${t(48)})`;
+      ctx.fillRect(sx+34, hy-h, 40, h);
+      ctx.fillStyle=`rgb(${t(110)},${t(46)},${t(36)})`;
+      ctx.beginPath(); ctx.moveTo(sx+30,hy-h); ctx.lineTo(sx+54,hy-h-18); ctx.lineTo(sx+78,hy-h); ctx.closePath(); ctx.fill();
+    } else {
+      ctx.strokeStyle=`rgb(${t(120)},${t(150)},${t(60)})`; ctx.lineWidth=3;
+      for (let xx=sx+8; xx<sx+140; xx+=18){
+        ctx.beginPath(); ctx.moveTo(xx,hy); ctx.lineTo(xx,hy-18-((seed+xx)%10)); ctx.stroke();
+        ctx.fillStyle=`rgb(${t(180)},${t(170)},${t(70)})`;
+        ctx.beginPath(); ctx.arc(xx, hy-20-((seed+xx)%10), 3,0,TAU); ctx.fill();
+      }
+    }
+  }
+}
+function drawBackground(){
+  const W=canvas.width;
+  const hy=(SURFACE+1)*CELL - cam.y;          // 画面上の地平線
+  if (hy < -120) return;                       // 地中深くでは描かない
+  const par=0.55, spacing=160, left=cam.x*par;
+  const startX=Math.floor(left/spacing)*spacing;
+  for (let wx=startX; wx < left + W + spacing; wx+=spacing){
+    const sx=wx-left, trueWX=cam.x+sx;
+    const b=biomeIdx(Math.max(0,Math.min(COLS-1,(trueWX/CELL)|0)));
+    drawBgElement(b, sx, hy, (wx/spacing)|0);
+  }
+}
+
+function drawWeather(){
+  const W=canvas.width, H=canvas.height;
+  if (weather==="rain"){
+    ctx.fillStyle="rgba(60,72,92,0.13)"; ctx.fillRect(0,0,W,H);   // 雨の薄暗さ
+    while(drops.length<150) drops.push({x:Math.random()*W,y:Math.random()*H,v:420+Math.random()*220});
+    ctx.strokeStyle="rgba(165,198,235,0.5)"; ctx.lineWidth=1.4; ctx.beginPath();
+    for (const d of drops){ d.y+=d.v*0.016; d.x+=58*0.016; if(d.y>H){d.y=-12;d.x=Math.random()*W;} if(d.x>W)d.x-=W;
+      ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-6,d.y-14); }
+    ctx.stroke();
+  } else if (weather==="snow"){
+    ctx.fillStyle="rgba(210,225,245,0.10)"; ctx.fillRect(0,0,W,H);
+    while(drops.length<90) drops.push({x:Math.random()*W,y:Math.random()*H,v:28+Math.random()*30,ph:Math.random()*6});
+    ctx.fillStyle="rgba(255,255,255,0.88)";
+    for (const d of drops){ d.ph+=0.02; d.y+=d.v*0.016; d.x+=Math.sin(d.ph)*0.6; if(d.y>H){d.y=-6;d.x=Math.random()*W;}
+      ctx.beginPath(); ctx.arc(d.x,d.y,2,0,TAU); ctx.fill(); }
+  }
+}
+
+function render(){
+  const W=canvas.width, H=canvas.height;
+  if (W<2 || H<2) return;                  // ビューポートが潰れている時は描画しない
+  const night=1-daylight;
+  // 画面シェイク
+  const _cx=cam.x, _cy=cam.y;
+  cam.x+= (Math.random()-0.5)*shake*2;
+  cam.y+= (Math.random()-0.5)*shake*2;
+
+  // --- 空 ---
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,skyCol(0)); sky.addColorStop(1,skyCol(1));
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+  if (night>0.1){
+    ctx.fillStyle=`rgba(255,255,240,${0.9*night})`;
+    for (const s of stars) ctx.fillRect(s.x*W, s.y*H, s.s, s.s);
+  }
+  if (dayT<0.5){
+    const p=dayT*2;
+    const sx=W*(0.05+0.9*p), sy=H*0.42-Math.sin(p*Math.PI)*H*0.33;
+    const g=ctx.createRadialGradient(sx,sy,4,sx,sy,46);
+    g.addColorStop(0,"rgba(255,236,150,1)"); g.addColorStop(1,"rgba(255,236,150,0)");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,46,0,TAU); ctx.fill();
+    ctx.fillStyle="#ffe27a"; ctx.beginPath(); ctx.arc(sx,sy,17,0,TAU); ctx.fill();
+  } else {
+    const p=(dayT-0.5)*2;
+    const sx=W*(0.05+0.9*p), sy=H*0.42-Math.sin(p*Math.PI)*H*0.33;
+    ctx.fillStyle="#e8eef2"; ctx.beginPath(); ctx.arc(sx,sy,14,0,TAU); ctx.fill();
+    ctx.fillStyle="rgba(160,170,185,.6)"; ctx.beginPath(); ctx.arc(sx-4,sy-3,4,0,TAU); ctx.fill();
+  }
+  ctx.fillStyle=`rgba(255,255,255,${0.5*daylight+0.06})`;
+  for (const c of clouds){
+    const x=((c.x - cam.x*0.3)%2700+2700)%2700-300;
+    ctx.beginPath();
+    ctx.ellipse(x,c.y,c.w,c.w*0.32,0,0,TAU);
+    ctx.ellipse(x+c.w*0.5,c.y+6,c.w*0.6,c.w*0.22,0,0,TAU);
+    ctx.fill();
+  }
+
+  // --- バイオーム背景 ---
+  drawBackground();
+
+  // --- 地形 ---
+  const c0x=Math.max(0,(cam.x/CELL)|0), c1x=Math.min(COLS,(((cam.x+W)/CELL)|0)+1);
+  const c0y=Math.max(0,(cam.y/CELL)|0), c1y=Math.min(ROWS,(((cam.y+H)/CELL)|0)+1);
+  for (let cy=c0y;cy<c1y;cy++){
+    for (let cx=c0x;cx<c1x;cx++){
+      const v=grid[gi(cx,cy)];
+      const x=cx*CELL-cam.x, y=cy*CELL-cam.y;
+      if (v===DIRT){
+        const depth=Math.max(0,cy-SURFACE);
+        const n=((cx*73856093 ^ cy*19349663)>>>0)%16;
+        ctx.fillStyle=dirtCol(depth,n);
+        ctx.fillRect(x,y,CELL+1,CELL+1);
+        ctx.fillStyle="rgba(0,0,0,.10)"; ctx.fillRect(x+((cx*5)%18), y+((cy*7)%18), 3,3); // 粒
+        // ベベル（立体感）。空気に接した面は陽が当たって明るい
+        ctx.fillStyle = cellAt(cx,cy-1)===AIR ? "rgba(255,242,205,.14)" : "rgba(255,240,210,.05)";
+        ctx.fillRect(x,y,CELL+1,3);
+        ctx.fillStyle="rgba(0,0,0,.12)"; ctx.fillRect(x,y+CELL-3,CELL+1,3);
+      } else if (v===ROCK){
+        ctx.fillStyle="#5b5550"; ctx.fillRect(x,y,CELL+1,CELL+1);
+        ctx.fillStyle="rgba(255,255,255,.10)"; ctx.fillRect(x,y,CELL+1,3);
+        ctx.fillStyle="rgba(0,0,0,.18)"; ctx.fillRect(x,y+CELL-3,CELL+1,3);
+        ctx.fillStyle="rgba(255,255,255,.05)"; ctx.fillRect(x+4,y+4,CELL-8,CELL-8);
+      } else if (v===SAND){
+        const n=((cx*9781 ^ cy*6151)>>>0)%14;
+        ctx.fillStyle=SAND_COLS[n];
+        ctx.fillRect(x,y,CELL+1,CELL+1);
+        ctx.fillStyle="rgba(255,245,210,.12)"; ctx.fillRect(x,y,CELL+1,3);            // 陽の当たる上面
+        ctx.fillStyle="rgba(120,85,40,.22)"; ctx.fillRect(x+((cx*3)%16)+3, y+((cy*5)%16)+3, 3,3);
+      } else if (cy>=surfaceH[cx]){
+        // トンネル（巣の空洞）を陰影で立体的に：天井の影・床の光・壁のAO
+        ctx.fillStyle="#26150b"; ctx.fillRect(x,y,CELL+1,CELL+1);
+        if (solidCell(cx,cy-1)){ ctx.fillStyle="rgba(0,0,0,.34)"; ctx.fillRect(x,y,CELL+1,6); }
+        if (solidCell(cx,cy+1)){ ctx.fillStyle="rgba(255,232,185,.06)"; ctx.fillRect(x,y+CELL-3,CELL+1,3); }
+        if (solidCell(cx-1,cy)){ ctx.fillStyle="rgba(0,0,0,.20)"; ctx.fillRect(x,y,5,CELL+1); }
+        if (solidCell(cx+1,cy)){ ctx.fillStyle="rgba(0,0,0,.20)"; ctx.fillRect(x+CELL-4,y,5,CELL+1); }
+      }
+    }
+  }
+  // 草
+  ctx.strokeStyle=`rgba(70,${(130+60*daylight)|0},60,.9)`; ctx.lineWidth=2;
+  for (let cx=c0x;cx<c1x;cx++){
+    const gy=surfaceH[cx];
+    if (cellAt(cx,gy)===DIRT && cellAt(cx,gy-1)===AIR){
+      const bx=cx*CELL-cam.x, by=gy*CELL-cam.y;
+      for (let k=0;k<2+((cx*37)%3)%2;k++){
+        ctx.beginPath();
+        ctx.moveTo(bx+5+k*8, by);
+        ctx.lineTo(bx+5+k*8+((cx+k)%3-1)*3, by-6-((cx*13+k*7)%6));
+        ctx.stroke();
+      }
+    }
+  }
+
+  // --- 餌道フェロモン（青白い光の道）---
+  for (let cy=c0y;cy<c1y;cy++) for (let cx=c0x;cx<c1x;cx++){
+    const p=pher[cy*COLS+cx];
+    if (p>0.15){
+      ctx.fillStyle=`rgba(130,225,255,${Math.min(0.38,p*0.06)})`;
+      ctx.beginPath(); ctx.arc(cx*CELL-cam.x+13, cy*CELL-cam.y+13, 2.5+Math.min(5,p), 0, TAU); ctx.fill();
+    }
+  }
+
+  // --- 巣の設計図（まだ掘ってない予定地を薄く表示）---
+  ctx.strokeStyle="rgba(255,228,170,0.13)"; ctx.lineWidth=1;
+  for (const p of nestPlan){
+    if (!nestPlanSet.has(p.k)) continue;
+    if (p.cx<c0x||p.cx>=c1x||p.cy<c0y||p.cy>=c1y) continue;
+    const v=grid[p.k];
+    if (v===DIRT||v===SAND) ctx.strokeRect(p.cx*CELL-cam.x+3, p.cy*CELL-cam.y+3, CELL-6, CELL-6);
+  }
+  // --- 役割別の部屋を色分け ---
+  for (const r of rooms){
+    if (!r.built) continue;
+    ctx.fillStyle=ROOM_META[r.type].tint;
+    for (const c of r.cells){
+      if (c.cx<c0x||c.cx>=c1x||c.cy<c0y||c.cy>=c1y) continue;
+      if (grid[c.k]===AIR) ctx.fillRect(c.cx*CELL-cam.x, c.cy*CELL-cam.y, CELL+1, CELL+1);
+    }
+  }
+
+  // --- 卵・幼虫・蛹（育つ）---
+  for (const e of eggsArr){
+    const x=e.x-cam.x, y=e.y-cam.y, s2=e.stage2||"egg";
+    if (s2==="larva"){                          // 幼虫：クリーム色のC字
+      ctx.fillStyle="#efe0bd";
+      ctx.beginPath(); ctx.ellipse(x,y,8,5,0.6,0,TAU); ctx.fill();
+      ctx.strokeStyle="rgba(120,100,60,.3)"; ctx.lineWidth=1;
+      for (let k=-2;k<=2;k++){ ctx.beginPath(); ctx.moveTo(x+k*2-2,y-3); ctx.lineTo(x+k*2,y+3); ctx.stroke(); }
+    } else if (s2==="pupa"){                     // 蛹：繭(まゆ)状のカプセル
+      ctx.fillStyle="#d8c298";
+      ctx.beginPath(); ctx.ellipse(x,y,5.5,8,0,0,TAU); ctx.fill();
+      ctx.fillStyle="rgba(90,70,40,.35)";
+      ctx.beginPath(); ctx.ellipse(x,y+3,4,3,0,0,TAU); ctx.fill(); // 中のアリの輪郭
+    } else {                                     // 卵：白い楕円
+      const pulse=e.t>13?1+Math.sin(e.t*9)*0.1:1;
+      ctx.fillStyle="#f6ecd8";
+      ctx.beginPath(); ctx.ellipse(x,y,5*pulse,7*pulse,0,0,TAU); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.6)";
+      ctx.beginPath(); ctx.ellipse(x-1.5,y-2,1.5,2.5,0,0,TAU); ctx.fill();
+    }
+  }
+  // --- 餌（アブラムシの甘露など）---
+  ctx.font="14px serif"; ctx.textAlign="center";
+  for (const f of foods) ctx.fillText("🍖", f.x-cam.x, f.y-cam.y+5);
+  ctx.textAlign="left";
+  // --- 死骸（ひっくり返った虫）---
+  for (const c of carcasses) drawCreature(c, true);
+  // --- ゴミ ---
+  for (const g of garbage){
+    const x=g.x-cam.x, y=g.y-cam.y;
+    ctx.fillStyle=g.inMidden?"rgba(110,100,80,.8)":"#7a6b4a";
+    ctx.beginPath(); ctx.arc(x,y,4,0,TAU); ctx.arc(x+3,y+1,3,0,TAU); ctx.fill();
+  }
+  // --- コイン（ゴミの成れの果て。光って点滅）---
+  for (const c of coins){
+    const x=c.x-cam.x, y=c.y-cam.y, pulse=0.7+0.3*Math.sin(c.t*6);
+    ctx.fillStyle=`rgba(255,220,90,${pulse})`;
+    ctx.beginPath(); ctx.arc(x,y,6,0,TAU); ctx.fill();
+    ctx.strokeStyle="#caa040"; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle="#8a6a10"; ctx.font="bold 8px sans-serif"; ctx.textAlign="center"; ctx.fillText("¢",x,y+3); ctx.textAlign="left";
+  }
+  // --- パーティクル ---
+  for (const p of parts){
+    ctx.globalAlpha=1-p.t/p.life;
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x-cam.x-p.size/2, p.y-cam.y-p.size/2, p.size, p.size);
+  }
+  ctx.globalAlpha=1;
+
+  // --- アブラムシ ---
+  for (const a of aphids){
+    const x=a.x-cam.x, y=a.y-cam.y;
+    ctx.fillStyle = a.state==="ranched" ? "#8fd45f" : "#a8d878";
+    ctx.beginPath(); ctx.ellipse(x,y,7,5,0,0,TAU); ctx.fill();
+    ctx.fillStyle="#3d5a20";
+    ctx.beginPath(); ctx.arc(x+5,y-1,2,0,TAU); ctx.fill();
+    if (a.state==="ranched" && (a.t%4)<0.6){
+      ctx.font="10px serif"; ctx.fillText("✨", x-4, y-8);
+    }
+  }
+
+  // --- NPCアリ ---
+  for (const w of workers){
+    const sol=w.job==="soldier";
+    const col = w.col || (sol?"#7a3b20":"#6b4a2c");   // 赤アリ/白アリは固有色
+    drawAntShape(w.x-cam.x, w.y-cam.y, (sol?8:7)*(w.size||1), col, w.facing, w.carrying, w.phase, false, w.path!==null, sol);
+    if (w.hp<w.maxHp){
+      ctx.fillStyle="rgba(0,0,0,.5)"; ctx.fillRect(w.x-cam.x-9, w.y-cam.y-14, 18, 3);
+      ctx.fillStyle="#5f5"; ctx.fillRect(w.x-cam.x-9, w.y-cam.y-14, 18*Math.max(0,w.hp/w.maxHp), 3);
+    }
+  }
+  // --- 昼の生き物（バイオーム別）---
+  for (const b of bugs) drawCreature(b);
+  // --- 侵入者（バイオーム別）---
+  for (const e of invaders){
+    ctx.globalAlpha = e.flee ? Math.max(0,e.fade) : 1;
+    drawCreature(e);
+    const x=e.x-cam.x, y=e.y-cam.y;
+    if (e.hp<e.maxHp && !e.flee){
+      ctx.fillStyle="rgba(0,0,0,.5)"; ctx.fillRect(x-10,y-e.r-7,20,3);
+      ctx.fillStyle="#f55"; ctx.fillRect(x-10,y-e.r-7,20*Math.max(0,e.hp/e.maxHp),3);
+    }
+    ctx.globalAlpha=1;
+  }
+  // --- アリクイ ---
+  if (anteater) drawAnteater();
+
+  // --- プレイヤー ---
+  drawPlayer();
+  if (ant.cargo) drawCreature(ant.cargo, true);   // 咥えた死骸
+
+  // --- 暗闇 ---
+  dctx.clearRect(0,0,W,H);
+  dctx.globalCompositeOperation="source-over";
+  if (night>0.02){ dctx.fillStyle=`rgba(6,8,26,${0.5*night})`; dctx.fillRect(0,0,W,H); }
+  for (let cy=c0y;cy<c1y;cy++){
+    for (let cx=c0x;cx<c1x;cx++){
+      if (cy>=surfaceH[cx]){
+        dctx.fillStyle=DARK_COLS[Math.min(15, cy-surfaceH[cx])];
+        dctx.fillRect(cx*CELL-cam.x, cy*CELL-cam.y, CELL+1, CELL+1);
+      }
+    }
+  }
+  dctx.globalCompositeOperation="destination-out";
+  const punch=(x,y,rad,s)=>{
+    const g=dctx.createRadialGradient(x,y,2,x,y,rad);
+    g.addColorStop(0,`rgba(255,255,255,${s})`); g.addColorStop(1,"rgba(255,255,255,0)");
+    dctx.fillStyle=g; dctx.beginPath(); dctx.arc(x,y,rad,0,TAU); dctx.fill();
+  };
+  // 部屋の灯り（ラベルが闇に消えないよう光を抜く）
+  for (const r of rooms) if (r.built) punch(r.cx*CELL-cam.x, r.cy*CELL-cam.y, 60, 0.5);
+  punch(ant.x-cam.x, ant.y-cam.y, stage().key==="queen"?200:150, 1);
+  for (const w of workers) punch(w.x-cam.x, w.y-cam.y, 70, 0.85);
+  for (const e of eggsArr) punch(e.x-cam.x, e.y-cam.y, 40, 0.7);
+  for (const e of invaders) punch(e.x-cam.x, e.y-cam.y, 45, 0.6);
+  ctx.drawImage(darkC,0,0);
+
+  // --- 部屋ラベル（暗闇の上に描く）---
+  ctx.font="bold 11px sans-serif"; ctx.textAlign="center";
+  for (const r of rooms){
+    if (!r.built) continue;
+    const lx=r.cx*CELL-cam.x, ly=r.cy*CELL-cam.y;
+    if (lx<-40||lx>W+40||ly<-40||ly>H+40) continue;
+    ctx.fillStyle="rgba(0,0,0,.5)"; ctx.fillText(ROOM_META[r.type].label, lx+1, ly-r.cells.length*0+18+1);
+    ctx.fillStyle="rgba(255,255,255,.9)"; ctx.fillText(ROOM_META[r.type].label, lx, ly+18);
+  }
+  ctx.textAlign="left";
+
+  // --- ダメージ数字 ---
+  ctx.font="bold 13px sans-serif"; ctx.textAlign="center";
+  for (const d of dmgs){
+    ctx.globalAlpha=1-d.t/0.8;
+    ctx.fillStyle=d.color;
+    ctx.fillText(d.txt, d.x-cam.x, d.y-cam.y-30*d.t);
+  }
+  ctx.globalAlpha=1; ctx.textAlign="left";
+
+  // --- ヒント・マーカー ---
+  if (ant.carrying && isAboveSurface()){
+    ctx.fillStyle="rgba(255,255,130,.95)"; ctx.font="bold 14px sans-serif"; ctx.textAlign="center";
+    ctx.fillText("Space で砂を捨てる！", ant.x-cam.x, ant.y-cam.y-30);
+    ctx.textAlign="left";
+  }
+  ctx.fillStyle="rgba(255,220,60,.9)";
+  ctx.beginPath();
+  ctx.moveTo(ant.x-cam.x, ant.y-cam.y-ant.r-14);
+  ctx.lineTo(ant.x-cam.x-5, ant.y-cam.y-ant.r-21);
+  ctx.lineTo(ant.x-cam.x+5, ant.y-cam.y-ant.r-21);
+  ctx.fill();
+
+  // --- 低体力ビネット ---
+  const hpRatio=ant.hp/stage().maxHp;
+  if (hpRatio<0.3 && stage().speed>0){
+    const a=(0.3-hpRatio)/0.3*(0.45+0.2*Math.sin(performance.now()/150));
+    const g=ctx.createRadialGradient(W/2,H/2,H*0.32,W/2,H/2,H*0.75);
+    g.addColorStop(0,"rgba(120,0,0,0)"); g.addColorStop(1,`rgba(120,0,0,${Math.max(0,Math.min(0.6,a))})`);
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  }
+
+  // --- 天候（雨・雪）---
+  drawWeather();
+
+  // --- ミニマップ ---
+  const mw=COLS*1.5, mh=ROWS*1.5, mx=W-mw-10, my=10;
+  ctx.imageSmoothingEnabled=false;
+  ctx.globalAlpha=0.92;
+  ctx.drawImage(mm, mx, my, mw, mh);
+  ctx.globalAlpha=1;
+  ctx.strokeStyle="rgba(0,0,0,.6)"; ctx.lineWidth=2; ctx.strokeRect(mx,my,mw,mh);
+  const dot=(wx,wy,col,s)=>{ ctx.fillStyle=col; ctx.fillRect(mx+wx/WORLD_W*mw-s/2, my+wy/WORLD_H*mh-s/2, s, s); };
+  for (const w of workers) dot(w.x,w.y, w.job==="soldier"?"#ff8030":"#ffb000", 3);
+  for (const b of bugs) dot(b.x,b.y,"#7fff5f",3);
+  for (const e of eggsArr) dot(e.x,e.y,"#fff",2);
+  for (const e of invaders) if(!e.flee) dot(e.x,e.y,"#ff2020",4);
+  if (anteater) dot(anteater.x,anteater.y,"#ff30c0",6);
+  dot(ant.x,ant.y,"#ff3030",4);
+
+  // セーブ表示
+  if (saveFlash>0){
+    ctx.globalAlpha=Math.min(1,saveFlash);
+    ctx.fillStyle="rgba(0,0,0,.5)"; ctx.fillRect(W-130, H-34, 120, 24);
+    ctx.fillStyle="#bfe8c0"; ctx.font="12px sans-serif"; ctx.textAlign="center";
+    ctx.fillText("💾 自動セーブ済み", W-70, H-18); ctx.textAlign="left"; ctx.globalAlpha=1;
+  }
+
+  cam.x=_cx; cam.y=_cy;
+}
+
+// ---- 描画: アリ / アリクイ / プレイヤー ----
+function drawAntShape(x,y,r,color,facing,carrying,phase,wings,moving,mandibles){
+  ctx.save(); ctx.translate(x,y);
+  // 柔らかい影
+  ctx.fillStyle="rgba(0,0,0,0.16)";
+  ctx.beginPath(); ctx.ellipse(0, r*1.15, r*1.5, r*0.45, 0,0,TAU); ctx.fill();
+  ctx.scale(facing,1);
+  ctx.strokeStyle=color; ctx.lineWidth=2;
+  for (let k=-1;k<=1;k++){
+    const sw=moving?Math.sin(phase+k*2.1)*4:0;
+    ctx.beginPath(); ctx.moveTo(k*4, r*0.3); ctx.lineTo(k*5+sw, r*1.1); ctx.stroke();
+  }
+  if (wings){
+    const fl=moving?Math.sin(phase*3)*0.18:0;
+    ctx.fillStyle="rgba(220,235,255,.5)";
+    ctx.save(); ctx.rotate(-0.5+fl);
+    ctx.beginPath(); ctx.ellipse(-r*0.2,-r*0.6,r*1.4,r*0.55,0,0,TAU); ctx.fill();
+    ctx.restore();
+    ctx.save(); ctx.rotate(-0.75-fl);
+    ctx.beginPath(); ctx.ellipse(-r*0.5,-r*0.4,r*1.1,r*0.45,0,0,TAU); ctx.fill();
+    ctx.restore();
+  }
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.arc(-r*0.9,0,r*0.72,0,TAU); ctx.fill();   // 腹
+  ctx.beginPath(); ctx.arc(0,0,r*0.55,0,TAU); ctx.fill();        // 胸
+  ctx.beginPath(); ctx.arc(r*0.85,0,r*0.6,0,TAU); ctx.fill();    // 頭
+  // 上面のハイライト（艶）
+  ctx.fillStyle="rgba(255,255,255,0.16)";
+  ctx.beginPath(); ctx.ellipse(-r*0.9,-r*0.28,r*0.5,r*0.22,0,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(r*0.85,-r*0.3,r*0.34,r*0.18,0,0,TAU); ctx.fill();
+  const aw=Math.sin(phase*0.7)*2;
+  ctx.beginPath(); ctx.moveTo(r*1.2,-3); ctx.lineTo(r*1.9,-r*0.7+aw); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(r*1.2,2); ctx.lineTo(r*1.95,-r*0.15+aw); ctx.stroke();
+  if (mandibles){
+    ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(r*1.3,-2); ctx.quadraticCurveTo(r*1.9,-5, r*2.1,-1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r*1.3,3); ctx.quadraticCurveTo(r*1.9,6, r*2.1,2); ctx.stroke();
+    ctx.lineWidth=2;
+  }
+  ctx.fillStyle="rgba(255,255,255,.85)";
+  ctx.beginPath(); ctx.arc(r*1.05,-r*0.18,r*0.14,0,TAU); ctx.fill();
+  if (carrying){
+    ctx.fillStyle="#cfa55e"; ctx.fillRect(r*1.25,-5.5,11,11);
+    ctx.strokeStyle="#7a5a2a"; ctx.lineWidth=1; ctx.strokeRect(r*1.25,-5.5,11,11);
+  }
+  ctx.restore();
+}
+function drawAnteater(){
+  const a=anteater;
+  const x=a.x-cam.x, y=a.y-cam.y;
+  // 舌
+  if (a.tongue.length>1){
+    ctx.strokeStyle=a.hit>0?"#fff":"#ff7d9c"; ctx.lineWidth=5; ctx.lineCap="round";
+    ctx.beginPath();
+    ctx.moveTo(a.tongue[0][0]-cam.x, a.tongue[0][1]-cam.y);
+    const segN=Math.max(1, Math.ceil(a.tt*(a.tongue.length-1)));
+    for (let i=1;i<=segN && i<a.tongue.length;i++){
+      // 先端パラメータまでの折れ線
+      const t=Math.min(1, i/(a.tongue.length-1)/Math.max(a.tt,0.001));
+      if (t>=1){
+        const p=tonguePoint(a.tt);
+        ctx.lineTo(p.x-cam.x, p.y-cam.y);
+        break;
+      }
+      ctx.lineTo(a.tongue[i][0]-cam.x, a.tongue[i][1]-cam.y);
+    }
+    ctx.stroke();
+    const tip=tonguePoint(a.tt);
+    if (tip){
+      ctx.fillStyle="#ff9db6";
+      ctx.beginPath(); ctx.arc(tip.x-cam.x, tip.y-cam.y, 6, 0, TAU); ctx.fill();
+    }
+    ctx.lineCap="butt";
+  }
+  // 体
+  ctx.save(); ctx.translate(x,y);
+  if (a.hit>0){ ctx.shadowColor="#fff"; ctx.shadowBlur=14; }
+  ctx.scale(a.dir,1);
+  ctx.fillStyle="#6e5743";
+  ctx.beginPath(); ctx.ellipse(-46,-6,26,17,0.4,0,TAU); ctx.fill();   // ふさふさ尻尾
+  ctx.beginPath(); ctx.ellipse(0,-12,42,22,0,0,TAU); ctx.fill();      // 胴体
+  ctx.fillStyle="#5a4736";
+  ctx.beginPath(); ctx.ellipse(36,-10,22,9,0.45,0,TAU); ctx.fill();   // 鼻先
+  ctx.fillStyle="#2e2218";
+  ctx.beginPath(); ctx.arc(28,-18,2.6,0,TAU); ctx.fill();             // 目
+  ctx.strokeStyle="#4a3a2c"; ctx.lineWidth=5;
+  for (const lx of [-22,-8,10,24]){ ctx.beginPath(); ctx.moveTo(lx,6); ctx.lineTo(lx,18); ctx.stroke(); }
+  ctx.restore();
+  // HPバー
+  ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(x-34, y-44, 68, 6);
+  ctx.fillStyle="#ff5fb0"; ctx.fillRect(x-34, y-44, 68*Math.max(0,a.hp/a.maxHp), 6);
+}
+function drawPlayer(){
+  const st=stage();
+  const x=ant.x-cam.x, y=ant.y-cam.y, r=st.r;
+  if (ant.attackFlash>0){ ctx.save(); ctx.shadowColor="#fff"; ctx.shadowBlur=14; }
+  if (st.key==="egg"){
+    ctx.fillStyle=st.color;
+    ctx.beginPath(); ctx.ellipse(x,y,r,r*1.3,0,0,TAU); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.5)";
+    ctx.beginPath(); ctx.ellipse(x-2,y-3,2,3.5,0,0,TAU); ctx.fill();
+  } else if (st.key==="larva"){
+    ctx.fillStyle=st.color;
+    const wob=Math.sin(performance.now()/180)*1.5;
+    ctx.beginPath(); ctx.ellipse(x,y+wob*0.3,r*1.3,r*0.8,wob*0.05,0,TAU); ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.18)"; ctx.lineWidth=1.5;
+    for (let i=-1;i<=1;i++){ ctx.beginPath(); ctx.moveTo(x+i*5,y-r*0.6); ctx.lineTo(x+i*5,y+r*0.6); ctx.stroke(); }
+  } else if (st.key==="pupa"){
+    ctx.fillStyle=st.color;
+    ctx.beginPath(); ctx.ellipse(x,y,r,r*1.4,0,0,TAU); ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=1.5;
+    for (let i=-1;i<=1;i++){ ctx.beginPath(); ctx.moveTo(x-r,y+i*5); ctx.lineTo(x+r,y+i*5); ctx.stroke(); }
+  } else {
+    const moving=Math.abs(ant.vx)+Math.abs(ant.vy)>10;
+    drawAntShape(x,y,r,st.color,ant.facing,ant.carrying,ant.phase,
+                 st.key==="winged"||st.key==="queen", moving, false);
+    if (st.key==="queen"){
+      ctx.font="14px serif"; ctx.textAlign="center";
+      ctx.fillText("👑", x, y-r-4);
+      ctx.textAlign="left";
+    }
+  }
+  if (ant.attackFlash>0) ctx.restore();
+}
+
+// ---- セーブ / 再開（localStorage）----
+const SAVE_KEY="antNest_save_v6";
+function saveGame(){
+  try{
+    const s={
+      grid:Array.from(grid), surfaceH:Array.from(surfaceH),
+      planKeys:nestPlan.map(p=>p.k),
+      rooms:rooms.map(r=>({type:r.type,cx:r.cx,cy:r.cy,built:r.built,cells:r.cells.map(c=>c.k)})),
+      fillKeys:[...fillSet], expandTier,
+      ant:{x:ant.x,y:ant.y,stage:ant.stage,hp:ant.hp,xp:ant.xp,carrying:ant.carrying,facing:ant.facing,hatchT:ant.hatchT,
+           cargo: ant.cargo?{x:ant.cargo.x,y:ant.cargo.y,kind:ant.cargo.kind,value:ant.cargo.value}:null},
+      workers:workers.map(w=>({x:w.x,y:w.y,job:w.job,hp:w.hp,maxHp:w.maxHp,facing:w.facing,size:w.size,variant:w.variant})),
+      eggs:eggsArr.map(e=>({x:e.x,y:e.y,t:e.t,state:e.state,stage2:e.stage2})),
+      carcasses:carcasses.filter(c=>!c.carrier).map(c=>({x:c.x,y:c.y,kind:c.kind,value:c.value,stored:!!c.stored})),
+      garbage:garbage.filter(g=>!g.carrier).map(g=>({x:g.x,y:g.y,inMidden:g.inMidden,t:g.t})),
+      aphids:aphids.map(a=>({x:a.x,y:a.y,state:a.state,prod:a.prod,vx:a.vx})),
+      colonyFood,droppedCount,killCount,laidCount,maxColony,dayNum,survivedNights,dayT,isNight,questIdx,nextSurvN,
+      weather,weatherT,
+      coins:coins.map(c=>({x:c.x,y:c.y})), coinCount, coinsToday, matured
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(s)); saveFlash=1.4;
+  }catch(err){ console.warn("save failed", err); }
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
+    const s=JSON.parse(raw); if(!s||!s.grid||s.grid.length!==grid.length) return false;
+    grid.set(s.grid); surfaceH.set(s.surfaceH);
+    nestPlan.length=0; nestPlanSet.clear();
+    for(const k of s.planKeys){ nestPlanSet.add(k); nestPlan.push({cx:k%COLS,cy:(k/COLS)|0,k}); }
+    rooms.length=0; roomCellType.clear(); planRoom.clear();
+    for(const k of s.planKeys) planRoom.set(k,-1);                      // 通路は-1
+    for(const r of s.rooms){ const cells=r.cells.map(k=>({cx:k%COLS,cy:(k/COLS)|0,k}));
+      const id=rooms.length; rooms.push({type:r.type,cx:r.cx,cy:r.cy,built:r.built,cells});
+      for(const c of cells) planRoom.set(c.k,id);                       // 部屋タグを復元
+      if(r.built) for(const c of cells) roomCellType.set(c.k,r.type); }
+    fillSet.clear(); fillTargets.length=0;
+    for(const k of s.fillKeys){ fillSet.add(k); if(grid[k]===AIR) fillTargets.push({cx:k%COLS,cy:(k/COLS)|0,k}); }
+    expandTier=s.expandTier||0;
+    Object.assign(ant,{x:s.ant.x,y:s.ant.y,stage:s.ant.stage,hp:s.ant.hp,xp:s.ant.xp,carrying:s.ant.carrying,
+      facing:s.ant.facing,hatchT:s.ant.hatchT||0,vx:0,vy:0,dir:{x:0,y:1},digCD:0,layCD:0,attackFlash:0,phase:0});
+    ant.r=STAGES[ant.stage].r;
+    ant.cargo = s.ant.cargo ? (()=>{ const d=ENEMY[s.ant.cargo.kind]||{shape:"bug",col:"#777",r:11};
+      return {x:s.ant.cargo.x,y:s.ant.cargo.y,kind:s.ant.cargo.kind,value:s.ant.cargo.value,shape:d.shape,col:d.col,r:d.r,carrier:"player",facing:1}; })() : null;
+    workers.length=0;
+    for(const w of s.workers){ const v=VARIANTS[w.variant]||VARIANTS.normal;
+      workers.push(Object.assign(makeWorker(w.x,w.y),{job:w.job,hp:w.hp,maxHp:w.maxHp,facing:w.facing,size:w.size||1,load:0,
+        variant:w.variant||"normal", col:v.col, speedMul:v.speedMul, atkMul:v.atkMul, hpMul:v.hpMul, carryCap:v.carryCap})); }
+    eggsArr.length=0;
+    for(const e of s.eggs) eggsArr.push({x:e.x,y:e.y,t:e.t,state:e.state,stage2:e.stage2||"egg",carrier:null});
+    carcasses.length=0;
+    for(const c of s.carcasses){ const d=ENEMY[c.kind]||{shape:"bug",col:"#777",r:11};
+      carcasses.push({x:c.x,y:c.y,kind:c.kind,value:c.value,shape:d.shape,col:d.col,r:d.r,carrier:null,vy:0,facing:1,stored:!!c.stored}); }
+    garbage.length=0;
+    for(const g of s.garbage) garbage.push({x:g.x,y:g.y,inMidden:g.inMidden,t:g.t,carrier:null,vy:0});
+    aphids.length=0;
+    for(const a of s.aphids) aphids.push({x:a.x,y:a.y,state:a.state,prod:a.prod,vx:a.vx,t:0});
+    colonyFood=s.colonyFood; droppedCount=s.droppedCount; killCount=s.killCount; laidCount=s.laidCount;
+    maxColony=s.maxColony; dayNum=s.dayNum; survivedNights=s.survivedNights; dayT=s.dayT;
+    isNight=s.isNight; questIdx=s.questIdx; nextSurvN=s.nextSurvN;
+    weather=s.weather||"clear"; weatherT=s.weatherT||14;
+    coins.length=0; if(s.coins) for(const c of s.coins) coins.push({x:c.x,y:c.y,t:0,vy:0});
+    coinCount=s.coinCount||0; coinsToday=s.coinsToday||0; matured=!!s.matured;
+    return true;
+  }catch(err){ console.warn("load failed", err); return false; }
+}
+function clearSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+
+// ---- Boot ----
+genWorld();
+if (loadGame()){
+  setTimeout(()=>banner("💾 続きからロードしました", "#cfe", 2), 500);
+} else {
+  buildBaseNest();              // 女王の間→育児室→食料庫→ゴミ捨て場の設計図
+  for (const dx of [-5,-3,-1,1,3,5]) workers.push(makeWorker((colonyCx+dx)*CELL, (surfaceH[colonyCx+dx]-1)*CELL+13));
+  spawnEgg();
+  setTimeout(()=>banner("🐜 コロニーを育て、夜の襲撃から卵を守り抜け！", "#ffe"), 600);
+}
+updateMinimap();
+setInterval(()=>{ if(!gameOver) saveGame(); }, 8000);            // 自動セーブ
+addEventListener("visibilitychange", ()=>{ if(document.hidden && !gameOver) saveGame(); });
+addEventListener("beforeunload", ()=>{ if(!gameOver) saveGame(); });
+requestAnimationFrame(loop);
+
+/* ===== IGNIS CITY 連携：コインHUD表示＋獲得コインを親へ報告（IGNIS反映は1日30枚まで） ===== */
+(function(){
+  var hud=document.createElement('div');
+  hud.id='ign-coinhud';
+  hud.style.cssText='position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:99999;'
+    +'background:rgba(10,8,4,0.82);border:1px solid rgba(255,210,90,0.5);color:#ffe27a;'
+    +'font:700 12px/1.3 system-ui,sans-serif;padding:6px 13px;border-radius:999px;pointer-events:none;white-space:nowrap;';
+  document.body.appendChild(hud);
+  window.updateCoinHud=function(){
+    try{ var refl=Math.min(coinsToday,30);
+      hud.textContent='🪙 '+coinCount+'枚　(IGNIS反映 '+refl+'/30)'; }catch(e){}
+  };
+  var _t=0;
+  window.reportCoinsToIgnis=function(force){
+    var now=Date.now();
+    if(!force && now-_t<1500) return;
+    _t=now;
+    try{ if(window.parent && window.parent!==window)
+      window.parent.postMessage({type:'IGNIS_ANTGAME_REPORT', today:coinsToday, v:1}, '*'); }catch(e){}
+  };
+  addEventListener('visibilitychange', function(){ if(document.hidden) reportCoinsToIgnis(true); });
+  addEventListener('pagehide', function(){ reportCoinsToIgnis(true); });
+  updateCoinHud();
+})();
+</script>
+</body>
+</html>

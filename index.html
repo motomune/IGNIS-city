@@ -1893,6 +1893,19 @@
     <button type="button" onclick="closeCoinGame()" title="閉じる" style="position:absolute;top:10px;right:12px;z-index:2;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:7px 14px;border-radius:20px;font-weight:700;cursor:pointer;">✕</button>
     <iframe id="lifegame-frame" title="人生の灯" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#07070d;"></iframe>
   </div>
+  <div id="antgame-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(7,7,13,0.8);backdrop-filter:blur(3px);display:none;">
+    <button type="button" onclick="closeAntGame()" title="閉じる" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 20px;border-radius:20px;font-weight:800;font-size:13px;cursor:pointer;">✕ ゲームを閉じる</button>
+    <iframe id="antgame-frame" title="アリの巣" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#07070d;"></iframe>
+  </div>
+  <div id="gamepick-overlay" style="position:fixed;inset:0;z-index:9998;background:rgba(7,7,13,0.86);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;">
+    <div style="background:#0d0a14;border:1px solid rgba(255,213,79,0.4);border-radius:18px;padding:22px;width:min(360px,92vw);text-align:center;box-shadow:0 10px 50px rgba(255,180,0,0.18);">
+      <div style="font-weight:900;font-size:17px;color:#ffd54f;">💰 コインを稼ぐ</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);margin:5px 0 16px;">どちらも1日30コインまでIGNISに反映されます</div>
+      <button type="button" onclick="pickLifegame()" style="width:100%;margin-bottom:10px;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#ff6a00,#ee0979);color:#fff;">🕯️ 人生ゲーム</button>
+      <button type="button" onclick="pickAntgame()" style="width:100%;margin-bottom:14px;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#7a4a1e,#c8862f);color:#fff;">🐜 アリの巣ゲーム</button>
+      <button type="button" onclick="closeGamePicker()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">閉じる</button>
+    </div>
+  </div>
   <div id="toast"></div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <audio id="ignis-retro-bgm" loop preload="auto" playsinline style="display:none"></audio>
@@ -1969,7 +1982,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-21-v173';
+    const IGNIS_BUILD='2026-06-21-v174';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3898,23 +3911,55 @@
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
     }
-    // コイン稼ぎゲーム（人生ゲーム lifegame.html）をゲーム内オーバーレイ（iframe）で開く。
-    // lifegame.html は鍵を持たず、結果は postMessage で本体へ → claim_lifegame_reward で付与。
+    // コインを稼ぐ → ゲーム選択（人生ゲーム / アリの巣）。どちらも1日30コインまでIGNISに反映。
     function openCoinGame(){
       try{IgnisAudio.playClick();}catch(e){}
+      const ov=document.getElementById('gamepick-overlay');if(ov)ov.style.display='flex';
+    }
+    function closeGamePicker(){const ov=document.getElementById('gamepick-overlay');if(ov)ov.style.display='none';}
+    function pickLifegame(){closeGamePicker();openLifeGameDirect();}
+    function pickAntgame(){closeGamePicker();openAntGame();}
+    function _stopIgnisAudioForGame(){try{IgnisAudio.stopBgm();IgnisAudio.stopRetroBgm&&IgnisAudio.stopRetroBgm();}catch(_){}}
+    // 人生ゲーム lifegame.html（鍵なし・結果は postMessage → claim_lifegame_reward）
+    function openLifeGameDirect(){
       const f=document.getElementById('lifegame-frame');
       if(f)f.src='lifegame.html'+(currentLang==='en'?'?lang=en':'')+'#'+Date.now();
       const ov=document.getElementById('lifegame-overlay');if(ov)ov.style.display='block';
-      if(typeof setScenePaused==='function')setScenePaused(true); // 表示中は3D停止＝軽い
-      // IGNIS本体のBGMを止めて、人生ゲームの音だけにする
-      try{IgnisAudio.stopBgm();IgnisAudio.stopRetroBgm&&IgnisAudio.stopRetroBgm();}catch(_){}
+      if(typeof setScenePaused==='function')setScenePaused(true);
+      _stopIgnisAudioForGame();
     }
     function closeCoinGame(){
       const ov=document.getElementById('lifegame-overlay');if(ov)ov.style.display='none';
       const f=document.getElementById('lifegame-frame');if(f)f.src='about:blank';
       if(typeof setScenePaused==='function')setScenePaused(false);
-      try{refreshCityBgm();}catch(_){} // IGNISのBGMを戻す
+      try{refreshCityBgm();}catch(_){}
     }
+    // アリの巣ゲーム ant-nest/index.html（鍵なし・獲得コインは postMessage → claim_antgame_reward で1日30まで反映）
+    function openAntGame(){
+      const f=document.getElementById('antgame-frame');
+      if(f)f.src='ant-nest/index.html#'+Date.now();
+      const ov=document.getElementById('antgame-overlay');if(ov)ov.style.display='block';
+      if(typeof setScenePaused==='function')setScenePaused(true);
+      _stopIgnisAudioForGame();
+    }
+    function closeAntGame(){
+      const ov=document.getElementById('antgame-overlay');if(ov)ov.style.display='none';
+      const f=document.getElementById('antgame-frame');if(f)f.src='about:blank';
+      if(typeof setScenePaused==='function')setScenePaused(false);
+      try{refreshCityBgm();}catch(_){}
+    }
+    // アリゲームからの獲得コイン報告 → 1日30枚まで反映
+    window.addEventListener('message', async (e)=>{
+      if(e.origin!==location.origin)return;
+      const d=e.data; if(!d||typeof d!=='object'||d.v!==1)return;
+      if(d.type!=='IGNIS_ANTGAME_REPORT')return;
+      if(!currentUser)return;
+      const today=Math.max(0,parseInt(d.today,10)||0);
+      try{
+        const{data,error}=await db.rpc('claim_antgame_reward',{p_today_total:today});
+        if(!error&&data&&data.ok){const cc=document.getElementById('coin-count');if(cc&&data.total!==undefined)cc.textContent=data.total;}
+      }catch(_){}
+    });
     // lifegame.html からの結果を受信してコインを付与
     window.addEventListener('message', async (e) => {
       if (e.origin !== location.origin) return;

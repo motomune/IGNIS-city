@@ -1483,7 +1483,7 @@
     <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
-    <button id="coingame-btn" class="li-only" type="button" onclick="openCoinGame()" title="コインを稼ぐ">💰 <span id="coingame-label">コインを稼ぐ</span></button>
+    <button id="coingame-btn" type="button" onclick="openCoinGame()" title="コインを稼ぐ">💰 <span id="coingame-label">コインを稼ぐ</span></button>
     <div id="minimap-inner">
     <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button" aria-label="Close minimap">×</button>
     <button id="minimap-expand" onclick="openBigMap()" title="地図を大きく表示" type="button" aria-label="Expand map">⤢</button>
@@ -1982,7 +1982,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-28-v176';
+    const IGNIS_BUILD='2026-06-28-v177';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3931,6 +3931,7 @@
     function openCoinGame(){
       try{IgnisAudio.playClick();}catch(e){}
       updateGamepickLabels();
+      if(!currentUser){ try{ showToast(currentLang==='ja'?'お試しプレイOK！コインを保存するには登録してね':'Free to try! Register to keep your coins'); }catch(_){} }
       const ov=document.getElementById('gamepick-overlay');if(ov)ov.style.display='flex';
     }
     function closeGamePicker(){const ov=document.getElementById('gamepick-overlay');if(ov)ov.style.display='none';}
@@ -7956,7 +7957,7 @@
     // ========================================
     scene.onPointerObservable.add((pointerInfo)=>{
       if(pointerInfo.type!==BABYLON.PointerEventTypes.POINTERTAP)return;
-      if(isFlying&&!pendingBuildMode)return;
+      // 飛行モードでもビル/塔/投影をタッチして詳細を開ける（地面=土地操作のみ後段でブロック）
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
       if(pick.pickedMesh.name==='hall_star'){openHallModal();return;} // 再生の殿堂の星
@@ -8006,6 +8007,7 @@
         if(bData){openBuildingModal(bData);return;}
       }
       if(pick.pickedMesh.name==='ground'){
+        if(isFlying&&!pendingBuildMode)return;   // 飛行中は土地パネルを開かない（ビル詳細のみ許可）
         const wp=pick.pickedPoint;const{gx,gz}=worldToGrid(wp.x,wp.z);
         if(Math.abs(gx)>GRID_HALF||Math.abs(gz)>GRID_HALF)return;
         if(pendingBuildMode&&gachaState.result){

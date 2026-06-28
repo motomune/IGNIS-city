@@ -59,10 +59,8 @@
 <canvas id="game"></canvas>
 <div id="hud">
   <div id="stage">🥚 たまご</div>
-  <div>体力</div>
+  <div id="hpLabel">体力</div>
   <div class="bar"><span id="hpBar" style="width:100%;background:#e44;"></span></div>
-  <div>進化ゲージ <span id="xpPct">0%</span></div>
-  <div class="bar"><span id="xpBar" style="width:0%;background:#5cf;"></span></div>
   <div id="stats"></div>
   <div id="colony"></div>
   <div id="quest"></div>
@@ -85,7 +83,6 @@
   <div class="btn" data-act="gather">🍖運搬</div>
   <div class="btn" data-act="digrole">⛏任命</div>
   <div class="btn" data-act="soldier">⚔兵隊任命</div>
-  <div class="btn" data-act="map">🗺地図</div>
   <div class="btn" data-act="bgm">🎵BGM</div>
 </div>
 <!-- レアアリ誕生時のXシェア -->
@@ -99,6 +96,25 @@
    昼=発展 / 夜=防衛ウェーブ(地域別の外敵) / アリクイ / 兵隊 / アブラムシ / クエスト
    ===================================================================== */
 const TAU = Math.PI * 2;
+// ---- 言語（親IGNISから ?lang=en で英語表示）----
+const JA = (new URLSearchParams(location.search).get("lang") !== "en");
+const L = (ja,en) => JA ? ja : en;
+// 英語のときは固定UI（ボタン/ヘルプ/全滅画面/シェア）を差し替え
+if (!JA){
+  document.documentElement.lang="en";
+  const setTxt=(sel,txt)=>{ const el=document.querySelector(sel); if(el) el.textContent=txt; };
+  setTxt('[data-act="grabdig"]',"🤏Grab/Place");
+  setTxt('[data-act="lay"]',"🥚Lay Egg");
+  setTxt('[data-act="gather"]',"🍖Haul");
+  setTxt('[data-act="digrole"]',"⛏Assign Dig");
+  setTxt('[data-act="soldier"]',"⚔Assign Soldier");
+  setTxt('[data-act="bgm"]',"🎵BGM");
+  setTxt('#help',"On-screen controls ・ 🍖Haul = workers carry carcasses/trash ・ touch bugs to attack & food to heal ・ 🪙tap coins to collect ・ 🔴red/⚪white ant births = share on 𝕏 ・ auto-save");
+  setTxt('#over h1',"💀 Colony wiped out…");
+  setTxt('#over .retry',"Press R or click to retry");
+  setTxt('#shareBtn',"𝕏 Share");
+  setTxt('#hpLabel',"HP");
+}
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -118,9 +134,9 @@ const colonyCx = (COLS / 2) | 0;
 const BIOME_W = COLS / 3;
 function biomeIdx(cx){ return cx < BIOME_W ? 0 : cx < BIOME_W*2 ? 1 : 2; }
 const BIOMES = [
-  { key:"forest", name:"🌲森",   night:["beetle","stag","centipede","mantis"], day:["beetle","grub"] },
-  { key:"farm",   name:"🌾畑",   night:["locust","caterpillar","beetle"],      day:["locust","caterpillar"] },
-  { key:"city",   name:"🏙都市", night:["roach","spider","centipede"],         day:["roach","spider"] },
+  { key:"forest", name:"🌲森",   nameEn:"🌲Forest", night:["beetle","stag","centipede","mantis"], day:["beetle","grub"] },
+  { key:"farm",   name:"🌾畑",   nameEn:"🌾Farm",   night:["locust","caterpillar","beetle"],      day:["locust","caterpillar"] },
+  { key:"city",   name:"🏙都市", nameEn:"🏙City",   night:["roach","spider","centipede"],         day:["roach","spider"] },
 ];
 
 // ---- 巣の設計図 & 役割別の部屋 ----
@@ -148,10 +164,10 @@ function planTunnel(x0, y, x1){ for (let x=Math.min(x0,x1); x<=Math.max(x0,x1); 
 const rooms = [];                    // {type, cells:[{cx,cy,k}], cx, cy, built}
 const roomCellType = new Map();      // k -> type（完成した部屋のセル）
 const ROOM_META = {
-  queen:  {label:"👑女王の間",   tint:"rgba(170,110,210,0.13)"},
-  nursery:{label:"🥚育児室",     tint:"rgba(120,205,130,0.13)"},
-  food:   {label:"🍖食料庫",     tint:"rgba(225,175,80,0.13)"},
-  waste:  {label:"🗑ゴミ捨て場", tint:"rgba(140,125,100,0.13)"},
+  queen:  {label:L("👑女王の間","👑Queen's Chamber"),   tint:"rgba(170,110,210,0.13)"},
+  nursery:{label:L("🥚育児室","🥚Nursery"),             tint:"rgba(120,205,130,0.13)"},
+  food:   {label:L("🍖食料庫","🍖Pantry"),               tint:"rgba(225,175,80,0.13)"},
+  waste:  {label:L("🗑ゴミ捨て場","🗑Dump"),             tint:"rgba(140,125,100,0.13)"},
 };
 function addRoom(type, ccx, ccy, rw, rh){
   const id=rooms.length, cells=[];
@@ -283,10 +299,10 @@ let pherDecayT = 0;
 function pherAt(cx,cy){ return inBounds(cx,cy)?pher[cy*COLS+cx]:0; }
 function depositPher(cx,cy,amt){ if(inBounds(cx,cy)){ const k=cy*COLS+cx; pher[k]=Math.min(8, pher[k]+amt); } }
 const SEASONS=[
-  {n:"🌸 春", rain:0.40, cold:0.05},
-  {n:"☀ 夏", rain:0.22, cold:0.00},
-  {n:"🍂 秋", rain:0.45, cold:0.20},
-  {n:"❄ 冬", rain:0.00, cold:0.60},
+  {n:"🌸 春", nEn:"🌸 Spring", rain:0.40, cold:0.05},
+  {n:"☀ 夏", nEn:"☀ Summer", rain:0.22, cold:0.00},
+  {n:"🍂 秋", nEn:"🍂 Autumn", rain:0.45, cold:0.20},
+  {n:"❄ 冬", nEn:"❄ Winter", rain:0.00, cold:0.60},
 ];
 function seasonIdx(){ return Math.floor((dayNum-1)/3)%4; }
 function curSeason(){ return SEASONS[seasonIdx()]; }
@@ -348,25 +364,21 @@ function bgmTick(){
 }
 function startBGM(){
   ensureAudio();
-  if (BGM_URL){                                  // 外部(GitHub等)の音源があれば使用、失敗時は内蔵へ
-    if (!bgmEl){ bgmEl=new Audio(BGM_URL); bgmEl.loop=true; bgmEl.volume=0.4;
-      bgmEl.onerror=()=>{ bgmEl=null; if(bgmOn && !bgmTimer) bgmTimer=setInterval(bgmTick,190); }; }
-    bgmEl.play().catch(()=>{ bgmEl=null; if(!bgmTimer) bgmTimer=setInterval(bgmTick,190); });
-    return;
-  }
-  bgmStep=0; if(!bgmTimer) bgmTimer=setInterval(bgmTick,190);
+  // レトロBGMは外部ファイル(bgm.mp3)のみを再生。内蔵チップチューンは鳴らさない（音の二重再生を防止）
+  if (!bgmEl){ bgmEl=new Audio(BGM_URL); bgmEl.loop=true; bgmEl.volume=0.4; }
+  bgmEl.play().catch(()=>{});
 }
 function stopBGM(){ if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; } if(bgmEl) bgmEl.pause(); }
-function toggleBGM(){ bgmOn=!bgmOn; if(bgmOn) startBGM(); else stopBGM(); toast(bgmOn?"🎵 BGM ON":"🔇 BGM OFF","#cef",0.9); }
+function toggleBGM(){ bgmOn=!bgmOn; if(bgmOn) startBGM(); else stopBGM(); toast(bgmOn?L("🎵 BGM ON","🎵 BGM ON"):L("🔇 BGM OFF","🔇 BGM OFF"),"#cef",0.9); }
 
 // ---- Stages ----
 const STAGES = [
-  { name:"🥚 たまご",   key:"egg",    color:"#f3e3c0", r:5.5, speed:0,   maxHp:60,  hatch:2.5 },
-  { name:"🐛 幼虫",     key:"larva",  color:"#e8d3a0", r:6,   speed:0,   maxHp:70,  hatch:2.5 },
-  { name:"🛡 さなぎ",   key:"pupa",   color:"#c8a87a", r:6,   speed:0,   maxHp:80,  hatch:2.5 },
-  { name:"🐜 働きアリ", key:"worker", color:"#3a2418", r:6.5, speed:140, maxHp:110, xpNext:20 },
-  { name:"🪽 羽アリ",   key:"winged", color:"#2b1c12", r:7.5, speed:170, maxHp:150, xpNext:40 },
-  { name:"👑 女王アリ", key:"queen",  color:"#2a1340", r:9,   speed:145, maxHp:240, xpNext:Infinity },
+  { name:"🥚 たまご",   nameEn:"🥚 Egg",         key:"egg",    color:"#f3e3c0", r:5.5, speed:0,   maxHp:60,  hatch:2.5 },
+  { name:"🐛 幼虫",     nameEn:"🐛 Larva",       key:"larva",  color:"#e8d3a0", r:6,   speed:0,   maxHp:70,  hatch:2.5 },
+  { name:"🛡 さなぎ",   nameEn:"🛡 Pupa",        key:"pupa",   color:"#c8a87a", r:6,   speed:0,   maxHp:80,  hatch:2.5 },
+  { name:"🐜 働きアリ", nameEn:"🐜 Worker Ant",  key:"worker", color:"#3a2418", r:6.5, speed:140, maxHp:110, xpNext:20 },
+  { name:"🪽 羽アリ",   nameEn:"🪽 Winged Ant",  key:"winged", color:"#2b1c12", r:7.5, speed:170, maxHp:150, xpNext:40 },
+  { name:"👑 女王アリ", nameEn:"👑 Queen Ant",   key:"queen",  color:"#2a1340", r:9,   speed:145, maxHp:240, xpNext:Infinity },
 ];
 
 // ---- Player ----
@@ -393,10 +405,10 @@ function gainXp(n){
     ant.xp = 0; ant.stage++;
     const ns = stage();
     ant.hp = Math.min(ant.hp + 50, ns.maxHp);
-    toast("✨ 進化！ " + ns.name, "#aef", 1.6);
+    toast(L("✨ 進化！ ","✨ Evolved! ") + L(ns.name,ns.nameEn), "#aef", 1.6);
     sfx("evolve"); shake = Math.max(shake, 5);
     puff(ant.x, ant.y, 16, "#ffe9a0", 150, -90);
-    if (ns.key === "queen") setTimeout(()=>toast("👑 Eキーで巣の中に産卵できる！", "#fdb", 2.5), 1700);
+    if (ns.key === "queen") setTimeout(()=>toast(L("👑 Eキーで巣の中に産卵できる！","👑 Press E to lay eggs inside the nest!"), "#fdb", 2.5), 1700);
   }
 }
 
@@ -429,10 +441,10 @@ function makeWorker(x, y){
 function reassignJob(to){
   const from = to==="dig" ? "soldier" : "dig";
   const w = workers.find(w=>w.job===from);
-  if (!w){ toast(from==="dig"?"⛏ 採掘アリがいない":"⚔ 兵隊アリがいない", "#fca", 0.8); return; }
+  if (!w){ toast(from==="dig"?L("⛏ 採掘アリがいない","⛏ No digger ant"):L("⚔ 兵隊アリがいない","⚔ No soldier ant"), "#fca", 0.8); return; }
   w.job=to; w.path=null; w.mode="idle"; w.spread=false;
-  if (to==="soldier"){ w.maxHp=Math.round(70*(w.hpMul||1)); w.hp=w.maxHp; toast("⚔ 兵隊アリを任命！巣を守ってくれる", "#fda", 1.1); }
-  else { w.maxHp=Math.round(30*(w.hpMul||1)); w.hp=w.maxHp; toast("⛏ 採掘アリに戻した", "#dfc", 0.9); }
+  if (to==="soldier"){ w.maxHp=Math.round(70*(w.hpMul||1)); w.hp=w.maxHp; toast(L("⚔ 兵隊アリを任命！巣を守ってくれる","⚔ Soldier appointed! It will defend the nest"), "#fda", 1.1); }
+  else { w.maxHp=Math.round(30*(w.hpMul||1)); w.hp=w.maxHp; toast(L("⛏ 採掘アリに戻した","⛏ Back to digger ant"), "#dfc", 0.9); }
   sfx("quest");
 }
 
@@ -584,12 +596,30 @@ function updateDigger(w, dt){
   if (w.wait>0){ w.wait-=dt; return; }
   // 夜も働きアリは通常どおり作業する（退避しない）
   if (w.mode==="hide"){ w.mode="idle"; w.path=null; }
+  // 体力が20%以下になったら、勝手に食料庫へ行って蓄えを食べて回復する
+  if (!w.eating && w.hp <= w.maxHp*0.2 && builtRoom("food") && colonyFood>=1){
+    if (w.haul) releaseHaul(w);
+    w.eating=true; w.path=null;
+  }
+  if (w.eating){
+    if (w.hp >= w.maxHp*0.9 || colonyFood < 0.2 || !builtRoom("food")){ w.eating=false; w.path=null; }
+    else if (roomTypeAt(w.x,w.y)==="food"){                 // 食料庫に到着→食べて回復
+      w.hp = Math.min(w.maxHp, w.hp + dt*40);
+      colonyFood = Math.max(0, colonyFood - dt*0.4);
+      if ((w.eatFx=(w.eatFx||0)-dt) <= 0){ w.eatFx=0.4; puff(w.x,w.y,3,"#fd8",30,-15); }
+      return;
+    } else {                                                // 食料庫へ向かう
+      if (!w.path){ w.path=bfsPath((w.x/CELL)|0,(w.y/CELL)|0,(x,y)=>roomCellType.get(y*COLS+x)==="food"); w.pi=0; }
+      if (w.path){ if (followPath(w,dt,WSPD)==="blocked") w.path=null; return; }
+      w.wait=0.4; return;
+    }
+  }
   const full = w.load>=w.carryCap || (w.load>0 && w.noMore);
   if (full){ updateSandCarry(w, dt); return; }           // 満載 or もう掘れない→運搬
   if (w.load>0){ updateDig(w, dt); return; }             // 積載中(白アリ)→さらに掘る
   if (w.haul){ updateHaul(w, dt); return; }              // 物資の運搬を継続
   if (assignHaul(w)){ updateHaul(w, dt); return; }       // 卵/死骸/ゴミの運搬を優先
-  if (w.forage && gatherT<=0){ updateForage(w, dt); return; }   // 探索（食料調達中は運搬優先）
+  if (w.forage && gatherT<=0 && !isNight){ updateForage(w, dt); return; }   // 探索（夜は地表に出ず巣の中限定）
   updateDig(w, dt);                                      // 採掘アリ：設計図を掘る
 }
 // 探索アリ：地表を歩き、餌道フェロモンの強い方へ向かう（餌を見つけたらassignHaulが拾う）
@@ -621,6 +651,8 @@ function updateSandCarry(w, dt){
     if (!w.path){ w.path=bfsPath(wcx,wcy,(x,y)=>Math.abs(x-t.cx)<=1&&Math.abs(y-t.cy)<=1); w.pi=0; }
     if (w.path){ if (followPath(w,dt,WSPD)==="blocked") w.path=null; return; }
   }
+  // 夜は地表に出ない：埋め戻し先が無ければ砂を抱えたまま巣の中で待機
+  if (isNight){ w.wait=0.6+Math.random()*0.6; return; }
   // ② 地上へ運んで薄く広く撒く（入口から離れ・低い列へ・左右交互に）
   if (followPath(w, dt, WSPD)==="moving") return;
   const cx=(w.x/CELL)|0, cy=(w.y/CELL)|0;
@@ -776,32 +808,32 @@ function playerGrabDrop(){
   if (ant.cargo){
     if (roomTypeAt(ant.x,ant.y)==="food"){
       colonyFood += ant.cargo.value||1; ant.cargo=null;
-      toast("🍖 食料庫に納品！", "#fd8", 1); puff(ant.x,ant.y,5,"#fd8",60,-30); sfx("eat");
+      toast(L("🍖 食料庫に納品！","🍖 Delivered to the pantry!"), "#fd8", 1); puff(ant.x,ant.y,5,"#fd8",60,-30); sfx("eat");
     } else {
       const c=ant.cargo; c.x=ant.x; c.y=ant.y; c.carrier=null; c.vy=0; carcasses.push(c); ant.cargo=null;
-      toast("死骸を置いた", "#dca", 0.7);
+      toast(L("死骸を置いた","Dropped the carcass"), "#dca", 0.7);
     }
     return;
   }
-  if (ant.carrying){ toast("砂を運搬中は咥えられない", "#caa", 0.7); return; }
+  if (ant.carrying){ toast(L("砂を運搬中は咥えられない","Can't grab while carrying sand"), "#caa", 0.7); return; }
   let best=null, bd=1e9;
   for (const c of carcasses){ if (c.carrier) continue; const d=(c.x-ant.x)**2+(c.y-ant.y)**2; if (d<bd){ bd=d; best=c; } }
   if (best && bd < (ant.r+24)**2){
     carcasses.splice(carcasses.indexOf(best),1); best.carrier="player"; ant.cargo=best;
-    toast("🦷 死骸を咥えた（Fで食料庫に納品/その場で離す）", "#cfe", 1.4); sfx("bite");
-  } else toast("近くに死骸がない", "#caa", 0.7);
+    toast(L("🦷 死骸を咥えた（Fで食料庫に納品/その場で離す）","🦷 Grabbed a carcass (F to deliver to pantry / drop here)"), "#cfe", 1.4); sfx("bite");
+  } else toast(L("近くに死骸がない","No carcass nearby"), "#caa", 0.7);
 }
 // silent=true は女王の自動産卵（失敗時もトースト出さない）
 function layEgg(silent){
   if (stage().key!=="queen" || ant.layCD>0) return;
-  if (workers.length+1 >= 150){ if(!silent) toast("コロニーは上限の150匹", "#fca", 1.2); return; }
-  if (roomTypeAt(ant.x,ant.y)!=="queen"){ if(!silent) toast("👑 女王の間に入って産卵しよう", "#fca", 1.4); return; }
-  if (colonyFood < 1){ if(!silent) toast("🍖 食料が足りない（虫を倒して確保！）", "#fca", 1.2); return; }
-  if (eggsArr.length >= 10){ if(!silent) toast("育児が追いつかない（卵が多すぎ）", "#fca", 1); return; }
+  if (workers.length+1 >= 150){ if(!silent) toast(L("コロニーは上限の150匹","Colony at the 150 cap"), "#fca", 1.2); return; }
+  if (roomTypeAt(ant.x,ant.y)!=="queen"){ if(!silent) toast(L("👑 女王の間に入って産卵しよう","👑 Enter the queen's chamber to lay"), "#fca", 1.4); return; }
+  if (colonyFood < 1){ if(!silent) toast(L("🍖 食料が足りない（虫を倒して確保！）","🍖 Not enough food (defeat bugs!)"), "#fca", 1.2); return; }
+  if (eggsArr.length >= 10){ if(!silent) toast(L("育児が追いつかない（卵が多すぎ）","Nursery overwhelmed (too many eggs)"), "#fca", 1); return; }
   colonyFood--; ant.layCD=1.5; laidCount++;
   eggsArr.push({x:ant.x, y:ant.y+6, t:0, state:"queen", stage2:"egg", carrier:null});
   const fr=builtRoom("food"); spawnGarbageAt(fr?fr.cx*CELL+13:ant.x, fr?fr.cy*CELL+13:ant.y); // 餌を消費→ゴミ
-  if (!silent){ toast("🥚 産卵！ 働きアリが育児室へ運ぶ", "#ffd", 1.4); sfx("lay"); }
+  if (!silent){ toast(L("🥚 産卵！ 働きアリが育児室へ運ぶ","🥚 Egg laid! A worker carries it to the nursery"), "#ffd", 1.4); sfx("lay"); }
 }
 function updateEggs(dt){
   for (let i=eggsArr.length-1;i>=0;i--){
@@ -820,7 +852,7 @@ function updateEggs(dt){
       const nw=makeWorker(e.x,e.y); workers.push(nw);
       sfx("hatch"); puff(e.x,e.y,8,"#fff",70,-40);
       if (nw.variant!=="normal") offerShare(nw.variant);       // レアアリ誕生→Xシェア提案
-      else toast("🐜 羽化！ 新しい働きアリ（[2]で兵隊に）", "#cfc", 1.2);
+      else toast(L("🐜 羽化！ 新しい働きアリ（[2]で兵隊に）","🐜 Emerged! A new worker ant ([2] for soldier)"), "#cfc", 1.2);
     }
   }
 }
@@ -981,7 +1013,7 @@ function collectCoin(c){
   // ゲーム内のコイン回収は無制限。IGNISへ反映されるのは1日30枚まで（親側RPCで制御）
   coins.splice(i,1); coinCount++; coinsToday++; sfx("coin");
   puff(c.x,c.y,8,"#ffe27a",90,-50); dmgText(c.x,c.y-10,"+1🪙","#ffe27a");
-  toast(`🪙 コイン回収！ 計${coinCount}枚（本日${coinsToday}枚）`, "#fe9", 0.9);
+  toast(L(`🪙 コイン回収！ 計${coinCount}枚（本日${coinsToday}枚）`,`🪙 Coin collected! ${coinCount} total (${coinsToday} today)`), "#fe9", 0.9);
   if(typeof updateCoinHud==='function') updateCoinHud();
   if(typeof reportCoinsToIgnis==='function') reportCoinsToIgnis();
 }
@@ -1029,7 +1061,7 @@ function spawnWave(){
     if (dayNum<2 && (kind==="centipede"||kind==="mantis"||kind==="stag")) kind=pool[0]; // 序盤は弱め
     invaders.push(makeInvader(kind, cx*CELL+13, (cy-1)*CELL+10, (side<0?1:-1)*40));
   }
-  banner(`🌙 第${dayNum}夜 — ${BIOMES[theme].name}の外敵 ${n}匹！卵を守れ！`, "#fbb");
+  banner(L(`🌙 第${dayNum}夜 — ${BIOMES[theme].name}の外敵 ${n}匹！卵を守れ！`,`🌙 Night ${dayNum} — ${n} invaders from the ${BIOMES[theme].nameEn}! Protect the eggs!`), "#fbb");
   sfx("night"); shake=Math.max(shake,4);
   if (dayNum%5===0) spawnAnteater();
 }
@@ -1048,7 +1080,7 @@ function killInvader(e){
   spawnCarcass(e.x, e.y, e.kind, drops);     // ひっくり返った死骸→アリが食料庫へ運ぶ
   killCount++; gainXp(big?8:4);
   shake=Math.max(shake,4);
-  toast("💥 撃退！", "#bfb", 0.6);
+  toast(L("💥 撃退！","💥 Repelled!"), "#bfb", 0.6);
 }
 function damagePlayer(d){
   if (stage().speed===0 && ant.stage===0) d*=1.5; // 卵は脆い
@@ -1276,21 +1308,21 @@ function updateAphids(dt){
 
 // ---- クエスト ----
 const questDefs=[
-  {t:"巣を15マス掘り広げる",        c:()=>nestCells>=15,        p:()=>[Math.min(nestCells,15),15]},
-  {t:"砂を15個積んでアリ塚を作る",   c:()=>droppedCount>=15,     p:()=>[Math.min(droppedCount,15),15]},
-  {t:"虫を3匹撃退する",            c:()=>killCount>=3,         p:()=>[Math.min(killCount,3),3]},
-  {t:"女王アリに進化する",          c:()=>stage().key==="queen",p:()=>[stage().key==="queen"?1:0,1]},
-  {t:"卵を3個産む",               c:()=>laidCount>=3,         p:()=>[Math.min(laidCount,3),3]},
-  {t:"コロニーを8匹に増やす",       c:()=>workers.length+1>=8,  p:()=>[Math.min(workers.length+1,8),8]},
-  {t:"兵隊アリを2匹任命する",       c:()=>workers.filter(w=>w.job==="soldier").length>=2, p:()=>[Math.min(workers.filter(w=>w.job==="soldier").length,2),2]},
-  {t:"アブラムシを飼育する",        c:()=>aphids.some(a=>a.state==="ranched"), p:()=>[aphids.some(a=>a.state==="ranched")?1:0,1]},
+  {t:"巣を15マス掘り広げる",        tEn:"Dig out 15 nest cells",       c:()=>nestCells>=15,        p:()=>[Math.min(nestCells,15),15]},
+  {t:"砂を15個積んでアリ塚を作る",   tEn:"Pile 15 sand into a mound",   c:()=>droppedCount>=15,     p:()=>[Math.min(droppedCount,15),15]},
+  {t:"虫を3匹撃退する",            tEn:"Drive off 3 bugs",            c:()=>killCount>=3,         p:()=>[Math.min(killCount,3),3]},
+  {t:"女王アリに進化する",          tEn:"Evolve into the Queen Ant",   c:()=>stage().key==="queen",p:()=>[stage().key==="queen"?1:0,1]},
+  {t:"卵を3個産む",               tEn:"Lay 3 eggs",                  c:()=>laidCount>=3,         p:()=>[Math.min(laidCount,3),3]},
+  {t:"コロニーを8匹に増やす",       tEn:"Grow the colony to 8",        c:()=>workers.length+1>=8,  p:()=>[Math.min(workers.length+1,8),8]},
+  {t:"兵隊アリを2匹任命する",       tEn:"Appoint 2 soldier ants",      c:()=>workers.filter(w=>w.job==="soldier").length>=2, p:()=>[Math.min(workers.filter(w=>w.job==="soldier").length,2),2]},
+  {t:"アブラムシを飼育する",        tEn:"Ranch an aphid",              c:()=>aphids.some(a=>a.state==="ranched"), p:()=>[aphids.some(a=>a.state==="ranched")?1:0,1]},
 ];
 let questIdx=0, nextSurvN=2;
 function currentQuest(){
   if (questIdx<questDefs.length) return questDefs[questIdx];
-  return {t:`夜を通算${nextSurvN}回生き延びる`, c:()=>survivedNights>=nextSurvN, p:()=>[Math.min(survivedNights,nextSurvN),nextSurvN], surv:true};
+  return {t:`夜を通算${nextSurvN}回生き延びる`, tEn:`Survive ${nextSurvN} nights total`, c:()=>survivedNights>=nextSurvN, p:()=>[Math.min(survivedNights,nextSurvN),nextSurvN], surv:true};
 }
-function questText(){ const q=currentQuest(), [c,t]=q.p(); const rw=(!q.surv && questIdx<3)?'🐜働きアリ':'🐞アブラムシ'; return `🎯 ${q.t}  ${c}/${t}　報酬→${rw}`; }
+function questText(){ const q=currentQuest(), [c,t]=q.p(); const rw=(!q.surv && questIdx<3)?L('🐜働きアリ','🐜Worker Ant'):L('🐞アブラムシ','🐞Aphid'); return `🎯 ${L(q.t,q.tEn||q.t)}  ${c}/${t}　${L('報酬','reward')}→${rw}`; }
 function gainAphidReward(){      // クエスト報酬：飼育済みアブラムシ1匹（甘露で食料）
   const cx=Math.max(3,Math.min(COLS-4, colonyCx+((Math.random()*8-4)|0))), cy=groundY(cx);
   aphids.push({x:cx*CELL+13, y:(cy-1)*CELL+12, state:"ranched", prod:8, vx:10, t:0});
@@ -1307,10 +1339,10 @@ function updateQuests(){
   if (q && q.c()){
     if (!q.surv && questIdx<3){    // 最初の3つは働きアリ1匹
       gainWorkerReward();
-      banner("🎉 クエスト達成！ 🐜働きアリ1匹を獲得！", "#ffe", 2.2);
+      banner(L("🎉 クエスト達成！ 🐜働きアリ1匹を獲得！","🎉 Quest done! Gained 1 🐜worker ant!"), "#ffe", 2.2);
     } else {
       gainAphidReward();
-      banner("🎉 クエスト達成！ 🐞アブラムシ1匹を獲得！", "#ffe", 2.2);
+      banner(L("🎉 クエスト達成！ 🐞アブラムシ1匹を獲得！","🎉 Quest done! Gained 1 🐞aphid!"), "#ffe", 2.2);
     }
     sfx("quest");
     if (q.surv) nextSurvN+=2; else questIdx++;
@@ -1389,7 +1421,8 @@ function grabOrDig(){
   if (near) playerGrabDrop(); else doDigOrDrop();
 }
 let mmShrunk=false;
-function toggleMinimapSize(){ mmShrunk=!mmShrunk; toast(mmShrunk?"🗺 地図を縮小":"🗺 地図を拡大","#cdf",0.8); }
+const mmBtn={x:0,y:0,w:0,h:0};   // ミニマップ縮小ボタンの画面座標（描画時に更新）
+function toggleMinimapSize(){ mmShrunk=!mmShrunk; toast(mmShrunk?L("🗺 地図を縮小","🗺 Map shrunk"):L("🗺 地図を拡大","🗺 Map enlarged"),"#cdf",0.8); }
 const ACT={ grabdig:()=>grabOrDig(), dig:()=>doDigOrDrop(), grab:()=>playerGrabDrop(), lay:()=>layEgg(), gather:()=>gatherCmd(),
             digrole:()=>reassignJob("dig"), soldier:()=>reassignJob("soldier"), map:()=>toggleMinimapSize(), bgm:()=>toggleBGM() };
 document.querySelectorAll("#acts .btn").forEach(b=>{
@@ -1400,19 +1433,19 @@ let gatherT=0;
 function gatherCmd(){
   gatherT=20;                       // 20秒間は採掘/探索より運搬を優先
   for (const w of workers){ if (w.job!=="soldier" && w.load===0 && !w.haul){ w.path=null; assignHaul(w); } }
-  toast("🍖 食料調達！死骸を食料庫へ・ゴミをゴミ部屋へ運ばせる", "#fd8", 1.4); sfx("quest");
+  toast(L("🍖 運搬！死骸を食料庫へ・ゴミをゴミ部屋へ運ばせる","🍖 Haul! Workers carry carcasses to the pantry & trash to the dump"), "#fd8", 1.4); sfx("quest");
 }
 // レアアリ誕生→Xシェア
 function offerShare(variant){
   const info = variant==="red"
-    ? {emo:"🔴", name:"赤アリ", desc:"攻撃力と移動速度が2倍の超レア(1/20)"}
-    : {emo:"⚪", name:"白アリ", desc:"土を3つ運べて速度3倍の激レア(1/60)"};
-  toast(`${info.emo} ${info.name}が誕生！`, "#ffd", 1.6); sfx("evolve");
+    ? {emo:"🔴", name:L("赤アリ","Red Ant"), desc:L("攻撃力と移動速度が2倍の超レア(1/20)","2× attack & speed, super-rare (1/20)")}
+    : {emo:"⚪", name:L("白アリ","White Ant"), desc:L("土を3つ運べて速度3倍の激レア(1/60)","carries 3 dirt at 3× speed, ultra-rare (1/60)")};
+  toast(L(`${info.emo} ${info.name}が誕生！`,`${info.emo} ${info.name} was born!`), "#ffd", 1.6); sfx("evolve");
   const box=document.getElementById("shareBox");
-  document.getElementById("shareMsg").textContent = `${info.emo} ${info.name}が生まれた！ ${info.desc}`;
+  document.getElementById("shareMsg").textContent = L(`${info.emo} ${info.name}が生まれた！ ${info.desc}`,`${info.emo} A ${info.name} was born! ${info.desc}`);
   box.classList.add("on");
   clearTimeout(offerShare._t); offerShare._t=setTimeout(()=>box.classList.remove("on"), 12000);
-  offerShare.cur = `アリの巣ゲームで${info.emo}${info.name}が誕生！${info.desc} #アリの巣ゲーム #AntNest`;
+  offerShare.cur = L(`アリの巣ゲームで${info.emo}${info.name}が誕生！${info.desc} #アリの巣ゲーム #AntNest`,`A ${info.emo}${info.name} was born in Ant Nest! ${info.desc} #AntNest`);
 }
 document.getElementById("shareBtn").addEventListener("click", ()=>{
   const txt=encodeURIComponent(offerShare.cur||"アリの巣ゲームで遊んでるよ！ #アリの巣ゲーム");
@@ -1423,6 +1456,10 @@ document.getElementById("shareClose").addEventListener("click", ()=>document.get
 canvas.addEventListener("pointerdown", e=>{
   bgmInit();
   if (gameOver) return;
+  // ミニマップ右上の縮小/拡大ボタン（画面座標で判定）
+  if (e.clientX>=mmBtn.x-4 && e.clientX<=mmBtn.x+mmBtn.w+4 && e.clientY>=mmBtn.y-4 && e.clientY<=mmBtn.y+mmBtn.h+4){
+    toggleMinimapSize(); return;
+  }
   const wx=cam.x+e.clientX, wy=cam.y+e.clientY;
   for (const c of coins){ if ((c.x-wx)**2+(c.y-wy)**2 < 24*24){ collectCoin(c); break; } }
 });
@@ -1546,7 +1583,7 @@ function dawnFn(){
   coinsToday=0;                        // コインの日次上限リセット
   for (const e of invaders) e.flee=true;
   if (anteater) anteater.flee=true;
-  banner(`☀ ${dayNum}日目の朝 — 夜を生き延びた！`, "#ffe");
+  banner(L(`☀ ${dayNum}日目の朝 — 夜を生き延びた！`,`☀ Morning of Day ${dayNum} — you survived the night!`), "#ffe");
   sfx("dawn");
 }
 
@@ -1627,7 +1664,7 @@ function update(dt){
   const pop=workers.length+1;
   colonyFood = Math.max(0, colonyFood - dt*(0.01 + pop*0.0025));
   starving = colonyFood < 0.02;
-  if (starving){ for (const w of workers) w.hp -= dt*0.4; ant.hp -= dt*0.7; }  // 飢餓は緩やかに衰弱（即死しない）
+  if (starving){ for (const w of workers) w.hp -= dt*0.4/1.5; ant.hp -= dt*0.7/1.5; }  // 飢餓は緩やかに衰弱（体力の減りを1.5倍ゆっくり）
   // --- 女王は女王の間にいる間、自動で産卵（食料に余裕がある時だけ＝産み過ぎで餓死させない）---
   if (stage().key==="queen" && roomTypeAt(ant.x,ant.y)==="queen" && colonyFood>=4){
     ant.autoLayT=(ant.autoLayT||0)-dt; if (ant.autoLayT<=0){ ant.autoLayT=7; layEgg(true); }
@@ -1639,12 +1676,12 @@ function update(dt){
       ant.hatchT=0; ant.stage++;
       const ns=stage();
       ant.hp=ns.maxHp;
-      if (ns.speed>0){ toast("🐜 孵化！ 働きアリ誕生", "#cfc"); sfx("hatch"); }
-      else toast(ns.name+" になった…", "#eed", 1);
+      if (ns.speed>0){ toast(L("🐜 孵化！ 働きアリ誕生","🐜 Hatched! A worker ant is born"), "#cfc"); sfx("hatch"); }
+      else toast(L(ns.name+" になった…",L(ns.name,ns.nameEn)+" now…"), "#eed", 1);
     }
   } else {
     moveAnt(dt);
-    ant.hp -= (st.key==="queen"?0.7:1.0)*dt;
+    ant.hp -= (st.key==="queen"?0.7:1.0)*dt/1.5;   // 体力の減りを1.5倍ゆっくり
   }
   // 咥えた死骸は追従＋食料庫で自動納品
   if (ant.cargo){
@@ -1666,7 +1703,7 @@ function update(dt){
       if (w.haul) releaseHaul(w);          // 運んでいた卵/餌を解放（放置バグ防止）
       workers.splice(i,1);
       puff(w.x,w.y,8,"#caa",90,-50);
-      toast("😢 仲間がやられた…", "#f99", 1);
+      toast(L("😢 仲間がやられた…","😢 A comrade has fallen…"), "#f99", 1);
       continue;
     }
     w.phase+=dt*9;
@@ -1694,13 +1731,14 @@ function update(dt){
 
   if (ant.hp<=0){
     if (workers.length>0 || eggsArr.length>0){
-      toast("💀 力尽きた…コロニーは健在。たまごから再開", "#fbb", 2);
+      toast(L("💀 力尽きた…コロニーは健在。たまごから再開","💀 You fell… the colony lives on. Restarting from an egg"), "#fbb", 2);
       sfx("hurt");
       spawnEgg();
     } else {
       gameOver=true; clearSave();
-      document.getElementById("overStats").textContent =
-        `生存 ${dayNum}日 ／ 巣の広さ ${nestCells}マス ／ 最大コロニー ${maxColony}匹 ／ 撃退 ${killCount}匹`;
+      document.getElementById("overStats").textContent = L(
+        `生存 ${dayNum}日 ／ 巣の広さ ${nestCells}マス ／ 最大コロニー ${maxColony}匹 ／ 撃退 ${killCount}匹`,
+        `Survived ${dayNum} days ／ Nest ${nestCells} cells ／ Max colony ${maxColony} ／ Repelled ${killCount}`);
       document.getElementById("over").style.display="flex";
       return;
     }
@@ -1715,22 +1753,18 @@ function update(dt){
 
   // HUD
   document.getElementById("stage").textContent =
-    st.name + (st.speed===0?`（あと ${Math.max(0,st.hatch-ant.hatchT).toFixed(1)}s）`:"");
+    L(st.name,st.nameEn) + (st.speed===0?L(`（あと ${Math.max(0,st.hatch-ant.hatchT).toFixed(1)}s）`,` (${Math.max(0,st.hatch-ant.hatchT).toFixed(1)}s)`):"");
   document.getElementById("hpBar").style.width=Math.max(0,ant.hp/st.maxHp*100)+"%";
-  const xpPct = st.xpNext===Infinity?100:(st.xpNext?ant.xp/st.xpNext*100:0);
-  const xpClamped=Math.max(0,Math.min(100,xpPct));
-  document.getElementById("xpBar").style.width=xpClamped+"%";
-  { const pe=document.getElementById("xpPct"); if(pe) pe.textContent=Math.round(xpClamped)+"%"; }
-  const pb = BIOMES[biomeIdx(Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0)))].name;
+  const pb = L(BIOMES[biomeIdx(Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0)))].name, BIOMES[biomeIdx(Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0)))].nameEn);
   const wIcon = weather==="rain"?"🌧":weather==="snow"?"❄":(isNight?"🌙":"☀");
   document.getElementById("stats").textContent =
-    `${curSeason().n} ${dayNum}日目 ${wIcon} ｜ ${pb} ｜ 体力 ${Math.ceil(Math.max(0,ant.hp))}/${st.maxHp} ｜ ${ant.carrying?"🟫 運搬中":"手ぶら"}`;
+    `${L(curSeason().n,curSeason().nEn)} ${L('','Day ')}${dayNum}${L('日目','')} ${wIcon} ｜ ${pb} ｜ ${L('体力','HP')} ${Math.ceil(Math.max(0,ant.hp))}/${st.maxHp} ｜ ${ant.carrying?L("🟫 運搬中","🟫 Carrying"):L("手ぶら","Empty")}`;
   const dig=workers.filter(w=>w.job==="dig").length, sol=workers.length-dig;
   const rm=(t,ic)=>builtRoom(t)?ic:"·";
   document.getElementById("colony").textContent =
-    `🐜 ${workers.length+1}/150 ｜ ⛏ ${dig} ⚔ ${sol} ｜ 🥚 ${eggsArr.length} ｜ 🍖 ${Math.floor(colonyFood)}${starving?" ⚠飢餓!":""} ｜ 🪙 ${coinCount}` +
-    `\n部屋: ${rm("queen","👑")}${rm("nursery","🥚")}${rm("food","🍖")}${rm("waste","🗑")}` +
-    (anteater?` ｜ 🐜⚠ アリクイ ${Math.max(0,anteater.hp)}`:"") +
+    `🐜 ${workers.length+1}/150 ｜ ⛏ ${dig} ⚔ ${sol} ｜ 🥚 ${eggsArr.length} ｜ 🍖 ${Math.floor(colonyFood)}${starving?L(" ⚠飢餓!"," ⚠Starving!"):""} ｜ 🪙 ${coinCount}` +
+    `\n${L('部屋','Rooms')}: ${rm("queen","👑")}${rm("nursery","🥚")}${rm("food","🍖")}${rm("waste","🗑")}` +
+    (anteater?` ｜ ${L('🐜⚠ アリクイ','🐜⚠ Anteater')} ${Math.max(0,anteater.hp)}`:"") +
     (invaders.filter(e=>!e.flee).length?` ｜ 👿 ${invaders.filter(e=>!e.flee).length}`:"");
   document.getElementById("quest").textContent = questText();
 }
@@ -2215,6 +2249,13 @@ function render(){
   ctx.drawImage(mm, mx, my, mw, mh);
   ctx.globalAlpha=1;
   ctx.strokeStyle="rgba(0,0,0,.6)"; ctx.lineWidth=2; ctx.strokeRect(mx,my,mw,mh);
+  // 地図右上の縮小/拡大トグルボタン（タップで切替）
+  const bs=22; mmBtn.w=bs; mmBtn.h=bs; mmBtn.x=mx+mw-bs; mmBtn.y=my;
+  ctx.fillStyle="rgba(20,24,34,0.85)"; ctx.fillRect(mmBtn.x,mmBtn.y,bs,bs);
+  ctx.strokeStyle="rgba(180,210,255,0.7)"; ctx.lineWidth=1.5; ctx.strokeRect(mmBtn.x,mmBtn.y,bs,bs);
+  ctx.fillStyle="#cfe6ff"; ctx.font="bold 15px sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(mmShrunk?"＋":"－", mmBtn.x+bs/2, mmBtn.y+bs/2+1);
+  ctx.textAlign="left"; ctx.textBaseline="alphabetic";
   const dot=(wx,wy,col,s)=>{ ctx.fillStyle=col; ctx.fillRect(mx+wx/WORLD_W*mw-s/2, my+wy/WORLD_H*mh-s/2, s, s); };
   for (const w of workers) dot(w.x,w.y, w.job==="soldier"?"#ff8030":"#ffb000", 3);
   for (const b of bugs) dot(b.x,b.y,"#7fff5f",3);
@@ -2451,9 +2492,11 @@ requestAnimationFrame(loop);
     +'background:rgba(10,8,4,0.82);border:1px solid rgba(255,210,90,0.5);color:#ffe27a;'
     +'font:700 12px/1.3 system-ui,sans-serif;padding:6px 13px;border-radius:999px;pointer-events:none;white-space:nowrap;';
   document.body.appendChild(hud);
+  var DCAP=Math.max(1,parseInt(new URLSearchParams(location.search).get('cap'),10)||30);  // 会員ティアの1日反映上限（親から）
   window.updateCoinHud=function(){
-    try{ var refl=Math.min(coinsToday,30);
-      hud.textContent='🪙 '+coinCount+'枚　(IGNIS反映 '+refl+'/30)'; }catch(e){}
+    try{ var refl=Math.min(coinsToday,DCAP);
+      hud.textContent = JA ? ('🪙 '+coinCount+'枚　(IGNIS反映 '+refl+'/'+DCAP+')')
+                           : ('🪙 '+coinCount+'  (to IGNIS '+refl+'/'+DCAP+')'); }catch(e){}
   };
   var _t=0;
   window.reportCoinsToIgnis=function(force){

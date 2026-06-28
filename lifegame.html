@@ -183,7 +183,8 @@
   .tile .token{position:absolute; top:-26px; left:50%; transform:translateX(-50%) translateZ(8px) scaleX(-1); font-size:28px;
     filter:drop-shadow(0 6px 5px #000c); animation:tokenBob 1.1s ease-in-out infinite;}
   @keyframes tokenBob{0%,100%{transform:translateX(-50%) translateZ(8px) translateY(0) scaleX(-1);} 50%{transform:translateX(-50%) translateZ(8px) translateY(-5px) scaleX(-1);}}
-  #board-stage{margin-top:auto; padding-top:8px;}
+  #board-stage{margin-top:auto; padding-top:8px; position:sticky; bottom:0; z-index:3;
+    background:linear-gradient(180deg,transparent,var(--bg2) 30%);}
   .die{font-size:54px; line-height:1; text-align:center; color:var(--fire); filter:drop-shadow(0 0 16px var(--fire));}
   .board-msg{font-size:clamp(13.5px,3.6vw,15px); color:#e7e2da; white-space:pre-wrap;}
   .board-msg .mh{font-weight:800; font-size:clamp(15px,4vw,18px); margin:0 0 6px; color:var(--txt);}
@@ -315,6 +316,7 @@
 /* ---------- language ---------- */
 const params = new URLSearchParams(location.search);
 let lang = (params.get('lang') === 'en') ? 'en' : 'ja';
+const DCAP = Math.max(1, parseInt(params.get('cap'),10) || 30);   // 会員ティアの1日反映上限（親IGNISから）
 const T = (o) => (o && o[lang] != null) ? o[lang] : (o ? o.ja : '');
 
 /* ---------- UI strings ---------- */
@@ -332,7 +334,7 @@ const UI = {
   next:{ja:'つづく',en:'Continue'},
   reward_title:{ja:'今日の報酬',en:'Today’s reward'},
   coins_unit:{ja:'コイン',en:'coins'},
-  cap_note:{ja:'※ 報酬は1日1回・最大30コイン（換金不可）',en:'※ Once per day, up to 30 coins (no cash value)'},
+  cap_note:{ja:`※ 報酬は1日1回・最大${DCAP}コイン（換金不可）`,en:`※ Once per day, up to ${DCAP} coins (no cash value)`},
   carve_label:{ja:'この人生で、あなたが街に刻む一行',en:'The line you carve into the city'},
   back_city:{ja:'街にもどる',en:'Back to the city'},
   again:{ja:'もう一度生きる',en:'Live again'},
@@ -839,7 +841,7 @@ function calcCoins(endingId){
   c += Math.floor(Math.max(0, S.money - 30) / 24);   // some self-reliance
   c += Math.min(8, quality);                          // good choices (0..8)
   c += ENDINGS[endingId].bonus;                       // ending bonus
-  return Math.max(5, Math.min(30, Math.round(c)));
+  return Math.max(5, Math.min(DCAP, Math.round(c)));
 }
 
 /* =========================================================================
@@ -1046,6 +1048,7 @@ function renderFinal(){
   const {ending:id, coins, firstClaim:firstClaimToday, cash, reached, occ} = lastResult;
   const e = BOARD_ENDINGS[id];
   statsEl().setAttribute('aria-hidden','true'); statsEl().innerHTML='';
+  document.getElementById('app').classList.add('titlemode'); // 決算は2分割せず画面いっぱい中央に
   document.getElementById('progress').innerHTML='';
   scene().className='center fade';
   scene().scrollTop=0;
@@ -1223,7 +1226,7 @@ const Sfx = (function(){
   const presets = {
     click(){ blip(440,now(),0.07,'triangle',0.16); },
     choice(){ const t=now(); blip(523,t,0.08,'triangle',0.18); blip(784,t+0.06,0.1,'triangle',0.16); },
-    dice(){ for(let i=0;i<6;i++) noise(now()+i*0.07,0.06,0.1); },
+    dice(){ for(let i=0;i<6;i++) noise(now()+i*0.07,0.06,0.2); },
     land(){ blip(170,now(),0.12,'sine',0.3); noise(now(),0.08,0.1); },
     up(){ const t=now(); [523,659,784].forEach((f,i)=>blip(f,t+i*0.06,0.12,'sine',0.2)); },
     down(){ const t=now(); [440,349,262].forEach((f,i)=>blip(f,t+i*0.06,0.13,'sine',0.18)); },
@@ -2543,7 +2546,7 @@ function calcBoardCoins(){
   c += Math.floor((S.mind + S.bond + S.trust) / 40);          // heart/bonds/trust (0..7)
   c += board.reachedGoal ? 6 : 2;                              // completed the journey
   c += Math.max(0, Math.min(6, (quality||0) + board.boardQuality)); // wise/kind choices
-  return Math.max(5, Math.min(30, Math.round(c)));
+  return Math.max(5, Math.min(DCAP, Math.round(c)));
 }
 
 /* =========================================================================

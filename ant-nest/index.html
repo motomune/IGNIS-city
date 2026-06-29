@@ -2504,7 +2504,7 @@ requestAnimationFrame(loop);
     if(!force && now-_t<1500) return;
     _t=now;
     try{ if(window.parent && window.parent!==window)
-      window.parent.postMessage({type:'IGNIS_ANTGAME_REPORT', today:coinsToday, v:1}, '*'); }catch(e){}
+      window.parent.postMessage({type:'IGNIS_ANTGAME_REPORT', today:coinsToday, total:coinCount, v:1}, '*'); }catch(e){}
   };
   addEventListener('visibilitychange', function(){ if(document.hidden) reportCoinsToIgnis(true); });
   addEventListener('pagehide', function(){ reportCoinsToIgnis(true); });

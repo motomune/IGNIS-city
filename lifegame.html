@@ -1107,8 +1107,9 @@ function restart(){ grantAnswered=false; lastGrant=null; board=null; if(grantTim
 let grantAnswered=false, grantTimeout=null, lastGrant=null;
 function sendResult(coins, ending){
   try{
+    const cash = (board && typeof board.cash==='number') ? board.cash : 0;   // ランキング用：最終所持金（万）
     window.parent && window.parent!==window &&
-      window.parent.postMessage({type:'IGNIS_LIFEGAME_RESULT', coins, ending, v:1}, '*');
+      window.parent.postMessage({type:'IGNIS_LIFEGAME_RESULT', coins, ending, cash, v:1}, '*');
   }catch(e){}
 }
 function requestClose(){

@@ -163,6 +163,10 @@ function planTunnel(x0, y, x1){ for (let x=Math.min(x0,x1); x<=Math.max(x0,x1); 
 // 巣の部屋：queen=女王の間 / nursery=育児室 / food=食料庫 / waste=ゴミ捨て場
 const rooms = [];                    // {type, cells:[{cx,cy,k}], cx, cy, built}
 const roomCellType = new Map();      // k -> type（完成した部屋のセル）
+// 部屋はこのサイクル順にエンドレスに増設：ゴミ→食糧→女王→育児→ゴミ→…（3つ目ごとに女王室）
+const ROOM_CYCLE = ["waste","food","queen","nursery"];
+const ROOM_CAP = 36;                 // 暴走防止の上限（実プレイでは事実上エンドレス）
+let roomsCompleted = 0;              // 完成した部屋の累計（敵レベルの基準）
 const ROOM_META = {
   queen:  {label:L("👑女王の間","👑Queen's Chamber"),   tint:"rgba(170,110,210,0.13)"},
   nursery:{label:L("🥚育児室","🥚Nursery"),             tint:"rgba(120,205,130,0.13)"},
@@ -190,8 +194,8 @@ function buildBaseNest(){
   const layout=[
     {type:"waste",   d:5,  side:-1, rw:2, rh:2, br:8},
     {type:"food",    d:10, side:1,  rw:3, rh:2, br:9},
-    {type:"nursery", d:15, side:-1, rw:3, rh:2, br:8},
-    {type:"queen",   d:20, side:1,  rw:3, rh:2, br:9},
+    {type:"queen",   d:15, side:-1, rw:3, rh:2, br:8},
+    {type:"nursery", d:20, side:1,  rw:3, rh:2, br:9},
   ];
   const maxY=Math.min(ROWS-4, top+20);
   for (let y=top; y<=maxY; y++) planAdd(ex,y);          // 主縦坑（地上と巣をつなぐ唯一の口）
@@ -212,41 +216,29 @@ function updateRooms(){
     if (done){
       r.built=true;
       for (const c of r.cells) roomCellType.set(c.k, r.type);
-      toast(`🏠 ${ROOM_META[r.type].label} が完成！`, "#cfe", 1.6); sfx("hatch");
-      if (matured) reorganizeNest();   // 新しい部屋が完成するたび役割を深さで再編（女王=最深に再交換）
+      if (!r.counted){ r.counted=true; roomsCompleted++; announceEnemyMilestone(roomsCompleted); }
+      toast(`🏠 ${ROOM_META[r.type].label} ${L("が完成","done")}！(${roomsCompleted})`, "#cfe", 1.6); sfx("hatch");
     }
   }
 }
-// 役割を深さで再割当：最深=女王, 次=育児室, 以降=食料/ゴミ。女王室が必ず存在し最深になる
-function reorganizeNest(){
-  const built=rooms.filter(r=>r.built);
-  if (built.length<4) return;
-  built.sort((a,b)=> b.cy-a.cy || a.cx-b.cx);          // 深い順
-  const roles=["queen","nursery","food","waste"];
-  built.forEach((r,i)=>{ r.type = i<roles.length ? roles[i] : (i%2 ? "food" : "waste"); });
-  roomCellType.clear();
-  for (const r of rooms) if (r.built) for (const c of r.cells) roomCellType.set(c.k, r.type);
-}
-// 人口連動の拡大：30匹ごとに部屋を増設（縦に深く / 横に広く 交互）。生まれたアリが巣を広げる
-let expandTier=0;
+let expandTier=0;   // 旧仕様の名残（セーブ互換のため残置・未使用）
+// エンドレス拡大：全部屋を掘り終えたら、サイクル順(ゴミ→食糧→女王→育児…)に次の1部屋を計画。
+// 掘り終えるたびに次が増えるので、生まれたアリが掘り続ける限り巣が広がり続ける。
 function maybeExpand(){
-  if (!baseBuilt() || expandTier>=6) return;
-  const pop=workers.length+1;
-  if (pop >= 30*(expandTier+1)){
-    expandTier++;
-    const ex=colonyCx, top=surfaceH[ex];
-    if (expandTier%2===1){                              // 縦に深く（→新最深部。完成時に女王室と交換）
-      const ry=Math.min(ROWS-4, top+16+expandTier*3);
-      for (let y=top; y<=ry; y++) planAdd(ex,y);
-      const side=expandTier%4<2?1:-1, rcx=Math.max(3,Math.min(COLS-4, ex+side*6));
-      planTunnel(ex, ry, rcx); addRoom("food", rcx, ry, 3, 2);
-    } else {                                            // 横に広く
-      const ry=Math.min(ROWS-4, top+8+(expandTier|1));
-      const side=expandTier%4<2?-1:1, rcx=Math.max(3,Math.min(COLS-4, ex+side*11));
-      planTunnel(ex, ry, rcx); addRoom("food", rcx, ry, 3, 2);
-    }
-    toast(`🏗 コロニー拡大！(${pop}匹) 部屋を増設`, "#fea", 2); sfx("quest");
-  }
+  if (!baseBuilt()) return;
+  if (rooms.length>=ROOM_CAP) return;          // 暴走防止の上限
+  if (rooms.some(r=>!r.built)) return;          // まだ掘っている部屋がある→待つ
+  const ex=colonyCx, top=surfaceH[ex];
+  const idx=rooms.length;                       // 作成順（=サイクル位置）
+  const ry=Math.min(ROWS-4, top + 8 + idx*2);   // 緩やかに深く
+  const side=(idx%2===0)?-1:1;                  // 左右交互
+  const reach=8 + (idx%6)*3;                    // 8,11,14,17,20,23…と横に広げる
+  const rcx=Math.max(3, Math.min(COLS-4, ex + side*reach));
+  for (let y=top; y<=ry; y++) planAdd(ex,y);    // 主縦坑を伸ばす
+  planTunnel(ex, ry, rcx);
+  const type=ROOM_CYCLE[idx%4];
+  addRoom(type, rcx, ry, 3, 2);
+  toast(`🏗 ${L("巣を拡張：新しい","Expanding: new ")}${ROOM_META[type].label}`, "#fea", 1.6); sfx("quest");
 }
 // 部屋を周囲に掘り広げて拡張
 function enlargeRoom(r, rw, rh){
@@ -266,10 +258,16 @@ function enlargeRoom(r, rw, rh){
 let matured=false;
 function matureNest(){
   if (matured || !baseBuilt()) return;
-  matured=true;
-  reorganizeNest();                                  // 深さで役割再編（女王=最深, 育児室=その隣）
-  for (const r of rooms.slice()) enlargeRoom(r, 3, 2);   // 各部屋を拡張（再掘削）
-  banner("🏛 巣が成熟：女王室を最深部へ、育児室をその隣へ再編＋拡張", "#cfe", 2.6); sfx("quest");
+  matured=true;                                      // 基本4部屋が完成＝以降はサイクルでエンドレス拡大
+  banner(L("🏛 巣が安定：ここからサイクルで巣が広がり続ける","🏛 Nest stable: it now keeps growing in a cycle"), "#cfe", 2.4); sfx("quest");
+}
+// 敵レベルの解放アナウンス（完成部屋数に連動）
+function announceEnemyMilestone(n){
+  if (n===6)  banner(L("⚔ 部屋6つ：カマキリが参戦！","⚔ 6 rooms: Mantises join the assault!"), "#fda", 2.4);
+  else if (n===9)  banner(L("⚔ 部屋9つ：ムカデが出現！","⚔ 9 rooms: Centipedes appear!"), "#fda", 2.4);
+  else if (n===12) banner(L("⚔ 部屋12：カブトムシ・クワガタ参戦！","⚔ 12 rooms: Beetles & stags join!"), "#fda", 2.4);
+  else if (n===15) banner(L("⚠ 部屋15：アリクイ参戦！以降は敵が強化されていく","⚠ 15 rooms: Anteater joins! Enemies now grow stronger"), "#f88", 2.8);
+  else if (n>15 && (n-15)%3===0) banner(L(`⚠ 敵が強化（Lv${Math.floor((n-15)/3)}）`,`⚠ Enemies strengthened (Lv${Math.floor((n-15)/3)})`), "#f99", 2.2);
 }
 
 function genWorld(){
@@ -901,7 +899,7 @@ let bugTimer = 4;
 function spawnBug(){
   const cx = Math.max(2, Math.min(COLS-3, ((ant.x/CELL)|0) + ((Math.random()*60-30)|0)));
   const cy = groundY(cx);
-  const pool = BIOMES[biomeIdx(cx)].day;
+  const pool = ["grub","caterpillar","locust"];   // 昼は弱い虫・餌のみ（強い虫は夜に部屋数で解放）
   const kind = pool[(Math.random()*pool.length)|0];
   const d = ENEMY[kind];
   bugs.push({ kind, shape:d.shape, col:d.col, r:d.r,
@@ -969,7 +967,7 @@ function spawnCarcass(x,y,kind,value){
   carcasses.push({x,y,kind,shape:d.shape,col:d.col,r:d.r,value:value||1,carrier:null,vy:0,facing:1});
   if (carcasses.length>30) carcasses.shift();
 }
-function spawnGarbageAt(x,y){ garbage.push({x,y,carrier:null,inMidden:false,t:0,vy:0}); if(garbage.length>40) garbage.shift(); }
+function spawnGarbageAt(x,y,coinVal){ garbage.push({x,y,carrier:null,inMidden:false,t:0,vy:0,coinVal:coinVal||1}); if(garbage.length>40) garbage.shift(); }
 function updateCarcasses(dt){
   for (let i=carcasses.length-1;i>=0;i--){
     const c=carcasses[i];
@@ -979,13 +977,13 @@ function updateCarcasses(dt){
     if (c.stored){
       if (stage().speed>0 && (c.x-ant.x)**2+(c.y-ant.y)**2<(ant.r+14)**2){   // プレイヤー
         ant.hp=Math.min(stage().maxHp, ant.hp+35); sfx("eat");
-        puff(c.x,c.y,5,"#fd8",60,-30); spawnGarbageAt(c.x,c.y); carcasses.splice(i,1);
-        toast("🍖 食料庫の餌で回復！", "#fe9", 0.8); continue;
+        puff(c.x,c.y,5,"#fd8",60,-30); spawnGarbageAt(c.x,c.y,coinValueFor(c.kind)); carcasses.splice(i,1);
+        toast(L("🍖 食料庫の餌で回復！","🍖 Healed from the pantry!"), "#fe9", 0.8); continue;
       }
       for (const w of workers){    // 弱った働きアリも食べて回復（残りはゴミに→ゴミ部屋へ）
         if (w.hp<w.maxHp*0.6 && (c.x-w.x)**2+(c.y-w.y)**2<16*16){
           w.hp=Math.min(w.maxHp, w.hp+35); puff(c.x,c.y,4,"#fd8",40,-20);
-          spawnGarbageAt(c.x,c.y); carcasses.splice(i,1); break;
+          spawnGarbageAt(c.x,c.y,coinValueFor(c.kind)); carcasses.splice(i,1); break;
         }
       }
       continue;
@@ -993,7 +991,7 @@ function updateCarcasses(dt){
     // 地表の死骸：プレイヤーが空腹なら緊急で食べる
     if (stage().speed>0 && ant.hp<stage().maxHp*0.5 && (c.x-ant.x)**2+(c.y-ant.y)**2<(ant.r+12)**2){
       ant.hp=Math.min(stage().maxHp, ant.hp+30); sfx("eat");
-      spawnGarbageAt(ant.x, ant.y); carcasses.splice(i,1);
+      spawnGarbageAt(ant.x, ant.y, coinValueFor(c.kind)); carcasses.splice(i,1);
     }
   }
 }
@@ -1002,17 +1000,19 @@ function updateGarbage(dt){
     const g=garbage[i];
     if (g.carrier) continue;
     if (!g.inMidden && !solidPt(g.x,g.y+8)){ g.vy+=400*dt; g.y+=g.vy*dt; } else g.vy=0;
-    if (g.inMidden){ g.t+=dt; if (g.t>=DAY_LEN){       // ゴミ捨て場で1日経つとコインになる（演出）
-      coins.push({x:g.x, y:g.y, t:0, vy:0});
-      puff(g.x,g.y,12,"#ffe27a",110,-70); dmgText(g.x,g.y-12,"🪙","#ffd"); sfx("quest"); garbage.splice(i,1);
+    if (g.inMidden){ g.t+=dt; if (g.t>=DAY_LEN){       // ゴミ捨て場で1日経つとコインになる（虫の強さ別の枚数）
+      const val=g.coinVal||1;
+      coins.push({x:g.x, y:g.y, t:0, vy:0, val});
+      puff(g.x,g.y,12,"#ffe27a",110,-70); dmgText(g.x,g.y-12,"🪙×"+val,"#ffd"); sfx("quest"); garbage.splice(i,1);
     } }
   }
 }
 function collectCoin(c){
   const i=coins.indexOf(c); if(i<0) return;
-  // ゲーム内のコイン回収は無制限。IGNISへ反映されるのは1日30枚まで（親側RPCで制御）
-  coins.splice(i,1); coinCount++; coinsToday++; sfx("coin");
-  puff(c.x,c.y,8,"#ffe27a",90,-50); dmgText(c.x,c.y-10,"+1🪙","#ffe27a");
+  const v=c.val||1;
+  // ゲーム内のコイン回収は無制限。IGNISへ反映されるのは会員ティアの1日上限まで（親側RPCで制御）
+  coins.splice(i,1); coinCount+=v; coinsToday+=v; sfx("coin");
+  puff(c.x,c.y,8,"#ffe27a",90,-50); dmgText(c.x,c.y-10,"+"+v+"🪙","#ffe27a");
   toast(L(`🪙 コイン回収！ 計${coinCount}枚（本日${coinsToday}枚）`,`🪙 Coin collected! ${coinCount} total (${coinsToday} today)`), "#fe9", 0.9);
   if(typeof updateCoinHud==='function') updateCoinHud();
   if(typeof reportCoinsToIgnis==='function') reportCoinsToIgnis();
@@ -1038,32 +1038,45 @@ const ENEMY = {
   roach:      {hp:4, spd:140,dmg:6, r:11, shape:"roach",  col:"#5a3818"}, // ゴキブリ
   spider:     {hp:5, spd:105,dmg:8, r:11, shape:"spider", col:"#2e2630"}, // クモ
   grub:       {hp:3, spd:35, dmg:4, r:10, shape:"cater",  col:"#d8cb9a"}, // 幼虫(餌)
+  anteater:   {hp:0, spd:0,  dmg:0, r:16, shape:"bug",    col:"#caa37a"}, // アリクイ死骸用（出現はspawnAnteater）
 };
+// 死骸→ゴミ→コインになるときの価値（虫の強さ別）：弱い虫1 / カマキリ・ムカデ2 / カブト・クワガタ3 / アリクイ5
+const COIN_VALUE = { locust:1, caterpillar:1, roach:1, spider:1, grub:1, mantis:2, centipede:2, beetle:3, stag:3, anteater:5 };
+function coinValueFor(kind){ return COIN_VALUE[kind] || 1; }
+// 完成部屋数で出現する外敵の種類が増える：~3弱い虫 / 6カマキリ / 9ムカデ / 12カブト・クワガタ / 15アリクイ
+function enemyPool(){
+  const r=roomsCompleted, pool=["locust","caterpillar","roach","spider"];
+  if (r>=6) pool.push("mantis");
+  if (r>=9) pool.push("centipede");
+  if (r>=12){ pool.push("beetle"); pool.push("stag"); }
+  return pool;
+}
+// 15部屋以降は新種ではなく強化：3部屋ごとにレベルが上がり、色が変わり体力が増す
+function enemyPowerLevel(){ return Math.max(0, Math.floor((roomsCompleted-15)/3)); }
+const POWER_TINTS = ["#ff6a6a","#ffb347","#b07cff","#4dd0e1","#ff4fa3","#7CFC00"];
 function makeInvader(kind, x, y, vx){
-  const d=ENEMY[kind], pop=workers.length+1;
-  // 日数＋コロニーの規模に応じて強くなる（アリが増えるほど手強い）
-  const hp=Math.round(d.hp + dayNum*0.6 + pop*0.35);
-  const dmg=Math.round(d.dmg + pop*0.12);
-  return { kind, shape:d.shape, col:d.col, r:d.r, x, y, hp, maxHp:hp, spd:d.spd, dmg,
+  const d=ENEMY[kind], pop=workers.length+1, lvl=enemyPowerLevel();
+  // 日数＋コロニー規模＋（15部屋以降の）強化レベルで強くなる
+  const hp=Math.round((d.hp + dayNum*0.6 + pop*0.35) * (1+0.3*lvl));
+  const dmg=Math.round(d.dmg + pop*0.12 + lvl);
+  const col=lvl>0 ? POWER_TINTS[(lvl-1)%POWER_TINTS.length] : d.col;   // 強化個体は色が変わる
+  return { kind, shape:d.shape, col, r:d.r, x, y, hp, maxHp:hp, spd:d.spd, dmg,
            atkT:Math.random()*0.5, hit:0, path:null, pi:0, ret:0, facing:1, trail:[], flee:false, fade:1, vx };
 }
 function spawnWave(){
   const n = Math.min(9, 1+dayNum);
-  // たいていは巣のある「畑」だが、たまに森や都市から群れが流れ込む
-  let theme = biomeIdx(colonyCx);
-  if (dayNum>=2 && Math.random()<0.4) theme = Math.random()<0.5 ? 0 : 2;
-  const pool = BIOMES[theme].night;
+  const pool = enemyPool();                 // 出現する敵の種類は「完成した部屋数」で決まる
   for (let i=0;i<n;i++){
     const side=Math.random()<0.5?-1:1;
     const cx=Math.max(2,Math.min(COLS-3, colonyCx+side*(14+((Math.random()*16)|0))));
     const cy=groundY(cx);
-    let kind=pool[(Math.random()*pool.length)|0];
-    if (dayNum<2 && (kind==="centipede"||kind==="mantis"||kind==="stag")) kind=pool[0]; // 序盤は弱め
+    const kind=pool[(Math.random()*pool.length)|0];
     invaders.push(makeInvader(kind, cx*CELL+13, (cy-1)*CELL+10, (side<0?1:-1)*40));
   }
-  banner(L(`🌙 第${dayNum}夜 — ${BIOMES[theme].name}の外敵 ${n}匹！卵を守れ！`,`🌙 Night ${dayNum} — ${n} invaders from the ${BIOMES[theme].nameEn}! Protect the eggs!`), "#fbb");
+  const lvl=enemyPowerLevel();
+  banner(L(`🌙 第${dayNum}夜 — 外敵 ${n}匹！卵を守れ！${lvl>0?` (強化Lv${lvl})`:""}`,`🌙 Night ${dayNum} — ${n} invaders! Protect the eggs!${lvl>0?` (Lv${lvl})`:""}`), "#fbb");
   sfx("night"); shake=Math.max(shake,4);
-  if (dayNum%5===0) spawnAnteater();
+  if (roomsCompleted>=15 && Math.random()<0.45) spawnAnteater();   // アリクイは部屋15以降に参戦
 }
 function hitEnemy(e, dmg){
   e.hp-=dmg; e.hit=0.3;
@@ -1209,9 +1222,10 @@ function hitAnteater(d, x, y){
   sfx("bite"); shake=Math.max(shake,3.5);
   puff(x,y,5,"#ffb0c0",90,-40);
   if (a.hp<=0){
-    for (let k=0;k<5;k++) foods.push({x:a.x+(k-2)*12, y:a.y+10, t:0});
+    for (let k=0;k<3;k++) foods.push({x:a.x+(k-1)*12, y:a.y+10, t:0});
+    spawnCarcass(a.x, a.y, "anteater", 4);   // 死骸→食料庫→ゴミ→コイン（アリクイは5コイン）
     gainXp(15); killCount++;
-    banner("🎉 アリクイを撃退した！！ 🍖×5", "#ffd");
+    banner(L("🎉 アリクイを撃退した！！ 🍖×3 ＋ 死骸はコイン5枚に","🎉 Anteater repelled!! 🍖×3 + carcass = 5 coins"), "#ffd");
     shake=12; sfx("evolve");
     anteater=null;
   }
@@ -1714,7 +1728,6 @@ function update(dt){
 
   updateRooms();
   matureNest();
-  if (matured) reorganizeNest();   // 成熟後は常に女王=最深・育児室=その隣を維持（新部屋完成で自動交換）
   maybeExpand();
   updateEggs(dt);
   updateBugs(dt);
@@ -2414,11 +2427,11 @@ function saveGame(){
       workers:workers.map(w=>({x:w.x,y:w.y,job:w.job,hp:w.hp,maxHp:w.maxHp,facing:w.facing,size:w.size,variant:w.variant})),
       eggs:eggsArr.map(e=>({x:e.x,y:e.y,t:e.t,state:e.state,stage2:e.stage2})),
       carcasses:carcasses.filter(c=>!c.carrier).map(c=>({x:c.x,y:c.y,kind:c.kind,value:c.value,stored:!!c.stored})),
-      garbage:garbage.filter(g=>!g.carrier).map(g=>({x:g.x,y:g.y,inMidden:g.inMidden,t:g.t})),
+      garbage:garbage.filter(g=>!g.carrier).map(g=>({x:g.x,y:g.y,inMidden:g.inMidden,t:g.t,coinVal:g.coinVal||1})),
       aphids:aphids.map(a=>({x:a.x,y:a.y,state:a.state,prod:a.prod,vx:a.vx})),
       colonyFood,droppedCount,killCount,laidCount,maxColony,dayNum,survivedNights,dayT,isNight,questIdx,nextSurvN,
       weather,weatherT,
-      coins:coins.map(c=>({x:c.x,y:c.y})), coinCount, coinsToday, matured
+      coins:coins.map(c=>({x:c.x,y:c.y,val:c.val||1})), coinCount, coinsToday, matured, roomsCompleted
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(s)); saveFlash=1.4;
   }catch(err){ console.warn("save failed", err); }
@@ -2454,15 +2467,17 @@ function loadGame(){
     for(const c of s.carcasses){ const d=ENEMY[c.kind]||{shape:"bug",col:"#777",r:11};
       carcasses.push({x:c.x,y:c.y,kind:c.kind,value:c.value,shape:d.shape,col:d.col,r:d.r,carrier:null,vy:0,facing:1,stored:!!c.stored}); }
     garbage.length=0;
-    for(const g of s.garbage) garbage.push({x:g.x,y:g.y,inMidden:g.inMidden,t:g.t,carrier:null,vy:0});
+    for(const g of s.garbage) garbage.push({x:g.x,y:g.y,inMidden:g.inMidden,t:g.t,carrier:null,vy:0,coinVal:g.coinVal||1});
     aphids.length=0;
     for(const a of s.aphids) aphids.push({x:a.x,y:a.y,state:a.state,prod:a.prod,vx:a.vx,t:0});
     colonyFood=s.colonyFood; droppedCount=s.droppedCount; killCount=s.killCount; laidCount=s.laidCount;
     maxColony=s.maxColony; dayNum=s.dayNum; survivedNights=s.survivedNights; dayT=s.dayT;
     isNight=s.isNight; questIdx=s.questIdx; nextSurvN=s.nextSurvN;
     weather=s.weather||"clear"; weatherT=s.weatherT||14;
-    coins.length=0; if(s.coins) for(const c of s.coins) coins.push({x:c.x,y:c.y,t:0,vy:0});
+    coins.length=0; if(s.coins) for(const c of s.coins) coins.push({x:c.x,y:c.y,t:0,vy:0,val:c.val||1});
     coinCount=s.coinCount||0; coinsToday=s.coinsToday||0; matured=!!s.matured;
+    roomsCompleted = (s.roomsCompleted!=null) ? s.roomsCompleted : rooms.filter(r=>r.built).length;
+    for(const r of rooms) if(r.built) r.counted=true;   // ロード済みの完成部屋を再カウントしない
     return true;
   }catch(err){ console.warn("load failed", err); return false; }
 }

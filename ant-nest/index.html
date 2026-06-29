@@ -61,6 +61,7 @@
   <div id="stage">🥚 たまご</div>
   <div id="hpLabel">体力</div>
   <div class="bar"><span id="hpBar" style="width:100%;background:#e44;"></span></div>
+  <div id="evoPct" style="color:#9fdcff;font-weight:800;"></div>
   <div id="stats"></div>
   <div id="colony"></div>
   <div id="quest"></div>
@@ -263,10 +264,10 @@ function matureNest(){
 }
 // 敵レベルの解放アナウンス（完成部屋数に連動）
 function announceEnemyMilestone(n){
-  if (n===6)  banner(L("⚔ 部屋6つ：カマキリが参戦！","⚔ 6 rooms: Mantises join the assault!"), "#fda", 2.4);
-  else if (n===9)  banner(L("⚔ 部屋9つ：ムカデが出現！","⚔ 9 rooms: Centipedes appear!"), "#fda", 2.4);
-  else if (n===12) banner(L("⚔ 部屋12：カブトムシ・クワガタ参戦！","⚔ 12 rooms: Beetles & stags join!"), "#fda", 2.4);
-  else if (n===15) banner(L("⚠ 部屋15：アリクイ参戦！以降は敵が強化されていく","⚠ 15 rooms: Anteater joins! Enemies now grow stronger"), "#f88", 2.8);
+  if (n===6)  { banner(L("⚔ 部屋6つ：カマキリが参戦！","⚔ 6 rooms: Mantises join the assault!"), "#fda", 2.4); sfx("newbug"); }
+  else if (n===9)  { banner(L("⚔ 部屋9つ：ムカデが出現！","⚔ 9 rooms: Centipedes appear!"), "#fda", 2.4); sfx("newbug"); }
+  else if (n===12) { banner(L("⚔ 部屋12：カブトムシ・クワガタ参戦！","⚔ 12 rooms: Beetles & stags join!"), "#fda", 2.4); sfx("newbug"); }
+  else if (n===15) { banner(L("⚠ 部屋15：アリクイ参戦！以降は敵が強化されていく","⚠ 15 rooms: Anteater joins! Enemies now grow stronger"), "#f88", 2.8); sfx("roar"); }
   else if (n>15 && (n-15)%3===0) banner(L(`⚠ 敵が強化（Lv${Math.floor((n-15)/3)}）`,`⚠ Enemies strengthened (Lv${Math.floor((n-15)/3)})`), "#f99", 2.2);
 }
 
@@ -341,6 +342,8 @@ function sfx(n){
   if (n==="roar")   beep(90, 38, 0.8, "sawtooth", 0.12);
   if (n==="evolve"){ beep(440,440,0.1,"sine",0.07); beep(554,554,0.1,"sine",0.07,0.1); beep(659,880,0.16,"sine",0.08,0.2); }
   if (n==="coin"){ beep(1318,1760,0.08,"triangle",0.21); beep(1976,2637,0.12,"triangle",0.18,0.05); } // チャリン（通常の約3倍）
+  if (n==="newbug"){ beep(300,300,0.10,"sawtooth",0.11); beep(220,220,0.12,"sawtooth",0.11,0.12); beep(523,392,0.28,"square",0.12,0.26); } // 新種出現の警告音
+
 }
 
 // ---- BGM（レトロ・チップチューン）----
@@ -1768,6 +1771,12 @@ function update(dt){
   document.getElementById("stage").textContent =
     L(st.name,st.nameEn) + (st.speed===0?L(`（あと ${Math.max(0,st.hatch-ant.hatchT).toFixed(1)}s）`,` (${Math.max(0,st.hatch-ant.hatchT).toFixed(1)}s)`):"");
   document.getElementById("hpBar").style.width=Math.max(0,ant.hp/st.maxHp*100)+"%";
+  // 進化ゲージ(バー)は無し。代わりに枠内余白に「進化までの％」を数字表示
+  { const ep=document.getElementById("evoPct"); if(ep){
+      if (st.speed===0){ const p=Math.min(100,Math.round(ant.hatchT/st.hatch*100)); ep.textContent=L(`🧬 孵化まで ${p}%`,`🧬 Hatch ${p}%`); }
+      else if (st.xpNext===Infinity){ ep.textContent=L("🧬 最終形態（MAX）","🧬 Final form (MAX)"); }
+      else { const p=Math.min(100,Math.round(ant.xp/(st.xpNext||1)*100)); ep.textContent=L(`🧬 次の進化まで ${p}%`,`🧬 Next evo ${p}%`); }
+  } }
   const pb = L(BIOMES[biomeIdx(Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0)))].name, BIOMES[biomeIdx(Math.max(0,Math.min(COLS-1,(ant.x/CELL)|0)))].nameEn);
   const wIcon = weather==="rain"?"🌧":weather==="snow"?"❄":(isNight?"🌙":"☀");
   document.getElementById("stats").textContent =

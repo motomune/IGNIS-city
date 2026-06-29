@@ -1986,7 +1986,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-28-v178';
+    const IGNIS_BUILD='2026-06-28-v179';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -8192,7 +8192,9 @@
     }
     function maskRankingDisplayName(u,rank){
       const raw=u.x_username?`@${escapeAttr(u.x_username)}`:escapeAttr(u.username||'?');
-      const canShow=(rank===1)&&(u.show!==false); // 1位かつ本人が表示ON
+      // 公開ルール：課金者は上位3位まで／無課金は上位1位まで（本人が表示ONのとき）
+      const thresh=isSubForRanking(u)?3:1;
+      const canShow=(rank<=thresh)&&(u.show!==false);
       if(canShow&&u.x_username){
         const handle=encodeURIComponent(u.x_username.replace(/^@/,''));
         return `<a class="rank-x-link" href="https://x.com/${handle}" target="_blank" rel="noopener">@${escapeAttr(u.x_username.replace(/^@/,''))}</a>`;
@@ -8283,8 +8285,8 @@
         if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
         else if(type==='candles'){value=(u.candles||0).toLocaleString();unit='🕯️';subText=isJa?`🏢 ${u.totalFloors.toLocaleString()}階 · 👥 ${u.totalEmp.toLocaleString()}人`:`🏢 ${u.totalFloors}F · 👥 ${u.totalEmp}`;}
-        else if(type==='lifemoney'){value=(u.lifeMoney||0).toLocaleString();unit=isJa?'万':'k';subText=isJa?'人生ゲームの自己ベスト所持金':'Life Game personal-best money';}
-        else if(type==='antcoins'){value=(u.antCoins||0).toLocaleString();unit=isJa?'枚':'coins';subText=isJa?'アリの巣で集めた最高コイン数':'Most coins gathered in Ant Nest';}
+        else if(type==='lifemoney'){value=(u.lifeMoney||0).toLocaleString();unit=isJa?'万':'k';subText=isJa?'人生ゲームの累計所持金':'Life Game cumulative money';}
+        else if(type==='antcoins'){value=(u.antCoins||0).toLocaleString();unit=isJa?'枚':'coins';subText=isJa?'アリの巣の累計獲得コイン':'Ant Nest cumulative coins';}
         else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';
         if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}
@@ -8295,7 +8297,7 @@
         const meLabel=isMe?` <span style="font-size:11px;color:#ff6a00;">${isJa?'（あなた）':'(you)'}</span>`:'';
         html+=`<div class="ranking-row ${topClass}${meClass}">${badgeHtml}<div class="ranking-user"><div class="${nameClass}">${masked}${meLabel}</div><div class="ranking-sub">${subText}</div></div><div class="ranking-value" style="color:${valueColor};">${value}<span class="ranking-unit">${unit}</span></div></div>`;
       });
-      html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}<br><span style="font-size:10px;opacity:0.75;">${isJa?'※1位のみユーザー名公開（Xリンク）':'※Only #1 name is public (X link)'}</span></div>`;
+      html+=`<div class="ranking-updated">${isJa?'最終更新':'Updated'}: ${now}<br><span style="font-size:10px;opacity:0.75;">${isJa?'※Xユーザー名の公開：課金者は上位3位まで／無課金は上位1位まで（本人が表示ONの場合のみ）':'※X name shown: subscribers top 3 / free top 1 (only if the user has it ON)'}</span></div>`;
       container.innerHTML=html;
     }
     // タスク／図鑑などの全画面ビュー表示中は3D描画を止めて軽くする（#4）

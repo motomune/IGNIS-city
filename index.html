@@ -1986,14 +1986,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-06-28-v181';
+    const IGNIS_BUILD='2026-07-01-v182';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
     const SHOWCASE_BUILDING_X=0;
     const SHOWCASE_BUILDING_Z=0;
-    const INVITE_COIN_SEND=10;
-    const INVITE_COIN_REGISTER=30;
+    const INVITE_COIN_SEND=20;
+    const INVITE_COIN_REGISTER=50;
     function isShowcaseBuilding(x,z){return Number(x)===SHOWCASE_BUILDING_X&&Number(z)===SHOWCASE_BUILDING_Z;}
     const IGNIS_AD_LINK='https://linktr.ee/uchidamotomune?utm_source=linktree_profile_share&ltsid=e4cdaabc-8418-483c-b00d-9622b513a84c';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
@@ -2874,9 +2874,9 @@
     const OWNER_X_HANDLE='soultamash81989'; // @soultamash81989
     const DAILY_TASKS=[
       {type:'login', label:'ログインボーナス',           labelEn:'Login Bonus',                 reward:1},
-      {type:'hire',  label:'会社員を1人採用する',         labelEn:'Hire 1 office worker',             reward:3},
-      {type:'view',  label:'他のビルを5棟閲覧', labelEn:'View 5 other buildings', reward:3, goal:5},
-      {type:'collect', label:'飛行モードでコインを拾う', labelEn:'Grab a coin in fly mode', reward:2},
+      {type:'hire',  label:'会社員を1人採用する',         labelEn:'Hire 1 office worker',             reward:1},
+      {type:'view',  label:'他のビルを5棟閲覧', labelEn:'View 5 other buildings', reward:1, goal:5},
+      {type:'collect', label:'飛行モードでコインを拾う', labelEn:'Grab a coin in fly mode', reward:1},
     ];
     const CELL=10, GRID_HALF=100;
     const EMP_COLORS=[

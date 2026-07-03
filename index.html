@@ -1986,7 +1986,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-01-v182';
+    const IGNIS_BUILD='2026-07-03-v183';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -4005,7 +4005,7 @@
           const cc=document.getElementById('coin-count'); if(cc)cc.textContent=data.total;
           post({type:'IGNIS_LIFEGAME_GRANTED',granted:data.granted,total:data.total,capped:data.capped,v:1});
         }catch(_){ post({type:'IGNIS_LIFEGAME_DENIED',reason:'error',v:1}); }
-        // ランキング用：人生ゲームの自己ベスト所持金を記録
+        // ランキング用：人生ゲームの「現在の所持金」を記録（継続で引き継ぐので上下する。サーバ側で0未満は0に）
         try{ const cash=parseInt(d.cash,10); if(!isNaN(cash))await db.rpc('record_minigame_stat',{p_kind:'lifegame',p_value:cash}); }catch(_){}
       }
     });
@@ -8285,7 +8285,7 @@
         if(type==='coins'){value=(u.coins||0).toLocaleString();unit=isJa?'コイン':'coins';subText=isJa?`👥 ${u.totalEmp.toLocaleString()}人 · 🏢 ${u.totalFloors.toLocaleString()}階`:`👥 ${u.totalEmp} · 🏢 ${u.totalFloors}F`;}
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
         else if(type==='candles'){value=(u.candles||0).toLocaleString();unit='🕯️';subText=isJa?`🏢 ${u.totalFloors.toLocaleString()}階 · 👥 ${u.totalEmp.toLocaleString()}人`:`🏢 ${u.totalFloors}F · 👥 ${u.totalEmp}`;}
-        else if(type==='lifemoney'){value=(u.lifeMoney||0).toLocaleString();unit=isJa?'万':'k';subText=isJa?'人生ゲームの累計所持金':'Life Game cumulative money';}
+        else if(type==='lifemoney'){value=(u.lifeMoney||0).toLocaleString();unit=isJa?'万':'k';subText=isJa?'人生ゲームの現在の所持金（継続で引き継ぎ）':'Life Game current money (carries over)';}
         else if(type==='antcoins'){value=(u.antCoins||0).toLocaleString();unit=isJa?'枚':'coins';subText=isJa?'アリの巣の累計獲得コイン':'Ant Nest cumulative coins';}
         else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';

@@ -1382,11 +1382,25 @@
   </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
-    <div id="loading-founder">このゲームは、皆さんが設置したビルに込められたメッセージを通じて、人と人が支え合う場所です。苦難や挫折、孤独を経験した人たちに「あなたは一人じゃない」という想いを届け、再び前を向くきっかけとなる再生の場を目指しています。さらに、この世界での活動を通じて、それぞれのXアカウントや発信をより多くの人へ届け、新たな繋がりを生み出す場としても機能します。</div>
+    <div id="loading-founder">3歳のとき、何者かに自宅を放火された。やがて消防士になったが、壮絶なハラスメントに耐えた末、公務中に起きた出来事が報道され、その道を去った。新たに挑んだ事業では、親友だと信じていた相手が詐欺師で、多額の資金と大勢の信用を失った。それでも、離れずにいてくれた仲間と、妻の支えがあったから、僕は今ここにいる。「君は一人じゃない」——かつて誰かがそう信じさせてくれた。だから今度は、僕があなたの背中を押したい。その想いで、この街をつくった。</div>
     <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
     <div id="loading-status">② ライブラリ読込中...</div>
     <div id="loading-tap-hint">画面をタップして開始</div>
   </div>
+  <script>
+    /* ロード画面の創設者メッセージ：日本語以外のブラウザ/?lang=en では英語表示（グローバル来訪者の第一印象用。ゲーム本体の言語状態には触れない） */
+    (function(){
+      try{
+        var q=new URLSearchParams(location.search).get('lang');
+        var en = q==='en' || (q!=='ja' && !/^ja/i.test(navigator.language||navigator.userLanguage||''));
+        if(!en)return;
+        var f=document.getElementById('loading-founder');
+        if(f)f.textContent='When I was three, someone set fire to our home. I became a firefighter, and after enduring relentless harassment, an incident during my duty was reported in the news, and I left that path. In the business I turned to next, a man I trusted as a best friend turned out to be a con artist; I lost a great deal of money and the trust of many people. And yet — because a few who never left my side, and my wife, held me up, I am still here. "You are not alone." Someone once made me believe that. Now it is my turn to help carry you forward. That is why I built this city.';
+        var h=document.getElementById('loading-tap-hint');
+        if(h)h.textContent='Tap the screen to start';
+      }catch(_){}
+    })();
+  </script>
   <canvas id="renderCanvas"></canvas>
   <canvas id="fire-canvas"></canvas>
   <div id="mobile-fly-ui" aria-hidden="true">
@@ -1938,7 +1952,7 @@
       <div id="auth-subtitle">街づくりに参加しよう</div>
       <div id="founder-message">
         <span class="fm-head" id="fm-head">— 創設者の想い —</span>
-        <span class="fm-body" id="fm-body">このゲームは、皆さんが設置したビルに込められたメッセージを通じて、人と人が支え合う場所です。苦難や挫折、孤独を経験した人たちに「あなたは一人じゃない」という想いを届け、再び前を向くきっかけとなる再生の場を目指しています。さらに、この世界での活動を通じて、それぞれのXアカウントや発信をより多くの人へ届け、新たな繋がりを生み出す場としても機能します。</span>
+        <span class="fm-body" id="fm-body">3歳のとき、何者かに自宅を放火された。やがて消防士になったが、壮絶なハラスメントに耐えた末、公務中に起きた出来事が報道され、その道を去った。新たに挑んだ事業では、親友だと信じていた相手が詐欺師で、多額の資金と大勢の信用を失った。それでも、離れずにいてくれた仲間と、妻の支えがあったから、僕は今ここにいる。「君は一人じゃない」——かつて誰かがそう信じさせてくれた。だから今度は、僕があなたの背中を押したい。その想いで、この街をつくった。</span>
         <span class="fm-last" id="fm-last">🔥 あなたは、一人じゃない。</span>
       </div>
       <div class="auth-tab-wrap">
@@ -1986,7 +2000,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-03-v183';
+    const IGNIS_BUILD='2026-07-05-v184';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3702,8 +3716,8 @@
       // 創設者の想い（タイトル画面）
       const fmHead=document.getElementById('fm-head');if(fmHead)fmHead.textContent=isJa?'— 創設者の想い —':'— A Message from the Founder —';
       const fmBody=document.getElementById('fm-body');if(fmBody)fmBody.textContent=isJa
-        ?'このゲームは、皆さんが設置したビルに込められたメッセージを通じて、人と人が支え合う場所です。苦難や挫折、孤独を経験した人たちに「あなたは一人じゃない」という想いを届け、再び前を向くきっかけとなる再生の場を目指しています。さらに、この世界での活動を通じて、それぞれのXアカウントや発信をより多くの人へ届け、新たな繋がりを生み出す場としても機能します。'
-        :'Through the messages placed in the buildings you raise, this game is a place where people support one another. To those who have known hardship, setback or loneliness, it carries the thought "you are not alone," aiming to be a place of renewal that helps you face forward again. It also works as a place that carries each person\'s X account and posts to more people, creating new connections.';
+        ?'3歳のとき、何者かに自宅を放火された。やがて消防士になったが、壮絶なハラスメントに耐えた末、公務中に起きた出来事が報道され、その道を去った。新たに挑んだ事業では、親友だと信じていた相手が詐欺師で、多額の資金と大勢の信用を失った。それでも、離れずにいてくれた仲間と、妻の支えがあったから、僕は今ここにいる。「君は一人じゃない」——かつて誰かがそう信じさせてくれた。だから今度は、僕があなたの背中を押したい。その想いで、この街をつくった。'
+        :'When I was three, someone set fire to our home. I became a firefighter, and after enduring relentless harassment, an incident during my duty was reported in the news, and I left that path. In the business I turned to next, a man I trusted as a best friend turned out to be a con artist; I lost a great deal of money and the trust of many people. And yet — because a few who never left my side, and my wife, held me up, I am still here. "You are not alone." Someone once made me believe that. Now it is my turn to help carry you forward. That is why I built this city.';
       const fmLast=document.getElementById('fm-last');if(fmLast)fmLast.textContent=isJa?'🔥 あなたは、一人じゃない。':'🔥 You are not alone.';
       document.getElementById('tab-login').textContent=isJa?'ログイン':'Login';
       document.getElementById('tab-signup').textContent=isJa?'新規登録':'Sign Up';

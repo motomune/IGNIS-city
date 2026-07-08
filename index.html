@@ -1766,7 +1766,7 @@
         <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">🏢 階数</button>
         <button class="ranking-tab" id="rtab-candles" onclick="switchRankingTab('candles')">🕯️ 蝋燭</button>
         <button class="ranking-tab" id="rtab-lifemoney" onclick="switchRankingTab('lifemoney')">🕯️ 人生所持金</button>
-        <button class="ranking-tab" id="rtab-antcoins" onclick="switchRankingTab('antcoins')">🐜 アリコイン</button>
+        <button class="ranking-tab" id="rtab-antcoins" onclick="switchRankingTab('antcoins')">🐜 巣コイン</button>
       </div>
       <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
     </div>
@@ -1913,14 +1913,14 @@
   </div>
   <div id="antgame-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(7,7,13,0.8);backdrop-filter:blur(3px);display:none;">
     <button type="button" onclick="closeAntGame()" title="閉じる" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 20px;border-radius:20px;font-weight:800;font-size:13px;cursor:pointer;">✕ ゲームを閉じる</button>
-    <iframe id="antgame-frame" title="アリの巣" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#07070d;"></iframe>
+    <iframe id="antgame-frame" title="小さな仲間で、大きな巣を｜Little Diggers, Great Nest" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#07070d;"></iframe>
   </div>
   <div id="gamepick-overlay" style="position:fixed;inset:0;z-index:9998;background:rgba(7,7,13,0.86);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;">
     <div style="background:#0d0a14;border:1px solid rgba(255,213,79,0.4);border-radius:18px;padding:22px;width:min(360px,92vw);text-align:center;box-shadow:0 10px 50px rgba(255,180,0,0.18);">
       <div id="gamepick-title" style="font-weight:900;font-size:17px;color:#ffd54f;">💰 コインを稼ぐ</div>
       <div id="gamepick-sub" style="font-size:11px;color:rgba(255,255,255,0.55);margin:5px 0 16px;">どちらも1日30コインまでIGNISに反映されます</div>
       <button id="gamepick-life" type="button" onclick="pickLifegame()" style="width:100%;margin-bottom:10px;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#ff6a00,#ee0979);color:#fff;">🕯️ 人生ゲーム</button>
-      <button id="gamepick-ant" type="button" onclick="pickAntgame()" style="width:100%;margin-bottom:14px;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#7a4a1e,#c8862f);color:#fff;">🐜 アリの巣ゲーム</button>
+      <button id="gamepick-ant" type="button" onclick="pickAntgame()" style="width:100%;margin-bottom:14px;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#7a4a1e,#c8862f);color:#fff;">🐜 小さな仲間で、大きな巣を</button>
       <button id="gamepick-close" type="button" onclick="closeGamePicker()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">閉じる</button>
     </div>
   </div>
@@ -2000,7 +2000,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-05-v185';
+    const IGNIS_BUILD='2026-07-08-v186';
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -3639,7 +3639,7 @@
       const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'🏢 階数':'🏢 Floors';
       const rtabCandles=document.getElementById('rtab-candles');if(rtabCandles)rtabCandles.textContent=isJa?'🕯️ 蝋燭':'🕯️ Candles';
       const rtabLife=document.getElementById('rtab-lifemoney');if(rtabLife)rtabLife.textContent=isJa?'🕯️ 人生所持金':'🕯️ Life $';
-      const rtabAnt=document.getElementById('rtab-antcoins');if(rtabAnt)rtabAnt.textContent=isJa?'🐜 アリコイン':'🐜 Ant Coins';
+      const rtabAnt=document.getElementById('rtab-antcoins');if(rtabAnt)rtabAnt.textContent=isJa?'🐜 巣コイン':'🐜 Nest Coins';
       const rgSub=document.getElementById('rgroup-sub');if(rgSub)rgSub.textContent=isJa?'💎 課金者':'💎 Subscribers';
       const rgFree=document.getElementById('rgroup-free');if(rgFree)rgFree.textContent=isJa?'🆓 無課金':'🆓 Free';
       document.getElementById('ranking-close').textContent=isJa?'✕ 閉じる':'✕ Close';
@@ -3946,7 +3946,7 @@
         ?`各ゲーム1日の反映上限：無課金30 ／ サブスク40 ／ プレミア60 コイン<br><span style="color:#ffd54f;">あなたの上限：1日${cap}コイン（人生・アリ それぞれ）</span>`
         :`Daily cap per game: Free 30 / Sub 40 / Premium 60 coins<br><span style="color:#ffd54f;">Your cap: ${cap} coins/day (Life & Ant each)</span>`;
       const l=document.getElementById('gamepick-life');if(l)l.textContent=isJa?'🕯️ 人生ゲーム':'🕯️ Life Game';
-      const a=document.getElementById('gamepick-ant');if(a)a.textContent=isJa?'🐜 アリの巣ゲーム':'🐜 Ant Nest';
+      const a=document.getElementById('gamepick-ant');if(a)a.textContent=isJa?'🐜 小さな仲間で、大きな巣を':'🐜 Little Diggers, Great Nest';
       const c=document.getElementById('gamepick-close');if(c)c.textContent=isJa?'閉じる':'Close';
     }
     // コインを稼ぐ → ゲーム選択（人生ゲーム / アリの巣）。どちらも1日上限までIGNISに反映。
@@ -8300,7 +8300,7 @@
         else if(type==='emp'){value=u.totalEmp.toLocaleString();unit=isJa?'人':'emp';subText=isJa?`休職中含む · 🏢 ${u.totalFloors.toLocaleString()}階`:`incl. bench · 🏢 ${u.totalFloors}F`;}
         else if(type==='candles'){value=(u.candles||0).toLocaleString();unit='🕯️';subText=isJa?`🏢 ${u.totalFloors.toLocaleString()}階 · 👥 ${u.totalEmp.toLocaleString()}人`:`🏢 ${u.totalFloors}F · 👥 ${u.totalEmp}`;}
         else if(type==='lifemoney'){value=(u.lifeMoney||0).toLocaleString();unit=isJa?'万':'k';subText=isJa?'人生ゲームの現在の所持金（継続で引き継ぎ）':'Life Game current money (carries over)';}
-        else if(type==='antcoins'){value=(u.antCoins||0).toLocaleString();unit=isJa?'枚':'coins';subText=isJa?'アリの巣の累計獲得コイン':'Ant Nest cumulative coins';}
+        else if(type==='antcoins'){value=(u.antCoins||0).toLocaleString();unit=isJa?'枚':'coins';subText=isJa?'「小さな仲間で、大きな巣を」の累計コイン':'Little Diggers, Great Nest — total coins';}
         else{value=u.totalFloors.toLocaleString();unit=isJa?'階':'F';subText=isJa?`最大${MAX_BUILDING_FLOORS}階/棟 · 👥 ${u.totalEmp.toLocaleString()}人`:`max ${MAX_BUILDING_FLOORS}F/bldg · 👥 ${u.totalEmp}`;}
         let valueColor='#fff';
         if(type==='emp'){const ci=getColorByEmployees(u.totalEmp);if(ci.name==='rainbow')valueColor='#ee0979';else if(ci.name==='gold')valueColor='#f59e0b';else if(ci.name==='red')valueColor='#ef4444';}

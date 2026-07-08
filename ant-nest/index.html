@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>アリの巣 - ANT NEST v3 コロニーサバイバル</title>
+<title>小さな仲間で、大きな巣を｜Little Diggers, Great Nest</title>
 <style>
   html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #1a120b; font-family: "Segoe UI", system-ui, sans-serif; }
   #game { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
@@ -1483,10 +1483,10 @@ function offerShare(variant){
   document.getElementById("shareMsg").textContent = L(`${info.emo} ${info.name}が生まれた！ ${info.desc}`,`${info.emo} A ${info.name} was born! ${info.desc}`);
   box.classList.add("on");
   clearTimeout(offerShare._t); offerShare._t=setTimeout(()=>box.classList.remove("on"), 12000);
-  offerShare.cur = L(`アリの巣ゲームで${info.emo}${info.name}が誕生！${info.desc} #アリの巣ゲーム #AntNest`,`A ${info.emo}${info.name} was born in Ant Nest! ${info.desc} #AntNest`);
+  offerShare.cur = L(`「小さな仲間で、大きな巣を」で${info.emo}${info.name}が誕生！${info.desc} #小さな仲間で大きな巣を`,`A ${info.emo}${info.name} was born in Little Diggers, Great Nest! ${info.desc} #LittleDiggersGreatNest`);
 }
 document.getElementById("shareBtn").addEventListener("click", ()=>{
-  const txt=encodeURIComponent(offerShare.cur||"アリの巣ゲームで遊んでるよ！ #アリの巣ゲーム");
+  const txt=encodeURIComponent(offerShare.cur||"「小さな仲間で、大きな巣を」で遊んでるよ！ #小さな仲間で大きな巣を");
   window.open("https://twitter.com/intent/tweet?text="+txt, "_blank");
 });
 document.getElementById("shareClose").addEventListener("click", ()=>document.getElementById("shareBox").classList.remove("on"));

@@ -49,6 +49,9 @@
     .status-badge.pending{background:rgba(255,165,0,0.18);color:#ffab40;border:1px solid rgba(255,165,0,0.4);}
     .status-badge.approved{background:rgba(34,197,94,0.18);color:#4ade80;border:1px solid rgba(34,197,94,0.4);}
     .status-badge.rejected{background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.4);}
+    .copy-bar{margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#ffab40;}
+    .copy-btn{padding:4px 12px;font-size:12px;font-weight:800;color:#0a0a14;background:linear-gradient(135deg,#ffce4f,#ff9a3c);border:none;border-radius:8px;cursor:pointer;}
+    .copy-btn:hover{filter:brightness(1.08);}
     .type-badge{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;margin-left:6px;vertical-align:middle;letter-spacing:0.06em;}
     .type-badge.motto{background:rgba(255,106,0,0.2);color:#ff6a00;border:1px solid rgba(255,106,0,0.4);}
     .type-badge.past{background:rgba(96,165,250,0.18);color:#60a5fa;border:1px solid rgba(96,165,250,0.4);}
@@ -425,6 +428,13 @@
         ${past.how_handled?`<div class="past-section" style="margin-top:8px;">④ 自身の対応</div><div class="past-text">${escapeHtml(past.how_handled)}</div>`:''}
         ${past.what_happened_after?`<div class="past-section" style="margin-top:8px;">⑤ どうなったか</div><div class="past-text">${escapeHtml(past.what_happened_after)}</div>`:''}
         ${past.journey_to_now?`<div class="past-section" style="margin-top:8px;">⑥ もし生まれ変わったら、どう気をつけたいか</div><div class="past-text">${escapeHtml(past.journey_to_now)}</div>`:''}`;
+      const copyAll=collectForeign([
+        ['格言', m._isEdit?m.pending_motto_text:m.motto_text],
+        ['③背景と経緯', past.background_detail],
+        ['④自身の対応', past.how_handled],
+        ['⑤どうなったか', past.what_happened_after],
+        ['⑥生まれ変わったら', past.journey_to_now],
+      ]);
       const newest=new Date(m.created_at)>new Date(past.created_at)?m.created_at:past.created_at;
       return `
         <div class="card pending">
@@ -437,6 +447,7 @@
               <span class="floors">${m._floors||'?'}F / ${STAR_LABELS[star]}</span>
               <span class="status-badge pending">pending</span>
             </div>
+            ${copyBar(copyAll)}
             ${mottoBody}
             ${pastBody}
             <div class="meta">申請: ${fmtTime(newest)}</div>
@@ -535,6 +546,9 @@
       const reviewedAt=p._isEdit?null:(p._type==='motto'?p.reviewed_at:p.updated_at);
       const reviewedLine=reviewedAt?` ／ 審査: ${fmtTime(reviewedAt)}`:'';
       const submitLabel=p._isEdit?'修正申請':'申請';
+      const copyAll=collectForeign(p._type==='motto'
+        ? [['格言', p._isEdit?p.pending_motto_text:p.motto_text]]
+        : [['③背景と経緯', p.background_detail],['④自身の対応', p.how_handled],['⑤どうなったか', p.what_happened_after],['⑥生まれ変わったら', p.journey_to_now]]);
       return `
         <div class="card ${p._reviewState}">
           <div class="rank-icon" title="${STAR_LABELS[star]}">${icon}</div>
@@ -545,6 +559,7 @@
               <span class="floors">${p._floors||'?'}F / ${STAR_LABELS[star]}</span>
               <span class="status-badge ${p._reviewState}">${p._reviewState}</span>
             </div>
+            ${copyBar(copyAll)}
             ${bodyHtml}
             <div class="meta">${submitLabel}: ${fmtTime(p.created_at)}${reviewedLine}</div>
           </div>
@@ -553,6 +568,24 @@
     }
 
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+    // ===== 外国語（日本語=かな/カナ/漢字 を含まない）の申請だけコピー用ボタンを出す。
+    //       原文をコピー→自分でDeepL等に貼って翻訳（API消費なし・トークン不要）=====
+    function isNonJa(t){t=String(t||'').trim();return !!t && !/[぀-ヿ一-鿿ｦ-ﾟ]/.test(t);}
+    function collectForeign(pairs){
+      const parts=pairs.filter(p=>String(p[1]||'').trim());
+      if(!parts.some(p=>isNonJa(p[1])))return '';
+      return parts.map(p=>`【${p[0]}】\n${String(p[1]).trim()}`).join('\n\n');
+    }
+    function copyBar(text){
+      if(!text)return '';
+      return `<div class="copy-bar">🌐 英語などの申請です <button class="copy-btn" type="button" onclick="copyText(this)" data-copy="${encodeURIComponent(text)}" title="原文をコピーしてDeepL等に貼って翻訳">📋 原文をコピー</button></div>`;
+    }
+    async function copyText(btn){
+      const t=decodeURIComponent(btn.dataset.copy||'');
+      try{await navigator.clipboard.writeText(t);showToast('📋 原文をコピーしました（DeepL等に貼り付けて翻訳してください）');}
+      catch(e){try{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');ta.remove();showToast('📋 原文をコピーしました');}catch(_){showToast('コピーに失敗しました');}}
+    }
 
     // 承認済み格言への「修正申請」を承認＝修正本文を本採用
     async function approveMottoEdit(id){

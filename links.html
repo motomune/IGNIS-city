@@ -44,9 +44,8 @@
   @keyframes shine{to{background-position:200% 0;}}
   #tag{margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85);text-align:center;text-shadow:0 1px 8px rgba(0,0,0,0.8);}
   #tag .en{display:block;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:0.06em;}
-  /* ===== リンクカード ===== */
+  /* ===== メインリンク（IGNIS CITY） ===== */
   #links{width:100%;margin-top:26px;display:flex;flex-direction:column;gap:12px;}
-  .lbl{margin:14px 2px 0;font-size:11px;font-weight:800;letter-spacing:0.18em;color:rgba(255,190,120,0.75);text-transform:uppercase;}
   a.card{display:flex;align-items:center;gap:13px;padding:15px 17px;border-radius:15px;text-decoration:none;color:#fff;
     background:rgba(14,16,28,0.55);border:1px solid rgba(255,255,255,0.14);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
     transform:translateY(14px);opacity:0;animation:in .6s ease forwards;
@@ -58,21 +57,70 @@
   @keyframes in{to{transform:translateY(0);opacity:1;}}
   a.card .ico{font-size:24px;flex-shrink:0;width:34px;text-align:center;}
   a.card .tx{flex:1;min-width:0;}
-  a.card .t{font-size:14.5px;font-weight:800;letter-spacing:0.02em;}
+  a.card .t{font-size:16px;font-weight:800;letter-spacing:0.02em;}
   a.card .s{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
   a.card .go{font-size:15px;color:rgba(255,170,80,0.8);flex-shrink:0;transition:transform .18s;}
   a.card:hover .go{transform:translateX(4px);}
-  /* 主役：IGNIS CITY */
   a.card.main{background:linear-gradient(135deg,rgba(255,80,0,0.32),rgba(255,150,30,0.2));
     border:1.5px solid rgba(255,160,60,0.85);box-shadow:0 0 24px rgba(255,106,0,0.35);}
-  a.card.main .t{font-size:16px;}
   a.card.main::after{content:'';position:absolute;top:0;left:-80%;width:55%;height:100%;
     background:linear-gradient(105deg,transparent,rgba(255,230,180,0.24),transparent);
     animation:sweep 3.4s ease-in-out infinite;}
   @keyframes sweep{0%,55%{left:-80%;}90%,100%{left:130%;}}
-  /* 波紋 */
   .rip{position:absolute;border-radius:50%;background:rgba(255,180,90,0.35);transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none;}
   @keyframes rip{to{transform:scale(3.4);opacity:0;}}
+
+  /* ===== 本棚（日本語版 / English） ===== */
+  .shelf{width:100%;margin-top:22px;padding:18px 16px 20px;border-radius:18px;position:relative;
+    background:rgba(10,12,22,0.5);border:1px solid rgba(255,255,255,0.12);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    transform:translateY(14px);opacity:0;animation:in .6s ease forwards;}
+  .shelf-head{display:flex;align-items:baseline;gap:10px;margin-bottom:15px;}
+  .shelf-head .h{font-size:15px;font-weight:900;letter-spacing:0.08em;}
+  .shelf-head .sub{font-size:10.5px;color:rgba(255,255,255,0.45);letter-spacing:0.12em;}
+  .shelf-head::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(255,160,60,0.5),transparent);}
+  .books{display:grid;grid-template-columns:1fr 1fr;gap:16px;perspective:900px;}
+  a.book{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:#fff;gap:10px;}
+  .bcov{width:100%;aspect-ratio:5/7;border-radius:6px 12px 12px 6px;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border:1px solid rgba(255,255,255,0.22);
+    transform-style:preserve-3d;transform:rotateY(0deg);
+    transition:transform .35s cubic-bezier(.2,.8,.3,1.2),box-shadow .35s ease;
+    box-shadow:6px 8px 22px rgba(0,0,0,0.55);}
+  /* 背表紙の陰影（本らしさ） */
+  .bcov::before{content:'';position:absolute;top:0;bottom:0;left:0;width:12px;
+    background:linear-gradient(90deg,rgba(0,0,0,0.55),rgba(255,255,255,0.10) 55%,transparent);}
+  /* 表紙の光沢 */
+  .bcov::after{content:'';position:absolute;top:-70%;left:-40%;width:60%;height:240%;transform:rotate(22deg);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.13),transparent);transition:left .45s ease;}
+  a.book:hover .bcov{transform:rotateY(-16deg) translateY(-5px);}
+  a.book:hover .bcov::after{left:120%;}
+  a.book:active .bcov{transform:rotateY(-8deg) scale(0.97);}
+  /* 赤編 */
+  .bcov.red{background:
+    radial-gradient(ellipse at 50% 115%,rgba(255,120,30,0.5),transparent 55%),
+    linear-gradient(160deg,#4a0a08 0%,#7c1210 45%,#3a0605 100%);}
+  a.book:hover .bcov.red{box-shadow:0 14px 34px rgba(220,60,20,0.5),0 0 26px rgba(255,90,30,0.35);border-color:rgba(255,140,90,0.65);}
+  /* 黒編 */
+  .bcov.black{background:
+    radial-gradient(ellipse at 50% 118%,rgba(255,106,0,0.28),transparent 50%),
+    linear-gradient(160deg,#131318 0%,#1f1f27 45%,#0a0a0e 100%);}
+  a.book:hover .bcov.black{box-shadow:0 14px 34px rgba(0,0,0,0.75),0 0 26px rgba(255,140,50,0.28);border-color:rgba(200,200,220,0.55);}
+  .bt1{font-size:10px;letter-spacing:0.34em;color:rgba(255,255,255,0.65);font-weight:700;}
+  .bt2{font-family:Georgia,'Times New Roman','Hiragino Mincho ProN','Yu Mincho',serif;font-weight:900;line-height:1;
+    text-shadow:0 2px 14px rgba(0,0,0,0.6);}
+  .bt2.kanji{font-size:44px;}
+  .bt2.roman{font-size:30px;letter-spacing:0.12em;}
+  .bt3{font-size:11px;letter-spacing:0.22em;color:rgba(255,255,255,0.8);font-weight:700;}
+  .bcov.red .bt3{color:#ffb199;} .bcov.black .bt3{color:#cfd2e0;}
+  .bnum{position:absolute;top:9px;right:11px;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.15em;font-weight:700;}
+  /* 購入ボタン */
+  .buy{width:100%;text-align:center;font-size:11.5px;font-weight:800;letter-spacing:0.06em;padding:8px 6px;border-radius:9px;
+    background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.85);
+    transition:background .2s,border-color .2s,color .2s,box-shadow .2s;}
+  a.book:hover .buy{background:linear-gradient(135deg,#ff7a1c,#ffb23e);border-color:rgba(255,200,120,0.9);color:#1a0e02;
+    box-shadow:0 4px 16px rgba(255,130,30,0.4);}
+
   /* ===== SNS ===== */
   #sns{margin-top:26px;display:flex;gap:18px;}
   #sns a{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -82,7 +130,7 @@
   #sns svg{width:20px;height:20px;fill:#fff;}
   footer{margin-top:auto;padding-top:34px;font-size:10.5px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-align:center;}
   footer b{color:rgba(255,170,80,0.7);}
-  @media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;}}
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important;}}
 </style>
 </head>
 <body>
@@ -101,28 +149,52 @@
         <span class="s">A city built from real stories of survival · Play free in your browser</span></span>
         <span class="go">➜</span>
       </a>
+    </div>
 
-      <div class="lbl">📕 SOUL Books</div>
-      <a class="card" href="https://amzn.to/4pRi1Qb" target="_blank" rel="noopener" style="animation-delay:.22s">
-        <span class="ico">📕</span>
-        <span class="tx"><span class="t">SOUL: 1 — The Red Edition</span><span class="s">English · Amazon</span></span>
-        <span class="go">➜</span>
-      </a>
-      <a class="card" href="https://amzn.to/4qXtUVp" target="_blank" rel="noopener" style="animation-delay:.3s">
-        <span class="ico">📘</span>
-        <span class="tx"><span class="t">SOUL: 2 — The Black Edition</span><span class="s">English · Amazon</span></span>
-        <span class="go">➜</span>
-      </a>
-      <a class="card" href="https://amzn.to/49xDngo" target="_blank" rel="noopener" style="animation-delay:.38s">
-        <span class="ico">🔴</span>
-        <span class="tx"><span class="t">魂 ー赤編ー</span><span class="s">日本語 · Amazon</span></span>
-        <span class="go">➜</span>
-      </a>
-      <a class="card" href="https://amzn.to/4b3Z1dp" target="_blank" rel="noopener" style="animation-delay:.46s">
-        <span class="ico">⚫</span>
-        <span class="tx"><span class="t">魂 ー黒編ー</span><span class="s">日本語 · Amazon</span></span>
-        <span class="go">➜</span>
-      </a>
+    <!-- 日本語版の棚 -->
+    <div class="shelf" style="animation-delay:.24s">
+      <div class="shelf-head"><span class="h">🇯🇵 日本語版</span><span class="sub">魂 — 二部作</span></div>
+      <div class="books">
+        <a class="book" href="https://amzn.to/49xDngo" target="_blank" rel="noopener">
+          <div class="bcov red"><span class="bnum">壱</span>
+            <span class="bt1">TAMASHII</span>
+            <span class="bt2 kanji">魂</span>
+            <span class="bt3">ー 赤編 ー</span>
+          </div>
+          <span class="buy">Amazonで購入 ➜</span>
+        </a>
+        <a class="book" href="https://amzn.to/4b3Z1dp" target="_blank" rel="noopener">
+          <div class="bcov black"><span class="bnum">弐</span>
+            <span class="bt1">TAMASHII</span>
+            <span class="bt2 kanji">魂</span>
+            <span class="bt3">ー 黒編 ー</span>
+          </div>
+          <span class="buy">Amazonで購入 ➜</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- English の棚 -->
+    <div class="shelf" style="animation-delay:.38s">
+      <div class="shelf-head"><span class="h">🌍 English Edition</span><span class="sub">SOUL — The Duology</span></div>
+      <div class="books">
+        <a class="book" href="https://amzn.to/4pRi1Qb" target="_blank" rel="noopener">
+          <div class="bcov red"><span class="bnum">Vol.1</span>
+            <span class="bt1">MOTOMUNE UCHIDA</span>
+            <span class="bt2 roman">SOUL</span>
+            <span class="bt3">THE RED EDITION</span>
+          </div>
+          <span class="buy">Buy on Amazon ➜</span>
+        </a>
+        <a class="book" href="https://amzn.to/4qXtUVp" target="_blank" rel="noopener">
+          <div class="bcov black"><span class="bnum">Vol.2</span>
+            <span class="bt1">MOTOMUNE UCHIDA</span>
+            <span class="bt2 roman">SOUL</span>
+            <span class="bt3">THE BLACK EDITION</span>
+          </div>
+          <span class="buy">Buy on Amazon ➜</span>
+        </a>
+      </div>
     </div>
 
     <div id="sns">
@@ -155,7 +227,7 @@
       document.body.appendChild(e);
     }
   })();
-  // タップ波紋
+  // タップ波紋（メインカード）
   document.querySelectorAll('a.card').forEach(function(a){
     a.addEventListener('pointerdown',function(ev){
       var r=a.getBoundingClientRect(),d=Math.max(r.width,r.height);

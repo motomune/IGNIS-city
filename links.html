@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Motomune Uchida — IGNIS 🕯️</title>
+<meta name="description" content="You are not alone. — IGNIS CITY &amp; the SOUL books by Motomune Uchida">
+<meta property="og:title" content="Motomune Uchida — IGNIS 🕯️">
+<meta property="og:description" content="君は一人じゃない。You are not alone. — IGNIS CITY &amp; SOUL books">
+<meta property="og:image" content="https://motomune.github.io/IGNIS-city/links-bg.jpg">
+<meta property="og:type" content="website">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Segoe UI','Hiragino Sans','Yu Gothic UI',system-ui,sans-serif;
+    background:#05070f;color:#fff;overflow-x:hidden;min-height:100dvh;
+  }
+  /* ===== 背景動画（霧と炎） ===== */
+  #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:saturate(1.1);}
+  #veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(180deg,rgba(4,6,14,0.55) 0%,rgba(4,6,14,0.35) 40%,rgba(4,6,14,0.82) 100%);}
+  /* ===== 火の粉 ===== */
+  .ember{position:fixed;bottom:-12px;border-radius:50%;z-index:2;pointer-events:none;
+    background:radial-gradient(circle,#ffd27a 0%,#ff6a00 55%,transparent 75%);
+    animation:rise linear infinite;opacity:0;}
+  @keyframes rise{
+    0%{transform:translate(0,0) scale(1);opacity:0;}
+    8%{opacity:.85;}
+    100%{transform:translate(var(--dx),-108vh) scale(.25);opacity:0;}
+  }
+  /* ===== レイアウト ===== */
+  #wrap{position:relative;z-index:3;max-width:480px;margin:0 auto;padding:48px 22px 60px;
+    display:flex;flex-direction:column;align-items:center;min-height:100dvh;}
+  #avatar{width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:44px;background:radial-gradient(circle at 50% 60%,rgba(255,106,0,0.25),rgba(10,10,20,0.9) 70%);
+    border:2px solid rgba(255,150,60,0.65);box-shadow:0 0 28px rgba(255,106,0,0.45),inset 0 0 18px rgba(255,106,0,0.25);
+    animation:breathe 3.2s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{box-shadow:0 0 22px rgba(255,106,0,0.35),inset 0 0 14px rgba(255,106,0,0.2);}
+    50%{box-shadow:0 0 40px rgba(255,140,30,0.6),inset 0 0 24px rgba(255,106,0,0.35);}}
+  h1{margin-top:14px;font-size:22px;font-weight:900;letter-spacing:0.04em;
+    background:linear-gradient(90deg,#ffd27a,#ff8a3d,#ffd27a);background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite;}
+  @keyframes shine{to{background-position:200% 0;}}
+  #tag{margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85);text-align:center;text-shadow:0 1px 8px rgba(0,0,0,0.8);}
+  #tag .en{display:block;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:0.06em;}
+  /* ===== リンクカード ===== */
+  #links{width:100%;margin-top:26px;display:flex;flex-direction:column;gap:12px;}
+  .lbl{margin:14px 2px 0;font-size:11px;font-weight:800;letter-spacing:0.18em;color:rgba(255,190,120,0.75);text-transform:uppercase;}
+  a.card{display:flex;align-items:center;gap:13px;padding:15px 17px;border-radius:15px;text-decoration:none;color:#fff;
+    background:rgba(14,16,28,0.55);border:1px solid rgba(255,255,255,0.14);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    transform:translateY(14px);opacity:0;animation:in .6s ease forwards;
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+    position:relative;overflow:hidden;}
+  a.card:hover{transform:translateY(-2px) scale(1.015);border-color:rgba(255,150,60,0.75);
+    box-shadow:0 6px 26px rgba(255,106,0,0.28);background:rgba(24,18,20,0.6);}
+  a.card:active{transform:scale(0.975);}
+  @keyframes in{to{transform:translateY(0);opacity:1;}}
+  a.card .ico{font-size:24px;flex-shrink:0;width:34px;text-align:center;}
+  a.card .tx{flex:1;min-width:0;}
+  a.card .t{font-size:14.5px;font-weight:800;letter-spacing:0.02em;}
+  a.card .s{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
+  a.card .go{font-size:15px;color:rgba(255,170,80,0.8);flex-shrink:0;transition:transform .18s;}
+  a.card:hover .go{transform:translateX(4px);}
+  /* 主役：IGNIS CITY */
+  a.card.main{background:linear-gradient(135deg,rgba(255,80,0,0.32),rgba(255,150,30,0.2));
+    border:1.5px solid rgba(255,160,60,0.85);box-shadow:0 0 24px rgba(255,106,0,0.35);}
+  a.card.main .t{font-size:16px;}
+  a.card.main::after{content:'';position:absolute;top:0;left:-80%;width:55%;height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,230,180,0.24),transparent);
+    animation:sweep 3.4s ease-in-out infinite;}
+  @keyframes sweep{0%,55%{left:-80%;}90%,100%{left:130%;}}
+  /* 波紋 */
+  .rip{position:absolute;border-radius:50%;background:rgba(255,180,90,0.35);transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none;}
+  @keyframes rip{to{transform:scale(3.4);opacity:0;}}
+  /* ===== SNS ===== */
+  #sns{margin-top:26px;display:flex;gap:18px;}
+  #sns a{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(14,16,28,0.6);border:1px solid rgba(255,255,255,0.16);backdrop-filter:blur(8px);
+    transition:transform .18s,border-color .18s,box-shadow .18s;}
+  #sns a:hover{transform:translateY(-3px);border-color:rgba(255,150,60,0.8);box-shadow:0 5px 18px rgba(255,106,0,0.3);}
+  #sns svg{width:20px;height:20px;fill:#fff;}
+  footer{margin-top:auto;padding-top:34px;font-size:10.5px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-align:center;}
+  footer b{color:rgba(255,170,80,0.7);}
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;}}
+</style>
+</head>
+<body>
+  <video id="bg" src="links-bg.mp4" poster="links-bg.jpg" autoplay muted loop playsinline></video>
+  <div id="veil"></div>
+
+  <div id="wrap">
+    <div id="avatar">🔥</div>
+    <h1>Motomune Uchida</h1>
+    <p id="tag">君は一人じゃない。🕯️<span class="en">You are not alone.</span></p>
+
+    <div id="links">
+      <a class="card main" href="https://motomune.github.io/IGNIS-city/" target="_blank" rel="noopener" style="animation-delay:.1s">
+        <span class="ico">🏙️</span>
+        <span class="tx"><span class="t">IGNIS CITY — 無料でプレイ</span>
+        <span class="s">A city built from real stories of survival · Play free in your browser</span></span>
+        <span class="go">➜</span>
+      </a>
+
+      <div class="lbl">📕 SOUL Books</div>
+      <a class="card" href="https://amzn.to/4pRi1Qb" target="_blank" rel="noopener" style="animation-delay:.22s">
+        <span class="ico">📕</span>
+        <span class="tx"><span class="t">SOUL: 1 — The Red Edition</span><span class="s">English · Amazon</span></span>
+        <span class="go">➜</span>
+      </a>
+      <a class="card" href="https://amzn.to/4qXtUVp" target="_blank" rel="noopener" style="animation-delay:.3s">
+        <span class="ico">📘</span>
+        <span class="tx"><span class="t">SOUL: 2 — The Black Edition</span><span class="s">English · Amazon</span></span>
+        <span class="go">➜</span>
+      </a>
+      <a class="card" href="https://amzn.to/49xDngo" target="_blank" rel="noopener" style="animation-delay:.38s">
+        <span class="ico">🔴</span>
+        <span class="tx"><span class="t">魂 ー赤編ー</span><span class="s">日本語 · Amazon</span></span>
+        <span class="go">➜</span>
+      </a>
+      <a class="card" href="https://amzn.to/4b3Z1dp" target="_blank" rel="noopener" style="animation-delay:.46s">
+        <span class="ico">⚫</span>
+        <span class="tx"><span class="t">魂 ー黒編ー</span><span class="s">日本語 · Amazon</span></span>
+        <span class="go">➜</span>
+      </a>
+    </div>
+
+    <div id="sns">
+      <a href="https://x.com/soultamash81989" target="_blank" rel="noopener" aria-label="X">
+        <svg viewBox="0 0 24 24"><path d="M18.9 1.2h3.7l-8.2 9.3L24 22.8h-7.6l-5.9-7.7-6.8 7.7H0l8.7-10L-.4 1.2h7.8l5.3 7 6.2-7zm-1.3 19.5h2L6.4 3.3H4.2l13.4 17.4z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/uchidamotomune" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4 1.3-.1 1.7-.1 4.9-.1zm0 2c-3.1 0-3.5 0-4.8.1-1.1.1-1.4.2-1.7.3-.4.2-.7.4-1 .7-.3.3-.5.6-.7 1-.1.3-.3.6-.3 1.7-.1 1.3-.1 1.7-.1 4.8s0 3.5.1 4.8c.1 1.1.2 1.4.3 1.7.2.4.4.7.7 1 .3.3.6.5 1 .7.3.1.6.3 1.7.3 1.3.1 1.7.1 4.8.1s3.5 0 4.8-.1c1.1-.1 1.4-.2 1.7-.3.4-.2.7-.4 1-.7.3-.3.5-.6.7-1 .1-.3.3-.6.3-1.7.1-1.3.1-1.7.1-4.8s0-3.5-.1-4.8c-.1-1.1-.2-1.4-.3-1.7-.2-.4-.4-.7-.7-1-.3-.3-.6-.5-1-.7-.3-.1-.6-.3-1.7-.3-1.3-.1-1.7-.1-4.8-.1zm0 3.4a5.1 5.1 0 110 10.2 5.1 5.1 0 010-10.2zm0 2a3.1 3.1 0 100 6.2 3.1 3.1 0 000-6.2zm5.4-3.5a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@uchidamotomune" target="_blank" rel="noopener" aria-label="TikTok">
+        <svg viewBox="0 0 24 24"><path d="M19.6 6.7a5 5 0 01-3.8-4.4V2h-3.4v13.3a2.9 2.9 0 11-2.9-2.9c.3 0 .6 0 .9.1V9.1a6.3 6.3 0 00-.9-.1 6.3 6.3 0 106.3 6.3V9.5a8.3 8.3 0 004.4 1.3V7.4c-.2 0-.4 0-.6-.1z"/></svg>
+      </a>
+    </div>
+
+    <footer><b>IGNIS</b> — every building is someone who made it through.</footer>
+  </div>
+
+<script>
+  // 火の粉：ランダムに舞い上がる
+  (function(){
+    var n = Math.min(22, Math.max(12, Math.floor(innerWidth/40)));
+    for(var i=0;i<n;i++){
+      var e=document.createElement('div');e.className='ember';
+      var s=2+Math.random()*4;
+      e.style.width=e.style.height=s+'px';
+      e.style.left=Math.random()*100+'vw';
+      e.style.setProperty('--dx',(Math.random()*120-60)+'px');
+      e.style.animationDuration=(6+Math.random()*8)+'s';
+      e.style.animationDelay=(Math.random()*9)+'s';
+      document.body.appendChild(e);
+    }
+  })();
+  // タップ波紋
+  document.querySelectorAll('a.card').forEach(function(a){
+    a.addEventListener('pointerdown',function(ev){
+      var r=a.getBoundingClientRect(),d=Math.max(r.width,r.height);
+      var rp=document.createElement('span');rp.className='rip';
+      rp.style.width=rp.style.height=d+'px';
+      rp.style.left=(ev.clientX-r.left-d/2)+'px';rp.style.top=(ev.clientY-r.top-d/2)+'px';
+      a.appendChild(rp);setTimeout(function(){rp.remove();},600);
+    });
+  });
+  // 自動再生がブロックされたら初回タップで再生
+  (function(){
+    var v=document.getElementById('bg');
+    var p=v.play&&v.play();if(p&&p.catch)p.catch(function(){
+      document.addEventListener('pointerdown',function once(){v.play().catch(function(){});document.removeEventListener('pointerdown',once);});
+    });
+  })();
+</script>
+</body>
+</html>

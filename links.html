@@ -28,6 +28,18 @@
     box-shadow:0 3px 16px rgba(0,0,0,0.5);transition:border-color .2s,box-shadow .2s,transform .15s;}
   #langbtn:hover{border-color:rgba(255,190,100,0.95);box-shadow:0 4px 20px rgba(255,120,30,0.35);transform:translateY(-1px);}
   #langbtn:active{transform:scale(0.95);}
+  /* ===== 音楽ボタン（右上固定） ===== */
+  #musicbtn{position:fixed;top:14px;right:14px;z-index:20;cursor:pointer;
+    width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;
+    background:rgba(12,14,26,0.72);border:1px solid rgba(255,160,60,0.55);color:#fff;
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    box-shadow:0 3px 16px rgba(0,0,0,0.5);transition:border-color .2s,box-shadow .2s,transform .15s;}
+  #musicbtn:hover{border-color:rgba(255,190,100,0.95);box-shadow:0 4px 20px rgba(255,120,30,0.35);transform:translateY(-1px);}
+  #musicbtn:active{transform:scale(0.92);}
+  #musicbtn.on{border-color:rgba(255,200,110,0.9);box-shadow:0 0 18px rgba(255,140,40,0.5);}
+  #musicbtn.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;
+    border:1.5px solid rgba(255,170,70,0.5);animation:mpulse 1.8s ease-out infinite;}
+  @keyframes mpulse{0%{transform:scale(1);opacity:.6;}100%{transform:scale(1.35);opacity:0;}}
   /* ===== 火の粉 ===== */
   .ember{position:fixed;bottom:-12px;border-radius:50%;z-index:2;pointer-events:none;
     background:radial-gradient(circle,#ffd27a 0%,#ff6a00 55%,transparent 75%);
@@ -122,11 +134,16 @@
   .panel{position:absolute;bottom:9%;width:47%;z-index:4;display:flex;flex-direction:column;gap:9px;pointer-events:none;}
   .panel.red{left:3.5%;} .panel.black{right:3.5%;}
   /* 本のキャッチフレーズ（浮き上がりの一番上） */
-  .tagline{font-family:Georgia,'Times New Roman','Hiragino Mincho ProN','Yu Mincho',serif;
-    font-size:11px;font-weight:700;line-height:1.65;color:#ffb46e;text-shadow:0 1px 10px rgba(0,0,0,0.95);
-    padding:0 2px;opacity:0;transform:translateY(26px);
-    transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.3,1.15);}
-  #cine.fr .panel.red .tagline,#cine.fb .panel.black .tagline{opacity:1;transform:none;}
+  /* 本の説明文：選んでない側（暗くなる枠）に浮かぶ */
+  .bookdesc{position:absolute;top:11%;z-index:2;width:41%;pointer-events:none;
+    font-family:Georgia,'Times New Roman','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-size:12.5px;font-weight:700;line-height:1.9;color:#ffb46e;text-align:left;
+    text-shadow:0 1px 12px rgba(0,0,0,0.98);
+    opacity:0;transform:translateY(12px);transition:opacity .55s ease .18s,transform .55s ease .18s;}
+  .bookdesc.dr{right:4%;}   /* 赤編の説明 → 暗くなる右側(黒編枠)に表示 */
+  .bookdesc.db{left:4%;}    /* 黒編の説明 → 暗くなる左側(赤編枠)に表示 */
+  #cine.fr .bookdesc.dr{opacity:1;transform:none;}
+  #cine.fb .bookdesc.db{opacity:1;transform:none;}
   .panel a.pill{display:block;text-decoration:none;color:#fff;padding:10px 12px;border-radius:12px;
     background:rgba(8,9,16,0.72);border:1px solid rgba(255,255,255,0.22);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -170,6 +187,8 @@
   <video id="bg" src="links-bg.mp4" poster="links-bg.jpg" autoplay muted loop playsinline></video>
   <div id="veil"></div>
   <button id="langbtn" type="button" onclick="toggleLang()">🌐 EN</button>
+  <audio id="music" src="J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3" loop preload="none"></audio>
+  <button id="musicbtn" type="button" onclick="toggleMusic()" aria-label="music" title="音楽 / Music">🎵</button>
 
   <div id="wrap">
     <div id="avatar"><img src="me.jpg" alt="Motomune Uchida"></div>
@@ -201,9 +220,6 @@
         <div class="hs l" aria-label="赤編 / Red Edition"></div>
         <div class="hs r" aria-label="黒編 / Black Edition"></div>
         <div class="panel red">
-          <span class="tagline"
-            data-ja="幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。"
-            data-en="A childhood home lost to arson. A firefighter&#39;s years of tragedy — until Dubai changed the dream.">幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。</span>
           <a class="pill" href="https://amzn.to/49xDngo" target="_blank" rel="noopener">
             <span class="pt">🇯🇵 魂 ー赤編ー</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
@@ -212,9 +228,6 @@
           </a>
         </div>
         <div class="panel black">
-          <span class="tagline"
-            data-ja="公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。"
-            data-en="He left public service for business — what awaited was betrayal by the friend he trusted most.">公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。</span>
           <a class="pill" href="https://amzn.to/4b3Z1dp" target="_blank" rel="noopener">
             <span class="pt">🇯🇵 魂 ー黒編ー</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
@@ -222,6 +235,14 @@
             <span class="pt">🇺🇸 SOUL: 2 — The Black Edition</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
         </div>
+        <!-- 赤編の説明（赤編を選ぶと、暗くなる黒編側=右に浮かぶ） -->
+        <div class="bookdesc dr"
+          data-ja="幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。"
+          data-en="A childhood home lost to arson. A firefighter&#39;s years of tragedy — until Dubai changed the dream.">幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。</div>
+        <!-- 黒編の説明（黒編を選ぶと、暗くなる赤編側=左に浮かぶ） -->
+        <div class="bookdesc db"
+          data-ja="公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。"
+          data-en="He left public service for business — what awaited was betrayal by the friend he trusted most.">公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。</div>
         <div id="hint" data-ja="✋ 本に触れると、扉がひらく" data-en="✋ Touch a book to open its door">✋ 本に触れると、扉がひらく</div>
       </div>
       <p id="affil">※ 書籍リンクはAmazonアソシエイトのリンクです。適格販売により収入を得ています。<br>
@@ -316,6 +337,24 @@
     var p=v.play&&v.play();if(p&&p.catch)p.catch(function(){
       document.addEventListener('pointerdown',function once(){v.play().catch(function(){});document.removeEventListener('pointerdown',once);});
     });
+  })();
+  // ===== BGM（J.S.バッハ）: 既定ON。ブラウザが自動再生を止めるので初回操作で開始。🎵/🔇で切替 =====
+  (function(){
+    var au=document.getElementById('music'), btn=document.getElementById('musicbtn');
+    var on;try{on=localStorage.getItem('ignis_links_music')!=='off';}catch(_){on=true;}
+    au.volume=0.32;
+    function paint(){ btn.textContent=on?'🎵':'🔇'; btn.classList.toggle('on',on && !au.paused); }
+    function play(){ var p=au.play(); if(p&&p.then)p.then(paint).catch(function(){}); else paint(); }
+    window.toggleMusic=function(){
+      on=!on; try{localStorage.setItem('ignis_links_music',on?'on':'off');}catch(_){}
+      if(on)play(); else{ au.pause(); }
+      paint();
+    };
+    // 初回のユーザー操作でBGM開始（ON設定時のみ）。以後は解除。
+    function kick(){ if(on)play(); document.removeEventListener('pointerdown',kick); }
+    document.addEventListener('pointerdown',kick);
+    au.addEventListener('play',paint); au.addEventListener('pause',paint);
+    paint();
   })();
 </script>
 </body>

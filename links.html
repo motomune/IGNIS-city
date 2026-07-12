@@ -20,6 +20,14 @@
   #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:saturate(1.1);}
   #veil{position:fixed;inset:0;z-index:1;pointer-events:none;
     background:linear-gradient(180deg,rgba(4,6,14,0.55) 0%,rgba(4,6,14,0.35) 40%,rgba(4,6,14,0.82) 100%);}
+  /* ===== 言語切替（左上固定） ===== */
+  #langbtn{position:fixed;top:14px;left:14px;z-index:20;cursor:pointer;
+    padding:8px 15px;border-radius:22px;font-size:12.5px;font-weight:900;letter-spacing:0.06em;color:#fff;
+    background:rgba(12,14,26,0.72);border:1px solid rgba(255,160,60,0.55);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    box-shadow:0 3px 16px rgba(0,0,0,0.5);transition:border-color .2s,box-shadow .2s,transform .15s;}
+  #langbtn:hover{border-color:rgba(255,190,100,0.95);box-shadow:0 4px 20px rgba(255,120,30,0.35);transform:translateY(-1px);}
+  #langbtn:active{transform:scale(0.95);}
   /* ===== 火の粉 ===== */
   .ember{position:fixed;bottom:-12px;border-radius:50%;z-index:2;pointer-events:none;
     background:radial-gradient(circle,#ffd27a 0%,#ff6a00 55%,transparent 75%);
@@ -30,22 +38,26 @@
     100%{transform:translate(var(--dx),-108vh) scale(.25);opacity:0;}
   }
   /* ===== レイアウト ===== */
-  #wrap{position:relative;z-index:3;max-width:480px;margin:0 auto;padding:48px 22px 60px;
+  #wrap{position:relative;z-index:3;max-width:480px;margin:0 auto;padding:52px 22px 60px;
     display:flex;flex-direction:column;align-items:center;min-height:100dvh;}
-  #avatar{width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-size:44px;background:radial-gradient(circle at 50% 60%,rgba(255,106,0,0.25),rgba(10,10,20,0.9) 70%);
-    border:2px solid rgba(255,150,60,0.65);box-shadow:0 0 28px rgba(255,106,0,0.45),inset 0 0 18px rgba(255,106,0,0.25);
+  #avatar{width:98px;height:98px;border-radius:50%;overflow:hidden;
+    border:2.5px solid rgba(255,150,60,0.75);box-shadow:0 0 28px rgba(255,106,0,0.5),inset 0 0 18px rgba(255,106,0,0.2);
     animation:breathe 3.2s ease-in-out infinite;}
-  @keyframes breathe{0%,100%{box-shadow:0 0 22px rgba(255,106,0,0.35),inset 0 0 14px rgba(255,106,0,0.2);}
-    50%{box-shadow:0 0 40px rgba(255,140,30,0.6),inset 0 0 24px rgba(255,106,0,0.35);}}
+  #avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  @keyframes breathe{0%,100%{box-shadow:0 0 22px rgba(255,106,0,0.4);}
+    50%{box-shadow:0 0 42px rgba(255,140,30,0.7);}}
   h1{margin-top:14px;font-size:22px;font-weight:900;letter-spacing:0.04em;
     background:linear-gradient(90deg,#ffd27a,#ff8a3d,#ffd27a);background-size:200% 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite;}
   @keyframes shine{to{background-position:200% 0;}}
-  #tag{margin-top:8px;font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85);text-align:center;text-shadow:0 1px 8px rgba(0,0,0,0.8);}
-  #tag .en{display:block;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:0.06em;}
+  #tag{margin-top:8px;font-size:15px;font-weight:800;color:rgba(255,255,255,0.92);text-align:center;text-shadow:0 1px 8px rgba(0,0,0,0.8);letter-spacing:0.04em;}
+  /* 説明文（オレンジ・大きめ） */
+  #desc{margin-top:12px;font-size:13.5px;line-height:1.9;color:#ffb46e;text-align:left;
+    text-shadow:0 1px 10px rgba(0,0,0,0.85);letter-spacing:0.01em;
+    padding:14px 16px;border-radius:14px;background:rgba(10,10,18,0.5);
+    border:1px solid rgba(255,150,60,0.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
   /* ===== メインリンク（IGNIS CITY） ===== */
-  #links{width:100%;margin-top:26px;display:flex;flex-direction:column;gap:12px;}
+  #links{width:100%;margin-top:22px;display:flex;flex-direction:column;gap:12px;}
   a.card{display:flex;align-items:center;gap:13px;padding:15px 17px;border-radius:15px;text-decoration:none;color:#fff;
     background:rgba(14,16,28,0.55);border:1px solid rgba(255,255,255,0.14);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
     transform:translateY(14px);opacity:0;animation:in .6s ease forwards;
@@ -55,14 +67,13 @@
     box-shadow:0 6px 26px rgba(255,106,0,0.28);background:rgba(24,18,20,0.6);}
   a.card:active{transform:scale(0.975);}
   @keyframes in{to{transform:translateY(0);opacity:1;}}
-  a.card .ico{font-size:24px;flex-shrink:0;width:34px;text-align:center;}
   a.card .tx{flex:1;min-width:0;}
   a.card .t{font-size:16px;font-weight:800;letter-spacing:0.02em;}
-  a.card .s{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
+  a.card .s{display:block;font-size:11.5px;color:rgba(255,255,255,0.6);margin-top:3px;line-height:1.6;}
   a.card .go{font-size:15px;color:rgba(255,170,80,0.8);flex-shrink:0;transition:transform .18s;}
   a.card:hover .go{transform:translateX(4px);}
   a.card.main{background:linear-gradient(135deg,rgba(255,80,0,0.32),rgba(255,150,30,0.2));
-    border:1.5px solid rgba(255,160,60,0.85);box-shadow:0 0 24px rgba(255,106,0,0.35);padding-top:20px;}
+    border:1.5px solid rgba(255,160,60,0.85);box-shadow:0 0 24px rgba(255,106,0,0.35);padding-top:22px;}
   /* 🎮 ゲームだと一目でわかる左上バッジ */
   .gbadge{position:absolute;top:0;left:0;z-index:2;font-size:9.5px;font-weight:900;letter-spacing:0.14em;
     padding:3px 10px 4px 8px;border-radius:14px 0 12px 0;color:#1a0e02;
@@ -70,7 +81,6 @@
   /* 炎のロゴアイコン */
   .lgo{width:44px;height:44px;flex-shrink:0;border-radius:12px;object-fit:cover;
     border:1px solid rgba(255,180,90,0.55);box-shadow:0 0 14px rgba(255,106,0,0.45);}
-  a.card .s.en2{color:rgba(255,255,255,0.42);font-size:10px;}
   a.card.main::after{content:'';position:absolute;top:0;left:-80%;width:55%;height:100%;
     background:linear-gradient(105deg,transparent,rgba(255,230,180,0.24),transparent);
     animation:sweep 3.4s ease-in-out infinite;}
@@ -116,7 +126,6 @@
     font-size:11px;line-height:1.65;color:rgba(255,236,210,0.95);text-shadow:0 1px 10px rgba(0,0,0,0.95);
     padding:0 2px;opacity:0;transform:translateY(26px);
     transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.3,1.15);}
-  .tagline .ten{display:block;margin-top:3px;font-size:9px;font-style:italic;color:rgba(255,255,255,0.55);letter-spacing:0.03em;}
   #cine.fr .panel.red .tagline,#cine.fb .panel.black .tagline{opacity:1;transform:none;}
   .panel a.pill{display:block;text-decoration:none;color:#fff;padding:10px 12px;border-radius:12px;
     background:rgba(8,9,16,0.72);border:1px solid rgba(255,255,255,0.22);
@@ -142,7 +151,7 @@
   #affil{margin-top:10px;font-size:9.5px;line-height:1.7;color:rgba(255,255,255,0.42);text-align:center;letter-spacing:0.02em;}
 
   /* ===== SNS ===== */
-  #sns{margin-top:26px;display:flex;gap:18px;}
+  #sns{margin-top:26px;display:flex;gap:16px;}
   #sns a{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
     background:rgba(14,16,28,0.6);border:1px solid rgba(255,255,255,0.16);backdrop-filter:blur(8px);
     transition:transform .18s,border-color .18s,box-shadow .18s;}
@@ -156,19 +165,24 @@
 <body>
   <video id="bg" src="links-bg.mp4" poster="links-bg.jpg" autoplay muted loop playsinline></video>
   <div id="veil"></div>
+  <button id="langbtn" type="button" onclick="toggleLang()">🌐 EN</button>
 
   <div id="wrap">
-    <div id="avatar">🔥</div>
+    <div id="avatar"><img src="me.jpg" alt="Motomune Uchida"></div>
     <h1>Motomune Uchida</h1>
-    <p id="tag">君は一人じゃない。🕯️<span class="en">You are not alone.</span></p>
+    <p id="tag" data-ja="君は一人じゃない。🕯️" data-en="You are not alone. 🕯️">君は一人じゃない。🕯️</p>
+    <p id="desc"
+      data-ja="IGNIS CITYは無料のブラウザゲーム——苦難を生き抜いた実在の人々の物語でできた、静かな3D都市です。ひとつひとつのビルは、辛い経験を乗り越えて物語を残した実在の誰か。何が起きたのか、どう向き合ったのか、そして今あなたに何を伝えたいのか。あなたと同じ苦しみを歩いた人を見つけ、その乗り越え方に触れ、蝋燭を灯して「君は一人じゃない」と伝えてください。物語に心が動いたら、その人をフォローして、次の章を応援することもできます。英語・日本語対応、ひとりで作りました。"
+      data-en='IGNIS CITY is a free browser game — a quiet 3D city built from real people&#39;s stories of surviving hard times. Every building is a real person who lived through something hard and left their story: what happened, how they faced it, and what they&#39;d tell you now. Find the one whose struggle mirrors yours, see how they got through, and light a candle to say "you&#39;re not alone." If their story reaches you, follow them and support their next chapter. Made by one person, in English and Japanese.'></p>
 
     <div id="links">
       <a class="card main" href="https://motomune.github.io/IGNIS-city/" target="_blank" rel="noopener" style="animation-delay:.1s">
         <span class="gbadge">🎮 GAME</span>
         <img class="lgo" src="ignis-logo.jpg" alt="IGNIS CITY logo">
-        <span class="tx"><span class="t">IGNIS CITY — 無料でプレイ</span>
-        <span class="s">街を探検し、誰かの実体験から生まれた教訓と出会う。その灯が、あなたの今の苦難に届きますように。</span>
-        <span class="s en2">Explore the city, find lessons born from real lives — may they light your way. · Free, in your browser</span></span>
+        <span class="tx">
+          <span class="t" data-ja="IGNIS CITY — 無料でプレイ" data-en="IGNIS CITY — Play Free">IGNIS CITY — 無料でプレイ</span>
+          <span class="s" data-ja="街を探検し、誰かの実体験から生まれた教訓と出会う。その灯が、あなたの今の苦難に届きますように。（無料・ブラウザで遊べます）" data-en="Explore the city, find lessons born from real lives — may they light your way. · Free, in your browser">街を探検し、誰かの実体験から生まれた教訓と出会う。その灯が、あなたの今の苦難に届きますように。（無料・ブラウザで遊べます）</span>
+        </span>
         <span class="go">➜</span>
       </a>
     </div>
@@ -184,24 +198,28 @@
         <div class="hs l" aria-label="赤編 / Red Edition"></div>
         <div class="hs r" aria-label="黒編 / Black Edition"></div>
         <div class="panel red">
-          <span class="tagline">幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。<span class="ten">A childhood home lost to arson. A firefighter's years of tragedy — until Dubai changed the dream.</span></span>
+          <span class="tagline"
+            data-ja="幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。"
+            data-en="A childhood home lost to arson. A firefighter&#39;s years of tragedy — until Dubai changed the dream.">幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。</span>
           <a class="pill" href="https://amzn.to/49xDngo" target="_blank" rel="noopener">
-            <span class="pt">🇯🇵 魂 ー赤編ー</span><span class="pa">Amazonで購入 ➜</span>
+            <span class="pt">🇯🇵 魂 ー赤編ー</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
           <a class="pill" href="https://amzn.to/4pRi1Qb" target="_blank" rel="noopener">
-            <span class="pt">🇺🇸 SOUL: 1 — The Red Edition</span><span class="pa">Buy on Amazon ➜</span>
+            <span class="pt">🇺🇸 SOUL: 1 — The Red Edition</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
         </div>
         <div class="panel black">
-          <span class="tagline">公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。<span class="ten">He left public service for business — what awaited was betrayal by the friend he trusted most.</span></span>
+          <span class="tagline"
+            data-ja="公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。"
+            data-en="He left public service for business — what awaited was betrayal by the friend he trusted most.">公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。</span>
           <a class="pill" href="https://amzn.to/4b3Z1dp" target="_blank" rel="noopener">
-            <span class="pt">🇯🇵 魂 ー黒編ー</span><span class="pa">Amazonで購入 ➜</span>
+            <span class="pt">🇯🇵 魂 ー黒編ー</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
           <a class="pill" href="https://amzn.to/4qXtUVp" target="_blank" rel="noopener">
-            <span class="pt">🇺🇸 SOUL: 2 — The Black Edition</span><span class="pa">Buy on Amazon ➜</span>
+            <span class="pt">🇺🇸 SOUL: 2 — The Black Edition</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
         </div>
-        <div id="hint">✋ 本に触れると、扉がひらく — Touch a book</div>
+        <div id="hint" data-ja="✋ 本に触れると、扉がひらく" data-en="✋ Touch a book to open its door">✋ 本に触れると、扉がひらく</div>
       </div>
       <p id="affil">※ 書籍リンクはAmazonアソシエイトのリンクです。適格販売により収入を得ています。<br>
       As an Amazon Associate, the author earns from qualifying purchases.</p>
@@ -214,8 +232,11 @@
       <a href="https://www.instagram.com/soultamashii2025" target="_blank" rel="noopener" aria-label="Instagram">
         <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4 1.3-.1 1.7-.1 4.9-.1zm0 2c-3.1 0-3.5 0-4.8.1-1.1.1-1.4.2-1.7.3-.4.2-.7.4-1 .7-.3.3-.5.6-.7 1-.1.3-.3.6-.3 1.7-.1 1.3-.1 1.7-.1 4.8s0 3.5.1 4.8c.1 1.1.2 1.4.3 1.7.2.4.4.7.7 1 .3.3.6.5 1 .7.3.1.6.3 1.7.3 1.3.1 1.7.1 4.8.1s3.5 0 4.8-.1c1.1-.1 1.4-.2 1.7-.3.4-.2.7-.4 1-.7.3-.3.5-.6.7-1 .1-.3.3-.6.3-1.7.1-1.3.1-1.7.1-4.8s0-3.5-.1-4.8c-.1-1.1-.2-1.4-.3-1.7-.2-.4-.4-.7-.7-1-.3-.3-.6-.5-1-.7-.3-.1-.6-.3-1.7-.3-1.3-.1-1.7-.1-4.8-.1zm0 3.4a5.1 5.1 0 110 10.2 5.1 5.1 0 010-10.2zm0 2a3.1 3.1 0 100 6.2 3.1 3.1 0 000-6.2zm5.4-3.5a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"/></svg>
       </a>
-      <a href="https://www.tiktok.com/@uchidamotomune" target="_blank" rel="noopener" aria-label="TikTok">
+      <a href="https://www.tiktok.com/@soultamashii2025" target="_blank" rel="noopener" aria-label="TikTok">
         <svg viewBox="0 0 24 24"><path d="M19.6 6.7a5 5 0 01-3.8-4.4V2h-3.4v13.3a2.9 2.9 0 11-2.9-2.9c.3 0 .6 0 .9.1V9.1a6.3 6.3 0 00-.9-.1 6.3 6.3 0 106.3 6.3V9.5a8.3 8.3 0 004.4 1.3V7.4c-.2 0-.4 0-.6-.1z"/></svg>
+      </a>
+      <a href="https://www.youtube.com/@ignis_motomune" target="_blank" rel="noopener" aria-label="YouTube">
+        <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.3 31.3 0 000 12a31.3 31.3 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.3 31.3 0 0024 12a31.3 31.3 0 00-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z"/></svg>
       </a>
     </div>
 
@@ -223,17 +244,41 @@
   </div>
 
 <script>
-  // 火の粉：ランダムに舞い上がる
+  // ===== 言語：日本語ブラウザ→JA、それ以外→EN。?lang= と保存済みの選択が優先 =====
+  var LANG=(function(){
+    try{
+      var q=new URLSearchParams(location.search).get('lang');
+      if(q==='ja'||q==='en')return q;
+      var s=localStorage.getItem('ignis_links_lang');
+      if(s==='ja'||s==='en')return s;
+    }catch(_){}
+    return /^ja/i.test(navigator.language||navigator.userLanguage||'')?'ja':'en';
+  })();
+  function applyLang(){
+    document.documentElement.lang=LANG;
+    document.querySelectorAll('[data-ja]').forEach(function(el){
+      el.textContent=el.dataset[LANG]||el.dataset.ja;
+    });
+    var b=document.getElementById('langbtn');
+    if(b)b.textContent=LANG==='ja'?'🌐 EN':'🌐 日本語';
+  }
+  function toggleLang(){
+    LANG=LANG==='ja'?'en':'ja';
+    try{localStorage.setItem('ignis_links_lang',LANG);}catch(_){}
+    applyLang();
+  }
+  applyLang();
+  // 火の粉：ランダムに舞い上がる（増量）
   (function(){
-    var n = Math.min(22, Math.max(12, Math.floor(innerWidth/40)));
+    var n = Math.min(48, Math.max(26, Math.floor(innerWidth/16)));
     for(var i=0;i<n;i++){
       var e=document.createElement('div');e.className='ember';
-      var s=2+Math.random()*4;
+      var s=2+Math.random()*4.5;
       e.style.width=e.style.height=s+'px';
       e.style.left=Math.random()*100+'vw';
-      e.style.setProperty('--dx',(Math.random()*120-60)+'px');
-      e.style.animationDuration=(6+Math.random()*8)+'s';
-      e.style.animationDelay=(Math.random()*9)+'s';
+      e.style.setProperty('--dx',(Math.random()*140-70)+'px');
+      e.style.animationDuration=(5+Math.random()*8)+'s';
+      e.style.animationDelay=(Math.random()*8)+'s';
       document.body.appendChild(e);
     }
   })();
@@ -252,7 +297,6 @@
     var cine=document.getElementById('cine');
     var hsl=cine.querySelector('.hs.l'), hsr=cine.querySelector('.hs.r');
     function setF(m){ cine.classList.toggle('fr',m==='r'); cine.classList.toggle('fb',m==='b'); }
-    function cur(){ return cine.classList.contains('fr')?'r':(cine.classList.contains('fb')?'b':null); }
     // PC: ホバーで浮かぶ
     hsl.addEventListener('pointerenter',function(e){ if(e.pointerType==='mouse')setF('r'); });
     hsr.addEventListener('pointerenter',function(e){ if(e.pointerType==='mouse')setF('b'); });

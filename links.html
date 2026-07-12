@@ -52,7 +52,7 @@
   @keyframes shine{to{background-position:200% 0;}}
   #tag{margin-top:8px;font-size:15px;font-weight:800;color:rgba(255,255,255,0.92);text-align:center;text-shadow:0 1px 8px rgba(0,0,0,0.8);letter-spacing:0.04em;}
   /* 説明文（オレンジ・大きめ） */
-  #desc{margin-top:12px;font-size:13.5px;line-height:1.9;color:#ffb46e;text-align:left;
+  #desc{margin-top:12px;font-size:13.5px;line-height:1.9;color:rgba(255,255,255,0.92);text-align:left;
     text-shadow:0 1px 10px rgba(0,0,0,0.85);letter-spacing:0.01em;
     padding:14px 16px;border-radius:14px;background:rgba(10,10,18,0.5);
     border:1px solid rgba(255,150,60,0.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
@@ -78,9 +78,9 @@
   .gbadge{position:absolute;top:0;left:0;z-index:2;font-size:9.5px;font-weight:900;letter-spacing:0.14em;
     padding:3px 10px 4px 8px;border-radius:14px 0 12px 0;color:#1a0e02;
     background:linear-gradient(135deg,#ffd24f,#ff9a2e);box-shadow:0 2px 10px rgba(255,140,30,0.45);}
-  /* 炎のロゴアイコン */
-  .lgo{width:44px;height:44px;flex-shrink:0;border-radius:12px;object-fit:cover;
-    border:1px solid rgba(255,180,90,0.55);box-shadow:0 0 14px rgba(255,106,0,0.45);}
+  /* 炎のロゴアイコン（説明文なしの分、大きく） */
+  .lgo{width:72px;height:72px;flex-shrink:0;border-radius:16px;object-fit:cover;
+    border:1px solid rgba(255,180,90,0.6);box-shadow:0 0 20px rgba(255,106,0,0.5);}
   a.card.main::after{content:'';position:absolute;top:0;left:-80%;width:55%;height:100%;
     background:linear-gradient(105deg,transparent,rgba(255,230,180,0.24),transparent);
     animation:sweep 3.4s ease-in-out infinite;}
@@ -123,7 +123,7 @@
   .panel.red{left:3.5%;} .panel.black{right:3.5%;}
   /* 本のキャッチフレーズ（浮き上がりの一番上） */
   .tagline{font-family:Georgia,'Times New Roman','Hiragino Mincho ProN','Yu Mincho',serif;
-    font-size:11px;line-height:1.65;color:rgba(255,236,210,0.95);text-shadow:0 1px 10px rgba(0,0,0,0.95);
+    font-size:11px;font-weight:700;line-height:1.65;color:#ffb46e;text-shadow:0 1px 10px rgba(0,0,0,0.95);
     padding:0 2px;opacity:0;transform:translateY(26px);
     transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.3,1.15);}
   #cine.fr .panel.red .tagline,#cine.fb .panel.black .tagline{opacity:1;transform:none;}
@@ -152,11 +152,15 @@
 
   /* ===== SNS ===== */
   #sns{margin-top:26px;display:flex;gap:16px;}
-  #sns a{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    background:rgba(14,16,28,0.6);border:1px solid rgba(255,255,255,0.16);backdrop-filter:blur(8px);
-    transition:transform .18s,border-color .18s,box-shadow .18s;}
-  #sns a:hover{transform:translateY(-3px);border-color:rgba(255,150,60,0.8);box-shadow:0 5px 18px rgba(255,106,0,0.3);}
-  #sns svg{width:20px;height:20px;fill:#fff;}
+  #sns a{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,rgba(255,160,70,0.4),rgba(255,120,40,0.28));
+    border:1.5px solid rgba(255,190,110,0.75);backdrop-filter:blur(8px);
+    box-shadow:0 3px 14px rgba(255,120,30,0.25);
+    transition:transform .18s,border-color .18s,box-shadow .18s,background .18s;}
+  #sns a:hover{transform:translateY(-3px);border-color:rgba(255,220,160,0.95);
+    background:linear-gradient(135deg,rgba(255,170,80,0.6),rgba(255,130,45,0.45));
+    box-shadow:0 6px 22px rgba(255,120,30,0.45);}
+  #sns svg{width:21px;height:21px;fill:#fff;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5));}
   footer{margin-top:auto;padding-top:34px;font-size:10.5px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-align:center;}
   footer b{color:rgba(255,170,80,0.7);}
   @media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important;}}
@@ -181,7 +185,6 @@
         <img class="lgo" src="ignis-logo.jpg" alt="IGNIS CITY logo">
         <span class="tx">
           <span class="t" data-ja="IGNIS CITY — 無料でプレイ" data-en="IGNIS CITY — Play Free">IGNIS CITY — 無料でプレイ</span>
-          <span class="s" data-ja="街を探検し、誰かの実体験から生まれた教訓と出会う。その灯が、あなたの今の苦難に届きますように。（無料・ブラウザで遊べます）" data-en="Explore the city, find lessons born from real lives — may they light your way. · Free, in your browser">街を探検し、誰かの実体験から生まれた教訓と出会う。その灯が、あなたの今の苦難に届きますように。（無料・ブラウザで遊べます）</span>
         </span>
         <span class="go">➜</span>
       </a>
@@ -204,7 +207,7 @@
           <a class="pill" href="https://amzn.to/49xDngo" target="_blank" rel="noopener">
             <span class="pt">🇯🇵 魂 ー赤編ー</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
-          <a class="pill" href="https://amzn.to/4pRi1Qb" target="_blank" rel="noopener">
+          <a class="pill" href="https://amzn.to/4yccyZn" target="_blank" rel="noopener">
             <span class="pt">🇺🇸 SOUL: 1 — The Red Edition</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
         </div>
@@ -215,7 +218,7 @@
           <a class="pill" href="https://amzn.to/4b3Z1dp" target="_blank" rel="noopener">
             <span class="pt">🇯🇵 魂 ー黒編ー</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
-          <a class="pill" href="https://amzn.to/4qXtUVp" target="_blank" rel="noopener">
+          <a class="pill" href="https://amzn.to/4fxn8Tm" target="_blank" rel="noopener">
             <span class="pt">🇺🇸 SOUL: 2 — The Black Edition</span><span class="pa" data-ja="Amazonで購入 ➜" data-en="Buy on Amazon ➜">Amazonで購入 ➜</span>
           </a>
         </div>

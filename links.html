@@ -135,9 +135,9 @@
   .panel.red{left:3.5%;} .panel.black{right:3.5%;}
   /* 本のキャッチフレーズ（浮き上がりの一番上） */
   /* 本の説明文：選んでない側（暗くなる枠）に浮かぶ */
-  .bookdesc{position:absolute;top:11%;z-index:2;width:41%;pointer-events:none;
+  .bookdesc{position:absolute;top:9%;z-index:2;width:43%;pointer-events:none;white-space:pre-line;
     font-family:Georgia,'Times New Roman','Hiragino Mincho ProN','Yu Mincho',serif;
-    font-size:12.5px;font-weight:700;line-height:1.9;color:#ffb46e;text-align:left;
+    font-size:11px;font-weight:700;line-height:1.75;color:#ffb46e;text-align:left;
     text-shadow:0 1px 12px rgba(0,0,0,0.98);
     opacity:0;transform:translateY(12px);transition:opacity .55s ease .18s,transform .55s ease .18s;}
   .bookdesc.dr{right:4%;}   /* 赤編の説明 → 暗くなる右側(黒編枠)に表示 */
@@ -237,12 +237,18 @@
         </div>
         <!-- 赤編の説明（赤編を選ぶと、暗くなる黒編側=右に浮かぶ） -->
         <div class="bookdesc dr"
-          data-ja="幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。"
-          data-en="A childhood home lost to arson. A firefighter&#39;s years of tragedy — until Dubai changed the dream.">幼い日、自宅は放火で焼けた。消防士として生き、悲劇は繰り返し——ドバイの空の下で、夢が変わった。</div>
+          data-ja="3歳の時、我が家は放火で焼け落ちた。&#10;その記憶が、僕を「炎に立ち向かう人」に変えた。&#10;消防士を目指した青春、そして人生を180度変えた”ある出会い”。&#10;実話ベースの自伝、序章。"
+          data-en="When I was three, our home burned to the ground in an arson.&#10;That memory turned me into someone who stands against the fire.&#10;A youth chasing the dream of becoming a firefighter — and the one encounter that turned my life around.&#10;A true story. The opening chapter.">3歳の時、我が家は放火で焼け落ちた。
+その記憶が、僕を「炎に立ち向かう人」に変えた。
+消防士を目指した青春、そして人生を180度変えた”ある出会い”。
+実話ベースの自伝、序章。</div>
         <!-- 黒編の説明（黒編を選ぶと、暗くなる赤編側=左に浮かぶ） -->
         <div class="bookdesc db"
-          data-ja="公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。"
-          data-en="He left public service for business — what awaited was betrayal by the friend he trusted most.">公務員の道を離れ、ビジネスの世界へ。待っていたのは、信じ抜いた親友からの大きな裏切りだった。</div>
+          data-ja="安定を捨て、「創るために生きる」と決めた矢先に起きた交通事故。&#10;瀕死の重傷の中、彼女がかけたひと言。&#10;信頼、裏切り、そして再生、すべて実話。&#10;次に待つのは、最終章「白編」。"
+          data-en="Just as I gave up stability to “live to create,” a car accident struck.&#10;Near death, gravely wounded — and the single word she gave me.&#10;Trust, betrayal, and rebirth: all of it true.&#10;What waits next is the final chapter — “The White Edition.”">安定を捨て、「創るために生きる」と決めた矢先に起きた交通事故。
+瀕死の重傷の中、彼女がかけたひと言。
+信頼、裏切り、そして再生、すべて実話。
+次に待つのは、最終章「白編」。</div>
         <div id="hint" data-ja="✋ 本に触れると、扉がひらく" data-en="✋ Touch a book to open its door">✋ 本に触れると、扉がひらく</div>
       </div>
       <p id="affil">※ 書籍リンクはAmazonアソシエイトのリンクです。適格販売により収入を得ています。<br>
@@ -338,21 +344,29 @@
       document.addEventListener('pointerdown',function once(){v.play().catch(function(){});document.removeEventListener('pointerdown',once);});
     });
   })();
-  // ===== BGM（J.S.バッハ）: 既定ON。ブラウザが自動再生を止めるので初回操作で開始。🎵/🔇で切替 =====
+  // ===== BGM（J.S.バッハ）: アクセス即・自動再生を最大限狙う。=====
+  // ブラウザは「音あり自動再生」を原則ブロックするため、①まず音ありで再生を試し、
+  // ②弾かれたらミュートで自動再生を始め、③最初のどんな操作（タップ/スクロール/キー）でも即ミュート解除。
   (function(){
     var au=document.getElementById('music'), btn=document.getElementById('musicbtn');
     var on;try{on=localStorage.getItem('ignis_links_music')!=='off';}catch(_){on=true;}
     au.volume=0.32;
-    function paint(){ btn.textContent=on?'🎵':'🔇'; btn.classList.toggle('on',on && !au.paused); }
-    function play(){ var p=au.play(); if(p&&p.then)p.then(paint).catch(function(){}); else paint(); }
+    function paint(){ btn.textContent=on?'🎵':'🔇'; btn.classList.toggle('on',on && !au.paused && !au.muted); }
+    function startUnmuted(){ au.muted=false; var p=au.play(); if(p&&p.then)p.then(paint).catch(function(){}); else paint(); }
     window.toggleMusic=function(){
       on=!on; try{localStorage.setItem('ignis_links_music',on?'on':'off');}catch(_){}
-      if(on)play(); else{ au.pause(); }
+      if(on){ startUnmuted(); } else { au.pause(); }
       paint();
     };
-    // 初回のユーザー操作でBGM開始（ON設定時のみ）。以後は解除。
-    function kick(){ if(on)play(); document.removeEventListener('pointerdown',kick); }
-    document.addEventListener('pointerdown',kick);
+    function unmuteKick(){ if(on)startUnmuted(); off(); }
+    function off(){ ['pointerdown','touchstart','keydown','scroll','click'].forEach(function(ev){document.removeEventListener(ev,unmuteKick,true);}); }
+    if(on){
+      var p=au.play();                                   // ①音ありで挑戦
+      if(p&&p.catch)p.catch(function(){ au.muted=true; au.play().catch(function(){}); }); // ②ダメならミュート自動再生
+      ['pointerdown','touchstart','keydown','scroll','click'].forEach(function(ev){       // ③初回操作で解除
+        document.addEventListener(ev,unmuteKick,true);
+      });
+    }
     au.addEventListener('play',paint); au.addEventListener('pause',paint);
     paint();
   })();

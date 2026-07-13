@@ -160,10 +160,20 @@
   .panel a.pill:active{transform:scale(0.96);}
   /* 誘導ヒント */
   #hint{position:absolute;left:0;right:0;bottom:3.5%;z-index:2;text-align:center;pointer-events:none;
-    font-size:11px;font-weight:700;letter-spacing:0.12em;color:rgba(255,255,255,0.75);
+    font-size:11px;font-weight:700;letter-spacing:0.12em;color:rgba(255,255,255,0.78);
     text-shadow:0 1px 10px rgba(0,0,0,0.9);animation:hintPulse 2.6s ease-in-out infinite;transition:opacity .4s;}
   #cine.fr #hint,#cine.fb #hint{opacity:0;}
   @keyframes hintPulse{0%,100%{opacity:.55;}50%{opacity:1;}}
+  /* 各本が押せると分かる点滅チップ（赤本＝左 / 黒本＝右） */
+  .taphint{position:absolute;top:44%;z-index:3;pointer-events:none;
+    padding:5px 11px;border-radius:16px;font-size:11.5px;font-weight:900;letter-spacing:0.05em;color:#fff;
+    background:rgba(8,9,16,0.6);border:1.5px solid rgba(255,180,90,0.8);
+    box-shadow:0 0 14px rgba(255,130,30,0.4);backdrop-filter:blur(6px);
+    animation:tapBob 1.7s ease-in-out infinite;transition:opacity .4s;}
+  .taphint.l{left:11%;} .taphint.r{right:11%;}
+  #cine.fr .taphint,#cine.fb .taphint{opacity:0;}
+  @keyframes tapBob{0%,100%{transform:translateY(0);box-shadow:0 0 12px rgba(255,130,30,0.35);}
+    50%{transform:translateY(-5px);box-shadow:0 0 22px rgba(255,160,50,0.65);}}
   /* アフィリエイト表記 */
   #affil{margin-top:10px;font-size:9.5px;line-height:1.7;color:rgba(255,255,255,0.42);text-align:center;letter-spacing:0.02em;}
 
@@ -249,7 +259,9 @@
 瀕死の重傷の中、彼女がかけたひと言。
 信頼、裏切り、そして再生、すべて実話。
 次に待つのは、最終章「白編」。</div>
-        <div id="hint" data-ja="✋ 本に触れると、扉がひらく" data-en="✋ Touch a book to open its door">✋ 本に触れると、扉がひらく</div>
+        <span class="taphint l" data-ja="👆 赤編" data-en="👆 Red">👆 赤編</span>
+        <span class="taphint r" data-ja="👆 黒編" data-en="👆 Black">👆 黒編</span>
+        <div id="hint" data-ja="✋ 赤本・黒本、それぞれ触れてみて" data-en="✋ Tap each book — red and black">✋ 赤本・黒本、それぞれ触れてみて</div>
       </div>
       <p id="affil">※ 書籍リンクはAmazonアソシエイトのリンクです。適格販売により収入を得ています。<br>
       As an Amazon Associate, the author earns from qualifying purchases.</p>

@@ -2003,7 +2003,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-15-v187';
+    const IGNIS_BUILD='2026-07-15-v188';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -4284,6 +4284,8 @@
       if(sub)sub.textContent=isJa?'遊ぶには登録が必要です':'Sign up to start playing';
       openAuthModal();
       switchTab('signup');
+      // ゲート中は遊べない＝3D描画を止めて軽くする（動くシーンをblurし続けると重い・発熱する）
+      try{if(typeof setScenePaused==='function')setScenePaused(true);}catch(_){}
     }
     function lowerAuthGate(){
       const modal=document.getElementById('auth-modal');
@@ -4293,6 +4295,7 @@
       modal.classList.remove('open');
       try{stopFire();}catch(_){}
       try{stopBlinking();}catch(_){}
+      try{if(typeof setScenePaused==='function')setScenePaused(false);}catch(_){} // 3D描画を再開
     }
     function switchTab(mode){
       authMode=mode;

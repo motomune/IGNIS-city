@@ -378,6 +378,13 @@
         document.addEventListener(ev,unmuteKick,true);
       });
     }
+    // ページが裏（別タブ）に回ったら停止。表に戻ったらON設定時のみ再開。
+    // → ゲームを別タブで開いてもBGMが重ならない。
+    document.addEventListener('visibilitychange',function(){
+      if(document.hidden){ au.pause(); }
+      else if(on){ var p=au.play(); if(p&&p.catch)p.catch(function(){}); }
+      paint();
+    });
     au.addEventListener('play',paint); au.addEventListener('pause',paint);
     paint();
   })();

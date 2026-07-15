@@ -529,6 +529,9 @@
     #build-confirm-btn:disabled { opacity:0.4;cursor:not-allowed; }
     #auth-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:200;align-items:center;justify-content:center; }
     #auth-modal.open { display: flex; }
+    /* 登録必須ゲート：閉じるボタンを消し、背景を濃くして操作をブロック */
+    #auth-modal.gate #auth-close { display:none; }
+    #auth-modal.gate { background:rgba(0,0,0,0.92); }
     #auth-box { background:#0f0f18;border:1px solid rgba(255,106,0,0.35);border-radius:22px;padding:36px 36px 28px;width:400px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.7);position:relative;overflow-y:auto;overflow-x:hidden;max-height:92vh;scrollbar-width:none; }
     #auth-box::-webkit-scrollbar { width:0;height:0;display:none; }
     #auth-box::before { content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:200px;height:80px;background:radial-gradient(ellipse,rgba(255,106,0,0.2) 0%,transparent 70%);pointer-events:none; }
@@ -2000,7 +2003,21 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-08-v186';
+    const IGNIS_BUILD='2026-07-15-v187';
+    // ===== 自動アップデート（起動直後・最優先で実行） =====
+    // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
+    // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
+    (async()=>{
+      try{
+        const r=await fetch('version.txt?ts='+Date.now(),{cache:'no-store'});
+        if(!r.ok)return;
+        const v=(await r.text()).trim();
+        if(!v||v===IGNIS_BUILD)return;
+        if(sessionStorage.getItem('ignis_autoupdate')===v)return; // 1セッション1回だけ（再読込ループ防止）
+        sessionStorage.setItem('ignis_autoupdate',v);
+        location.replace(location.pathname+'?u='+Date.now()); // 古い版を見せず即・最新へ
+      }catch(_){/* オフライン等は無視 */}
+    })();
     /* GitHub上の実ファイル名（NFD: レトロゲームbgm.mp3） */
     const IGNIS_RETRO_BGM_FILE='\u30ec\u30c8\u30ed\u30b1\u3099\u30fc\u30e0bgm.mp3';
     const MAX_BUILDING_FLOORS=300;
@@ -2340,15 +2357,17 @@
     window.__ignisDismissLoading=dismissLoadingUI;
     function finishLoading(){
       maybeOpenSignupFromUrl();
-      if(loadingFinished)return;
+      if(loadingFinished){enforceAuthGate();return;}
       loadingFinished=true;
       dismissLoadingUI();
+      enforceAuthGate();
     }
     function forceShowGame(){
       if(loadingFinished)return;
       loadingFinished=true;
       dismissLoadingUI();
       maybeOpenSignupFromUrl();
+      enforceAuthGate();
     }
     const tapHintDelay=isCoarseMobile()?2000:4000;
     const autoStartDelay=isCoarseMobile()?6000:10000;
@@ -2425,6 +2444,7 @@
         if(event==='SIGNED_OUT'){
           currentUser=null;
           setAuthHeaderLoggedIn(false);
+          try{enforceAuthGate();}catch(_){} // ログアウトしたら再び登録必須に
         }
       });
     }
@@ -2825,10 +2845,38 @@
         o.start(st);o.stop(st+0.52);
       });
     },
+    // 別アプリへ切替・タブ非表示・バックグラウンドになったら音を止め、戻ったら自動で再開する。
+    // ユーザーが手動で消音していれば戻さない（muted状態は尊重する）。
+    handleVisibility(hidden){
+      if(hidden){
+        if(this.muted)return;            // 既に消音中なら何もしない
+        this._hiddenPaused=true;
+        try{if(this.bgmEl)this.bgmEl.pause();}catch(_){}
+        this.bgmStarted=false;
+        this.stopRetroBgm();
+        try{if(this.ctx&&this.ctx.state==='running')this.ctx.suspend();}catch(_){}
+      }else{
+        if(!this._hiddenPaused)return;   // こちらが止めた時だけ復帰させる
+        this._hiddenPaused=false;
+        if(this.muted)return;            // 手動で消していれば戻さない
+        try{if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume();}catch(_){}
+        try{if(typeof refreshCityBgm==='function')refreshCityBgm();}catch(_){}
+      }
+    },
     boot(){
       return tryUnlockBgm();
     }
   };
+  // 画面を離れている間は音を鳴らさない（別アプリ切替／タブ非表示／バックグラウンド）
+  (function bindAudioVisibility(){
+    const pause=()=>{try{IgnisAudio.handleVisibility(true);}catch(_){}};
+    const resume=()=>{try{IgnisAudio.handleVisibility(false);}catch(_){}};
+    document.addEventListener('visibilitychange',()=>{document.hidden?pause():resume();});
+    window.addEventListener('blur',pause);   // PCで別アプリへ切替えた時（タブは表示のまま）
+    window.addEventListener('focus',resume);
+    window.addEventListener('pagehide',pause);
+    window.addEventListener('pageshow',resume);
+  })();
   function showBgmUnlockBtn(){
     const btn=document.getElementById('audio-unlock-btn');
     if(btn&&!IgnisAudio.muted&&!IgnisAudio.bgmStarted)btn.classList.add('show');
@@ -4221,7 +4269,31 @@
       document.getElementById('auth-error').textContent='';
       startFire();startBlinking();
     }
-    function closeAuthModal(){document.getElementById('auth-modal').classList.remove('open');stopFire();stopBlinking();}
+    function closeAuthModal(){
+      if(document.getElementById('auth-modal').classList.contains('gate'))return; // 登録必須中は閉じられない
+      document.getElementById('auth-modal').classList.remove('open');stopFire();stopBlinking();
+    }
+    // 未ログインなら登録/ログインを必須にする（登録しないと遊べない）
+    function enforceAuthGate(){
+      if(currentUser){lowerAuthGate();return;}
+      const modal=document.getElementById('auth-modal');
+      if(!modal)return;
+      modal.classList.add('gate');
+      const isJa=currentLang==='ja';
+      const sub=document.getElementById('auth-subtitle');
+      if(sub)sub.textContent=isJa?'遊ぶには登録が必要です':'Sign up to start playing';
+      openAuthModal();
+      switchTab('signup');
+    }
+    function lowerAuthGate(){
+      const modal=document.getElementById('auth-modal');
+      if(!modal)return;
+      // ログイン/登録成功時のみ呼ばれる＝ゲート解除＋モーダルを確実に閉じる
+      modal.classList.remove('gate');
+      modal.classList.remove('open');
+      try{stopFire();}catch(_){}
+      try{stopBlinking();}catch(_){}
+    }
     function switchTab(mode){
       authMode=mode;
       document.getElementById('tab-login').classList.toggle('active',mode==='login');
@@ -4330,6 +4402,7 @@
       const restoring=!!opts.restoring;
       if(currentUser?.id===user.id&&!opts.force)return;
       currentUser=user;
+      lowerAuthGate(); // 登録/ログイン成功＝ゲート解除
       const isJa=currentLang==='ja';
       let xName=xUsernameOverride||'';
       try{
@@ -8359,21 +8432,7 @@
     setInterval(layoutAdSlot,800);
     window.addEventListener('resize',layoutAdSlot);
     setTimeout(layoutAdSlot,300);
-    // ===== 自動アップデート =====
-    // version.txt（キャッシュ無効で取得）と自分のビルドを比べ、新しい版が出ていたら自動で再読込する。
-    // GitHub Pagesのキャッシュ(10分)やスマホのキャッシュで古い版が表示され続ける問題への対策。
-    (async()=>{
-      try{
-        const r=await fetch('version.txt?ts='+Date.now(),{cache:'no-store'});
-        if(!r.ok)return;
-        const v=(await r.text()).trim();
-        if(!v||v===IGNIS_BUILD)return;
-        if(sessionStorage.getItem('ignis_autoupdate')===v)return; // 再読込ループ防止（1セッション1回）
-        sessionStorage.setItem('ignis_autoupdate',v);
-        try{showToast(currentLang==='ja'?'🔄 新しいバージョンに更新します…':'🔄 Updating to the latest version…');}catch(_){}
-        setTimeout(()=>{location.replace(location.pathname+'?u='+Date.now());},1200);
-      }catch(_){/* オフライン等は無視 */}
-    })();
+    // 自動アップデートはスクリプト冒頭（IGNIS_BUILD直後）へ前倒し済み。
     __ignisStatus('5) Loading data...');
     (async()=>{
       const mobile=isCoarseMobile();

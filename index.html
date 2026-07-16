@@ -2015,7 +2015,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-15-v190';
+    const IGNIS_BUILD='2026-07-15-v191';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -6869,6 +6869,7 @@
     // ===== デイリー宝探し（飛行モードでコイン/金のぬいぐるみを拾う）=====
     let dailyTreasure={mesh:null,x:0,y:0,z:0,kind:'coins',amount:0,collected:true,collecting:false};
     let _treasureObs=null;
+    let _treasurePrev=null; // 前フレームの飛行カメラ位置（高速通過のすり抜け対策）
     let plushieData=[];
     async function loadDailyTreasure(){
       if(!db||!currentUser||!scene||!window.BABYLON)return;
@@ -6942,10 +6943,27 @@
         const baseY=t.y+Math.sin(Date.now()*0.003)*0.6;
         t.mesh.position.y=baseY;
         if(t.kind==='rainbow'&&t.mat){const ph=Date.now()*0.004;t.mat.emissiveColor=new BABYLON.Color3(0.5+0.5*Math.sin(ph),0.5+0.5*Math.sin(ph+2.094),0.5+0.5*Math.sin(ph+4.188));}
-        if(!isFlying||scene.activeCamera!==flyCamera)return;
+        if(!isFlying||scene.activeCamera!==flyCamera){_treasurePrev=null;return;}
         const p=flyCamera.position;
-        const dx=p.x-t.x,dy=p.y-baseY,dz=p.z-t.z;
-        if(dx*dx+dy*dy+dz*dz<16)collectDailyTreasure(); // 距離4以内＝ぶつかったら取得
+        const R=7; // 当たり半径（甘めに：通り過ぎても拾いやすく）
+        const cx=t.x,cy=baseY,cz=t.z;
+        // ①現在位置との距離で判定
+        const dx=p.x-cx,dy=p.y-cy,dz=p.z-cz;
+        let hit=(dx*dx+dy*dy+dz*dz)<(R*R);
+        // ②前フレーム位置→現在位置の「線分」と宝の最短距離でも判定（高速で通過してもすり抜けない）
+        if(!hit&&_treasurePrev){
+          const ax=_treasurePrev.x,ay=_treasurePrev.y,az=_treasurePrev.z;
+          const abx=p.x-ax,aby=p.y-ay,abz=p.z-az;
+          const len2=abx*abx+aby*aby+abz*abz;
+          if(len2>0.0001){
+            let s=((cx-ax)*abx+(cy-ay)*aby+(cz-az)*abz)/len2;
+            if(s<0)s=0;else if(s>1)s=1;
+            const qx=ax+abx*s-cx,qy=ay+aby*s-cy,qz=az+abz*s-cz;
+            if((qx*qx+qy*qy+qz*qz)<(R*R))hit=true;
+          }
+        }
+        _treasurePrev={x:p.x,y:p.y,z:p.z};
+        if(hit)collectDailyTreasure();
       });
     }
     async function collectDailyTreasure(){

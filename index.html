@@ -1318,12 +1318,27 @@
     #mode-btn { background:linear-gradient(135deg,rgba(163,230,53,0.62),rgba(134,239,172,0.68)) !important;
       border:1px solid rgba(190,242,100,0.5) !important; color:#12411b !important; font-weight:800; }
     #mode-btn.fly-active { filter:brightness(1.1); }
-    /* 縦画面：下部3ボタンが画面端で切れないよう詰めて収める */
+    /* ===== 縦画面：ボタンを小さく・重なりをなくし、中央のビルを見やすく ===== */
     @media (orientation: portrait) {
-      #bottom-btns { gap:6px !important; max-width:98vw !important; }
-      #bottom-btns #build-btn { padding:11px 12px !important; font-size:12px !important; }
+      /* 右レールはステータスの下から始める（コイン等の数字とボタンの重なりを回避） */
+      #right-rail { top:max(48px,calc(env(safe-area-inset-top,0px) + 46px)) !important; width:106px !important; gap:6px !important; }
+      #right-rail .rail-btn { font-size:10.5px !important; padding:6px 5px !important; }
+      #premium-bar { width:90px !important; }
+      /* 左レール（ログアウト）も小さく */
+      #left-rail .rail-btn { font-size:10.5px !important; padding:6px 8px !important; }
+      /* 下の3ボタン：右下に小さく縦並び（中央横並びは左下マップと重なるため） */
+      #bottom-btns { left:auto !important; right:max(10px,env(safe-area-inset-right,0px)) !important; transform:none !important;
+        flex-direction:column !important; width:auto !important; max-width:126px !important; gap:7px !important;
+        align-items:stretch !important; bottom:max(14px,env(safe-area-inset-bottom,0px)) !important; }
+      #bottom-btns > button { width:100% !important; }
+      #bottom-btns #build-btn { padding:9px 10px !important; font-size:12px !important; }
       #bottom-btns #build-btn .acq-icons { font-size:15px !important; }
-      #bottom-btns #mode-btn, #bottom-btns #zukan-float-btn { padding:11px 9px !important; font-size:11px !important; }
+      #bottom-btns #mode-btn, #bottom-btns #zukan-float-btn { padding:8px 9px !important; font-size:11px !important; border-radius:16px !important; }
+      /* マップ：左下・小さめ。右下のボタン列とは左右で分離する */
+      #minimap-wrap { left:max(10px,env(safe-area-inset-left,0px)) !important; bottom:max(12px,env(safe-area-inset-bottom,0px)) !important; }
+      #minimap-canvas { width:84px !important; height:84px !important; }
+      #coingame-btn { font-size:10px !important; padding:6px 5px !important; }
+      #ad-slot { width:106px !important; height:84px !important; }
     }
     /* 横向きスマホ：レール/ボタンをコンパクトに */
     @media (orientation: landscape) and (max-height: 500px) {
@@ -2036,7 +2051,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-15-v192';
+    const IGNIS_BUILD='2026-07-15-v193';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

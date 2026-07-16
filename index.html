@@ -1243,6 +1243,15 @@
     @media (orientation: portrait) and (pointer: coarse) {
       #rotate-prompt { display:flex; }
     }
+    /* 「このまま縦で遊ぶ」を選んだら、縦向きでも回転プロンプトを出さない */
+    html.portrait-ok #rotate-prompt, body.portrait-ok #rotate-prompt { display:none !important; }
+    #rotate-prompt .rp-play {
+      margin-top:26px; padding:14px 26px; border:none; border-radius:26px; cursor:pointer;
+      font-size:16px; font-weight:800; color:#fff; letter-spacing:0.02em;
+      background:linear-gradient(135deg,#ff6a00,#ee0979); box-shadow:0 6px 24px rgba(255,106,0,0.45);
+    }
+    #rotate-prompt .rp-play:active { transform:scale(0.97); }
+    #rotate-prompt .rp-note { font-size:11px; color:rgba(255,255,255,0.45); margin-top:12px; }
     #rotate-prompt .rp-icon { font-size:72px; animation:rp-spin 1.9s ease-in-out infinite; }
     @keyframes rp-spin { 0%,18%{transform:rotate(0deg)} 50%,68%{transform:rotate(-90deg)} 100%{transform:rotate(-90deg)} }
     #rotate-prompt .rp-title { font-size:22px; font-weight:800; margin-top:22px; letter-spacing:0.02em;
@@ -1309,6 +1318,13 @@
     #mode-btn { background:linear-gradient(135deg,rgba(163,230,53,0.62),rgba(134,239,172,0.68)) !important;
       border:1px solid rgba(190,242,100,0.5) !important; color:#12411b !important; font-weight:800; }
     #mode-btn.fly-active { filter:brightness(1.1); }
+    /* 縦画面：下部3ボタンが画面端で切れないよう詰めて収める */
+    @media (orientation: portrait) {
+      #bottom-btns { gap:6px !important; max-width:98vw !important; }
+      #bottom-btns #build-btn { padding:11px 12px !important; font-size:12px !important; }
+      #bottom-btns #build-btn .acq-icons { font-size:15px !important; }
+      #bottom-btns #mode-btn, #bottom-btns #zukan-float-btn { padding:11px 9px !important; font-size:11px !important; }
+    }
     /* 横向きスマホ：レール/ボタンをコンパクトに */
     @media (orientation: landscape) and (max-height: 500px) {
       #right-rail { width:118px; gap:6px; top:max(8px,env(safe-area-inset-top,0px)); }
@@ -1357,9 +1373,11 @@
   <div id="screen-backdrop" aria-hidden="true"></div>
   <div id="rotate-prompt" aria-hidden="true">
     <div class="rp-icon">📱</div>
-    <div class="rp-title">横画面でプレイしてください</div>
-    <div class="rp-en">Please rotate your device to landscape</div>
+    <div class="rp-title">横画面がおすすめです</div>
+    <div class="rp-en">Landscape is recommended</div>
     <div class="rp-sub">スマホを横向きにすると操作しやすくなります</div>
+    <button type="button" class="rp-play" onclick="dismissRotatePrompt()">▶ このまま縦で遊ぶ / Play in portrait</button>
+    <div class="rp-note">この選択は記憶されます（設定はいつでも変わりません）</div>
   </div>
   <script>
     window.__ignisStatus=function(msg){
@@ -1376,23 +1394,26 @@
       console.warn('[IGNIS BOOT] 手動/強制でロード画面を閉じました');
     };
     __ignisStatus('1) HTML loaded');
-    // スマホ：縦→横に回転した瞬間に再読み込み（3Dキャンバスが圧縮されて
-    // ビルが潰れて見える不具合を、正しいサイズで作り直すことで防ぐ）
+    // 縦画面対応：横向き推奨だが、縦のままでも遊べるようにする。
+    // 「このまま縦で遊ぶ」を選んだら回転プロンプトを消し、その選択を記憶する。
     (function(){
       try{
-        if(!window.matchMedia)return;
-        if(!window.matchMedia('(pointer: coarse)').matches)return; // タッチ端末のみ
-        var land=window.matchMedia('(orientation: landscape)');
-        var wasPortrait=!land.matches;
-        function onOri(e){
-          var isLand=e.matches;
-          if(isLand&&wasPortrait){location.reload();return;}
-          wasPortrait=!isLand;
+        // 既に縦OKを選んでいれば最初から回転プロンプトを出さない
+        if(localStorage.getItem('ignis_allow_portrait')==='1'){
+          document.documentElement.classList.add('portrait-ok');
+          if(document.body)document.body.classList.add('portrait-ok');
         }
-        if(land.addEventListener)land.addEventListener('change',onOri);
-        else if(land.addListener)land.addListener(onOri);
       }catch(_){}
     })();
+    window.dismissRotatePrompt=function(){
+      try{
+        document.documentElement.classList.add('portrait-ok');
+        if(document.body)document.body.classList.add('portrait-ok');
+        localStorage.setItem('ignis_allow_portrait','1');
+      }catch(_){}
+      // キャンバスを今の（縦の）サイズに合わせ直す
+      try{if(window.__ignisResizeCanvas)window.__ignisResizeCanvas();}catch(_){}
+    };
   </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
@@ -2015,7 +2036,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-15-v191';
+    const IGNIS_BUILD='2026-07-15-v192';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -8439,6 +8460,13 @@
     }
     engine.runRenderLoop(()=>{if(!scenePaused)scene.render();});
     window.addEventListener('resize',()=>engine.resize());
+    // 縦↔横の回転でキャンバスが潰れないよう、確実にリサイズし直す（以前は回転時にページを丸ごと再読込していた）。
+    // orientationchange 直後はビューポート寸法の反映が遅れるので、数回に分けてリサイズする。
+    window.__ignisResizeCanvas=function(){
+      try{engine.resize();}catch(_){}
+      [120,320,600].forEach(ms=>setTimeout(()=>{try{engine.resize();}catch(_){}},ms));
+    };
+    window.addEventListener('orientationchange',()=>window.__ignisResizeCanvas());
     // 初回の表示言語を自動判定：日本語ブラウザ→日本語 / それ以外→英語（?lang=・手動切替の記憶を優先）。🌐で変更可。
     (function initAutoLang(){
       try{

@@ -479,9 +479,16 @@
     #gacha-result-build:hover { opacity: 0.85; }
     #gacha-result-city { background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:11px 24px;border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;width:100%; }
     #gacha-result-city:hover { background:rgba(255,255,255,0.14);color:#fff; }
-    #audio-unlock-btn { display:none;position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff6a00,#ee0979);border:none;color:#fff;padding:12px 22px;border-radius:28px;font-size:13px;font-weight:800;z-index:200;cursor:pointer;box-shadow:0 4px 24px rgba(255,106,0,0.45);letter-spacing:0.04em; }
-    #audio-unlock-btn.show { display:block;animation:audioHintPulse 2s ease-in-out infinite; }
-    #audio-unlock-btn:hover { filter:brightness(1.08); }
+    /* 横向きプレイ推奨ヒント：中央に表示し、どこかをタッチした瞬間に消える（操作は邪魔しない） */
+    #orient-hint { display:none;position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);z-index:150;
+      pointer-events:none;text-align:center;background:rgba(10,10,20,0.86);border:1.5px solid rgba(255,150,60,0.6);
+      border-radius:18px;padding:16px 24px;box-shadow:0 8px 40px rgba(0,0,0,0.55); }
+    #orient-hint.show { display:block;animation:orientHintIn 0.4s ease; }
+    @keyframes orientHintIn { from{opacity:0;transform:translate(-50%,-46%);} to{opacity:1;transform:translate(-50%,-50%);} }
+    #orient-hint .oh-icon { display:block;font-size:40px;line-height:1;animation:ohRotate 2.2s ease-in-out infinite; }
+    @keyframes ohRotate { 0%,22%{transform:rotate(0deg);} 55%,78%{transform:rotate(90deg);} 100%{transform:rotate(90deg);} }
+    #orient-hint .oh-text { display:block;font-size:14px;font-weight:800;color:#ffd0a8;margin-top:10px;letter-spacing:0.02em; }
+    #orient-hint .oh-sub { display:block;font-size:10.5px;color:rgba(255,255,255,0.5);margin-top:5px; }
     #x-setup-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:250;align-items:center;justify-content:center; }
     #x-setup-modal.open { display:flex; }
     #x-setup-box { background:linear-gradient(160deg,#1a0a2e,#0f0820);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:24px;width:min(340px,92vw); }
@@ -1200,7 +1207,7 @@
       #book-result-detail { max-width: 100%; }
       #book-result-actions { max-width: 100%; }
       #book-result-build, #book-result-city, #book-result-retry { font-size: 13px; padding: 11px 18px; }
-      #audio-unlock-btn { bottom: calc(130px + env(safe-area-inset-bottom, 0px)); font-size: 12px; padding: 10px 18px; }
+      #orient-hint { padding: 14px 20px; }
     }
     #gacha-modal-close,#build-modal-close,#auth-close,#profile-modal-close,#land-panel-close {
       background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.24);border-radius:10px;
@@ -1998,7 +2005,12 @@
   <div id="toast"></div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <audio id="ignis-retro-bgm" loop preload="auto" playsinline style="display:none"></audio>
-  <button type="button" id="audio-unlock-btn" onclick="tryUnlockBgm()">🔊 BGMをオンにする</button>
+  <!-- 横向きプレイ推奨ヒント（スマホ縦のみ・どこかタッチで消える） -->
+  <div id="orient-hint" aria-hidden="true">
+    <span class="oh-icon">📱</span>
+    <span class="oh-text" id="oh-text">横向きプレイがおすすめ</span>
+    <span class="oh-sub" id="oh-sub">画面をタッチすると閉じます</span>
+  </div>
   <div id="x-setup-modal">
     <div id="x-setup-box">
       <div id="x-setup-title">Xアカウント名を登録</div>
@@ -2072,7 +2084,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-16-v196';
+    const IGNIS_BUILD='2026-07-16-v197';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -2431,6 +2443,35 @@
       loadingFinished=true;
       dismissLoadingUI();
       enforceAuthGate();
+      showOrientHint();
+    }
+    // 横向きプレイ推奨ヒント：スマホ縦向きで1回だけ中央に表示し、どこかタッチした瞬間に消える。
+    // 回転プロンプト（初回のフル画面案内）が出ている間は重複するので出さない。
+    let _orientHintDone=false;
+    function showOrientHint(){
+      if(_orientHintDone)return;
+      try{
+        if(!window.matchMedia)return;
+        if(!matchMedia('(pointer: coarse)').matches)return;   // タッチ端末のみ
+        if(!matchMedia('(orientation: portrait)').matches)return; // 既に横向きなら不要
+        const rp=document.getElementById('rotate-prompt');
+        if(rp&&getComputedStyle(rp).display!=='none')return;  // フル画面の回転案内が出ている間は不要
+        const am=document.getElementById('auth-modal');
+        if(am&&am.classList.contains('gate'))return;          // 登録ゲート中はモーダルの裏に隠れるため、ログイン後（lowerAuthGate）に出す
+        const el=document.getElementById('orient-hint');
+        if(!el)return;
+        _orientHintDone=true;
+        const isJa=currentLang==='ja';
+        const t=document.getElementById('oh-text');if(t)t.textContent=isJa?'横向きプレイがおすすめ':'Landscape play is recommended';
+        const s=document.getElementById('oh-sub');if(s)s.textContent=isJa?'画面をタッチすると閉じます':'Tap anywhere to dismiss';
+        el.classList.add('show');
+        const hide=()=>{el.classList.remove('show');
+          document.removeEventListener('pointerdown',hide,true);
+          document.removeEventListener('touchstart',hide,true);};
+        document.addEventListener('pointerdown',hide,true);
+        document.addEventListener('touchstart',hide,true);
+        setTimeout(hide,12000); // 触られなくても12秒で自動で消える保険
+      }catch(_){}
     }
     function forceShowGame(){
       if(loadingFinished)return;
@@ -2438,6 +2479,7 @@
       dismissLoadingUI();
       maybeOpenSignupFromUrl();
       enforceAuthGate();
+      showOrientHint();
     }
     const tapHintDelay=isCoarseMobile()?2000:4000;
     const autoStartDelay=isCoarseMobile()?6000:10000;
@@ -2948,8 +2990,8 @@
     window.addEventListener('pageshow',resume);
   })();
   function showBgmUnlockBtn(){
-    const btn=document.getElementById('audio-unlock-btn');
-    if(btn&&!IgnisAudio.muted&&!IgnisAudio.bgmStarted)btn.classList.add('show');
+    // v197: 中央のオレンジ「BGMをオンにする」ボタンは廃止。
+    // BGMは最初のタップ（bootIgnisAudioOnce→tryUnlockBgm）で自動開始されるため案内ボタンは不要。
   }
   function hideBgmUnlockBtn(){
     const btn=document.getElementById('audio-unlock-btn');
@@ -3845,6 +3887,10 @@
       document.getElementById('auth-submit').textContent=authMode==='login'?(isJa?'ログイン':'Login'):(isJa?'登録する':'Register');
       document.getElementById('task-progress-label').textContent=isJa?'今日の進捗':'Today\'s Progress';
       document.getElementById('minimap-label').textContent='MINIMAP';
+      // 地図を閉じている時の「🗺 地図」ボタンも言語に追従させる
+      {const sl=document.getElementById('minimap-show-label');if(sl)sl.textContent=isJa?'地図':'Map';}
+      {const sb=document.getElementById('minimap-show-btn');if(sb)sb.title=isJa?'地図を表示':'Show map';}
+      {const mt=document.getElementById('minimap-toggle');if(mt)mt.title=minimapVisible?(isJa?'地図を閉じる':'Hide map'):(isJa?'地図を表示':'Show map');}
       IgnisAudio.updateToggleBtn();
       const audioBtn=document.getElementById('audio-unlock-btn');
       if(audioBtn)audioBtn.textContent=isJa?'🔊 BGMをオンにする':'🔊 Turn on BGM';
@@ -4382,6 +4428,7 @@
       // ゲート表示中にビューポートが変わっている（アプリ内ブラウザのツールバー開閉など）と
       // キャンバスが古いサイズのままで「拡大表示」になるため、ここで必ず再フィットする。
       try{if(window.__ignisResizeCanvas)window.__ignisResizeCanvas();}catch(_){}
+      try{showOrientHint();}catch(_){} // ログイン完了後に「横向き推奨」ヒントを表示（タッチで消える）
     }
     function switchTab(mode){
       authMode=mode;

@@ -28,23 +28,34 @@
   /* 図解 */
   .figure{ margin:14px 0; padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:14px; }
   .figure svg{ width:100%; height:auto; display:block; }
-  .figcap{ font-size:11px; color:var(--muted); text-align:center; margin-top:8px; }
-  .lead{ font-size:11px; color:var(--muted); margin-bottom:16px; line-height:1.8; }
+  .figcap{ font-size:12.5px; color:var(--muted); text-align:center; margin-top:8px; }
+  .lead{ font-size:12.5px; color:var(--muted); margin-bottom:16px; line-height:1.8; }
   .cta{ display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 28px; }
   .cta a{ flex:1 1 220px; text-align:center; text-decoration:none; font-weight:800; font-size:15px; padding:14px; border-radius:14px; }
   .cta .play{ background:linear-gradient(135deg,#ff6a00,#ee0979); color:#fff; }
   .cta .legal{ background:rgba(255,255,255,0.07); border:1px solid var(--line); color:var(--fg); }
-  h2{ font-size:15px; font-weight:900; color:var(--accent); margin:24px 0 7px; padding-top:13px; border-top:1px solid var(--line); }
+  h2{ font-size:17px; font-weight:900; color:var(--accent); margin:24px 0 7px; padding-top:13px; border-top:1px solid var(--line); }
   h2 .em{ margin-right:6px; }
-  p,li{ font-size:11px; color:rgba(255,255,255,0.85); line-height:1.7; }
+  p,li{ font-size:12.5px; color:rgba(255,255,255,0.85); line-height:1.7; }
   ul,ol{ margin:6px 0 6px 22px; }
   li{ margin:4px 0; }
-  table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:12px; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:13px; }
   th,td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
   th{ background:rgba(255,255,255,0.04); color:var(--muted); font-weight:700; white-space:nowrap; }
   .pill{ display:inline-block; font-size:11px; font-weight:800; padding:2px 9px; border-radius:999px; background:rgba(255,138,61,0.15); color:#ffb066; border:1px solid rgba(255,138,61,0.4); }
-  .note{ font-size:12px; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin:12px 0; }
-  .foot{ margin-top:30px; font-size:11px; color:var(--muted); }
+  .note{ font-size:13px; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin:12px 0; }
+  .foot{ margin-top:30px; font-size:12px; color:var(--muted); }
+  /* 3行でわかる要約 */
+  .tldr{ margin:0 0 18px; padding:14px 16px; border-radius:14px; background:linear-gradient(135deg,rgba(255,106,0,0.12),rgba(238,9,121,0.07)); border:1.5px solid rgba(255,138,61,0.55); }
+  .tldr-title{ font-size:15px; font-weight:900; color:#ffb066; margin-bottom:8px; }
+  .tldr ol{ margin:0; padding-left:20px; }
+  .tldr li{ font-size:13px; line-height:1.9; color:rgba(255,255,255,0.92); }
+  /* 「下にまだページがあるよ」矢印（最下部で自動的に消える） */
+  #scroll-cue{ position:fixed; left:50%; transform:translateX(-50%); bottom:10px; z-index:50; text-align:center; pointer-events:none; opacity:0; transition:opacity .3s; }
+  #scroll-cue.show{ opacity:1; }
+  #scroll-cue .arr{ display:block; font-size:26px; color:#ff8a3d; line-height:1; text-shadow:0 2px 12px rgba(255,106,0,0.8); animation:cueBounce 1.3s ease-in-out infinite; }
+  #scroll-cue .txt{ display:block; font-size:10.5px; font-weight:800; letter-spacing:0.08em; color:#ffb074; text-shadow:0 1px 6px rgba(0,0,0,0.7); }
+  @keyframes cueBounce{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(6px);} }
   .foot a{ color:var(--accent); }
   [data-lang]{ display:none; }
   body.ja [data-lang="ja"]{ display:revert; }
@@ -70,6 +81,16 @@
 
   <div class="cta">
     <a class="legal" href="legal.html">📄 <span data-lang="ja">利用規約・特商法</span><span data-lang="en">Terms / Legal</span></a>
+  </div>
+
+  <!-- 3行でわかる要約：まずここだけ読めば遊び始められる -->
+  <div class="tldr">
+    <div class="tldr-title"><span data-lang="ja">⚡ 3行でわかる IGNIS CITY</span><span data-lang="en">⚡ IGNIS CITY in 3 lines</span></div>
+    <ol>
+      <li><span data-lang="ja">🪙 タスクやミニゲームで<b>コイン</b>を貯める</span><span data-lang="en">🪙 Earn <b>coins</b> from tasks and minigames</span></li>
+      <li><span data-lang="ja">🏗 土地を買い、スクラッチで当てた<b>ビル</b>を建てて<b>あなたの物語</b>を刻む</span><span data-lang="en">🏗 Buy land, build a scratched <b>tower</b>, and leave <b>your story</b> on it</span></li>
+      <li><span data-lang="ja">🕯️ 他の人の物語を読み、<b>蝋燭</b>で「君は一人じゃない」を伝える</span><span data-lang="en">🕯️ Read others' stories and light a <b>candle</b>: "you are not alone"</span></li>
+    </ol>
   </div>
 
   <div class="rules-cols">
@@ -98,11 +119,11 @@
     <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="flow">
       <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff8a3d"/></marker></defs>
       <g font-family="sans-serif" font-weight="700" text-anchor="middle">
-        <g><rect x="8" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.16)" stroke="#ff8a3d"/><text x="67" y="62" font-size="22">📝</text><text x="67" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">登録</tspan><tspan data-lang="en">Register</tspan></text></g>
-        <g><rect x="146" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="205" y="62" font-size="22">🪙</text><text x="205" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">コイン獲得</tspan><tspan data-lang="en">Earn coins</tspan></text></g>
-        <g><rect x="284" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="343" y="62" font-size="22">🏞</text><text x="343" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">土地取得</tspan><tspan data-lang="en">Get land</tspan></text></g>
-        <g><rect x="422" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="481" y="62" font-size="22">🏗</text><text x="481" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">ビル建設</tspan><tspan data-lang="en">Build</tspan></text></g>
-        <g><rect x="560" y="40" width="132" height="50" rx="10" fill="rgba(238,9,121,0.16)" stroke="#ee0979"/><text x="626" y="62" font-size="22">💬</text><text x="626" y="82" font-size="12" fill="#fff"><tspan data-lang="ja">メッセージ</tspan><tspan data-lang="en">Message</tspan></text></g>
+        <g><rect x="8" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.16)" stroke="#ff8a3d"/><text x="67" y="62" font-size="26">📝</text><text x="67" y="82" font-size="14" fill="#fff"><tspan data-lang="ja">登録</tspan><tspan data-lang="en">Register</tspan></text></g>
+        <g><rect x="146" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="205" y="62" font-size="26">🪙</text><text x="205" y="82" font-size="14" fill="#fff"><tspan data-lang="ja">コイン獲得</tspan><tspan data-lang="en">Earn coins</tspan></text></g>
+        <g><rect x="284" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="343" y="62" font-size="26">🏞</text><text x="343" y="82" font-size="14" fill="#fff"><tspan data-lang="ja">土地取得</tspan><tspan data-lang="en">Get land</tspan></text></g>
+        <g><rect x="422" y="40" width="118" height="50" rx="10" fill="rgba(255,106,0,0.10)" stroke="#ff8a3d"/><text x="481" y="62" font-size="26">🏗</text><text x="481" y="82" font-size="14" fill="#fff"><tspan data-lang="ja">ビル建設</tspan><tspan data-lang="en">Build</tspan></text></g>
+        <g><rect x="560" y="40" width="132" height="50" rx="10" fill="rgba(238,9,121,0.16)" stroke="#ee0979"/><text x="626" y="62" font-size="26">💬</text><text x="626" y="82" font-size="14" fill="#fff"><tspan data-lang="ja">メッセージ</tspan><tspan data-lang="en">Message</tspan></text></g>
         <line x1="126" y1="65" x2="144" y2="65" stroke="#ff8a3d" stroke-width="2" marker-end="url(#ar)"/>
         <line x1="264" y1="65" x2="282" y2="65" stroke="#ff8a3d" stroke-width="2" marker-end="url(#ar)"/>
         <line x1="402" y1="65" x2="420" y2="65" stroke="#ff8a3d" stroke-width="2" marker-end="url(#ar)"/>
@@ -226,7 +247,20 @@
   </div>
 </div>
 
+<div id="scroll-cue" aria-hidden="true"><span class="arr">⌄</span><span class="txt"><span data-lang="ja">下へスクロール</span><span data-lang="en">Scroll down</span></span></div>
 <script>
+  // 下にまだ続きがある間だけ矢印を出す
+  (function(){
+    var cue=document.getElementById('scroll-cue');
+    function upd(){
+      var el=document.scrollingElement||document.documentElement;
+      var more=(el.scrollHeight-el.scrollTop-el.clientHeight)>40;
+      cue.classList.toggle('show',more);
+    }
+    addEventListener('scroll',upd,{passive:true});
+    addEventListener('resize',upd);
+    setTimeout(upd,300);setTimeout(upd,1200);
+  })();
   function toggleLang(){
     document.body.classList.toggle('ja');document.body.classList.toggle('en');
     try{localStorage.setItem('ignis_rules_lang',document.body.classList.contains('en')?'en':'ja');}catch(_){}

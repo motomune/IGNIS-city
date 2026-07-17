@@ -105,6 +105,17 @@
   a.card:hover .go{transform:translateX(4px);}
   a.card.main{background:linear-gradient(135deg,rgba(255,80,0,0.32),rgba(255,150,30,0.2));
     border:1.5px solid rgba(255,160,60,0.85);box-shadow:0 0 24px rgba(255,106,0,0.35);padding-top:22px;}
+  /* SNSアプリ内ブラウザ用の案内（アプリ内ブラウザは端末を回しても横画面にできない＝アプリ側の制限） */
+  #inapp-hint{width:100%;margin-top:10px;padding:11px 13px;border-radius:12px;
+    background:rgba(255,106,0,0.10);border:1px solid rgba(255,140,60,0.42);
+    display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;}
+  #inapp-hint[hidden]{display:none;}
+  #inapp-hint .ih-text{font-size:11.5px;line-height:1.6;color:#ffd0a8;font-weight:700;}
+  #inapp-hint .ih-btn{display:inline-block;padding:9px 16px;border-radius:20px;font-size:12px;font-weight:800;
+    color:#fff;text-decoration:none;background:linear-gradient(135deg,#ff6a00,#ee0979);
+    box-shadow:0 4px 16px rgba(255,106,0,0.4);}
+  #inapp-hint .ih-ios{font-size:10.5px;color:rgba(255,255,255,0.62);line-height:1.5;}
+  #inapp-hint .ih-btn[hidden], #inapp-hint .ih-ios[hidden]{display:none;}
   /* 🎮 ゲームだと一目でわかる左上バッジ */
   .gbadge{position:absolute;top:0;left:0;z-index:2;font-size:9.5px;font-weight:900;letter-spacing:0.14em;
     padding:3px 10px 4px 8px;border-radius:14px 0 12px 0;color:#1a0e02;
@@ -241,6 +252,13 @@
       </a>
     </div>
 
+    <!-- アプリ内ブラウザ(Instagram/TikTok/LINE等)のときだけJSで表示。横画面ロックはアプリ側の制限で解除不可 -->
+    <div id="inapp-hint" hidden>
+      <span class="ih-text" data-ja="アプリ内ブラウザは横画面にできません（アプリ側の制限）。縦のままでも遊べます。" data-en="In-app browsers can't rotate to landscape (an app-side limit). Portrait works fine too.">アプリ内ブラウザは横画面にできません（アプリ側の制限）。縦のままでも遊べます。</span>
+      <a id="ih-open" class="ih-btn" href="https://motomune.github.io/IGNIS-city/" target="_blank" rel="noopener" data-ja="🔄 ブラウザで開いて横画面で遊ぶ" data-en="🔄 Open in browser for landscape">🔄 ブラウザで開いて横画面で遊ぶ</a>
+      <span class="ih-ios" data-ja="開かない場合：画面の「⋯」→「ブラウザで開く」を選んでください" data-en="If it doesn't open: tap “⋯” → “Open in browser”">開かない場合：画面の「⋯」→「ブラウザで開く」を選んでください</span>
+    </div>
+
     <!-- SOUL 書斎：本にカーソル/タップで購入リンクが浮かぶ -->
     <div id="study">
       <div class="study-head"><span class="h">📕 SOUL</span><span class="sub">二部作 · The Duology</span></div>
@@ -335,6 +353,29 @@
     applyLang();
   }
   applyLang();
+  // ===== SNSアプリ内ブラウザ対策 =====
+  // Instagram/TikTok/LINE等のアプリ内ブラウザは端末を回しても横画面にならない（アプリ側が向きを固定しており、
+  // ページ側からは解除できない）。そこでアプリ内ブラウザのときだけ「ブラウザで開く」導線を出す。
+  // Android: intent:// でChromeを起動できることが多い。iOS: Appleが外部ブラウザ強制起動を塞いでいるため案内のみ。
+  (function inAppHint(){
+    var ua=navigator.userAgent||'';
+    var inApp=/Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|LINE\/|TikTok|musical_ly|Bytedance|Twitter|KAKAOTALK|Snapchat|Pinterest|MicroMessenger/i.test(ua);
+    if(!inApp)return;
+    var box=document.getElementById('inapp-hint');
+    if(!box)return;
+    box.hidden=false;
+    var openBtn=document.getElementById('ih-open');
+    var iosNote=box.querySelector('.ih-ios');
+    if(/Android/i.test(ua)){
+      // Chromeを直接起動。塞がれている/未インストールなら browser_fallback_url で通常遷移する。
+      if(openBtn)openBtn.href='intent://motomune.github.io/IGNIS-city/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=https%3A%2F%2Fmotomune.github.io%2FIGNIS-city%2F;end';
+    }else if(/iPhone|iPad|iPod/i.test(ua)){
+      // iOSは強制起動できないので、ボタンは出さずメニュー操作を案内する
+      if(openBtn)openBtn.hidden=true;
+    }else{
+      if(iosNote)iosNote.hidden=true;
+    }
+  })();
   // 火の粉：ランダムに舞い上がる（増量）
   (function(){
     var n = Math.min(48, Math.max(26, Math.floor(innerWidth/16)));

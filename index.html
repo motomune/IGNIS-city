@@ -2051,11 +2051,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-15-v193';
+    const IGNIS_BUILD='2026-07-15-v194';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
-    (async()=>{
+    // この Promise はロード画面の解除条件にも使う（決着前にゲーム画面を見せない＝古い版がチラ見えしない）。
+    window.__ignisVersionCheck=(async()=>{
       try{
         const r=await fetch('version.txt?ts='+Date.now(),{cache:'no-store'});
         if(!r.ok)return;
@@ -4356,6 +4357,9 @@
       try{stopFire();}catch(_){}
       try{stopBlinking();}catch(_){}
       try{if(typeof setScenePaused==='function')setScenePaused(false);}catch(_){} // 3D描画を再開
+      // ゲート表示中にビューポートが変わっている（アプリ内ブラウザのツールバー開閉など）と
+      // キャンバスが古いサイズのままで「拡大表示」になるため、ここで必ず再フィットする。
+      try{if(window.__ignisResizeCanvas)window.__ignisResizeCanvas();}catch(_){}
     }
     function switchTab(mode){
       authMode=mode;
@@ -8482,6 +8486,14 @@
       [120,320,600].forEach(ms=>setTimeout(()=>{try{engine.resize();}catch(_){}},ms));
     };
     window.addEventListener('orientationchange',()=>window.__ignisResizeCanvas());
+    // SNSアプリ内ブラウザ等は、読み込み後にツールバーが出入りしてビューポート寸法が変わる。
+    // そのままだとキャンバスが初期サイズのままで「画面が拡大して全体が映らない」状態になる
+    // （リロードすると直るのはこのため）。実寸の変化に追従して確実に再フィットさせる。
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize',()=>{try{engine.resize();}catch(_){}});
+    }
+    window.addEventListener('load',()=>window.__ignisResizeCanvas());
+    window.__ignisResizeCanvas(); // 起動直後にも一度合わせる
     // 初回の表示言語を自動判定：日本語ブラウザ→日本語 / それ以外→英語（?lang=・手動切替の記憶を優先）。🌐で変更可。
     (function initAutoLang(){
       try{
@@ -8552,6 +8564,9 @@
         console.warn('[IGNIS] bootstrap load',e);
         __ignisStatus('Data load failed - showing city only');
       }finally{
+        // 古い版の画面を一瞬でも見せない：バージョン確認が決着（同版なら解決／新版なら再読込）するまで
+        // ロード画面を出したまま待つ。念のため最大1.5秒で打ち切る。
+        try{await Promise.race([window.__ignisVersionCheck,sleep(1500)]);}catch(_){}
         finishLoading();
       }
     })();

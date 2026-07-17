@@ -183,15 +183,15 @@
     .fly-joystick {
       position: absolute; bottom: max(88px, env(safe-area-inset-bottom, 0px) + 72px);
       width: 112px; height: 112px; border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.24);
-      box-shadow: inset 0 0 22px rgba(255,255,255,0.08); pointer-events: all; touch-action: none;
+      border: 1px solid rgba(255,150,60,0.55); background: rgba(255,120,20,0.15);
+      box-shadow: inset 0 0 22px rgba(255,150,60,0.20); pointer-events: all; touch-action: none;
     }
     #fly-stick-left { left: 16px; }
     #fly-stick-right { right: 16px; }
     .fly-stick-knob {
       position: absolute; left: 50%; top: 50%; width: 50px; height: 50px; transform: translate(-50%,-50%);
-      border-radius: 50%; background: rgba(255,255,255,0.26); border: 1px solid rgba(255,255,255,0.38);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.28); pointer-events: none;
+      border-radius: 50%; background: rgba(255,168,80,0.55); border: 1px solid rgba(255,190,120,0.75);
+      box-shadow: 0 4px 12px rgba(180,70,0,0.35); pointer-events: none;
     }
     #fly-vertical-controls {
       position: absolute; right: 20px; bottom: max(220px, env(safe-area-inset-bottom, 0px) + 194px);
@@ -1008,6 +1008,15 @@
       font-size:14px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;
     }
     #minimap-expand:hover { background:rgba(255,255,255,0.24); }
+    /* マップを閉じたとき：枠(canvas等)が高さ0に潰れて✕/⤢が画面下にはみ出す問題を解消。
+       閉じる中は枠ごと隠し、代わりにフレックス列の通常の子として大きな「🗺 地図」ボタンを出す。 */
+    #minimap-show-btn { display:none; width:100%; padding:11px 8px; border-radius:12px;
+      border:1px solid rgba(255,150,60,0.55); background:rgba(6,6,16,0.9); color:#fff;
+      font-size:14px; font-weight:800; cursor:pointer; align-items:center; justify-content:center; gap:6px;
+      box-shadow:0 3px 14px rgba(0,0,0,0.45); }
+    #minimap-wrap.map-closed #minimap-show-btn { display:flex; }
+    #minimap-wrap.map-closed #minimap-inner { display:none; }
+    #minimap-wrap.map-closed #minimap-label { display:none; }
     /* 街の共同目標HUD（夜明けカウントダウン＋週間クエスト）
        左レールの先頭＝「所有ビル数（左上ステータス）」と「X名表示ボタン」の間に置く */
     #city-goals { background:rgba(6,6,16,0.85);border:1px solid rgba(255,255,255,0.14);border-radius:10px;
@@ -1548,6 +1557,7 @@
   </div>
   <div id="minimap-wrap">
     <button id="coingame-btn" type="button" onclick="openCoinGame()" title="コインを稼ぐ">💰 <span id="coingame-label">コインを稼ぐ</span></button>
+    <button id="minimap-show-btn" type="button" onclick="toggleMinimap()" title="地図を表示"><span aria-hidden="true">🗺</span> <span id="minimap-show-label">地図</span></button>
     <div id="minimap-inner">
     <button id="minimap-toggle" onclick="toggleMinimap()" title="地図を閉じる" type="button" aria-label="Close minimap">×</button>
     <button id="minimap-expand" onclick="openBigMap()" title="地図を大きく表示" type="button" aria-label="Expand map">⤢</button>
@@ -2051,7 +2061,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-15-v194';
+    const IGNIS_BUILD='2026-07-15-v195';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -7757,7 +7767,10 @@
       minimapVisible=!minimapVisible;
       minimapCanvas.style.display=minimapVisible?'block':'none';
       document.getElementById('minimap-label').style.display=minimapVisible?'block':'none';
+      // 閉じている間は枠が高さ0に潰れてボタンが画面外にはみ出すため、専用クラスで見た目を切り替える
+      document.getElementById('minimap-wrap').classList.toggle('map-closed',!minimapVisible);
       document.getElementById('minimap-toggle').textContent=minimapVisible?'✕':'🗺';
+      {const sl=document.getElementById('minimap-show-label');if(sl)sl.textContent=currentLang==='ja'?'地図':'Map';}
       document.getElementById('minimap-toggle').title=minimapVisible?(currentLang==='ja'?'地図を閉じる':'Hide map'):(currentLang==='ja'?'地図を表示':'Show map');
       if(minimapVisible)drawMinimap();
     }

@@ -2084,7 +2084,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-16-v197';
+    const IGNIS_BUILD='2026-07-18-v198';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -2662,10 +2662,13 @@
     setBgmTrack(trackId){
       const track=IGNIS_BGM[trackId];
       if(!track)return Promise.resolve(false);
-      // 切替＝再ダウンロードではなく「曲ごとの要素」を差し替えるだけ（即開始）
-      if(this.bgmEl&&this.bgmStarted){this.bgmEl.pause();this.bgmStarted=false;}
+      // 切替＝再ダウンロードではなく「曲ごとの要素」を差し替えるだけ（即開始）。
+      // これから鳴らす要素"以外"は全部止める（bgmStartedに依存せず＝再生開始待ちの最中でも確実に止め、二重再生を防ぐ）。
+      const nextEl=this._getTrackEl(trackId);
+      this._pauseAllPoolExcept(nextEl);
+      this.bgmStarted=false;
       this.currentTrack=trackId;
-      this.bgmEl=this._getTrackEl(trackId);
+      this.bgmEl=nextEl;
       return this._loadTrack(trackId);
     },
     async playRetroBgm(){
@@ -2674,7 +2677,7 @@
       const el=this._ensureRetroBgmElement();
       const track=IGNIS_BGM.retro;
       if(!track)return false;
-      this.stopBgm();
+      this.stopBgm(); // 世代もバンプされ、進行中の playBgmTrack がキャンセルされる（retroとpoolの二重再生を防ぐ）
       if(!el.src||el.error){
         const ok=await this._loadAudioSources(el,track.sources,'retro');
         if(!ok)return false;
@@ -2698,9 +2701,11 @@
     },
     async playBgmTrack(trackId){
       if(this.muted)return false;
+      const gen=(this._bgmGen=(this._bgmGen||0)+1); // この呼び出しの世代を記録
       const ok=await this.setBgmTrack(trackId);
+      if(gen!==this._bgmGen)return false; // 読み込み待ちの間に新しい切替が来た→この曲は鳴らさない
       if(!ok)return false;
-      return this.startBgm();
+      return this.startBgm(gen);
     },
     init(){
       if(this._inited)return;
@@ -2923,17 +2928,28 @@
         o.start(st);o.stop(st+0.36);
       });
     },
+    // プール内の全トラックを止めるヘルパー（keepEl だけは止めない）。
+    // 二重再生対策：どのトラックが鳴っていても確実に止める（bgmStartedに依存しない）。
+    _pauseAllPoolExcept(keepEl){
+      try{Object.keys(this._bgmPool).forEach(id=>{const el=this._bgmPool[id];if(el&&el!==keepEl){try{el.pause();}catch(_){}}});}catch(_){}
+    },
     stopBgm(){
-      if(this.bgmEl){this.bgmEl.pause();}
+      this._bgmGen=(this._bgmGen||0)+1; // 進行中の playBgmTrack をキャンセル（再生完了後に鳴り出すのを防ぐ）
+      this._pauseAllPoolExcept(null);   // 全トラック停止
       this.bgmStarted=false;
     },
-    async startBgm(){
+    async startBgm(gen){
       if(this.muted)return false;
       const el=this._ensureBgmElement();
       if(!el||!el.src)return false;
+      // 鳴らす直前に他トラック（プール＋レトロ）を確実に止める＝同時再生を根絶
+      this._pauseAllPoolExcept(el);
+      try{const r=this.retroBgmEl||document.getElementById('ignis-retro-bgm');if(r){r.pause();this.retroBgmPlaying=false;}}catch(_){}
       el.volume=this.muted?0:this._bgmVolume();
       try{
         await el.play();
+        // 再生開始を待つ間に別の切替/停止が入っていたら、この曲は即止める（古い曲の鳴り残しを防ぐ）
+        if(gen!=null&&gen!==this._bgmGen){try{el.pause();}catch(_){}return false;}
         this.bgmStarted=true;
         return true;
       }catch(e){

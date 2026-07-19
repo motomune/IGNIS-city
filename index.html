@@ -2084,7 +2084,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-18-v198';
+    const IGNIS_BUILD='2026-07-19-v199';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3051,6 +3051,65 @@
     IgnisAudio.playClick();
   },true);
     let currentUser=null;
+    // ===== ゲスト（未登録）モード =====
+    // 登録ゲートは廃止。未登録でも探索・飛行・ビル詳細閲覧・スクラッチ・採用・コイン収集ができる（端末内の「お試しコイン」）。
+    // 土地購入・ビル設置・永続化のみ登録必須。登録/ログイン時に、ゲスト中の成果（コイン・在庫・採用）をアカウントへ引き継ぐ。
+    const GUEST_START_COINS=120;
+    let guestCoins=(function(){try{const v=localStorage.getItem('ignis_guest_coins');return v==null?GUEST_START_COINS:(parseInt(v,10)||0);}catch(_){return GUEST_START_COINS;}})();
+    let guestBench=(function(){try{return parseInt(localStorage.getItem('ignis_guest_bench')||'0',10)||0;}catch(_){return 0;}})();
+    let guestInv=(function(){try{return JSON.parse(localStorage.getItem('ignis_guest_inv')||'[]')||[];}catch(_){return [];}})();
+    let _guestSavePromptShown=false;
+    function isGuest(){return !currentUser;}
+    function saveGuestState(){try{localStorage.setItem('ignis_guest_coins',String(guestCoins));localStorage.setItem('ignis_guest_bench',String(guestBench));localStorage.setItem('ignis_guest_inv',JSON.stringify(guestInv));localStorage.setItem('ignis_guest_active','1');}catch(_){}}
+    function clearGuestState(){guestCoins=GUEST_START_COINS;guestBench=0;guestInv=[];_guestAntCredited=0;_guestSavePromptShown=false;try{['ignis_guest_coins','ignis_guest_bench','ignis_guest_inv','ignis_guest_active'].forEach(k=>localStorage.removeItem(k));}catch(_){}}
+    // ゲスト中に貯めた成果（コイン・在庫・採用）を、登録/ログインしたアカウントへ引き継ぐ。
+    // 実際に遊んだ形跡（ignis_guest_active）がある時だけ実行し、二重付与を防ぐ。
+    async function migrateGuestToAccount(userId){
+      if(!db||!userId)return;
+      let active=false;try{active=localStorage.getItem('ignis_guest_active')==='1';}catch(_){}
+      if(!active)return;
+      const addCoins=Math.max(0,Math.floor(guestCoins));
+      const addBench=Math.max(0,Math.floor(guestBench));
+      const inv=Array.isArray(guestInv)?guestInv.slice(0,200):[];
+      try{
+        const{data:ud}=await db.from('users').select('coin_column,bench_employees').eq('id',userId).single();
+        const newCoins=((ud&&ud.coin_column)||0)+addCoins;
+        const newBench=((ud&&ud.bench_employees)||0)+addBench;
+        await db.from('users').update({coin_column:newCoins,bench_employees:newBench}).eq('id',userId);
+        if(inv.length){
+          await db.from('building_inventory').insert(inv.map(r=>({user_id:userId,prism:normalizePrism(r.prism),floors:Math.max(1,Math.min(GACHA_MAX_FLOOR,parseInt(r.floors,10)||1)),star:r.star||1})));
+        }
+        const cc=document.getElementById('coin-count');if(cc)cc.textContent=newCoins;
+        if(currentUser)currentUser.benchEmployees=newBench;
+        try{loadInventoryCache&&loadInventoryCache();}catch(_){}
+        const gained=(addCoins>0||addBench>0||inv.length>0);
+        if(gained)showToast(currentLang==='ja'?`✅ お試しの成果を引き継ぎました（+${addCoins}コイン${addBench?`・採用${addBench}人`:''}${inv.length?`・ビル${inv.length}棟`:''}）`:`✅ Your trial progress was saved (+${addCoins} coins${addBench?`, ${addBench} staff`:''}${inv.length?`, ${inv.length} buildings`:''})`);
+      }catch(e){console.warn('[IGNIS] guest migrate',e.message);}
+      clearGuestState();
+    }
+    function setGuestCoins(n){guestCoins=Math.max(0,Math.floor(n));const cc=document.getElementById('coin-count');if(cc&&isGuest())cc.textContent=guestCoins;saveGuestState();}
+    function addGuestCoins(n){setGuestCoins(guestCoins+n);}
+    function updateGuestCoinDisplay(){const cc=document.getElementById('coin-count');if(cc&&isGuest())cc.textContent=guestCoins;}
+    function refreshGuestEmpHeader(){
+      if(!isGuest())return;
+      try{
+        document.getElementById('emp-total-count').textContent=String(guestBench);
+        document.getElementById('emp-bench-count').textContent=String(guestBench);
+        document.getElementById('emp-stats-block').style.display='flex';
+      }catch(_){}
+    }
+    // 保存を促す案内（セッション中1回だけ、うるさくしない）
+    function guestSaveHint(){
+      if(_guestSavePromptShown)return;_guestSavePromptShown=true;
+      showToast(currentLang==='ja'?'🔑 いまの成果は「登録／ログイン」で保存できます':'🔑 Register / log in to save your progress');
+    }
+    function initGuestMode(){
+      if(currentUser)return;
+      updateGuestCoinDisplay();
+      refreshGuestEmpHeader();
+      try{setAuthHeaderLoggedIn(false);}catch(_){}
+      try{loadDailyTreasure();}catch(_){} // ゲスト用の宝もここで出す（関数内でゲスト分岐）
+    }
     const LAND_COST=100;
     const GACHA_COST=50;
     const HIRE_COST=25;
@@ -4172,12 +4231,20 @@
       try{refreshCityBgm();}catch(_){}
     }
     // アリゲームからの獲得コイン報告 → 1日30枚まで反映
+    let _guestAntCredited=0; // ゲストのアリゲーム：本日クレジット済みコイン（重複加算防止）
     window.addEventListener('message', async (e)=>{
       if(e.origin!==location.origin)return;
       const d=e.data; if(!d||typeof d!=='object'||d.v!==1)return;
       if(d.type!=='IGNIS_ANTGAME_REPORT')return;
-      if(!currentUser)return;
       const today=Math.max(0,parseInt(d.today,10)||0);
+      // ゲスト：お試しコインへ加算（累計方式・デモ上限60）
+      if(isGuest()){
+        const capped=Math.min(60,today);
+        const delta=capped-_guestAntCredited;
+        if(delta>0){_guestAntCredited=capped;addGuestCoins(delta);guestSaveHint();}
+        return;
+      }
+      if(!currentUser)return;
       try{
         const{data,error}=await db.rpc('claim_antgame_reward',{p_today_total:today});
         if(!error&&data&&data.ok){const cc=document.getElementById('coin-count');if(cc&&data.total!==undefined)cc.textContent=data.total;}
@@ -4194,6 +4261,13 @@
       const post=(msg)=>{ if(frame&&frame.contentWindow)frame.contentWindow.postMessage(msg,location.origin); };
       if(d.type==='IGNIS_LIFEGAME_CLOSE'){ closeCoinGame(); return; }
       if(d.type==='IGNIS_LIFEGAME_RESULT'){
+        // ゲスト：お試しコインを加算（デモ上限60・登録で保存）
+        if(isGuest()){
+          const gc=Math.max(0,Math.min(60,parseInt(d.coins,10)||0));
+          if(gc>0){addGuestCoins(gc);guestSaveHint();}
+          post({type:'IGNIS_LIFEGAME_GRANTED',granted:gc,total:guestCoins,capped:false,v:1});
+          return;
+        }
         if(!currentUser){ post({type:'IGNIS_LIFEGAME_DENIED',reason:'not_authenticated',v:1}); return; }
         const coins=Math.max(0,Math.min(60,parseInt(d.coins,10)||0)); // ティア上限は最大60。実際の上限はサーバーが判定
         try{
@@ -4420,17 +4494,12 @@
     }
     // 未ログインなら登録/ログインを必須にする（登録しないと遊べない）
     function enforceAuthGate(){
+      // v199: 登録ゲート廃止。未登録でもゲストとして遊べる（土地購入・ビル設置・保存のみ登録必須）。
       if(currentUser){lowerAuthGate();return;}
+      // 念のためモーダルが開いていたら閉じる（強制表示はしない）
       const modal=document.getElementById('auth-modal');
-      if(!modal)return;
-      modal.classList.add('gate');
-      const isJa=currentLang==='ja';
-      const sub=document.getElementById('auth-subtitle');
-      if(sub)sub.textContent=isJa?'遊ぶには登録が必要です':'Sign up to start playing';
-      openAuthModal();
-      switchTab('signup');
-      // ゲート中は遊べない＝3D描画を止めて軽くする（動くシーンをblurし続けると重い・発熱する）
-      try{if(typeof setScenePaused==='function')setScenePaused(true);}catch(_){}
+      if(modal){modal.classList.remove('gate');}
+      initGuestMode();
     }
     function lowerAuthGate(){
       const modal=document.getElementById('auth-modal');
@@ -4601,6 +4670,9 @@
           loadSubscriberSet().then(()=>{applySubscriberLamps();setTimeout(()=>{try{applySubscriberLamps();}catch(_){}}, 2000);}).catch(()=>{});
         }
         loadApprovedProfiles().then(()=>scheduleMottoRefresh()).catch(e=>console.warn('[IGNIS] motto reload',e.message));
+        if(!restoring){
+          await migrateGuestToAccount(user.id); // ゲスト中の成果（コイン・在庫・採用）を引き継ぐ
+        }
         loadInventoryCache().catch(()=>{}); // 在庫を先読み（設置モーダルを開いた瞬間に表示するため）
         if(!restoring){
           showToast(xName?(isJa?`👋 おかえり、@${xName}！`:`👋 Welcome back, @${xName}!`):(isJa?'👋 おかえり！':'👋 Welcome back!'));
@@ -5280,6 +5352,19 @@
       if(!skipBgmRefresh)refreshCityBgm();
     }
     async function handleGachaSpin(){
+      const isJa0=currentLang==='ja';
+      // ゲスト：お試しコインでスクラッチ体験（獲得ビルは端末内の在庫へ、登録で引き継ぎ）
+      if(isGuest()){
+        if(guestCoins<GACHA_COST){showToast(isJa0?`コインが足りません（必要：${GACHA_COST}）。宝拾い・ミニゲームで稼ぐか、登録してね`:`Not enough coins (need ${GACHA_COST}). Earn more or register.`);return;}
+        await IgnisAudio.ensure();IgnisAudio.playGachaClick();
+        setGuestCoins(guestCoins-GACHA_COST);
+        const result=rollGacha();gachaState.result=result;
+        guestInv.unshift({prism:normalizePrism(result.prism),floors:result.floors,star:result.star});saveGuestState();
+        closeGachaModal(true);
+        playGachaAnimation(result);
+        guestSaveHint();
+        return;
+      }
       if(!currentUser){closeGachaModal();openAuthModal();return;}
       await IgnisAudio.ensure();
       IgnisAudio.playGachaClick();
@@ -5407,9 +5492,9 @@
       refreshCityBgm();
     }
     async function onGachaResultRetry(){
-      if(!currentUser){openAuthModal();return;}
       const isJa=currentLang==='ja';
-      const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      // ゲストはお試しコイン、ログイン中はDB残高で判定（実際の消費は handleGachaSpin が行う）
+      const balance=isGuest()?guestCoins:(parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0);
       if(balance<GACHA_COST){
         showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);
         return;
@@ -6423,10 +6508,22 @@
       });
     }
     async function handleHireEmployee(){
-      if(!currentUser){showToast('ログインが必要です');return;}
       const btn=document.getElementById('gacha-hire-btn');
       if(btn.disabled)return;
       const isJa=currentLang==='ja';
+      // ゲスト：お試しコインで採用体験（休職中プールに加算・登録で引き継ぎ）
+      if(isGuest()){
+        if(guestCoins<HIRE_COST){showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);return;}
+        btn.disabled=true;const ot=btn.textContent;btn.textContent=isJa?'準備中...':'Preparing...';
+        try{await playHireContractAnimation();}catch(_){}
+        setGuestCoins(guestCoins-HIRE_COST);
+        guestBench+=1;saveGuestState();refreshGuestEmpHeader();
+        showToast(isJa?`👨‍💼 採用！休職中プール +1（計${guestBench}人）`:`👨‍💼 Hired! Bench +1 (total ${guestBench})`);
+        guestSaveHint();
+        btn.disabled=false;btn.textContent=ot;
+        return;
+      }
+      if(!currentUser){showToast('ログインが必要です');return;}
       const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
       if(balance<HIRE_COST){
         showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);
@@ -7076,8 +7173,20 @@
     let _treasureObs=null;
     let _treasurePrev=null; // 前フレームの飛行カメラ位置（高速通過のすり抜け対策）
     let plushieData=[];
+    // ゲスト用の宝：飛行モードで拾うとお試しコインが増える。拾ったら少し待って別の場所に再出現（コイン稼ぎ体験）。
+    function spawnGuestTreasure(){
+      if(!isGuest()||!scene||!window.BABYLON)return;
+      const rx=(Math.floor(Math.random()*17)-8)*CELL, rz=(Math.floor(Math.random()*17)-8)*CELL;
+      const spot=findEmptyTreasureSpot(rx,rz);
+      disposeTreasureMesh();
+      dailyTreasure={mesh:null,x:spot.x,y:8,z:spot.z,kind:'coins',amount:2,collected:false,collecting:false,guest:true};
+      spawnTreasureMesh();
+      startTreasureProximity();
+    }
     async function loadDailyTreasure(){
-      if(!db||!currentUser||!scene||!window.BABYLON)return;
+      if(!scene||!window.BABYLON)return;
+      if(isGuest()){spawnGuestTreasure();return;}
+      if(!db||!currentUser)return;
       try{
         const{data,error}=await db.rpc('get_daily_treasure');
         if(error||!data||!data.ok)return;
@@ -7176,6 +7285,18 @@
       if(t.collecting||t.collected)return;
       t.collecting=true;
       const isJa=currentLang==='ja';
+      // ゲスト：お試しコインを加算して、少し待って別の場所へ再出現
+      if(t.guest||isGuest()){
+        t.collected=true;
+        addGuestCoins(t.amount||2);
+        try{IgnisAudio.playSuccess();}catch(_){}
+        showToast(isJa?`🪙 コインを${t.amount||2}枚拾った！（登録で保存）`:`🪙 Grabbed ${t.amount||2} coins! (register to save)`);
+        guestSaveHint();
+        disposeTreasureMesh();
+        t.collecting=false;
+        setTimeout(()=>{try{if(isGuest())spawnGuestTreasure();}catch(_){}},4000);
+        return;
+      }
       try{
         const{data,error}=await db.rpc('collect_daily_treasure');
         if(error)throw error;

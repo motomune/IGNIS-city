@@ -489,6 +489,12 @@
     @keyframes ohRotate { 0%,22%{transform:rotate(0deg);} 55%,78%{transform:rotate(90deg);} 100%{transform:rotate(90deg);} }
     #orient-hint .oh-text { display:block;font-size:14px;font-weight:800;color:#ffd0a8;margin-top:10px;letter-spacing:0.02em; }
     #orient-hint .oh-sub { display:block;font-size:10.5px;color:rgba(255,255,255,0.5);margin-top:5px; }
+    /* 仮アカウント（ゲスト）の「3時間以内に登録」バナー */
+    #guest-banner { display:none;position:fixed;bottom:max(84px,calc(env(safe-area-inset-bottom,0px) + 72px));left:50%;transform:translateX(-50%);z-index:160;max-width:94vw;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;background:rgba(20,10,4,0.93);border:1px solid rgba(255,150,60,0.6);box-shadow:0 6px 24px rgba(0,0,0,0.5); }
+    #guest-banner.show { display:flex; }
+    #guest-banner #guest-banner-text { font-size:11.5px;font-weight:700;color:#ffd0a8;white-space:nowrap; }
+    #guest-banner #guest-banner-btn { flex:0 0 auto;padding:7px 14px;border:none;border-radius:999px;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(135deg,#ff6a00,#ee0979);cursor:pointer; }
+    @media (max-width:420px){ #guest-banner{max-width:96vw;padding:7px 10px;gap:7px;} #guest-banner #guest-banner-text{font-size:10px;white-space:normal;text-align:center;} }
     #x-setup-modal { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:250;align-items:center;justify-content:center; }
     #x-setup-modal.open { display:flex; }
     #x-setup-box { background:linear-gradient(160deg,#1a0a2e,#0f0820);border:1px solid rgba(255,106,0,0.4);border-radius:16px;padding:24px;width:min(340px,92vw); }
@@ -2003,6 +2009,10 @@
     </div>
   </div>
   <div id="toast"></div>
+  <div id="guest-banner" aria-hidden="true">
+    <span id="guest-banner-text">⏳ 仮登録中…</span>
+    <button id="guest-banner-btn" type="button" onclick="openGuestRegister()">登録して保存</button>
+  </div>
   <audio id="ignis-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <audio id="ignis-retro-bgm" loop preload="auto" playsinline style="display:none"></audio>
   <!-- 横向きプレイ推奨ヒント（スマホ縦のみ・どこかタッチで消える） -->
@@ -2084,7 +2094,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-19-v200';
+    const IGNIS_BUILD='2026-07-20-v201';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -2445,6 +2455,28 @@
       enforceAuthGate();
       showOrientHint();
     }
+    // ===== 仮アカウント（ゲスト）の「3時間以内に登録」バナー＋カウントダウン =====
+    let _guestBannerTimer=null;
+    function hideGuestExpiryBanner(){const el=document.getElementById('guest-banner');if(el)el.classList.remove('show');if(_guestBannerTimer){clearInterval(_guestBannerTimer);_guestBannerTimer=null;}}
+    function updateGuestExpiryBanner(){
+      const el=document.getElementById('guest-banner');if(!el)return;
+      if(!currentUser||!currentUser.isGuest){hideGuestExpiryBanner();return;}
+      el.classList.add('show');
+      const tick=()=>{
+        if(!currentUser||!currentUser.isGuest){hideGuestExpiryBanner();return;}
+        const created=currentUser.createdAt?new Date(currentUser.createdAt).getTime():Date.now();
+        const remain=Math.max(0,created+3*3600*1000-Date.now());
+        const h=Math.floor(remain/3600000),m=Math.floor(remain%3600000/60000),s=Math.floor(remain%60000/1000);
+        const isJa=currentLang==='ja';
+        const t=document.getElementById('guest-banner-text');
+        if(t)t.textContent=isJa?`⏳ 仮登録中：あと ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} で土地・ビルが消えます`:`⏳ Guest: land & buildings vanish in ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        const b=document.getElementById('guest-banner-btn');if(b)b.textContent=isJa?'登録して保存':'Register to save';
+      };
+      tick();
+      if(_guestBannerTimer)clearInterval(_guestBannerTimer);
+      _guestBannerTimer=setInterval(tick,1000);
+    }
+    function openGuestRegister(){try{openAuthModal();switchTab('signup');}catch(_){}}
     // 横向きプレイ推奨ヒント：スマホ縦向きで1回だけ中央に表示し、どこかタッチした瞬間に消える。
     // 回転プロンプト（初回のフル画面案内）が出ている間は重複するので出さない。
     let _orientHintDone=false;
@@ -2556,7 +2588,9 @@
         if(event==='SIGNED_OUT'){
           currentUser=null;
           setAuthHeaderLoggedIn(false);
-          try{enforceAuthGate();}catch(_){} // ログアウトしたら再び登録必須に
+          try{hideGuestExpiryBanner();}catch(_){}
+          try{enforceAuthGate();}catch(_){} // フォールバックのローカルゲスト表示
+          try{ensureAnonSession();}catch(_){} // ログアウト後は新しい仮アカウント（ゲスト）で遊べるように
         }
       });
     }
@@ -4603,16 +4637,31 @@
           if(typeof forceShowGame==='function')forceShowGame();
           await onLoginSuccess(data.user,null,null,{force:true});
         }else{
-          const{data,error}=await withTimeout(db.auth.signUp({email,password}),15000,'signUp');
-          if(error)throw error;
-          if(data.user){
-            const displayUsername=username||xUsername;
-            await withTimeout(db.from('users').upsert({id:data.user.id,username:displayUsername,x_username:xUsername,rank:1,coin_column:0}),8000,'signUpProfile');
+          const displayUsername=username||xUsername;
+          // 今が匿名（ゲスト）セッションなら、同じIDのまま本登録へ昇格＝土地・ビル・コインを全部引き継ぐ
+          let curSess=null;try{curSess=(await db.auth.getSession()).data.session;}catch(_){}
+          const isAnonNow=!!(curSess&&curSess.user&&curSess.user.is_anonymous);
+          if(isAnonNow){
+            const{error:upErr}=await withTimeout(db.auth.updateUser({email,password}),15000,'convert');
+            if(upErr)throw upErr;
+            // 登録した瞬間に is_guest=false ＝ 3時間の自動削除対象から外れる（メール確認前でも消えない）
+            await withTimeout(db.from('users').update({username:displayUsername,x_username:xUsername,is_guest:false}).eq('id',curSess.user.id),8000,'convertProfile');
+            if(currentUser)currentUser.isGuest=false;
+            hideGuestExpiryBanner();
             closeAuthModal();
-            if(typeof forceShowGame==='function')forceShowGame();
-            await onLoginSuccess(data.user,displayUsername,xUsername,{force:true});
-            showToast(currentLang==='ja'?'🎉 登録完了！IGNIS CITYへようこそ！':'🎉 Welcome to IGNIS CITY!');
-          }else{errEl.style.color='#4caf50';errEl.textContent='確認メールを送信しました。';}
+            await onLoginSuccess(curSess.user,displayUsername,xUsername,{force:true});
+            showToast(currentLang==='ja'?'🎉 登録完了！ゲスト中のデータを全部引き継ぎました':'🎉 Registered! All your guest progress was kept');
+          }else{
+            const{data,error}=await withTimeout(db.auth.signUp({email,password}),15000,'signUp');
+            if(error)throw error;
+            if(data.user){
+              await withTimeout(db.from('users').upsert({id:data.user.id,username:displayUsername,x_username:xUsername,rank:1,coin_column:0,is_guest:false}),8000,'signUpProfile');
+              closeAuthModal();
+              if(typeof forceShowGame==='function')forceShowGame();
+              await onLoginSuccess(data.user,displayUsername,xUsername,{force:true});
+              showToast(currentLang==='ja'?'🎉 登録完了！IGNIS CITYへようこそ！':'🎉 Welcome to IGNIS CITY!');
+            }else{errEl.style.color='#4caf50';errEl.textContent='確認メールを送信しました。';}
+          }
         }
       }catch(e){errEl.style.color='#ff4444';errEl.textContent=translateError(e.message);}
       finally{btn.disabled=false;btn.textContent=authMode==='login'?(currentLang==='ja'?'ログイン':'Login'):(currentLang==='ja'?'登録する':'Sign Up');}
@@ -4629,7 +4678,7 @@
       try{
         if(!usernameOverride){
           const{data}=await withTimeout(
-            db.from('users').select('username,x_username,coin_column,rank,bench_employees,is_subscribed,is_premium,show_x_username').eq('id',user.id).single(),
+            db.from('users').select('username,x_username,coin_column,rank,bench_employees,is_subscribed,is_premium,show_x_username,is_guest,created_at').eq('id',user.id).single(),
             8000,'loadUserProfile'
           );
           if(data){
@@ -4640,10 +4689,12 @@
             currentUser.isSubscribed=!!data.is_subscribed;
             currentUser.isPremium=!!data.is_premium;
             currentUser.showXName=data.show_x_username!==false;
+            currentUser.isGuest=(data.is_guest===true)||!!user.is_anonymous;
+            currentUser.createdAt=data.created_at;
           }
         }else{
           const{data:rd}=await withTimeout(
-            db.from('users').select('rank,bench_employees,coin_column,is_subscribed,is_premium,show_x_username').eq('id',user.id).single(),
+            db.from('users').select('rank,bench_employees,coin_column,is_subscribed,is_premium,show_x_username,is_guest,created_at').eq('id',user.id).single(),
             6000,'loadUserRank'
           );
           if(rd){
@@ -4652,6 +4703,8 @@
             currentUser.isSubscribed=!!rd.is_subscribed;
             currentUser.isPremium=!!rd.is_premium;
             currentUser.showXName=rd.show_x_username!==false;
+            currentUser.isGuest=(rd.is_guest===true)||!!user.is_anonymous;
+            currentUser.createdAt=rd.created_at;
             if(rd.coin_column!=null)document.getElementById('coin-count').textContent=rd.coin_column;
           }
         }
@@ -4659,6 +4712,7 @@
         document.getElementById('emp-stats-block').style.display='flex';
         updateXNameToggleBtn();
         setAuthHeaderLoggedIn(true);
+        updateGuestExpiryBanner(); // 仮アカウント（ゲスト）なら「3時間以内に登録」バナーを表示
         const nameEl=document.getElementById('user-name');
         nameEl.textContent=xName?`@${xName}`:(isJa?'X未登録':'X not set');
         nameEl.style.cursor=xName?'default':'pointer';
@@ -4733,9 +4787,21 @@
       if(!db)return;
       try{
         const{data:{session},error}=await withTimeout(db.auth.getSession(),8000,'getSession');
-        if(error||!session?.user)return;
-        await onLoginSuccess(session.user,null,null,{restoring:true});
+        if(!error&&session?.user){await onLoginSuccess(session.user,null,null,{restoring:true});return;}
+        // セッションが無ければ匿名ログイン（＝仮アカウントのゲスト）。無効ならローカルゲストにフォールバック。
+        await ensureAnonSession();
       }catch(e){console.warn('[IGNIS] restoreSession',e);}
+    }
+    // 匿名（ゲスト）サインイン：本物の一時アカウントを取得し、既存のDBフローをそのまま使えるようにする。
+    // これが成功すると trigger により users 行（is_guest=true・120コイン）が作られる。3時間で未登録なら自動削除。
+    async function ensureAnonSession(){
+      if(!db)return false;
+      try{
+        const{data,error}=await withTimeout(db.auth.signInAnonymously(),12000,'anonSignIn');
+        if(error||!data?.user){console.warn('[IGNIS] anon signin unavailable',error&&error.message);return false;}
+        await onLoginSuccess(data.user,null,null,{restoring:true,anon:true});
+        return true;
+      }catch(e){console.warn('[IGNIS] ensureAnonSession',e.message);return false;}
     }
     // ========================================
     // Babylon.js

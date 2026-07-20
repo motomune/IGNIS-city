@@ -1332,6 +1332,9 @@
     .li-only { display:none !important; }
     body.logged-in .li-only { display:flex !important; }
     body.logged-in #login-btn-header { display:none !important; }
+    /* 仮アカウント（ゲスト）：本登録していないので「登録 / ログイン」を出し、ログアウトは隠す */
+    body.guest-mode #login-btn-header { display:flex !important; }
+    body.guest-mode #logout-btn { display:none !important; }
     /* 広告：左側。位置はJS(layoutAdSlot)が「左レールの下端〜ミニマップの上端」の間に自動配置し、
        ボタン類と絶対に被らないようにする（topはJSが上書きするため!importantにしない） */
     #ad-slot-wrap { position:fixed !important; left:max(14px,env(safe-area-inset-left,0px)) !important;
@@ -2100,7 +2103,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v202';
+    const IGNIS_BUILD='2026-07-20-v203';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -2594,6 +2597,7 @@
         if(event==='SIGNED_OUT'){
           currentUser=null;
           setAuthHeaderLoggedIn(false);
+          try{updateBuildingCount();}catch(_){} // 所有ビル数を0に戻す
           try{hideGuestExpiryBanner();}catch(_){}
           try{enforceAuthGate();}catch(_){} // フォールバックのローカルゲスト表示
           try{ensureAnonSession();}catch(_){} // ログアウト後は新しい仮アカウント（ゲスト）で遊べるように
@@ -3094,7 +3098,7 @@
     // ===== ゲスト（未登録）モード =====
     // 登録ゲートは廃止。未登録でも探索・飛行・ビル詳細閲覧・スクラッチ・採用・コイン収集ができる（端末内の「お試しコイン」）。
     // 土地購入・ビル設置・永続化のみ登録必須。登録/ログイン時に、ゲスト中の成果（コイン・在庫・採用）をアカウントへ引き継ぐ。
-    const GUEST_START_COINS=120;
+    const GUEST_START_COINS=200;
     let guestCoins=(function(){try{const v=localStorage.getItem('ignis_guest_coins');return v==null?GUEST_START_COINS:(parseInt(v,10)||0);}catch(_){return GUEST_START_COINS;}})();
     let guestBench=(function(){try{return parseInt(localStorage.getItem('ignis_guest_bench')||'0',10)||0;}catch(_){return 0;}})();
     let guestInv=(function(){try{return JSON.parse(localStorage.getItem('ignis_guest_inv')||'[]')||[];}catch(_){return [];}})();
@@ -4176,6 +4180,9 @@
       // ログイン状態で .li-only ボタン（履歴/タスク/ランキング/ログアウト）と
       // ログインボタンの表示を CSS で切り替える
       document.body.classList.toggle('logged-in',!!loggedIn);
+      // 仮アカウント（ゲスト）は「本登録していない」ので、ログアウトではなく「登録 / ログイン」を出す。
+      // （匿名ログインで常にセッションがあるため、これが無いとログアウト後もログアウトボタンのままになる）
+      document.body.classList.toggle('guest-mode',!!(loggedIn&&currentUser&&currentUser.isGuest));
       if(!loggedIn){
         document.getElementById('task-panel')?.classList.remove('open');
         document.getElementById('emp-stats-block').style.display='none';
@@ -4726,6 +4733,7 @@
         nameEl.title=xName?'':(isJa?'クリックしてX名を登録':'Click to set X username');
         nameEl.onclick=xName?null:()=>openXSetupModal();
         redrawAllTiles();
+        updateBuildingCount(); // 自分の所有ビル数を反映
         // 会員情報（is_premium等）が確定したので、屋上ランプを付け直す（自分のビルにも確実に灯る）
         if(currentUser&&(currentUser.isSubscribed||currentUser.isPremium)){
           loadSubscriberSet().then(()=>{applySubscriberLamps();setTimeout(()=>{try{applySubscriberLamps();}catch(_){}}, 2000);}).catch(()=>{});
@@ -5022,6 +5030,38 @@
       if(gridMesh){gridMesh.material=lineMat;gridMesh.isPickable=false;gridMesh.freezeWorldMatrix();}
       else lineParts.forEach(m=>{m.material=lineMat;m.isPickable=false;});
     }
+    // 土地の価格帯を床の色で示す（どこが安いか一目で分かるように）。
+    // 価格は中心からのマス距離で決まる（landPriceForCell）ので、同心の「四角い帯」になる。
+    // セル毎にメッシュを作ると数百枚になるので、1枚のグラウンドにテクスチャを描いて表現する。
+    (function drawLandPriceZones(){
+      if(!window.BABYLON)return;
+      const SIZE=1024, HALF=100;                 // ground(200×200)に合わせる
+      const w2p=w=>((w+HALF)/(HALF*2))*SIZE;     // ワールド座標→テクスチャpx
+      const tex=new BABYLON.DynamicTexture('landZoneTex',{width:SIZE,height:SIZE},scene,true);
+      const ctx=tex.getContext();
+      const sq=(halfW,color)=>{const a=w2p(-halfW),b=w2p(halfW);ctx.fillStyle=color;ctx.fillRect(a,a,b-a,b-a);};
+      sq(HALF,'#6b5340');   // 100コイン＝薄茶
+      sq(65,'#70707a');     // 200コイン＝灰色
+      sq(45,'#101016');     // 300コイン＝黒
+      sq(25,'#f4f4f4');     // 特別区域＝白
+      // 特別区域だけ斜線を何本も入れる（購入不可がひと目で分かる）
+      {
+        const a=w2p(-25),b=w2p(25),span=b-a;
+        ctx.save();ctx.beginPath();ctx.rect(a,a,span,span);ctx.clip();
+        ctx.strokeStyle='rgba(40,40,52,0.8)';ctx.lineWidth=Math.max(2,SIZE/200);
+        for(let i=-span;i<span*2;i+=Math.max(10,SIZE/48)){ctx.beginPath();ctx.moveTo(a+i,a);ctx.lineTo(a+i+span,b);ctx.stroke();}
+        ctx.restore();
+      }
+      tex.update();
+      const mat=new BABYLON.StandardMaterial('landZoneMat',scene);
+      mat.emissiveTexture=tex;                                  // 夜のシーンでも色が分かるよう自発光
+      mat.diffuseColor=new BABYLON.Color3(0,0,0);
+      mat.specularColor=new BABYLON.Color3(0,0,0);
+      mat.alpha=0.6;                                            // ビルが埋もれない濃さに抑える
+      const g=BABYLON.MeshBuilder.CreateGround('landZones',{width:HALF*2,height:HALF*2,subdivisions:1},scene);
+      g.position.y=0.005;                                        // グリッド線・所有タイルより下
+      g.material=mat;g.isPickable=false;g.freezeWorldMatrix();
+    })();
     // うっすら夜霧：遠景ほど背景色に溶け、世界が地平線まで続いて見える（ズームアウト時も街は見える距離設定）
     // ※マテリアルのfreeze()より先に設定しないと霧が反映されないので、この位置で設定する
     scene.fogMode=BABYLON.Scene.FOGMODE_LINEAR;
@@ -5071,6 +5111,14 @@
       mat.emissiveColor=new BABYLON.Color3(1.0,1.0,0.0);mat.alpha=0.5;highlightTile.material=mat;highlightTile.isPickable=false;
     }
     function hideHighlight(){if(highlightTile){highlightTile.dispose();highlightTile=null;}}
+    // ヘッダーの「所有ビル」＝自分が所有するビルの数（以前は街全体の棟数を出していたため、
+    // ログアウトしても数字が残って見えていた）。未ログイン/ゲストで自分の土地が無ければ0。
+    function updateBuildingCount(){
+      const el=document.getElementById('building-count');if(!el)return;
+      let n=0;
+      if(currentUser){try{n=buildings.filter(b=>isOwnLandBuilding(b)).length;}catch(_){n=0;}}
+      el.textContent=n;
+    }
     function drawOwnedTile(gx,gz,key,ownerId){
       if(landMap[key]&&landMap[key].tile)landMap[key].tile.dispose();
       const tile=BABYLON.MeshBuilder.CreateGround('lt_'+key,{width:CELL-0.4,height:CELL-0.4},scene);
@@ -5354,20 +5402,8 @@
       if(!window.BABYLON||!scene)return;
       specialZoneTiles.forEach(t=>{try{t.dispose();}catch(_){}});
       specialZoneTiles=[];
-      const mat=new BABYLON.StandardMaterial('szMat',scene);
-      mat.emissiveColor=new BABYLON.Color3(0.55,0.55,0.62);
-      mat.alpha=0.10; // 薄め
-      mat.specularColor=new BABYLON.Color3(0,0,0);
-      for(let gx=SPECIAL_ZONE_MIN;gx<=SPECIAL_ZONE_MAX;gx+=CELL){
-        for(let gz=SPECIAL_ZONE_MIN;gz<=SPECIAL_ZONE_MAX;gz+=CELL){
-          if(landMap[landKey(gx,gz)])continue;
-          const tile=BABYLON.MeshBuilder.CreateGround('sz_'+gx+'_'+gz,{width:CELL-0.4,height:CELL-0.4},scene);
-          tile.position=new BABYLON.Vector3(gx,0.015,gz);
-          tile.material=mat;
-          tile.isPickable=false;
-          specialZoneTiles.push(tile);
-        }
-      }
+      // グレーの敷きタイルは廃止：特別区域は価格帯カラー（白＋斜線）で表現するようになったため、
+      // 上に重ねると斜線が濁る。境界の黄色ラインだけ残す。
       // 外周の黄色ライン（区域の境界を明示）
       const frameMat=new BABYLON.StandardMaterial('szFrameMat',scene);
       frameMat.emissiveColor=new BABYLON.Color3(1.0,0.85,0.2);
@@ -5655,7 +5691,7 @@
           if(existingBuilding.mesh){existingBuilding.mesh.dispose();existingBuilding.mesh=null;}
           buildings=buildings.filter(b=>b.landKey!==gachaState.landKey);
           delete buildingMap[gachaState.landKey];
-          document.getElementById('building-count').textContent=buildings.length;
+          updateBuildingCount();
           await db.from('buildings').delete().eq('x',gx).eq('z',gz);
         }
         const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${buildPrism}_gacha`,owner_id:currentUser.id,employees});
@@ -8046,7 +8082,7 @@
         if(b.mesh)b.mesh.dispose();
         const updated=addBuilding(b.x,b.z,b.baseFloors||row.floors||1,shape,nextEmp,true,key,row.view_count||b.viewCount||0,currentUser.id);
         buildings=buildings.filter(x=>x!==b);
-        document.getElementById('building-count').textContent=buildings.length;
+        updateBuildingCount();
         buildingMap[key]=updated;
         currentModalBuilding=updated;
         applyMottoForLandKey(key);
@@ -8129,7 +8165,7 @@
         const soldTileMesh=scene.getMeshByName('lt_'+b.landKey);if(soldTileMesh)soldTileMesh.dispose();
         delete landMap[b.landKey];
         delete approvedProfiles[b.landKey];
-        document.getElementById('building-count').textContent=buildings.length;
+        updateBuildingCount();
         drawMinimap();
         closeBuildingModal();
         if(data.bench_employees!==undefined){
@@ -8326,7 +8362,7 @@
       const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,viewTotal,ownerId};
       if(mesh){mesh.metadata={landKey:key,bx:x,bz:z};}
       buildings.push(buildingData);buildingMap[key]=buildingData;
-      document.getElementById('building-count').textContent=buildings.length;
+      updateBuildingCount();
       return buildingData;
     }
     async function loadBuildings(){
@@ -8510,7 +8546,7 @@
       for(let i=buildings.length-1;i>=0;i--){
         if(removeSet.has(buildings[i]))buildings.splice(i,1);
       }
-      document.getElementById('building-count').textContent=buildings.length;
+      updateBuildingCount();
     }
     async function loadBuildingsAndLands(){
       try{

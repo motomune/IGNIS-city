@@ -2263,12 +2263,17 @@ const BOARD_PATTERNS = (function(){
     const salaryEvery = (7 + Math.floor(r()*3)) * 3;   // 21–27 → paydays are now rare
     // per-pattern weighted bag (varies the "feel" of each board)
     const bag=[];
+    // 臨時収入(bonus)はバッグから外し、給料日以外のマスに対して明示的に 1/15 の確率で置く
     const w = {event:3+Math.floor(r()*3), good:2+Math.floor(r()*2), bad:1+Math.floor(r()*2),
       encounter:1+Math.floor(r()*2), illness:1+Math.floor(r()*2), branch:1+Math.floor(r()*2),
-      rest:1+Math.floor(r()*2), setback:1+Math.floor(r()*2), bonus:1+Math.floor(r()*2)};
+      rest:1+Math.floor(r()*2), setback:1+Math.floor(r()*2)};
     for(const k in w){ for(let n=0;n<w[k];n++) bag.push(k); }
+    const BONUS_CHANCE = 1/15;
     const arr=['start'];
-    for(let i=1;i<GOAL;i++){ arr.push(i%salaryEvery===0 ? 'salary' : bag[Math.floor(r()*bag.length)]); }
+    for(let i=1;i<GOAL;i++){
+      if(i%salaryEvery===0){ arr.push('salary'); continue; }
+      arr.push(r()<BONUS_CHANCE ? 'bonus' : bag[Math.floor(r()*bag.length)]);
+    }
     arr.push('goal');
     out.push(arr);
   }

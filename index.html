@@ -2103,7 +2103,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v203';
+    const IGNIS_BUILD='2026-07-20-v204';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3116,8 +3116,12 @@
       const addBench=Math.max(0,Math.floor(guestBench));
       const inv=Array.isArray(guestInv)?guestInv.slice(0,200):[];
       try{
-        const{data:ud}=await db.from('users').select('coin_column,bench_employees').eq('id',userId).single();
-        const newCoins=((ud&&ud.coin_column)||0)+addCoins;
+        const{data:ud}=await db.from('users').select('coin_column,bench_employees,is_guest').eq('id',userId).single();
+        const acctCoins=(ud&&ud.coin_column)||0;
+        // 出来たばかりのアカウント（仮アカウント＝開始200、または新規登録＝0）は「置き換え」。
+        // ローカルのお試し残高には既に開始分が入っているため、足すと開始コインを二重に与えてしまう。
+        const fresh=!!(ud&&(ud.is_guest===true||acctCoins===0));
+        const newCoins=fresh?addCoins:(acctCoins+addCoins);
         const newBench=((ud&&ud.bench_employees)||0)+addBench;
         await db.from('users').update({coin_column:newCoins,bench_employees:newBench}).eq('id',userId);
         if(inv.length){
@@ -4817,20 +4821,36 @@
       try{
         const{data:{session},error}=await withTimeout(db.auth.getSession(),8000,'getSession');
         if(!error&&session?.user){await onLoginSuccess(session.user,null,null,{restoring:true});return;}
-        // セッションが無ければ匿名ログイン（＝仮アカウントのゲスト）。無効ならローカルゲストにフォールバック。
-        await ensureAnonSession();
+        // ページを開いただけでは仮アカウントを作らない（ボットや素通りの訪問者でアカウントが増え、
+        // 1人が X/Instagram/Chrome から開くだけで3件できてしまうため）。
+        // 実際に保存が必要な操作をした瞬間に ensureAccountForAction() が作る。それまではローカルのお試しモード。
       }catch(e){console.warn('[IGNIS] restoreSession',e);}
     }
     // 匿名（ゲスト）サインイン：本物の一時アカウントを取得し、既存のDBフローをそのまま使えるようにする。
-    // これが成功すると trigger により users 行（is_guest=true・120コイン）が作られる。3時間で未登録なら自動削除。
+    // trigger により users 行（is_guest=true・200コイン）が作られる。3時間で未登録なら自動削除。
+    let _anonSignInPromise=null;
     async function ensureAnonSession(){
       if(!db)return false;
-      try{
-        const{data,error}=await withTimeout(db.auth.signInAnonymously(),12000,'anonSignIn');
-        if(error||!data?.user){console.warn('[IGNIS] anon signin unavailable',error&&error.message);return false;}
-        await onLoginSuccess(data.user,null,null,{restoring:true,anon:true});
-        return true;
-      }catch(e){console.warn('[IGNIS] ensureAnonSession',e.message);return false;}
+      if(currentUser)return true;
+      if(_anonSignInPromise)return _anonSignInPromise; // 同時に複数回呼ばれても1アカウントだけ作る
+      _anonSignInPromise=(async()=>{
+        try{
+          const{data,error}=await withTimeout(db.auth.signInAnonymously(),12000,'anonSignIn');
+          if(error||!data?.user){console.warn('[IGNIS] anon signin unavailable',error&&error.message);return false;}
+          // restoring:false ＝ ローカルのお試し成果（コイン/在庫/採用）を作成した仮アカウントへ引き継ぐ
+          await onLoginSuccess(data.user,null,null,{force:true,anon:true});
+          return !!currentUser;
+        }catch(e){console.warn('[IGNIS] ensureAnonSession',e.message);return false;}
+        finally{_anonSignInPromise=null;}
+      })();
+      return _anonSignInPromise;
+    }
+    // 保存が必要な操作の直前に呼ぶ：まだアカウントが無ければ、この瞬間に仮アカウントを作る。
+    async function ensureAccountForAction(){
+      if(currentUser)return true;
+      const ok=await ensureAnonSession();
+      if(!ok)showToast(currentLang==='ja'?'通信エラーです。少し待って試してください':'Network error — please try again');
+      return ok;
     }
     // ========================================
     // Babylon.js
@@ -5225,7 +5245,7 @@
     let placeBusy=false;
     function closePlaceModal(){document.getElementById('place-modal').classList.remove('open');}
     async function openPlaceModal(){
-      if(!currentUser){openAuthModal();return;}
+      if(!await ensureAccountForAction())return;
       if(!selectedLandKey)return;
       const land=landMap[selectedLandKey];
       const isJa=currentLang==='ja';
@@ -5298,7 +5318,7 @@
     function starForFloors(f){return f>=48?5:f>=40?4:f>=30?3:f>=20?2:1;}
     async function placeFromInventory(invId,prism,floors,cardEl){
       if(placeBusy)return;
-      if(!currentUser){openAuthModal();return;}
+      if(!await ensureAccountForAction())return;
       const key=placeState.landKey;if(!key)return;
       const land=landMap[key];
       const isJa=currentLang==='ja';
@@ -5419,7 +5439,7 @@
       mkLine(L,0.3,0,-half);mkLine(L,0.3,0,half);mkLine(0.3,L,-half,0);mkLine(0.3,L,half,0);
     }
     async function handleLandBuy(){
-      if(!currentUser){closeLandPanel();openAuthModal();showToast('ログインが必要です');return;}
+      if(!await ensureAccountForAction())return; // 土地を持つ＝保存が要るので、ここで仮アカウントを作る
       const{gx,gz}=keyToCoord(selectedLandKey);
       if(isReservedZone(gx,gz)){
         showToast(currentLang==='ja'?'⛔ 中央エリアは「再生の殿堂」用に保護されています':'⛔ The central area is reserved for the Hall of Rebirth');
@@ -5478,19 +5498,8 @@
     }
     async function handleGachaSpin(){
       const isJa0=currentLang==='ja';
-      // ゲスト：お試しコインでスクラッチ体験（獲得ビルは端末内の在庫へ、登録で引き継ぎ）
-      if(isGuest()){
-        if(guestCoins<GACHA_COST){showToast(isJa0?`コインが足りません（必要：${GACHA_COST}）。宝拾い・ミニゲームで稼ぐか、登録してね`:`Not enough coins (need ${GACHA_COST}). Earn more or register.`);return;}
-        await IgnisAudio.ensure();IgnisAudio.playGachaClick();
-        setGuestCoins(guestCoins-GACHA_COST);
-        const result=rollGacha();gachaState.result=result;
-        guestInv.unshift({prism:normalizePrism(result.prism),floors:result.floors,star:result.star});saveGuestState();
-        closeGachaModal(true);
-        playGachaAnimation(result);
-        guestSaveHint();
-        return;
-      }
-      if(!currentUser){closeGachaModal();openAuthModal();return;}
+      // 獲得ビルは在庫に残す＝保存が必要なので、ここで仮アカウントを作る（お試しコインは引き継がれる）
+      if(!await ensureAccountForAction())return;
       await IgnisAudio.ensure();
       IgnisAudio.playGachaClick();
       const btn=document.getElementById('gacha-spin-btn');
@@ -6657,19 +6666,8 @@
       const btn=document.getElementById('gacha-hire-btn');
       if(btn.disabled)return;
       const isJa=currentLang==='ja';
-      // ゲスト：お試しコインで採用体験（休職中プールに加算・登録で引き継ぎ）
-      if(isGuest()){
-        if(guestCoins<HIRE_COST){showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);return;}
-        btn.disabled=true;const ot=btn.textContent;btn.textContent=isJa?'準備中...':'Preparing...';
-        try{await playHireContractAnimation();}catch(_){}
-        setGuestCoins(guestCoins-HIRE_COST);
-        guestBench+=1;saveGuestState();refreshGuestEmpHeader();
-        showToast(isJa?`👨‍💼 採用！休職中プール +1（計${guestBench}人）`:`👨‍💼 Hired! Bench +1 (total ${guestBench})`);
-        guestSaveHint();
-        btn.disabled=false;btn.textContent=ot;
-        return;
-      }
-      if(!currentUser){showToast('ログインが必要です');return;}
+      // 採用した社員は保存が必要なので、ここで仮アカウントを作る（お試しコインは引き継がれる）
+      if(!await ensureAccountForAction())return;
       const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
       if(balance<HIRE_COST){
         showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);

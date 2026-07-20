@@ -2103,7 +2103,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v204';
+    const IGNIS_BUILD='2026-07-20-v205';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -2419,6 +2419,14 @@
         ||document.getElementById('gacha-overlay').classList.contains('show')
         ||document.getElementById('build-modal').classList.contains('open');
     }
+    // スクラッチ／採用の演出中かどうか。演出中は定期実行の重い処理（レイアウト計測）を止めて
+    // アニメーションにCPUを譲る（演出が最後まで滑らかに再生されるように）。
+    function isHeavyOverlayOpen(){
+      try{
+        return document.getElementById('gacha-overlay')?.classList.contains('show')
+          ||document.getElementById('hire-stamp-overlay')?.classList.contains('show');
+      }catch(_){return false;}
+    }
     function refreshCityBgm(){
       if(IgnisAudio.muted)return;
       if(isXRewardsOverlayOpen())IgnisAudio.playRetroBgm().catch(()=>{});
@@ -2467,9 +2475,18 @@
     // ===== 仮アカウント（ゲスト）の「3時間以内に登録」バナー＋カウントダウン =====
     let _guestBannerTimer=null;
     function hideGuestExpiryBanner(){const el=document.getElementById('guest-banner');if(el)el.classList.remove('show');if(_guestBannerTimer){clearInterval(_guestBannerTimer);_guestBannerTimer=null;}}
+    // 失うもの（自分の土地・ビル）がある時だけ警告する。
+    // 仮アカウントは初回タップで先に作られるので、何も持っていない段階で「消えます」と出すと紛らわしい。
+    function guestHasSomethingToLose(){
+      if(!currentUser)return false;
+      try{
+        if(buildings.some(b=>b.ownerId===currentUser.id))return true;
+        return Object.values(landMap).some(l=>l&&l.owner_id===currentUser.id);
+      }catch(_){return false;}
+    }
     function updateGuestExpiryBanner(){
       const el=document.getElementById('guest-banner');if(!el)return;
-      if(!currentUser||!currentUser.isGuest){hideGuestExpiryBanner();return;}
+      if(!currentUser||!currentUser.isGuest||!guestHasSomethingToLose()){hideGuestExpiryBanner();return;}
       el.classList.add('show');
       const tick=()=>{
         if(!currentUser||!currentUser.isGuest){hideGuestExpiryBanner();return;}
@@ -2600,7 +2617,9 @@
           try{updateBuildingCount();}catch(_){} // 所有ビル数を0に戻す
           try{hideGuestExpiryBanner();}catch(_){}
           try{enforceAuthGate();}catch(_){} // フォールバックのローカルゲスト表示
-          try{ensureAnonSession();}catch(_){} // ログアウト後は新しい仮アカウント（ゲスト）で遊べるように
+          // ログアウト後も同じ方針：即作らず、先回り作成の経路に任せる（操作済みの人なら裏で用意される）
+          _hasRealSession=false;_sessionChecked=true;
+          try{maybePrepareGuestAccount();}catch(_){}
         }
       });
     }
@@ -4820,12 +4839,33 @@
       if(!db)return;
       try{
         const{data:{session},error}=await withTimeout(db.auth.getSession(),8000,'getSession');
-        if(!error&&session?.user){await onLoginSuccess(session.user,null,null,{restoring:true});return;}
-        // ページを開いただけでは仮アカウントを作らない（ボットや素通りの訪問者でアカウントが増え、
-        // 1人が X/Instagram/Chrome から開くだけで3件できてしまうため）。
-        // 実際に保存が必要な操作をした瞬間に ensureAccountForAction() が作る。それまではローカルのお試しモード。
+        if(!error&&session?.user){_hasRealSession=true;_sessionChecked=true;await onLoginSuccess(session.user,null,null,{restoring:true});return;}
+        // ページを開いただけでは作らない（ボット・素通りでアカウントが増えるため）。
+        // ただし「実際に画面を触った人」には、この時点で裏で仮アカウントを用意しておく＝初回操作の待ちをなくす。
+        _sessionChecked=true;
+        maybePrepareGuestAccount();
       }catch(e){console.warn('[IGNIS] restoreSession',e);}
     }
+    // ===== 仮アカウントの先回り作成 =====
+    // 「最初に画面を触った瞬間」に裏で作っておく。ユーザーはカメラを動かすなどで必ず早い段階で触るので、
+    // スクラッチ等を押す頃には作成済み＝待ち時間ゼロ。触らないボット/クローラーでは作られない。
+    let _userInteracted=false,_sessionChecked=false,_hasRealSession=false;
+    function maybePrepareGuestAccount(){
+      if(!_userInteracted||!_sessionChecked||_hasRealSession||currentUser)return;
+      ensureAnonSession().catch(()=>{});
+    }
+    (function bindGuestAccountPrep(){
+      const onFirst=()=>{
+        _userInteracted=true;
+        maybePrepareGuestAccount(); // セッション確認前に触られた場合は restoreSession 側から呼ばれる
+        document.removeEventListener('pointerdown',onFirst,true);
+        document.removeEventListener('touchstart',onFirst,true);
+        document.removeEventListener('keydown',onFirst,true);
+      };
+      document.addEventListener('pointerdown',onFirst,true);
+      document.addEventListener('touchstart',onFirst,true);
+      document.addEventListener('keydown',onFirst,true);
+    })();
     // 匿名（ゲスト）サインイン：本物の一時アカウントを取得し、既存のDBフローをそのまま使えるようにする。
     // trigger により users 行（is_guest=true・200コイン）が作られる。3時間で未登録なら自動削除。
     let _anonSignInPromise=null;
@@ -5369,6 +5409,7 @@
         }
         refreshTile(key);
         try{applySubscriberLamps();}catch(_){} // 会員なら新しい屋上に赤ランプを即点灯（再読込不要）
+        try{updateGuestExpiryBanner();}catch(_){} // ビルを建てた＝失うものができたので3時間の案内を出す
         try{drawMinimap();}catch(_){}
         loadInventoryCache().catch(()=>{}); // キャッシュを最新化
         closePlaceModal();
@@ -5468,6 +5509,7 @@
         landMap[selectedLandKey]={owner_id:currentUser.id,owner_display:xName,tile:null};
         landMap[selectedLandKey].tile=drawOwnedTile(gx,gz,selectedLandKey,currentUser.id);
         await completeTask('get_land');
+        try{updateGuestExpiryBanner();}catch(_){} // 土地を持った＝失うものができたので3時間の案内を出す
         showToast(`🏡 土地を取得！（-${price}コイン）`);openLandPanel(gx,gz);
       }catch(e){
         console.warn('land buy error:',e.message);
@@ -5503,27 +5545,35 @@
       await IgnisAudio.ensure();
       IgnisAudio.playGachaClick();
       const btn=document.getElementById('gacha-spin-btn');
-      const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
-      const balance=ud?ud.coin_column||0:0;
       const isJa=currentLang==='ja';
+      // 残高は画面の表示値で判定する（消費はどのみちクライアント側で計算しているので、
+      // ここで毎回DBに問い合わせると演出開始が1往復ぶん遅れるだけになる）
+      const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
       if(balance<GACHA_COST){showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);return;}
       btn.disabled=true;btn.textContent=isJa?'抽選中...':'Spinning...';
-      const newCoins=balance-GACHA_COST;
-      await db.from('users').update({coin_column:newCoins}).eq('id',currentUser.id);
-      document.getElementById('coin-count').textContent=newCoins;
-      await recordCoin(-GACHA_COST,'gacha_spin');
+      const newCoins=Math.max(0,balance-GACHA_COST);
       const result=rollGacha();gachaState.result=result;
-      // 獲得したビルを「未設置の在庫」に保存（土地の「設置」から後で配置）
-      try{
-        const{error:invErr}=await db.from('building_inventory').insert({
-          user_id:currentUser.id,prism:normalizePrism(result.prism),floors:result.floors,star:result.star
-        });
-        if(invErr)throw invErr;
-        loadInventoryCache().catch(()=>{}); // 在庫キャッシュを最新化（設置モーダルが即最新表示）
-      }catch(e){console.warn('[IGNIS] inventory insert',e.message);showToast(isJa?'⚠️ 在庫保存に失敗しました（管理者に連絡）':'⚠️ Failed to save to inventory');}
+      // ★演出をすぐ開始する。DB書き込み（消費・履歴・在庫）は演出と並行して裏で走らせる。
+      //   以前は4回の通信を直列で待ってから演出に入っていたため、スマホで1〜2秒固まっていた。
+      document.getElementById('coin-count').textContent=newCoins;
       closeGachaModal(true);
       playGachaAnimation(result);
       btn.disabled=false;btn.textContent=currentLang==='ja'?'📖 スクラッチする':'📖 Scratch';
+      (async()=>{
+        try{
+          // 演出と並行して、サーバーの実残高を基準に消費し直す（表示値が古くても正しい値に補正される）
+          const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
+          const finalCoins=Math.max(0,((ud&&ud.coin_column)||0)-GACHA_COST);
+          await db.from('users').update({coin_column:finalCoins}).eq('id',currentUser.id);
+          document.getElementById('coin-count').textContent=finalCoins;
+          recordCoin(-GACHA_COST,'gacha_spin').catch(()=>{});
+          const{error:invErr}=await db.from('building_inventory').insert({
+            user_id:currentUser.id,prism:normalizePrism(result.prism),floors:result.floors,star:result.star
+          });
+          if(invErr)throw invErr;
+          loadInventoryCache().catch(()=>{}); // 在庫キャッシュを最新化（設置モーダルが即最新表示）
+        }catch(e){console.warn('[IGNIS] gacha save',e.message);showToast(isJa?'⚠️ 在庫保存に失敗しました（管理者に連絡）':'⚠️ Failed to save to inventory');}
+      })();
     }
     async function playGachaAnimation(result){
       const isJa=currentLang==='ja';
@@ -5560,6 +5610,9 @@
       applyGameI18n();
       bookPhase.style.display='flex';
       overlay.classList.add('show');
+      // 演出中は3D都市の描画を止める（裏で街を全力描画したままだとスクラッチ演出がカクつき、
+      // 最後まで再生されないことがある）。閉じるときに再開する。
+      try{if(typeof setScenePaused==='function')setScenePaused(true);}catch(_){}
       IgnisAudio.playBgmTrack('opening').catch(()=>{});
       await sleep(750);
       try{IgnisAudio.setSfxFocus(true);}catch(_){} // 本を開く瞬間からBGMを下げSFXを上げる
@@ -5617,11 +5670,13 @@
     function onGachaResultClose(){
       resetGachaResultScreen();
       document.getElementById('gacha-overlay').classList.remove('show');
+      try{if(typeof setScenePaused==='function')setScenePaused(false);}catch(_){} // 3D描画を再開
       openBuildModal();
     }
     function onGachaResultBackToCity(){
       resetGachaResultScreen();
       document.getElementById('gacha-overlay').classList.remove('show');
+      try{if(typeof setScenePaused==='function')setScenePaused(false);}catch(_){} // 3D描画を再開
       gachaState={result:null,isRebuild:false,landKey:selectedLandKey};
       refreshCityBgm();
     }
@@ -6624,6 +6679,7 @@
         overlay.classList.remove('done');
         overlay.classList.add('show');
         overlay.setAttribute('aria-hidden','false');
+        try{if(typeof setScenePaused==='function')setScenePaused(true);}catch(_){} // 採用演出中も3Dを止める
         try{IgnisAudio.setSfxFocus(true);}catch(_){} // 印鑑画面：BGMを下げSFX（サイン・印鑑音）を上げる
         let committed=false;
         const commit=()=>{
@@ -6655,6 +6711,7 @@
               if(seal)seal.classList.remove('stamped');
               if(signature)signature.classList.remove('writing','done');
               try{IgnisAudio.setSfxFocus(false);}catch(_){} // 演出終了：音量を戻す
+              try{if(typeof setScenePaused==='function')setScenePaused(false);}catch(_){} // 3D描画を再開
               resolve();
             },420);
           },closeDelay);
@@ -8964,7 +9021,7 @@
         box.classList.toggle('can-scroll',more);
       }
       targets.forEach(t=>{const b=t.box();if(b)b.addEventListener('scroll',()=>upd(t),{passive:true});});
-      setInterval(()=>{targets.forEach(t=>{if(t.open())upd(t);});},700);
+      setInterval(()=>{if(isHeavyOverlayOpen())return;targets.forEach(t=>{if(t.open())upd(t);});},700);
       // 言語切替で矢印の文言も追従
       window.__ignisUpdateScrollCueText=function(){
         const isJa=currentLang==='ja';
@@ -9005,7 +9062,7 @@
       inner.style.transformOrigin='top left';
       inner.style.transform=sc<1?`scale(${sc})`:'';
     }
-    setInterval(layoutAdSlot,800);
+    setInterval(()=>{if(isHeavyOverlayOpen())return;layoutAdSlot();},800);
     window.addEventListener('resize',layoutAdSlot);
     setTimeout(layoutAdSlot,300);
     // 自動アップデートはスクリプト冒頭（IGNIS_BUILD直後）へ前倒し済み。

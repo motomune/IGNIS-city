@@ -2103,7 +2103,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v205';
+    const IGNIS_BUILD='2026-07-20-v206';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3179,6 +3179,8 @@
     }
     const LAND_COST=100;
     const GACHA_COST=50;
+    // コイン消費の保存を直列化するためのチェーン（同時実行だと「読んでから書く」が競合して二重取りになる）
+    let _coinWriteChain=Promise.resolve();
     const HIRE_COST=25;
     const STAFF_EXTEND_COST_PER=5;
     const SCRATCH_REVEAL_BASE=0.38;
@@ -5559,7 +5561,10 @@
       closeGachaModal(true);
       playGachaAnimation(result);
       btn.disabled=false;btn.textContent=currentLang==='ja'?'📖 スクラッチする':'📖 Scratch';
-      (async()=>{
+      // 保存は「直列」で実行する。連続スクラッチ（ダブルタップ等）で複数の保存が同時に走ると、
+      // どれも同じ残高を読んでから同じ値を書き、ビルは増えるのにコインが1回分しか引かれない。
+      // チェーンにつなぐことで、次の残高読み取りは必ず前の書き込みが終わってから行われる。
+      _coinWriteChain=_coinWriteChain.then(async()=>{
         try{
           // 演出と並行して、サーバーの実残高を基準に消費し直す（表示値が古くても正しい値に補正される）
           const{data:ud}=await db.from('users').select('coin_column').eq('id',currentUser.id).single();
@@ -5573,7 +5578,7 @@
           if(invErr)throw invErr;
           loadInventoryCache().catch(()=>{}); // 在庫キャッシュを最新化（設置モーダルが即最新表示）
         }catch(e){console.warn('[IGNIS] gacha save',e.message);showToast(isJa?'⚠️ 在庫保存に失敗しました（管理者に連絡）':'⚠️ Failed to save to inventory');}
-      })();
+      }).catch(()=>{}); // 1回失敗しても以降の保存は続ける
     }
     async function playGachaAnimation(result){
       const isJa=currentLang==='ja';

@@ -1477,13 +1477,28 @@
     /* ロード画面の創設者メッセージ：日本語以外のブラウザ/?lang=en では英語表示（グローバル来訪者の第一印象用。ゲーム本体の言語状態には触れない） */
     (function(){
       try{
+        // 判定の優先順位はゲーム本体(initAutoLang)と揃える：手動切替の記憶 > ?lang= > 端末の言語
+        var saved=null;try{saved=localStorage.getItem('ignis_game_lang');}catch(_){}
         var q=new URLSearchParams(location.search).get('lang');
-        var en = q==='en' || (q!=='ja' && !/^ja/i.test(navigator.language||navigator.userLanguage||''));
+        var en=(saved==='en'||saved==='ja')?(saved==='en')
+          :(q==='en'||(q!=='ja'&&!/^ja/i.test(navigator.language||navigator.userLanguage||'')));
         if(!en)return;
         var f=document.getElementById('loading-founder');
         if(f)f.textContent='When I was three, someone set fire to our home. I became a firefighter, and after enduring relentless harassment, an incident during my duty was reported in the news, and I left that path. In the business I turned to next, a man I trusted as a best friend turned out to be a con artist; I lost a great deal of money and the trust of many people. And yet — because a few who never left my side, and my wife, held me up, I am still here. "You are not alone." Someone once made me believe that. Now it is my turn to help carry you forward. That is why I built this game.';
         var h=document.getElementById('loading-tap-hint');
         if(h)h.textContent='Tap the screen to start';
+        // 回転プロンプト（縦向きスマホで最初に出る画面）も英語に。
+        // ここはゲーム本体の言語判定(initAutoLang)より前に表示されるため、この早期スクリプトで差し替える。
+        var q1=document.querySelector('#rotate-prompt .rp-title');
+        if(q1)q1.textContent='Landscape is recommended';
+        var q2=document.querySelector('#rotate-prompt .rp-en');
+        if(q2)q2.style.display='none';           // 見出しが英語になったので重複行は隠す
+        var q3=document.querySelector('#rotate-prompt .rp-sub');
+        if(q3)q3.textContent='Turning your phone sideways makes it easier to play';
+        var q4=document.querySelector('#rotate-prompt .rp-play');
+        if(q4)q4.textContent='▶ Play in portrait';
+        var q5=document.querySelector('#rotate-prompt .rp-note');
+        if(q5)q5.textContent='Your choice is remembered';
       }catch(_){}
     })();
   </script>
@@ -2103,7 +2118,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v206';
+    const IGNIS_BUILD='2026-07-20-v207';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

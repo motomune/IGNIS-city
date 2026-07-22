@@ -2134,7 +2134,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v208';
+    const IGNIS_BUILD='2026-07-20-v209';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5572,18 +5572,25 @@
       if(!skipBgmRefresh)refreshCityBgm();
     }
     async function handleGachaSpin(){
-      const isJa0=currentLang==='ja';
-      // 獲得ビルは在庫に残す＝保存が必要なので、ここで仮アカウントを作る（お試しコインは引き継がれる）
-      if(!await ensureAccountForAction())return;
+      const isJa=currentLang==='ja';
+      const btn=document.getElementById('gacha-spin-btn');
+      if(btn&&btn.disabled)return; // 二重押下防止
+      const spinLabel=isJa?'📖 スクラッチする':'📖 Scratch';
+      const notEnough=()=>showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);
+      // ① まず残高を確認。不足なら「押した瞬間に」メッセージを出す（アカウント作成の待ちを挟まない
+      //    ＝「押しても無反応・メッセージも出ない」状態を防ぐ）。
+      let balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      if(balance<GACHA_COST){notEnough();return;}
+      // ② 押した瞬間のフィードバック（アカウント作成に時間がかかっても「死んでいない」ことが分かる）
+      if(btn){btn.disabled=true;btn.textContent=isJa?'準備中...':'Preparing...';}
+      // ③ 保存が要るのでアカウントを用意（失敗したらボタンを戻す）
+      if(!await ensureAccountForAction()){if(btn){btn.disabled=false;btn.textContent=spinLabel;}return;}
       await IgnisAudio.ensure();
       IgnisAudio.playGachaClick();
-      const btn=document.getElementById('gacha-spin-btn');
-      const isJa=currentLang==='ja';
-      // 残高は画面の表示値で判定する（消費はどのみちクライアント側で計算しているので、
-      // ここで毎回DBに問い合わせると演出開始が1往復ぶん遅れるだけになる）
-      const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
-      if(balance<GACHA_COST){showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);return;}
-      btn.disabled=true;btn.textContent=isJa?'抽選中...':'Spinning...';
+      // ④ アカウント作成で残高が変わっている場合があるので取り直して再確認
+      balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      if(balance<GACHA_COST){notEnough();if(btn){btn.disabled=false;btn.textContent=spinLabel;}return;}
+      if(btn)btn.textContent=isJa?'抽選中...':'Spinning...';
       const newCoins=Math.max(0,balance-GACHA_COST);
       const result=rollGacha();gachaState.result=result;
       // ★演出をすぐ開始する。DB書き込み（消費・履歴・在庫）は演出と並行して裏で走らせる。
@@ -6708,8 +6715,11 @@
         if(sign)sign.textContent=isJa?'画面をタップして押印':'Tap to stamp';
         if(seal){seal.textContent=isJa?'採用':'HIRED';seal.classList.remove('stamped');}
         if(signature){
+          // Xアカウント名は任意になったので、無い場合でも署名が空にならないようにする
+          //（空だと下の commit でサイン演出がスキップされていた）。表示名→なければ汎用名。
           const xName=(currentUser&&currentUser.xUsername)||'';
-          signature.textContent=xName?('@'+xName):'';
+          const sigName=xName?('@'+xName):((currentUser&&currentUser.username)||(isJa?'新しい仲間':'New hire'));
+          signature.textContent=sigName;
           signature.classList.remove('writing','done');
         }
         overlay.classList.remove('done');
@@ -6759,16 +6769,18 @@
       const btn=document.getElementById('gacha-hire-btn');
       if(btn.disabled)return;
       const isJa=currentLang==='ja';
-      // 採用した社員は保存が必要なので、ここで仮アカウントを作る（お試しコインは引き継がれる）
-      if(!await ensureAccountForAction())return;
-      const balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
-      if(balance<HIRE_COST){
-        showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);
-        return;
-      }
-      btn.disabled=true;
+      const notEnough=()=>showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);
+      // ① まず残高を確認。不足なら押した瞬間にメッセージ（アカウント作成の待ちを挟まない）
+      let balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      if(balance<HIRE_COST){notEnough();return;}
+      // ② 押した瞬間のフィードバック
       const originalText=btn.textContent;
-      btn.textContent=isJa?'準備中...':'Preparing...';
+      btn.disabled=true;btn.textContent=isJa?'準備中...':'Preparing...';
+      // ③ 保存が要るのでアカウントを用意（失敗したらボタンを戻す）
+      if(!await ensureAccountForAction()){btn.disabled=false;btn.textContent=originalText;return;}
+      // ④ アカウント作成で残高が変わっている場合があるので再確認
+      balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      if(balance<HIRE_COST){notEnough();btn.disabled=false;btn.textContent=originalText;return;}
       try{
         await playHireContractAnimation();
         btn.textContent=isJa?'採用中...':'Hiring...';

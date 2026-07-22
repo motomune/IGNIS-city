@@ -239,7 +239,7 @@
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
       background: rgba(255,106,0,0.9); color: #fff; padding: 10px 24px;
       border-radius: 20px; font-size: 14px; font-weight: 700; opacity: 0;
-      transition: opacity 0.3s; z-index: 25; pointer-events: none; white-space: nowrap;
+      transition: opacity 0.3s; z-index: 100000; pointer-events: none; white-space: nowrap;
     }
     #fire-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 201; display: none; }
     #grid-legend { display: none; }
@@ -538,6 +538,9 @@
     .star1{color:#94a3b8;}.star2{color:#22c55e;}.star3{color:#3b82f6;}.star4{color:#f59e0b;}.star5{color:#ee0979;}
     #gacha-cost-info { font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:18px; }
     #gacha-cost-info span { color:#a855f7;font-weight:700; }
+    .bal-info { color:rgba(255,255,255,0.6); }
+    .bal-info.bal-short { color:#ff5a5a !important;font-weight:800; }
+    #gacha-cost-info .bal-info span, #hire-info .bal-info span { color:inherit; }
     #gacha-spin-btn { width:100%;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;padding:14px;border-radius:12px;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 4px 30px rgba(168,85,247,0.4);transition:opacity 0.2s; }
     #gacha-spin-btn:hover { opacity: 0.85; }
     #gacha-spin-btn:disabled { opacity:0.4;cursor:not-allowed; }
@@ -2134,7 +2137,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v209';
+    const IGNIS_BUILD='2026-07-23-v210';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3212,6 +3215,16 @@
     const GACHA_COST=50;
     // コイン消費の保存を直列化するためのチェーン（同時実行だと「読んでから書く」が競合して二重取りになる）
     let _coinWriteChain=Promise.resolve();
+    // スクラッチ／採用画面の「消費コイン」欄に、現在の所持コインも併記する（不足なら赤で強調）。
+    function refreshGachaCostInfo(){
+      const isJa=currentLang==='ja';
+      const bal=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
+      const balHtml=cost=>`<span class="bal-info${bal<cost?' bal-short':''}">`+(isJa?`所持 ${bal}`:`have ${bal}`)+`</span>`;
+      const costEl=document.getElementById('gacha-cost-info');
+      if(costEl)costEl.innerHTML=(isJa?`消費 <span>${GACHA_COST}</span>コイン`:`Cost <span>${GACHA_COST}</span>`)+' · '+balHtml(GACHA_COST);
+      const hireInfo=document.getElementById('hire-info');
+      if(hireInfo)hireInfo.innerHTML=(isJa?`採用 <span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire <span>${HIRE_COST}</span> → +1 to bench`)+' · '+balHtml(HIRE_COST);
+    }
     const HIRE_COST=25;
     const STAFF_EXTEND_COST_PER=5;
     const SCRATCH_REVEAL_BASE=0.38;
@@ -4034,7 +4047,7 @@
       document.querySelectorAll('[data-i18n="emp-unit"],[data-i18n="emp-unit2"]').forEach(el=>el.textContent=isJa?'人':'');
       const orLabel=document.getElementById('gacha-or-label');if(orLabel)orLabel.textContent=isJa?'または':'OR';
       const hireBtn=document.getElementById('gacha-hire-btn');if(hireBtn)hireBtn.textContent=isJa?`👨‍💼 会社員を採用（${HIRE_COST}コイン）`:`👨‍💼 Hire Office Worker (${HIRE_COST} coins)`;
-      const hireInfo=document.getElementById('hire-info');if(hireInfo)hireInfo.innerHTML=isJa?`会社員を採用：<span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire office worker: <span>${HIRE_COST}</span> coins → +1 to bench pool`;
+      refreshGachaCostInfo();
       document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;});
       document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
       // 法務リンク（利用規約・プライバシー・特商法）
@@ -4133,14 +4146,11 @@
       // en 省略時は ja をそのまま使う（旧コードは EN 時に undefined→空文字でテキストが消えていた）
       const set=(id,ja,en)=>{const el=document.getElementById(id);if(el)el.textContent=(en===undefined?ja:(isJa?ja:en));};
       set('gacha-title','📖 ビルスクラッチ','📖 Building Scratch');
-      const costEl=document.getElementById('gacha-cost-info');
-      if(costEl)costEl.innerHTML=isJa?`消費コイン：<span>${GACHA_COST}</span>コイン`:`Cost: <span>${GACHA_COST}</span> coins`;
       set('gacha-spin-btn','📖 スクラッチする','📖 Scratch');
       const prismNote=document.getElementById('gacha-prism-note');
       if(prismNote)prismNote.innerHTML=isJa?'当たるビルは <b>円柱・三角柱・正四角柱</b>（最大50階）':'Prize: <b>cylinder / triangular / square prism</b> (max 50F)';
       set('gacha-or-label','または','OR');
-      const hireInfo=document.getElementById('hire-info');
-      if(hireInfo)hireInfo.innerHTML=isJa?`会社員を採用：<span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire: <span>${HIRE_COST}</span> coins → +1 to bench`;
+      refreshGachaCostInfo(); // 消費コイン＋所持コインの併記（スクラッチ・採用の両方）
       set('gacha-hire-btn',`👨‍💼 会社員を採用（${HIRE_COST}コイン）`,`👨‍💼 Hire Office Worker (${HIRE_COST} coins)`);
       const bookRatesTitle=document.getElementById('book-rates-title');
       if(document.getElementById('gacha-overlay')?.classList.contains('show'))renderBookRates(isJa);
@@ -6795,6 +6805,7 @@
           return;
         }
         document.getElementById('coin-count').textContent=data.coins_remaining;
+        try{refreshGachaCostInfo();}catch(_){} // 採用後、開いたままの画面の所持コイン表示を更新
         await recordCoin(-HIRE_COST,'hire_employee');
         await completeTask('hire');
         await refreshEmployeeHeader();

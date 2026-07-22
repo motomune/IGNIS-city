@@ -3,8 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0f'/%3E%3Cpath fill='%23ff6a00' d='M16 5c-3 9-7 11-7 17a7 7 0 0 0 14 0c0-6-4-8-7-17z'/%3E%3C/svg%3E">
+  <!-- タブアイコン（炎のビル・ロゴ） -->
+  <link rel="icon" type="image/png" href="favicon.png?v=2">
+  <link rel="apple-touch-icon" href="favicon.png?v=2">
   <title>IGNIS CITY</title>
+  <!-- SNS共有カード（X / Discord / LINE 等でリンクを貼ると表示される） -->
+  <meta name="description" content="A quiet 3D city where each building was written by someone about what they survived. Free browser game — no download, no signup to look around.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="IGNIS CITY">
+  <meta property="og:title" content="IGNIS CITY — every building is a real person's story">
+  <meta property="og:description" content="A quiet 3D city where each building was written by someone about what they survived. Fly around, read their stories, light a candle. Free, in your browser — no download, no signup to look around.">
+  <meta property="og:image" content="https://motomune.github.io/IGNIS-city/og.jpg?v=2">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://motomune.github.io/IGNIS-city/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="IGNIS CITY — every building is a real person's story">
+  <meta name="twitter:description" content="A quiet 3D city where each building was written by someone about what they survived. Free browser game, no download.">
+  <meta name="twitter:image" content="https://motomune.github.io/IGNIS-city/og.jpg?v=2">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0f; color: #fff; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; }
@@ -2118,7 +2134,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-20-v207';
+    const IGNIS_BUILD='2026-07-20-v208';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

@@ -2137,7 +2137,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v211';
+    const IGNIS_BUILD='2026-07-23-v212';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5289,7 +5289,22 @@
       const isJa=currentLang==='ja';
       if(land){
         const isMe=currentUser&&land.owner_id===currentUser.id;
-        ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">${escapeAttr(land.owner_display||'')}</span>`;
+        const ownerName=land.owner_display||'';
+        if(isMe){
+          ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">${escapeAttr(ownerName)}</span>`;
+        }else if(ownerName){
+          const xHandle=ownerName.replace(/^@/,'');
+          const hasX=ownerName.startsWith('@');
+          // 公開条件: (サブスク/創設者/無課金1位) かつ 本人が表示ON（ビル詳細と同じルール）
+          const reveal=hasX&&isNameRevealable(land.owner_id)&&(userShowName.get(land.owner_id)!==false);
+          if(reveal){
+            ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">@${escapeAttr(xHandle)}</span>`;
+          }else{
+            ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name" style="letter-spacing:2px;color:rgba(255,255,255,0.4);" title="${isJa?'非公開（課金 or ランキング上位で公開）':'Hidden (subscriber or top-ranked to reveal)'}">${maskName(xHandle)}</span>`;
+          }
+        }else{
+          ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">${escapeAttr(ownerName)}</span>`;
+        }
         if(building){
           const ci=getColorByEmployees(building.employees||0);
           buildingEl.textContent=`${building.totalFloors}${isJa?'階':'F'} ｜ ${isJa?'従業員':'Emp'} ${building.employees||0}${isJa?'人':''} ${isJa?ci.label:ci.labelEn}`;

@@ -603,7 +603,7 @@
     .auth-tab { flex:1;padding:8px;text-align:center;font-size:13px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;border-radius:7px;transition:all 0.2s; }
     .auth-tab.active { background:linear-gradient(135deg,#ff6a00,#ee0979);color:#fff; }
     .auth-input-wrap { position:relative;margin-bottom:10px; }
-    .auth-input { width:100%;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;outline:none;transition:border-color 0.25s,box-shadow 0.25s; }
+    .auth-input { width:100%;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:#fff;font-size:16px;outline:none;transition:border-color 0.25s,box-shadow 0.25s; }
     .auth-input::placeholder { color: rgba(255,255,255,0.25); }
     .auth-input:focus { border-color:rgba(255,106,0,0.7)!important;box-shadow:0 0 12px rgba(255,106,0,0.2)!important;animation:none!important; }
     .auth-input.blink { animation: inputBlink 1.1s ease-in-out infinite; }
@@ -614,7 +614,7 @@
     .auth-input-prefix { display:flex;align-items:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;margin-bottom:10px;transition:border-color 0.25s,box-shadow 0.25s; }
     .auth-input-prefix:focus-within { border-color:rgba(255,106,0,0.7);box-shadow:0 0 12px rgba(255,106,0,0.2); }
     .auth-prefix-at { padding:12px 0 12px 16px;color:#1d9bf0;font-weight:900;font-size:14px; }
-    .auth-input-prefix input { flex:1;background:transparent;border:none;padding:12px 16px 12px 4px;color:#fff;font-size:14px;outline:none; }
+    .auth-input-prefix input { flex:1;background:transparent;border:none;padding:12px 16px 12px 4px;color:#fff;font-size:16px;outline:none; }
     .auth-input-prefix input::placeholder { color: rgba(255,255,255,0.25); }
     #pw-checks { display:none;background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 16px;margin-bottom:12px;flex-direction:column;gap:7px; }
     #pw-checks.visible { display: flex; }
@@ -1605,8 +1605,6 @@
     </div>
     <div id="task-list"></div>
     <div id="task-utility-actions">
-      <button id="invite-btn" class="task-utility-btn" type="button" onclick="handleInviteGame()">🎮 ゲーム招待</button>
-      <div id="invite-stats" aria-live="polite"></div>
       <button id="help-btn" class="task-utility-btn" type="button" onclick="openHelpContact()">❓ ヘルプ / お問い合わせ</button>
       <button id="notice-btn" class="task-utility-btn" type="button" onclick="toggleNoticePanel()">🔔 通知<span id="notice-badge">0</span></button>
     </div>
@@ -1617,6 +1615,8 @@
     <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
+    <button id="invite-btn" class="task-utility-btn" type="button" onclick="handleInviteGame()">🎮 ゲーム招待</button>
+    <div id="invite-stats" aria-live="polite"></div>
     <button id="coingame-btn" type="button" onclick="openCoinGame()" title="コインを稼ぐ">💰 <span id="coingame-label">コインを稼ぐ</span></button>
     <button id="minimap-show-btn" type="button" onclick="toggleMinimap()" title="地図を表示"><span aria-hidden="true">🗺</span> <span id="minimap-show-label">地図</span></button>
     <div id="minimap-inner">
@@ -2137,7 +2137,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v210';
+    const IGNIS_BUILD='2026-07-23-v211';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5586,7 +5586,7 @@
       const btn=document.getElementById('gacha-spin-btn');
       if(btn&&btn.disabled)return; // 二重押下防止
       const spinLabel=isJa?'📖 スクラッチする':'📖 Scratch';
-      const notEnough=()=>showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);
+      const notEnough=()=>showToast(isJa?`⚠️ コインが不足しています（${balance}/${GACHA_COST}）`:`⚠️ Not enough coins (${balance}/${GACHA_COST})`);
       // ① まず残高を確認。不足なら「押した瞬間に」メッセージを出す（アカウント作成の待ちを挟まない
       //    ＝「押しても無反応・メッセージも出ない」状態を防ぐ）。
       let balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
@@ -5738,7 +5738,7 @@
       // ゲストはお試しコイン、ログイン中はDB残高で判定（実際の消費は handleGachaSpin が行う）
       const balance=isGuest()?guestCoins:(parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0);
       if(balance<GACHA_COST){
-        showToast(isJa?`コインが足りません（必要：${GACHA_COST}）`:`Not enough coins (need ${GACHA_COST})`);
+        showToast(isJa?`⚠️ コインが不足しています（${balance}/${GACHA_COST}）`:`⚠️ Not enough coins (${balance}/${GACHA_COST})`);
         return;
       }
       const retryBtn=document.getElementById('book-result-retry');

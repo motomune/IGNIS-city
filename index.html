@@ -2137,7 +2137,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v213';
+    const IGNIS_BUILD='2026-07-23-v214';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5305,7 +5305,7 @@
           if(reveal){
             ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">@${escapeAttr(xHandle)}</span>`;
           }else{
-            ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name" style="letter-spacing:2px;color:rgba(255,255,255,0.4);" title="${isJa?'非公開（課金 or ランキング上位で公開）':'Hidden (subscriber or top-ranked to reveal)'}">${maskName(xHandle)}</span>`;
+            ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name" style="letter-spacing:2px;color:rgba(255,255,255,0.4);" title="${isJa?'非公開（サブスク会員以上で公開）':'Hidden (subscribers only)'}">${maskName(xHandle)}</span>`;
           }
         }else{
           ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">${escapeAttr(ownerName)}</span>`;
@@ -7258,7 +7258,7 @@
           if(reveal){
             ownerEl.innerHTML=`👤 <a class="owner-x-link" href="https://x.com/${encodeURIComponent(xHandle)}" target="_blank" rel="noopener">@${escapeAttr(xHandle)}</a>`;
           }else{
-            ownerEl.innerHTML=`👤 <span class="owner-name" style="letter-spacing:2px;color:rgba(255,255,255,0.4);" title="${isJa?'非公開（課金 or ランキング上位で公開）':'Hidden (subscriber or top-ranked to reveal)'}">${maskName(xHandle)}</span>`;
+            ownerEl.innerHTML=`👤 <span class="owner-name" style="letter-spacing:2px;color:rgba(255,255,255,0.4);" title="${isJa?'非公開（サブスク会員以上で公開）':'Hidden (subscribers only)'}">${maskName(xHandle)}</span>`;
           }
         }
         else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
@@ -8639,7 +8639,9 @@
       });
     }
     function isNameRevealable(uid){
-      return subscriberIds.has(uid)||uid===RANK_OWNER_ID||revealedFreeUserIds.has(uid);
+      // ビル／土地の所有者名は「サブスク会員以上（＋創設者）」のみ公開。
+      // 無課金はランキングでは名前が出る（maskRankingDisplayName）が、ビル単位では公開しない。
+      return subscriberIds.has(uid)||uid===RANK_OWNER_ID;
     }
     async function ensureRevealData(){
       if(rankingList){computeRevealSets();return;}

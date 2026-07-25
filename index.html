@@ -826,10 +826,11 @@
     /* ランキング */
     #ranking-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
     #ranking-overlay.open { display: flex; }
-    #ranking-header { display:flex;align-items:center;gap:16px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
+    #ranking-header { display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
+    .ranking-header-top { display:flex;align-items:center;justify-content:space-between;gap:12px; }
     #ranking-title { font-size:18px;font-weight:900;letter-spacing:0.1em;background:linear-gradient(135deg,#f59e0b,#ee0979);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0; }
-      #ranking-tabs { display:flex;gap:6px;flex:1;flex-wrap:wrap; }
-      .ranking-tab { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s; }
+    #ranking-tabs { display:grid;grid-template-columns:repeat(auto-fit,minmax(94px,1fr));gap:8px; }
+    .ranking-tab { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:8px 10px;border-radius:12px;font-size:11px;font-weight:700;text-align:center;white-space:nowrap;cursor:pointer;transition:all 0.2s; }
     .ranking-tab:hover { background:rgba(255,255,255,0.12);color:#fff; }
     .ranking-tab.active { background:linear-gradient(135deg,#f59e0b,#ee0979);border-color:transparent;color:#fff; }
     #ranking-groups { display:flex;gap:8px;margin-bottom:16px;justify-content:center; }
@@ -1882,16 +1883,18 @@
   <!-- ランキング -->
   <div id="ranking-overlay">
     <div id="ranking-header">
-      <div id="ranking-title">🏆 ランキング</div>
+      <div class="ranking-header-top">
+        <div id="ranking-title">🏆 ランキング</div>
+        <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
+      </div>
       <div id="ranking-tabs">
         <button class="ranking-tab active" id="rtab-coins" onclick="switchRankingTab('coins')">💰 コイン</button>
         <button class="ranking-tab" id="rtab-emp" onclick="switchRankingTab('emp')">👥 従業員</button>
         <button class="ranking-tab" id="rtab-floors" onclick="switchRankingTab('floors')">🏢 階数</button>
         <button class="ranking-tab" id="rtab-candles" onclick="switchRankingTab('candles')">🕯️ 蝋燭</button>
-        <button class="ranking-tab" id="rtab-lifemoney" onclick="switchRankingTab('lifemoney')">🕯️ 人生所持金</button>
+        <button class="ranking-tab" id="rtab-lifemoney" onclick="switchRankingTab('lifemoney')">💴 人生所持金</button>
         <button class="ranking-tab" id="rtab-antcoins" onclick="switchRankingTab('antcoins')">🐜 巣コイン</button>
       </div>
-      <button id="ranking-close" onclick="closeRanking()">✕ 閉じる</button>
     </div>
     <div id="ranking-body">
       <div id="ranking-groups">
@@ -1987,7 +1990,7 @@
       </div>
       <label id="profile-agree-wrap" style="display:flex;gap:8px;align-items:flex-start;margin:12px 0 10px;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.85);cursor:pointer;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 12px;">
         <input type="checkbox" id="profile-agree-check" style="margin-top:2px;flex-shrink:0;width:18px;height:18px;">
-        <span id="profile-agree-label">上記の禁止事項（個人や事業所が特定できる表記・宣伝・勧誘など）を理解し、含めないことに同意します</span>
+        <span id="profile-agree-label">これは自分自身の体験であり、公開・サブスク会員の閲覧に同意します。また上記の禁止事項（個人や事業所が特定できる表記・宣伝・勧誘など）を含めないことにも同意します</span>
       </label>
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
@@ -2137,7 +2140,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v214';
+    const IGNIS_BUILD='2026-07-23-v215';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3987,7 +3990,7 @@
       const rtabEmp=document.getElementById('rtab-emp');if(rtabEmp)rtabEmp.textContent=isJa?'👥 従業員':'👥 Staff';
       const rtabFloors=document.getElementById('rtab-floors');if(rtabFloors)rtabFloors.textContent=isJa?'🏢 階数':'🏢 Floors';
       const rtabCandles=document.getElementById('rtab-candles');if(rtabCandles)rtabCandles.textContent=isJa?'🕯️ 蝋燭':'🕯️ Candles';
-      const rtabLife=document.getElementById('rtab-lifemoney');if(rtabLife)rtabLife.textContent=isJa?'🕯️ 人生所持金':'🕯️ Life $';
+      const rtabLife=document.getElementById('rtab-lifemoney');if(rtabLife)rtabLife.textContent=isJa?'💴 人生所持金':'💴 Life $';
       const rtabAnt=document.getElementById('rtab-antcoins');if(rtabAnt)rtabAnt.textContent=isJa?'🐜 巣コイン':'🐜 Nest Coins';
       const rgSub=document.getElementById('rgroup-sub');if(rgSub)rgSub.textContent=isJa?'💎 課金者':'💎 Subscribers';
       const rgFree=document.getElementById('rgroup-free');if(rgFree)rgFree.textContent=isJa?'🆓 無課金':'🆓 Free';
@@ -5864,7 +5867,7 @@
         profileMottoLabel:'💬 格言（ビルの壁に縦表示）',
         profileMottoHint:'💡 縦書きで壁に表示されます。できるだけ短い一言で',
         profileInputBan:'⚠️ <strong>入力禁止</strong>：SNSアカウント名・個人が特定できる内容・会社名・屋号がわかる表記・ビジネス宣伝・勧誘・募集などの案内',
-        profileAgree:'上記の禁止事項（個人や事業所が特定できる表記・宣伝・勧誘など）を理解し、含めないことに同意します',
+        profileAgree:'これは自分自身の体験であり、公開・サブスク会員の閲覧に同意します。また上記の禁止事項（個人や事業所が特定できる表記・宣伝・勧誘など）を含めないことにも同意します',
         profileS1:'① 何を失いましたか？（複数選択可）',
         profileS2:'② その後、何を得ましたか？または得ようとしてますか？（複数選択可）',
         profileS3:'③ 出来事が起きるまでの背景と経緯',
@@ -5895,7 +5898,7 @@
         profileMottoLabel:'💬 Motto (shown vertically on the building)',
         profileMottoHint:'💡 Shown vertically on the wall — keep it short',
         profileInputBan:'⚠️ <strong>Do not enter</strong>: SNS handles, identifiable personal info, identifiable company/shop names, ads, solicitation, or recruitment',
-        profileAgree:'I understand the prohibited content (anything identifying a person or business, ads, solicitation) and agree not to include it',
+        profileAgree:'This is my own experience, and I agree to it being published and viewed by subscribers. I also agree not to include the prohibited content above (anything identifying a person or business, ads, solicitation)',
         profileS1:'① What did you lose? (multi-select)',
         profileS2:'② After that, what did you gain or are trying to gain? (multi-select)',
         profileS3:'③ Background & circumstances leading up to it',
@@ -7118,8 +7121,8 @@
           if(lockedEl){
             lockedEl.style.display='block';
             lockedEl.textContent=isJa
-              ?'③〜⑥（背景・対応・結果・学び）はサブスク会員のみ閲覧できます'
-              :'Sections ③–⑥ are available to subscribers only';
+              ?'③〜⑥（背景・対応・結果・学び）は、書いた本人の同意のもとサブスク会員が閲覧できます'
+              :'Sections ③–⑥ are viewable by subscribers, with the author\'s consent';
           }
         }
       }catch(e){console.warn('loadBuildingPastDetails',e.message);}

@@ -30,18 +30,24 @@
   /* ===== 言語切替（左上固定） ===== */
   #langbtn{position:fixed;top:14px;left:14px;z-index:20;cursor:pointer;
     padding:8px 15px;border-radius:22px;font-size:12.5px;font-weight:900;letter-spacing:0.06em;color:#fff;
-    background:rgba(12,14,26,0.72);border:1px solid rgba(255,160,60,0.55);
+    background:linear-gradient(135deg,rgba(255,160,70,0.4),rgba(255,120,40,0.28));
+    border:1.5px solid rgba(255,190,110,0.75);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    box-shadow:0 3px 16px rgba(0,0,0,0.5);transition:border-color .2s,box-shadow .2s,transform .15s;}
-  #langbtn:hover{border-color:rgba(255,190,100,0.95);box-shadow:0 4px 20px rgba(255,120,30,0.35);transform:translateY(-1px);}
+    box-shadow:0 3px 14px rgba(255,120,30,0.25);transition:border-color .2s,box-shadow .2s,transform .15s,background .18s;}
+  #langbtn:hover{border-color:rgba(255,220,160,0.95);transform:translateY(-1px);
+    background:linear-gradient(135deg,rgba(255,170,80,0.6),rgba(255,130,45,0.45));
+    box-shadow:0 6px 22px rgba(255,120,30,0.45);}
   #langbtn:active{transform:scale(0.95);}
   /* ===== 音楽ボタン（右上固定） ===== */
   #musicbtn{position:fixed;top:14px;right:14px;z-index:20;cursor:pointer;
     width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;
-    background:rgba(12,14,26,0.72);border:1px solid rgba(255,160,60,0.55);color:#fff;
+    background:linear-gradient(135deg,rgba(255,160,70,0.4),rgba(255,120,40,0.28));
+    border:1.5px solid rgba(255,190,110,0.75);color:#fff;
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    box-shadow:0 3px 16px rgba(0,0,0,0.5);transition:border-color .2s,box-shadow .2s,transform .15s;}
-  #musicbtn:hover{border-color:rgba(255,190,100,0.95);box-shadow:0 4px 20px rgba(255,120,30,0.35);transform:translateY(-1px);}
+    box-shadow:0 3px 14px rgba(255,120,30,0.25);transition:border-color .2s,box-shadow .2s,transform .15s,background .18s;}
+  #musicbtn:hover{border-color:rgba(255,220,160,0.95);transform:translateY(-1px);
+    background:linear-gradient(135deg,rgba(255,170,80,0.6),rgba(255,130,45,0.45));
+    box-shadow:0 6px 22px rgba(255,120,30,0.45);}
   #musicbtn:active{transform:scale(0.92);}
   #musicbtn.on{border-color:rgba(255,200,110,0.9);box-shadow:0 0 18px rgba(255,140,40,0.5);}
   #musicbtn.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;

@@ -779,10 +779,11 @@
     /* 図鑑 */
     #zukan-overlay { display:none;position:fixed;inset:0;z-index:250;background:rgba(4,4,12,0.97);backdrop-filter:blur(20px);flex-direction:column;overflow:hidden; }
     #zukan-overlay.open { display: flex; }
-    #zukan-header { display:flex;align-items:center;gap:16px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
+    #zukan-header { display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:16px 24px;flex-shrink:0;background:linear-gradient(to bottom,rgba(0,0,0,0.5),transparent);border-bottom:1px solid rgba(255,255,255,0.07); }
+    .zukan-header-top { display:flex;align-items:center;justify-content:space-between;gap:12px; }
     #zukan-title { font-size:18px;font-weight:900;letter-spacing:0.1em;background:linear-gradient(135deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0; }
-    #zukan-tabs { display:flex;gap:8px;flex:1; }
-    .zukan-tab { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:7px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s; }
+    #zukan-tabs { display:flex;gap:10px;justify-content:center;flex-wrap:wrap; }
+    .zukan-tab { background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:8px 22px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s; }
     .zukan-tab:hover { background:rgba(255,255,255,0.12);color:#fff; }
     .zukan-tab.active { background:linear-gradient(135deg,#06b6d4,#3b82f6);border-color:transparent;color:#fff; }
     #zukan-close { background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all 0.2s; }
@@ -1340,6 +1341,7 @@
     #rules-overlay-close:hover { background:rgba(255,255,255,0.2); }
     #rules-frame { flex:1; width:100%; border:0; background:#07070d; }
     #x-rewards-btn.rail-btn { background:linear-gradient(135deg,rgba(96,210,255,0.55),rgba(91,140,255,0.55)); }
+    #xname-toggle-btn.rail-btn { background:linear-gradient(135deg,rgba(96,210,255,0.55),rgba(91,140,255,0.55)); }
     /* 右列 */
     #right-rail { position:fixed; top:max(14px,env(safe-area-inset-top,0px)); right:max(14px,env(safe-area-inset-right,0px));
       z-index:12; display:flex; flex-direction:column; gap:8px; width:100px; align-items:stretch; pointer-events:none; }
@@ -1913,13 +1915,14 @@
   <!-- 図鑑 -->
   <div id="zukan-overlay">
     <div id="zukan-header">
-      <div id="zukan-title">📖 ビル図鑑</div>
+      <div class="zukan-header-top">
+        <div id="zukan-title">📖 ビル図鑑</div>
+        <button id="zukan-close" onclick="closeZukan()">✕ 閉じる</button>
+      </div>
       <div id="zukan-tabs">
         <button class="zukan-tab active" id="ztab-owned" onclick="switchZukanTab('owned')">🏢 所有ビル</button>
-        <button class="zukan-tab" id="ztab-rarity" onclick="switchZukanTab('rarity')">⭐ レアリティ</button>
         <button class="zukan-tab" id="ztab-plushie" onclick="switchZukanTab('plushie')">🧸 ぬいぐるみ</button>
       </div>
-      <button id="zukan-close" onclick="closeZukan()">✕ 閉じる</button>
     </div>
     <div id="zukan-body">
       <div id="zukan-owned">
@@ -1930,9 +1933,6 @@
           <div style="font-size:16px;font-weight:700;color:rgba(255,255,255,0.5);">まだビルがありません</div>
           <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px;">土地を取得してスクラッチでビルを建てよう！</div>
         </div>
-      </div>
-      <div id="zukan-rarity" style="display:none;">
-        <div id="zukan-rarity-grid"></div>
       </div>
       <div id="zukan-plushie" style="display:none;">
         <div id="zukan-plushie-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;"></div>
@@ -2141,7 +2141,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v216';
+    const IGNIS_BUILD='2026-07-23-v217';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3980,7 +3980,6 @@
       document.getElementById('zukan-float-btn').textContent=isJa?'📖 図鑑':'📖 Collection';
       document.getElementById('zukan-title').textContent=isJa?'📖 ビル図鑑':'📖 Building Collection';
       document.getElementById('ztab-owned').textContent=isJa?'🏢 所有ビル':'🏢 My Buildings';
-      document.getElementById('ztab-rarity').textContent=isJa?'⭐ レアリティ':'⭐ Rarity';
       {const zp=document.getElementById('ztab-plushie');if(zp)zp.textContent=isJa?'🧸 ぬいぐるみ':'🧸 Plushies';}
       document.getElementById('zukan-close').textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('zukan-overlay').classList.contains('open')){renderZukanOwned();renderZukanRarity();renderZukanPlushies();}
@@ -8645,12 +8644,22 @@
       const el=document.getElementById('candle-stat-count');if(!el)return;
       const cur=parseInt(el.textContent,10)||0;el.textContent=Math.max(0,cur+d);
     }
+    // 蝋燭を受け取った“その瞬間のみ”、灯した相手のXアカウントを受け取ったオーナー本人に表示する（一過性・保存しない）
+    async function revealCandleGiverMoment(giverId){
+      if(!giverId||!db||!currentUser||giverId===currentUser.id)return;
+      try{
+        const{data}=await db.from('users').select('x_username,username').eq('id',giverId).maybeSingle();
+        const isJa=currentLang==='ja';
+        const who=data&&data.x_username?('@'+data.x_username):(data&&data.username?data.username:(isJa?'誰か':'someone'));
+        showToast(isJa?`🕯️ ${who} さんがあなたのビルに蝋燭を灯しました`:`🕯️ ${who} lit a candle on your building`);
+      }catch(_){}
+    }
     function subscribeCandleRealtime(){
       if(!db||!currentUser||_candleRealtimeCh)return;
       try{
         const mine=()=>new Set(buildings.filter(b=>b.ownerId===currentUser.id).map(b=>`${b.x}_${b.z}`));
         _candleRealtimeCh=db.channel('candles-hud-'+currentUser.id)
-          .on('postgres_changes',{event:'INSERT',schema:'public',table:'building_candles'},(p)=>{const r=p.new;if(r&&mine().has(`${r.building_x}_${r.building_z}`))bumpCandleStat(1);})
+          .on('postgres_changes',{event:'INSERT',schema:'public',table:'building_candles'},(p)=>{const r=p.new;if(r&&mine().has(`${r.building_x}_${r.building_z}`)){bumpCandleStat(1);revealCandleGiverMoment(r.user_id);}})
           .on('postgres_changes',{event:'DELETE',schema:'public',table:'building_candles'},(p)=>{const r=p.old;if(r&&mine().has(`${r.building_x}_${r.building_z}`))bumpCandleStat(-1);})
           .subscribe();
       }catch(e){console.warn('candle realtime',e.message);}
@@ -8841,10 +8850,8 @@
     function switchZukanTab(tab){
       zukanTab=tab;
       document.getElementById('ztab-owned').classList.toggle('active',tab==='owned');
-      document.getElementById('ztab-rarity').classList.toggle('active',tab==='rarity');
       document.getElementById('ztab-plushie').classList.toggle('active',tab==='plushie');
       document.getElementById('zukan-owned').style.display=tab==='owned'?'block':'none';
-      document.getElementById('zukan-rarity').style.display=tab==='rarity'?'block':'none';
       document.getElementById('zukan-plushie').style.display=tab==='plushie'?'block':'none';
       if(tab==='plushie')renderZukanPlushies();
     }
@@ -8883,7 +8890,7 @@
           inv=(invData||[]).map(r=>({x:null,z:null,floors:r.floors,employees:0,style:r.prism||'square',inv:true,invId:r.id}));
         }catch(_){/* テーブル未作成等は無視 */}
         zukanBuildings=mine.concat(inv).sort((a,b)=>b.floors-a.floors);
-        renderZukanOwned();renderZukanRarity();
+        renderZukanOwned();
       }catch(e){console.warn('zukan load error:',e.message);showToast(currentLang==='ja'?'図鑑の読み込みに失敗しました':'Failed to load collection');}
       finally{loadingEl.classList.remove('show');}
     }
@@ -8927,7 +8934,7 @@
       });
     }
     function renderZukanRarity(){
-      const isJa=currentLang==='ja';const container=document.getElementById('zukan-rarity-grid');container.innerHTML='';
+      const isJa=currentLang==='ja';const container=document.getElementById('zukan-rarity-grid');if(!container)return;container.innerHTML='';
       const rarityNames=isJa?RARITY_NAMES_JA:RARITY_NAMES_EN;
       [5,4,3,2,1].forEach(star=>{
         const myBuildings=zukanBuildings.filter(b=>getStarByBaseFloors(b.floors)===star);

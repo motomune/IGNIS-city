@@ -1994,6 +1994,7 @@
       </label>
       <button id="profile-submit-btn" onclick="submitBuildingProfile()">申請する</button>
       <button id="profile-skip-btn" onclick="closeProfileModal()">スキップ</button>
+      <button id="profile-delete-btn" onclick="deleteBuildingWriting()" style="display:none;width:100%;background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.55);color:#fecaca;padding:11px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;margin-top:6px;">🗑 この記録を削除（元に戻せません）</button>
       <div id="profile-approval-note" class="profile-alert-note">📋 <strong>ご確認</strong>：管理者が内容を確認し、承認で公開・却下時は通知が届きます</div>
     </div>
   </div>
@@ -2140,7 +2141,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v215';
+    const IGNIS_BUILD='2026-07-23-v216';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5997,7 +5998,7 @@
         box.classList.add('profile-entrance');
       }
     }
-    let profileState={gx:0,gz:0,hasApproved:false,buildingHasApproved:false};
+    let profileState={gx:0,gz:0,hasApproved:false,buildingHasApproved:false,hasDbContent:false};
     function chipGroupKey(containerId){return containerId==='chips-lost'?'lost':'gained';}
     function formatChipDisplayLabel(v){
       const isJa=currentLang==='ja';
@@ -6098,6 +6099,7 @@
     }
     async function prefillProfileFormFromStorage(gx,gz){
       profileState.hasApproved=false;
+      profileState.hasDbContent=false;
       ensureProfileDraftListeners();
       if(db&&currentUser){
         const uid=currentUser.id;
@@ -6113,6 +6115,7 @@
           if(prof&&prof.motto_text){
             document.getElementById('profile-motto-input').value=prof.motto_text;
             if(approvedProf)profileState.hasApproved=true;
+            profileState.hasDbContent=true;
           }
         }catch(e){console.warn('[IGNIS] prefill motto:',e.message);}
         // 過去詳細（building_past_details）— 失った/得た/詳細/メッセージも引き継ぐ
@@ -6127,6 +6130,7 @@
           const past=approvedPast||pendingPast;
           if(past){
             if(approvedPast)profileState.hasApproved=true;
+            profileState.hasDbContent=true;
             buildProfileChips('chips-lost',past.lost_items||[]);
             buildProfileChips('chips-gained',past.gained_items||[]);
             const setV=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
@@ -6180,6 +6184,12 @@
         ?(currentLang==='ja'?'修正して再申請':'Resubmit edits')
         :(currentLang==='ja'?'申請する':'Submit');
       applyProfileI18n();
+      const delBtn=document.getElementById('profile-delete-btn');
+      if(delBtn){
+        delBtn.style.display=profileState.hasDbContent?'block':'none';
+        delBtn.disabled=false;
+        delBtn.textContent=currentLang==='ja'?'🗑 この記録を削除（元に戻せません）':'🗑 Delete this record (cannot be undone)';
+      }
       document.getElementById('profile-modal').classList.add('open');
       if(opts&&opts.fromBuilding)playProfileApplyEntrance();
       else{
@@ -6188,6 +6198,31 @@
       }
     }
     function closeProfileModal(){document.getElementById('profile-modal').classList.remove('open');}
+    // 自分のビルの書き込み（格言・過去の記録）を本人が削除する
+    async function deleteBuildingWriting(){
+      if(!currentUser||!db)return;
+      const isJa=currentLang==='ja';
+      if(!confirm(isJa?'このビルの格言・過去の記録をすべて削除します。よろしいですか？（元に戻せません）':'Delete this building\'s motto and past record? This cannot be undone.'))return;
+      const btn=document.getElementById('profile-delete-btn');
+      if(btn){btn.disabled=true;btn.textContent=isJa?'削除中...':'Deleting...';}
+      try{
+        const{data,error}=await db.rpc('delete_building_writing',{p_x:profileState.gx,p_z:profileState.gz});
+        if(error)throw error;
+        if(!data||!data.ok)throw new Error((data&&data.reason)||'failed');
+        try{clearProfileDraft(profileState.gx,profileState.gz);}catch(_){}
+        const key=landKey(profileState.gx,profileState.gz);
+        try{pendingMottoKeys.delete(key);delete approvedProfiles[key];}catch(_){}
+        try{applyApprovedMottosToScene();}catch(_){}
+        loadApprovedProfiles().catch(()=>{});
+        profileState.hasDbContent=false;
+        closeProfileModal();
+        showToast(isJa?'🗑 このビルの記録を削除しました':'🗑 This building\'s record was deleted');
+      }catch(e){
+        console.warn('delete writing error:',e.message);
+        showToast(isJa?'削除に失敗しました':'Delete failed');
+        if(btn){btn.disabled=false;btn.textContent=isJa?'🗑 この記録を削除（元に戻せません）':'🗑 Delete this record (cannot be undone)';}
+      }
+    }
     async function openProfileFromBuildingModal(){
       if(!currentModalBuilding)return;
       const b=currentModalBuilding;

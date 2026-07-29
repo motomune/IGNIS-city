@@ -978,11 +978,12 @@
     }
     #building-sell-btn { background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;padding:11px 12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s;white-space:pre-line; }
     #building-sell-btn:hover { opacity:0.85; }
-    #building-assign-btn { margin-top:8px;padding:11px 12px;border-radius:10px;font-size:13px; }
     #building-rebuild-btn { width:100%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#231303;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
     #building-rebuild-btn:hover { opacity:0.88; }
-    #building-assign-btn { width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity 0.2s; }
-    #building-assign-btn:hover { opacity:0.9; }
+    /* 操作ボタンはビル詳細の上部にまとめる（下までスクロールしなくても押せる） */
+    #bm-actions { display:flex;flex-direction:column;gap:8px;margin:12px 0 4px; }
+    #bm-actions:empty { display:none; }
+    #bm-actions > button { margin-top:0 !important; }
     @keyframes motto-btn-glow{0%,100%{box-shadow:0 0 10px rgba(255,106,0,0.45);transform:scale(1);}50%{box-shadow:0 0 22px rgba(238,9,121,0.7),0 0 36px rgba(255,106,0,0.25);transform:scale(1.015);}}
     @keyframes motto-btn-ripple{0%{box-shadow:0 0 0 0 rgba(255,106,0,0.65);}70%{box-shadow:0 0 0 16px rgba(255,106,0,0);}100%{box-shadow:0 0 0 0 rgba(255,106,0,0);}}
     #building-motto-btn { width:100%;background:linear-gradient(135deg,rgba(255,106,0,0.9),rgba(238,9,121,0.9));color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;transition:transform 0.15s,opacity 0.2s;position:relative;overflow:visible; }
@@ -1644,6 +1645,11 @@
         <div class="bm-stat"><div class="bm-stat-label" id="bml-views">閲覧回数</div><div class="bm-stat-value" id="bm-views-val">-</div></div>
         <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
+      <div id="bm-actions">
+        <button id="building-rebuild-btn" type="button" onclick="openRebuildFromBuildingModal()" style="display:none;">🔁 建て直し（200コイン）</button>
+        <button id="building-motto-btn" type="button" onclick="openProfileFromBuildingModal()" style="display:none;">💬 格言・過去詳細を申請</button>
+        <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
+      </div>
       <div id="building-candle" style="display:none;">
         <button id="candle-btn" type="button" onclick="toggleCandle()">🕯️ 蝋燭を灯す</button>
         <span id="candle-count" title="このビルに灯された蝋燭の数">🕯️ 0</span>
@@ -1677,10 +1683,6 @@
       </div>
       <div id="building-modal-notes" style="display:none;"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
-      <button id="building-rebuild-btn" type="button" onclick="openRebuildFromBuildingModal()" style="display:none;">🔁 建て直し（200コイン）</button>
-      <button id="building-motto-btn" type="button" onclick="openProfileFromBuildingModal()" style="display:none;">💬 格言・過去詳細を申請</button>
-      <button id="building-assign-btn" onclick="assignEmployeesToCurrentBuilding()" style="display:none;">👷 従業員を配属</button>
-      <button id="building-sell-btn" onclick="confirmSellBuilding()" style="display:none;">💰 ビルを売却（土地ごと）</button>
       <div class="modal-scroll-cue" aria-hidden="true"><span class="cue-arrow">⌄</span><span class="cue-text scroll-cue-text">下へスクロール</span></div>
       </div>
     </div>
@@ -2141,7 +2143,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v219';
+    const IGNIS_BUILD='2026-07-23-v220';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5471,6 +5473,8 @@
           await completeTask('build');
           showToast(isJa?`🏢 ${fl}階の${getPrismLabel(buildPrism,true)}を設置！`:`🏢 Placed a ${fl}F ${getPrismLabel(buildPrism,false)}!`);
         }
+        // 設置したら、休職中の従業員をこのビルへ自動反映（売却→再建設でも引き継がれる）
+        try{await autoAssignBenchToLatestBuilding(false);}catch(_){}
         refreshTile(key);
         try{applySubscriberLamps();}catch(_){} // 会員なら新しい屋上に赤ランプを即点灯（再読込不要）
         try{updateGuestExpiryBanner();}catch(_){} // ビルを建てた＝失うものができたので3時間の案内を出す
@@ -5835,6 +5839,7 @@
         const{error}=await db.from('buildings').insert({x:gx,z:gz,floors,style:`${buildPrism}_gacha`,owner_id:currentUser.id,employees});
         if(error)throw error;
         addBuilding(gx,gz,floors,buildPrism,employees,false,gachaState.landKey,0,currentUser.id);
+        try{await autoAssignBenchToLatestBuilding(false);}catch(_){} // 休職中の従業員を自動反映
         refreshTile(gachaState.landKey);
         await completeTask('build');
         const savedLandKey=gachaState.landKey;
@@ -6863,9 +6868,13 @@
         try{refreshGachaCostInfo();}catch(_){} // 採用後、開いたままの画面の所持コイン表示を更新
         await recordCoin(-HIRE_COST,'hire_employee');
         await completeTask('hire');
+        // 採用したら自動でビルに反映（ビルが無い間は休職として保持され、建てた時に入る）
+        const assigned=await autoAssignBenchToLatestBuilding(true);
         await refreshEmployeeHeader();
         await refreshStaffTermPanel();
-        showToast(isJa?`👨‍💼 会社員を1人採用！休職中プールに加算`:`👨‍💼 Hired 1 office worker! Added to bench`);
+        showToast(assigned>0
+          ?(isJa?`👨‍💼 会社員を1人採用！ビルに反映されました`:`👨‍💼 Hired 1 worker! Now working in your building`)
+          :(isJa?`👨‍💼 会社員を1人採用！（ビルを建てると自動で反映されます）`:`👨‍💼 Hired 1 worker! (auto-assigned once you place a building)`));
       }catch(e){console.warn('hire error:',e.message);showToast(isJa?'採用に失敗: '+e.message:'Hire failed: '+e.message);}
       finally{btn.disabled=false;btn.textContent=originalText;}
     }
@@ -7216,7 +7225,6 @@
       const key=buildingData.landKey||landKey(buildingData.x,buildingData.z);
       const profile=approvedProfiles[key];
       const sellBtn=document.getElementById('building-sell-btn');
-      const assignBtn=document.getElementById('building-assign-btn');
       const mottoBtn=document.getElementById('building-motto-btn');
       const rebuildBtn=document.getElementById('building-rebuild-btn');
       const isOwnLand=isOwnLandBuilding(buildingData);
@@ -7259,16 +7267,6 @@
       if(isOwnLand){
         sellBtn.style.display='block';
         sellBtn.hidden=false;
-        if(assignBtn){
-          const bench=Math.max(0,Number(currentUser?.benchEmployees||0));
-          assignBtn.style.display='block';
-          assignBtn.hidden=false;
-          assignBtn.textContent=isCoarseMobile()
-            ?(isJa?`👷 配属（休職${bench}人）`:`👷 Assign (${bench} bench)`)
-            :(isJa?`👷 従業員を配属（休職中: ${bench}人）`:`👷 Assign Staff (bench: ${bench})`);
-          assignBtn.disabled=bench<=0;
-          assignBtn.style.opacity=bench<=0?'0.5':'1';
-        }
         const quote=getBuildingSellQuote(buildingData);
         const benchBack=quote.emp;
         const mul=getSellCoinMultiplier(quote.emp);
@@ -7278,7 +7276,6 @@
       } else {
         sellBtn.style.display='none';
         sellBtn.hidden=true;
-        if(assignBtn){assignBtn.style.display='none';assignBtn.hidden=true;}
       }
       const land=landMap[key];const ownerEl=document.getElementById('building-modal-owner');
       if(land){
@@ -8207,7 +8204,47 @@
       clearBuildingPastModal();
       currentModalBuilding=null;
     }
-    async function assignEmployeesToCurrentBuilding(){
+    // 従業員は「最後に建てたビル」へ自動で反映される（配属ボタンは廃止）。
+    // 売却すると休職へ戻り、次に建てたビルへそのまま引き継がれる。
+    async function autoAssignBenchToLatestBuilding(silent){
+      if(!currentUser||!db)return 0;
+      try{
+        const{data:uRow}=await db.from('users').select('bench_employees').eq('id',currentUser.id).single();
+        const bench=Math.max(0,Number(uRow?.bench_employees||0));
+        if(bench<=0)return 0;
+        const{data:rows}=await db.from('buildings')
+          .select('x,z,employees,floors,style,view_count')
+          .eq('owner_id',currentUser.id).order('created_at',{ascending:false}).limit(1);
+        const row=(rows&&rows[0])||null;
+        if(!row)return 0;                       // ビルが無い間は休職のまま保持
+        const nextEmp=(Number(row.employees)||0)+bench;
+        const{error:uErr}=await db.from('users').update({bench_employees:0}).eq('id',currentUser.id);
+        if(uErr)throw uErr;
+        const{error:bErr}=await db.from('buildings').update({employees:nextEmp})
+          .eq('x',row.x).eq('z',row.z).eq('owner_id',currentUser.id);
+        if(bErr)throw bErr;
+        currentUser.benchEmployees=0;
+        // 3D側を新しい従業員数で作り直す（高さ・色が変わる）
+        const key=landKey(row.x,row.z);
+        const b=buildingMap[key];
+        if(b){
+          const shape=normalizePrism(((row.style||b.shape||'square')+'').split('_')[0]||'square');
+          if(b.mesh)b.mesh.dispose();
+          const updated=addBuilding(row.x,row.z,row.floors||b.baseFloors||1,shape,nextEmp,true,key,row.view_count||b.viewCount||0,currentUser.id);
+          buildings=buildings.filter(x=>x!==b);
+          buildingMap[key]=updated;
+          if(currentModalBuilding&&(currentModalBuilding.landKey===key))currentModalBuilding=updated;
+          try{applyMottoForLandKey(key);}catch(_){}
+          updateBuildingCount();drawMinimap();
+        }
+        await refreshEmployeeHeader();
+        if(!silent)showToast(currentLang==='ja'
+          ?`👷 従業員${bench}人がビルに反映されました`
+          :`👷 ${bench} staff now working in your building`);
+        return bench;
+      }catch(e){console.warn('autoAssignBench',e.message);return 0;}
+    }
+    async function assignEmployeesToCurrentBuilding_unused(){
       if(!currentUser||!currentModalBuilding||!db)return;
       const isJa=currentLang==='ja';
       const b=currentModalBuilding;
@@ -8744,6 +8781,7 @@
           try{await loadSubscriberSet();applySubscriberLamps();setTimeout(()=>{try{applySubscriberLamps();}catch(_){}},2500);}catch(e){console.warn('[IGNIS] lamps',e.message);}
           loadMyCandleCount().catch(()=>{});
           subscribeCandleRealtime();
+          autoAssignBenchToLatestBuilding(true).catch(()=>{}); // 休職中の従業員をビルへ自動反映（配属ボタン廃止）
           ensureRevealData().catch(()=>{}); // 名前モザイク用データ（無課金1位/表示設定）を先読み
           loadResonanceMap().catch(()=>{});   // 共鳴マップ（同じ痛みのビルをミニマップで同色に）
           buildDawnMonument();                // 夜明けの記念碑（SQL未適用でも0回で建てる）

@@ -215,6 +215,20 @@
   /* アフィリエイト表記 */
   #affil{margin-top:10px;font-size:9.5px;line-height:1.7;color:rgba(255,255,255,0.42);text-align:center;letter-spacing:0.02em;}
 
+  /* 著者ページ（Amazon）：フォローすると白編の発売通知が届く導線 */
+  #authorlink{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    margin-top:13px;padding:12px 15px;border-radius:13px;text-decoration:none;color:#fff;
+    background:rgba(14,16,28,0.55);border:1px solid rgba(255,150,60,0.35);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    transition:border-color .18s ease,box-shadow .18s ease,transform .15s ease,background .18s ease;}
+  #authorlink:hover{border-color:rgba(255,190,110,0.85);transform:translateY(-1px);
+    background:rgba(24,18,20,0.6);box-shadow:0 6px 22px rgba(255,106,0,0.25);}
+  #authorlink:active{transform:scale(0.985);}
+  #authorlink .al-t{flex:1 1 auto;min-width:0;font-size:14px;font-weight:800;letter-spacing:0.02em;}
+  #authorlink .al-go{flex-shrink:0;font-size:14px;color:rgba(255,170,80,0.85);transition:transform .18s ease;}
+  #authorlink:hover .al-go{transform:translateX(4px);}
+  #authorlink .al-s{flex:1 1 100%;font-size:11px;line-height:1.65;color:rgba(255,255,255,0.62);}
+
   /* ===== SNS ===== */
   #sns{margin-top:26px;display:flex;gap:16px;}
   #sns a{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -313,6 +327,13 @@
         <span class="taphint r" data-ja="👆 黒編" data-en="👆 Black">👆 黒編</span>
       </div>
       <div id="hint" data-ja="✋ 赤本・黒本、それぞれ触れてみて" data-en="✋ Tap each book — red and black">✋ 赤本・黒本、それぞれ触れてみて</div>
+      <a id="authorlink" href="https://www.amazon.co.jp/stores/author/B0HBXGG4KV" target="_blank" rel="noopener"
+         data-href-ja="https://www.amazon.co.jp/stores/author/B0HBXGG4KV"
+         data-href-en="https://www.amazon.com/stores/author/B0HBXGG4KV">
+        <span class="al-t" data-ja="✍️ 著者ページ（Amazon）" data-en="✍️ Author page on Amazon">✍️ 著者ページ（Amazon）</span>
+        <span class="al-go">➜</span>
+        <span class="al-s" data-ja="フォローすると、最終章「白編」が出たときに通知が届きます。" data-en="Follow to be notified when the final chapter — The White Edition — arrives.">フォローすると、最終章「白編」が出たときに通知が届きます。</span>
+      </a>
       <p id="affil">※ 書籍リンクはAmazonアソシエイトのリンクです。適格販売により収入を得ています。<br>
       As an Amazon Associate, the author earns from qualifying purchases.</p>
     </div>
@@ -353,6 +374,10 @@
     document.documentElement.lang=LANG;
     document.querySelectorAll('[data-ja]').forEach(function(el){
       el.textContent=el.dataset[LANG]||el.dataset.ja;
+    });
+    // 言語に合わせて飛び先も切り替える（Amazonの著者ページは .co.jp / .com が別ページのため）
+    document.querySelectorAll('[data-href-ja]').forEach(function(el){
+      el.href=(LANG==='ja'?el.dataset.hrefJa:el.dataset.hrefEn)||el.dataset.hrefJa;
     });
     var b=document.getElementById('langbtn');
     if(b)b.textContent=LANG==='ja'?'🌐 EN':'🌐 日本語';

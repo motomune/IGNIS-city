@@ -2143,7 +2143,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v221';
+    const IGNIS_BUILD='2026-07-23-v222';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5203,6 +5203,82 @@
         if(m){m.material=silMat;m.isPickable=false;m.freezeWorldMatrix();}
         silMat.freeze();
       }catch(e){console.warn('skyline skipped',e);}
+    })();
+    // 夜空：星（内側を向いたドーム1枚）と月（ビルボード板1枚）。
+    // どちらもドローコール+1ずつ・毎フレーム負荷ゼロ・フォグ非適用でスマホでもほぼ無料。
+    (function buildNightSky(){
+      if(!window.BABYLON)return;
+      try{
+        // ---- 星空ドーム ----
+        const SW=1024,SH=512;
+        const stex=new BABYLON.DynamicTexture('starTex',{width:SW,height:SH},scene,false);
+        const sc=stex.getContext();
+        sc.clearRect(0,0,SW,SH); // 背景は透過：夜明けイベントで空の色が変わっても星だけが乗る
+        let seed=20260730;
+        const rnd=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648;};
+        for(let i=0;i<620;i++){
+          const x=rnd()*SW;
+          // 上半分（空）に多く、地平線付近は少なめ
+          const y=Math.pow(rnd(),1.7)*SH*0.62;
+          const r=rnd()<0.90?(0.6+rnd()*0.9):(1.4+rnd()*1.3);
+          const a=0.35+rnd()*0.65;
+          const warm=rnd();
+          sc.fillStyle=warm<0.75?`rgba(255,255,255,${a})`
+                     :warm<0.9 ?`rgba(200,220,255,${a})`
+                               :`rgba(255,226,190,${a})`;
+          sc.beginPath();sc.arc(x,y,r,0,Math.PI*2);sc.fill();
+        }
+        stex.update();stex.hasAlpha=true;
+        const smat=new BABYLON.StandardMaterial('starMat',scene);
+        smat.emissiveTexture=stex;
+        smat.opacityTexture=stex;   // 星の部分だけ描く（空の色はそのまま見える）
+        smat.diffuseColor=new BABYLON.Color3(0,0,0);
+        smat.specularColor=new BABYLON.Color3(0,0,0);
+        smat.disableLighting=true;
+        smat.backFaceCulling=false;
+        const dome=BABYLON.MeshBuilder.CreateSphere('starDome',{diameter:1750,segments:16,sideOrientation:BABYLON.Mesh.BACKSIDE},scene);
+        dome.material=smat;dome.isPickable=false;dome.applyFog=false;
+        dome.position.y=-60;                 // 地平線より少し下げて、空だけ見えるように
+        dome.freezeWorldMatrix();smat.freeze();
+
+        // ---- 月 ----
+        const MS=256;
+        const mtex=new BABYLON.DynamicTexture('moonTex',{width:MS,height:MS},scene,false);
+        const mc=mtex.getContext();
+        mc.clearRect(0,0,MS,MS);
+        const cx=MS/2,cy=MS/2;
+        // 外側のやわらかい光暈
+        const halo=mc.createRadialGradient(cx,cy,MS*0.17,cx,cy,MS*0.5);
+        halo.addColorStop(0,'rgba(226,232,245,0.55)');
+        halo.addColorStop(0.55,'rgba(180,200,235,0.13)');
+        halo.addColorStop(1,'rgba(160,190,230,0)');
+        mc.fillStyle=halo;mc.fillRect(0,0,MS,MS);
+        // 本体
+        mc.beginPath();mc.arc(cx,cy,MS*0.19,0,Math.PI*2);
+        mc.fillStyle='rgba(238,240,248,1)';mc.fill();
+        // クレーター（うっすら）
+        const cr=[[0.34,-0.30,0.075],[-0.36,0.22,0.055],[0.10,0.42,0.045],[-0.16,-0.40,0.038],[0.44,0.16,0.032]];
+        mc.globalCompositeOperation='source-atop';
+        cr.forEach(([dx,dy,r])=>{
+          mc.beginPath();mc.arc(cx+dx*MS*0.19,cy+dy*MS*0.19,r*MS,0,Math.PI*2);
+          mc.fillStyle='rgba(196,203,220,0.55)';mc.fill();
+        });
+        mc.globalCompositeOperation='source-over';
+        mtex.update();mtex.hasAlpha=true;
+        const mmat=new BABYLON.StandardMaterial('moonMat',scene);
+        mmat.emissiveTexture=mtex;
+        mmat.opacityTexture=mtex;
+        mmat.diffuseColor=new BABYLON.Color3(0,0,0);
+        mmat.specularColor=new BABYLON.Color3(0,0,0);
+        mmat.disableLighting=true;
+        mmat.backFaceCulling=false;
+        const moon=BABYLON.MeshBuilder.CreatePlane('moon',{size:230},scene);
+        moon.material=mmat;
+        moon.position=new BABYLON.Vector3(-430,310,-620); // 街の外・空の高い位置
+        moon.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; // 常に正面を向く＝いつでも丸い
+        moon.isPickable=false;moon.applyFog=false;
+        mmat.freeze();
+      }catch(e){console.warn('[IGNIS] night sky skipped',e.message);}
     })();
     groundMat.freeze();lineMat.freeze();
     // ========================================
@@ -8620,7 +8696,7 @@
         ensureBuildingAnimation();
       } else {
         // 通常ビル：暗い壁に窓の灯りを乗せる（金・虹は発光アニメがあるので対象外）
-        mat.diffuseColor=new BABYLON.Color3(0.32,0.35,0.40);
+        mat.diffuseColor=new BABYLON.Color3(0.19,0.21,0.27); // 夜らしく暗めの壁（窓の灯りが映える）
         const wt=getWindowTexture();
         if(wt){
           mat.emissiveTexture=wt;

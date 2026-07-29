@@ -2143,7 +2143,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v222';
+    const IGNIS_BUILD='2026-07-23-v223';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5209,37 +5209,41 @@
     (function buildNightSky(){
       if(!window.BABYLON)return;
       try{
-        // ---- 星空ドーム ----
-        const SW=1024,SH=512;
-        const stex=new BABYLON.DynamicTexture('starTex',{width:SW,height:SH},scene,false);
-        const sc=stex.getContext();
-        sc.clearRect(0,0,SW,SH); // 背景は透過：夜明けイベントで空の色が変わっても星だけが乗る
+        // ---- 星（点描画）----
+        // ドームにテクスチャを巻くと1テクセルが約0.35°＝月と同じ見かけの大きさになってしまうため、
+        // 頂点を点として描く方式にする。ピクセル単位でサイズを指定でき、テクスチャも不要（1メッシュ＝1ドローコール）。
         let seed=20260730;
         const rnd=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648;};
-        for(let i=0;i<620;i++){
-          const x=rnd()*SW;
-          // 上半分（空）に多く、地平線付近は少なめ
-          const y=Math.pow(rnd(),1.7)*SH*0.62;
-          const r=rnd()<0.90?(0.6+rnd()*0.9):(1.4+rnd()*1.3);
-          const a=0.35+rnd()*0.65;
-          const warm=rnd();
-          sc.fillStyle=warm<0.75?`rgba(255,255,255,${a})`
-                     :warm<0.9 ?`rgba(200,220,255,${a})`
-                               :`rgba(255,226,190,${a})`;
-          sc.beginPath();sc.arc(x,y,r,0,Math.PI*2);sc.fill();
+        const R=760, pos=[], col=[], idx=[];
+        for(let i=0;i<900;i++){
+          const th=rnd()*Math.PI*2;                 // 方位
+          const el=Math.pow(rnd(),0.75)*(Math.PI*0.46); // 仰角（地平線付近は少なめ）
+          const cy=Math.sin(el), cr=Math.cos(el);
+          pos.push(Math.cos(th)*cr*R, cy*R+40, Math.sin(th)*cr*R);
+          const a=0.55+rnd()*0.45;                  // 明るさのばらつき
+          const w=rnd();
+          if(w<0.74)      col.push(1,1,1,a);        // 白
+          else if(w<0.90) col.push(0.78,0.86,1,a);  // 青白
+          else            col.push(1,0.88,0.74,a);  // 暖色
+          idx.push(i);
         }
-        stex.update();stex.hasAlpha=true;
+        const starMesh=new BABYLON.Mesh('starPoints',scene);
+        const vd=new BABYLON.VertexData();
+        vd.positions=pos;vd.colors=col;vd.indices=idx;
+        vd.applyToMesh(starMesh);
         const smat=new BABYLON.StandardMaterial('starMat',scene);
-        smat.emissiveTexture=stex;
-        smat.opacityTexture=stex;   // 星の部分だけ描く（空の色はそのまま見える）
+        smat.emissiveColor=new BABYLON.Color3(1,1,1);
         smat.diffuseColor=new BABYLON.Color3(0,0,0);
         smat.specularColor=new BABYLON.Color3(0,0,0);
         smat.disableLighting=true;
+        smat.pointsCloud=true;      // 頂点を点として描画
+        smat.pointSize=3;           // ビルの窓と同じくらいの小ささ（実測で調整）
+        smat.useVertexColor=true;
         smat.backFaceCulling=false;
-        const dome=BABYLON.MeshBuilder.CreateSphere('starDome',{diameter:1750,segments:16,sideOrientation:BABYLON.Mesh.BACKSIDE},scene);
-        dome.material=smat;dome.isPickable=false;dome.applyFog=false;
-        dome.position.y=-60;                 // 地平線より少し下げて、空だけ見えるように
-        dome.freezeWorldMatrix();smat.freeze();
+        starMesh.material=smat;
+        starMesh.isPickable=false;starMesh.applyFog=false;
+        starMesh.infiniteDistance=true;  // 常に遠景（近づいても大きくならない）
+        smat.freeze();
 
         // ---- 月 ----
         const MS=256;
@@ -6852,16 +6856,18 @@
         const backId=meshId+'_back';
         const old=scene.getMeshByName(backId);if(old)old.dispose();
         const back=BABYLON.MeshBuilder.CreatePlane(backId,{width:planeW*1.10,height:planeH*1.04,sideOrientation:side},scene);
-        back.position.copyFrom(plane.position);
-        back.rotation=plane.rotation.clone();
+        // 格言は視点に合わせて4面を移動するので、背面プレートを子にして必ず一緒に動かす
+        back.parent=plane;
+        back.position=BABYLON.Vector3.Zero();
+        back.rotation=BABYLON.Vector3.Zero();
         back.isPickable=false;
         const bmat=new BABYLON.StandardMaterial(backId+'_m',scene);
         bmat.diffuseColor=new BABYLON.Color3(0,0,0);
         bmat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
         bmat.specularColor=new BABYLON.Color3(0,0,0);
         bmat.disableLighting=true;
-        bmat.alpha=0.82;
-        bmat.zOffset=-0.5;   // 壁より手前・格言より奥
+        bmat.alpha=1;        // 不透明：半透明だと格言より後に描かれて文字を覆ってしまう
+        bmat.zOffset=0;      // 格言側が zOffset=-1 で手前に来る
         bmat.freeze();
         back.material=bmat;
         plane.onDisposeObservable.add(()=>{try{back.dispose();}catch(_){}}); // 格言を消したら一緒に消す
@@ -8696,7 +8702,7 @@
         ensureBuildingAnimation();
       } else {
         // 通常ビル：暗い壁に窓の灯りを乗せる（金・虹は発光アニメがあるので対象外）
-        mat.diffuseColor=new BABYLON.Color3(0.19,0.21,0.27); // 夜らしく暗めの壁（窓の灯りが映える）
+        mat.diffuseColor=new BABYLON.Color3(0.125,0.14,0.185); // 夜らしく暗い壁（窓の灯りが映える）
         const wt=getWindowTexture();
         if(wt){
           mat.emissiveTexture=wt;

@@ -216,18 +216,30 @@
   #affil{margin-top:10px;font-size:9.5px;line-height:1.7;color:rgba(255,255,255,0.42);text-align:center;letter-spacing:0.02em;}
 
   /* 著者ページ（Amazon）：フォローすると白編の発売通知が届く導線 */
-  #authorlink{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
-    margin-top:13px;padding:12px 15px;border-radius:13px;text-decoration:none;color:#fff;
-    background:rgba(14,16,28,0.55);border:1px solid rgba(255,150,60,0.35);
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-    transition:border-color .18s ease,box-shadow .18s ease,transform .15s ease,background .18s ease;}
-  #authorlink:hover{border-color:rgba(255,190,110,0.85);transform:translateY(-1px);
-    background:rgba(24,18,20,0.6);box-shadow:0 6px 22px rgba(255,106,0,0.25);}
-  #authorlink:active{transform:scale(0.985);}
-  #authorlink .al-t{flex:1 1 auto;min-width:0;font-size:14px;font-weight:800;letter-spacing:0.02em;}
-  #authorlink .al-go{flex-shrink:0;font-size:14px;color:rgba(255,170,80,0.85);transition:transform .18s ease;}
-  #authorlink:hover .al-go{transform:translateX(4px);}
-  #authorlink .al-s{flex:1 1 100%;font-size:11px;line-height:1.65;color:rgba(255,255,255,0.62);}
+  #authorwrap{margin-top:15px;}
+  #authorlink{display:flex;align-items:center;justify-content:center;gap:9px;
+    padding:14px 18px;border-radius:14px;text-decoration:none;color:#fff;
+    font-size:14.5px;font-weight:900;letter-spacing:0.03em;
+    background:linear-gradient(135deg,rgba(255,90,0,0.44),rgba(255,160,40,0.28));
+    border:1.5px solid rgba(255,190,110,0.8);
+    box-shadow:0 4px 18px rgba(255,110,20,0.28);
+    position:relative;overflow:hidden;
+    transition:transform .15s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;}
+  #authorlink:hover{transform:translateY(-2px);border-color:rgba(255,225,170,0.95);
+    background:linear-gradient(135deg,rgba(255,110,10,0.6),rgba(255,175,60,0.42));
+    box-shadow:0 8px 28px rgba(255,110,20,0.5);}
+  #authorlink:active{transform:scale(0.97);}
+  #authorlink span{position:relative;z-index:1;}
+  #authorlink .al-go{font-size:15px;transition:transform .18s ease;}
+  #authorlink:hover .al-go{transform:translateX(5px);}
+  /* 光が横切る＝押せる場所だと一目で分かるように */
+  #authorlink::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;z-index:0;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,0.3),transparent);
+    transform:skewX(-18deg);animation:alshine 3.8s ease-in-out infinite;}
+  @keyframes alshine{0%{left:-60%;}55%{left:135%;}100%{left:135%;}}
+  @media (prefers-reduced-motion:reduce){#authorlink::after{animation:none;}}
+  #authornote{margin-top:7px;font-size:10.5px;line-height:1.7;text-align:center;
+    color:rgba(255,255,255,0.6);letter-spacing:0.01em;}
 
   /* ===== SNS ===== */
   #sns{margin-top:26px;display:flex;gap:16px;}
@@ -327,14 +339,16 @@
         <span class="taphint r" data-ja="👆 黒編" data-en="👆 Black">👆 黒編</span>
       </div>
       <div id="hint" data-ja="✋ 赤本・黒本、それぞれ触れてみて" data-en="✋ Tap each book — red and black">✋ 赤本・黒本、それぞれ触れてみて</div>
-      <a id="authorlink" href="https://www.amazon.co.jp/stores/author/B0HBXGG4KV" target="_blank" rel="noopener"
-         data-href-ja="https://www.amazon.co.jp/stores/author/B0HBXGG4KV"
-         data-href-en="https://www.amazon.com/stores/author/B0HBXGG4KV">
-        <span class="al-t" data-ja="✍️ 著者ページ（Amazon）" data-en="✍️ Author page on Amazon">✍️ 著者ページ（Amazon）</span>
-        <span class="al-go">➜</span>
-        <span class="al-s" data-ja="フォローすると、最終章「白編」が出たときに通知が届きます。" data-en="Follow to be notified when the final chapter — The White Edition — arrives.">フォローすると、最終章「白編」が出たときに通知が届きます。</span>
-      </a>
-      <p id="affil">※ 書籍リンクはAmazonアソシエイトのリンクです。適格販売により収入を得ています。<br>
+      <div id="authorwrap">
+        <a id="authorlink" href="https://www.amazon.co.jp/stores/author/B0HBXGG4KV?tag=motomune-22" target="_blank" rel="noopener"
+           data-href-ja="https://www.amazon.co.jp/stores/author/B0HBXGG4KV?tag=motomune-22"
+           data-href-en="https://www.amazon.com/stores/author/B0HBXGG4KV?tag=motomune05-20">
+          <span class="al-t" data-ja="✍️ Amazonで著者をフォロー" data-en="✍️ Follow the author on Amazon">✍️ Amazonで著者をフォロー</span>
+          <span class="al-go">➜</span>
+        </a>
+        <p id="authornote" data-ja="フォローすると、最終章「白編」が出たときに通知が届きます。" data-en="Follow to be notified when the final chapter — The White Edition — arrives.">フォローすると、最終章「白編」が出たときに通知が届きます。</p>
+      </div>
+      <p id="affil">※ このページのAmazonへのリンクはアソシエイトリンクです。適格販売により収入を得ています。<br>
       As an Amazon Associate, the author earns from qualifying purchases.</p>
     </div>
 

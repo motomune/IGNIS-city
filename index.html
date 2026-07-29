@@ -2143,7 +2143,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v220';
+    const IGNIS_BUILD='2026-07-23-v221';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5558,6 +5558,18 @@
       const buyBtn=document.getElementById('land-buy-btn');
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
+        // 土地は1人1マスまで（DB側のトリガーでも強制。ここは分かりやすい案内用）
+        try{
+          const{count:owned}=await db.from('lands').select('grid_x',{count:'exact',head:true}).eq('owner_id',currentUser.id);
+          if((owned||0)>=1){
+            showToast(currentLang==='ja'
+              ?'🔒 土地は1人1マスまでです（今の土地を売却すると新しく取得できます）'
+              :'🔒 One land per player. Sell your current land to buy another.');
+            buyBtn.disabled=false;
+            buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${price}コイン）`:`🔥 Get this land (${price} coins)`;
+            return;
+          }
+        }catch(_){/* 取得失敗時はDBトリガーに任せる */}
         const{data:ud}=await db.from('users').select('coin_column,username,x_username').eq('id',currentUser.id).single();
         const balance=ud?ud.coin_column||0:0;
         if(price>0&&balance<price){
@@ -5581,7 +5593,9 @@
         showToast(`🏡 土地を取得！（-${price}コイン）`);openLandPanel(gx,gz);
       }catch(e){
         console.warn('land buy error:',e.message);
-        if(String(e.message||'').includes('reserved_zone'))showToast(currentLang==='ja'?'⛔ 中央エリアは「再生の殿堂」用に保護されています':'⛔ The central area is reserved for the Hall of Rebirth');
+        const _msg=String(e.message||'');
+        if(_msg.includes('reserved_zone'))showToast(currentLang==='ja'?'⛔ 中央エリアは「再生の殿堂」用に保護されています':'⛔ The central area is reserved for the Hall of Rebirth');
+        else if(_msg.includes('land_limit_reached'))showToast(currentLang==='ja'?'🔒 土地は1人1マスまでです（今の土地を売却すると新しく取得できます）':'🔒 One land per player. Sell your current land to buy another.');
         else showToast('取得に失敗しました: '+e.message);
         buyBtn.disabled=false;
         buyBtn.textContent=currentLang==='ja'?`🔥 この土地を取得（${price}コイン）`:`🔥 Get this land (${price} coins)`;
@@ -6757,6 +6771,25 @@
       mat.alpha=pending?0.72:1;
       mat.zOffset=-1; // 自分の壁とのZファイト防止（手前ビルには隠れる程度の最小バイアス）
       plane.material=mat;
+      // 格言の背面に暗い板を1枚敷く：壁の窓の灯りが透けて文字が読みにくくなるのを防ぐ
+      try{
+        const backId=meshId+'_back';
+        const old=scene.getMeshByName(backId);if(old)old.dispose();
+        const back=BABYLON.MeshBuilder.CreatePlane(backId,{width:planeW*1.10,height:planeH*1.04,sideOrientation:side},scene);
+        back.position.copyFrom(plane.position);
+        back.rotation=plane.rotation.clone();
+        back.isPickable=false;
+        const bmat=new BABYLON.StandardMaterial(backId+'_m',scene);
+        bmat.diffuseColor=new BABYLON.Color3(0,0,0);
+        bmat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
+        bmat.specularColor=new BABYLON.Color3(0,0,0);
+        bmat.disableLighting=true;
+        bmat.alpha=0.82;
+        bmat.zOffset=-0.5;   // 壁より手前・格言より奥
+        bmat.freeze();
+        back.material=bmat;
+        plane.onDisposeObservable.add(()=>{try{back.dispose();}catch(_){}}); // 格言を消したら一緒に消す
+      }catch(e){console.warn('[IGNIS] motto backing',e.message);}
     }
     // ========================================
     // ビル詳細モーダル
@@ -8526,6 +8559,46 @@
         });
       });
     }
+    // ===== 夜景の窓（全ビルで1枚を共有＝メモリ約0.5MB・毎フレーム負荷ゼロ） =====
+    // ポストプロセス（ブルーム）や接地影は入れない：スマホでの負荷源になるため。
+    let _winTex=null;
+    function getWindowTexture(){
+      if(_winTex||!window.BABYLON||!scene)return _winTex;
+      try{
+        const S=256,H=512;
+        // ミップマップ有効：スマホで移動時のチラつきを抑え、遠景のサンプリングも軽くなる
+        const tex=new BABYLON.DynamicTexture('winTex',{width:S,height:H},scene,true);
+        const ctx=tex.getContext();
+        ctx.fillStyle='#000000';ctx.fillRect(0,0,S,H); // 黒＝発光なし（壁は本体色のまま）
+        let seed=20260729;
+        const rnd=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648;};
+        const cols=7,rows=20,cellW=S/cols,cellH=H/rows;
+        const w=cellW*0.46,h=cellH*0.40;   // 窓は小さめ＝壁の余白を残す
+        for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+          const v=rnd();
+          let col;
+          if(v<0.72)      col='rgba(0,0,0,1)';          // 夜は大半が消灯
+          else if(v<0.92) col='rgba(255,206,130,1)';    // 暖色の灯り
+          else            col='rgba(170,210,255,1)';    // 白色の灯り
+          ctx.fillStyle=col;
+          ctx.fillRect(c*cellW+(cellW-w)/2, r*cellH+(cellH-h)/2, w, h);
+        }
+        tex.update();
+        _winTex=tex;
+      }catch(e){console.warn('[IGNIS] window texture',e.message);}
+      return _winTex;
+    }
+    // 高さに応じて窓の段数を合わせる（共有テクスチャなのでUV側で調整する）
+    function applyWindowUV(mesh,height){
+      if(!mesh)return;
+      try{
+        const uv=mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
+        if(!uv)return;
+        const vs=Math.max(1,Math.round((height||10)/6));
+        for(let i=1;i<uv.length;i+=2)uv[i]*=vs;
+        mesh.setVerticesData(BABYLON.VertexBuffer.UVKind,uv);
+      }catch(_){}
+    }
     function applyBuildingRankColor(mat,viewCount,mesh,x,z,buildingHeight){
       mat.specularColor=new BABYLON.Color3(0.6,0.6,0.75);
       const key=mat.uniqueId;
@@ -8546,8 +8619,16 @@
         animatedBuildingMats.set(key,{mat,type:'gold',mesh});
         ensureBuildingAnimation();
       } else {
+        // 通常ビル：暗い壁に窓の灯りを乗せる（金・虹は発光アニメがあるので対象外）
         mat.diffuseColor=new BABYLON.Color3(0.32,0.35,0.40);
-        mat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
+        const wt=getWindowTexture();
+        if(wt){
+          mat.emissiveTexture=wt;
+          mat.emissiveColor=new BABYLON.Color3(0.32,0.29,0.24); // 近づいた時に白っぽくならない量に調整
+          applyWindowUV(mesh,buildingHeight);
+        }else{
+          mat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
+        }
       }
       if(mesh){mesh.onDisposeObservable.add(()=>{animatedBuildingMats.delete(key);});}
     }

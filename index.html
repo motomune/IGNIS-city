@@ -2146,7 +2146,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v225';
+    const IGNIS_BUILD='2026-07-23-v226';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5149,6 +5149,14 @@
                            :`rgba(0,0,0,${0.05+rn()*0.10})`;
           g.fillRect(rn()*S,rn()*S,1+Math.round(rn()*1.6),1+Math.round(rn()*1.6));
         }
+        // うっすら濡れた路面（街灯を含んだ夜の路面らしさ。明るい斑をぼかして置く）
+        for(let i=0;i<14;i++){
+          const px=rn()*S,py=rn()*S,pr=14+rn()*46;
+          const gr=g.createRadialGradient(px,py,1,px,py,pr);
+          gr.addColorStop(0,`rgba(150,170,205,${0.05+rn()*0.05})`);
+          gr.addColorStop(1,'rgba(150,170,205,0)');
+          g.fillStyle=gr;g.beginPath();g.arc(px,py,pr,0,Math.PI*2);g.fill();
+        }
         // 舗装の目地（タイルの継ぎ目）
         g.strokeStyle='rgba(0,0,0,0.34)';g.lineWidth=2;
         g.beginPath();g.moveTo(0,0.5);g.lineTo(S,0.5);g.moveTo(0.5,0);g.lineTo(0.5,S);g.stroke();
@@ -5248,7 +5256,19 @@
           parts.push(b);
         }
         const m=BABYLON.Mesh.MergeMeshes(parts,true,true);
-        if(m){m.material=silMat;m.isPickable=false;m.freezeWorldMatrix();}
+        if(m){
+          m.material=silMat;m.isPickable=false;m.freezeWorldMatrix();
+          // 遠景のビル群にも同じ窓テクスチャを当てる（共有1枚なので追加コストはほぼゼロ）
+          try{
+            const wt=getWindowTexture();
+            if(wt){
+              silMat.emissiveTexture=wt;
+              silMat.emissiveColor=new BABYLON.Color3(0.14,0.13,0.12); // 遠景なので控えめ
+              const uv=m.getVerticesData(BABYLON.VertexBuffer.UVKind);
+              if(uv){for(let i=1;i<uv.length;i+=2)uv[i]*=3;m.setVerticesData(BABYLON.VertexBuffer.UVKind,uv);}
+            }
+          }catch(_){}
+        }
         silMat.freeze();
       }catch(e){console.warn('skyline skipped',e);}
     })();
@@ -5357,6 +5377,47 @@
       let n=0;
       if(currentUser){try{n=buildings.filter(b=>isOwnLandBuilding(b)).length;}catch(_){n=0;}}
       el.textContent=n;
+      try{refreshRooftopLights();}catch(_){}
+    }
+    // 屋上の航空障害灯：全ビル分をシンインスタンスで1メッシュにまとめる（ドローコールは合計+1のみ）
+    let _roofLights=null,_roofBlinkObs=null;
+    function refreshRooftopLights(){
+      if(!window.BABYLON||!scene||typeof buildings==='undefined')return;
+      try{
+        if(!_roofLights){
+          _roofLights=BABYLON.MeshBuilder.CreateSphere('roofLights',{diameter:0.5,segments:5},scene);
+          const rm=new BABYLON.StandardMaterial('roofLightMat',scene);
+          rm.emissiveColor=new BABYLON.Color3(1,0.13,0.10);
+          rm.diffuseColor=new BABYLON.Color3(0,0,0);
+          rm.specularColor=new BABYLON.Color3(0,0,0);
+          rm.disableLighting=true;
+          _roofLights.material=rm;
+          _roofLights.isPickable=false;_roofLights.applyFog=false;
+          // ゆっくり明滅（1つの監視だけ・全灯まとめて）
+          if(!_roofBlinkObs){
+            let t=0;
+            _roofBlinkObs=scene.onBeforeRenderObservable.add(()=>{
+              t+=0.016;
+              const k=0.55+0.45*Math.abs(Math.sin(t*1.6));
+              rm.emissiveColor.set(k,0.13*k,0.10*k);
+            });
+          }
+        }
+        const mats=[];
+        buildings.forEach(b=>{
+          if(!b||!b.mesh||b.mesh.isDisposed())return;
+          const h=Math.max(1,(b.totalFloors||b.baseFloors||1)*0.5);
+          const m=BABYLON.Matrix.Translation(b.x,h+0.45,b.z);
+          for(let i=0;i<16;i++)mats.push(m.m[i]);
+        });
+        if(mats.length){
+          _roofLights.thinInstanceSetBuffer('matrix',new Float32Array(mats),16);
+          _roofLights.setEnabled(true);
+        }else{
+          _roofLights.thinInstanceCount=0;
+          _roofLights.setEnabled(false);
+        }
+      }catch(e){console.warn('[IGNIS] roof lights',e.message);}
     }
     function drawOwnedTile(gx,gz,key,ownerId){
       if(landMap[key]&&landMap[key].tile)landMap[key].tile.dispose();
@@ -8698,7 +8759,7 @@
     }
     // ===== 夜景の窓（全ビルで1枚を共有＝メモリ約0.5MB・毎フレーム負荷ゼロ） =====
     // ポストプロセス（ブルーム）や接地影は入れない：スマホでの負荷源になるため。
-    let _winTex=null;
+    var _winTex=null;   // var：遠景スカイライン（この行より前に実行される）からも呼べるように
     function getWindowTexture(){
       if(_winTex||!window.BABYLON||!scene)return _winTex;
       try{
@@ -8765,10 +8826,20 @@
       } else {
         // 通常ビル：暗い壁に窓の灯りを乗せる（金・虹は発光アニメがあるので対象外）
         mat.diffuseColor=new BABYLON.Color3(0.125,0.14,0.185); // 夜らしく暗い壁（窓の灯りが映える）
+        // 既定の強いスペキュラ(0.6,0.6,0.75)だと壁全体が白っぽく光ってしまうので、夜のコンクリート相当に落とす
+        mat.specularColor=new BABYLON.Color3(0.10,0.11,0.14);
+        mat.specularPower=96;
         const wt=getWindowTexture();
         if(wt){
           mat.emissiveTexture=wt;
-          mat.emissiveColor=new BABYLON.Color3(0.32,0.29,0.24); // 近づいた時に白っぽくならない量に調整
+          // 窓の色みをビルごとに少し変える（全棟が同じ灯りに見えないように）
+          const warm=(function(v){const s=Math.abs(Math.sin(v))*43758.5453;return s-Math.floor(s);})((x||0)*3.17+(z||0)*7.91);
+          const base=0.32;
+          mat.emissiveColor=new BABYLON.Color3(
+            base*(0.86+warm*0.30),          // 暖色寄り〜
+            base*(0.90+warm*0.10),
+            base*(1.08-warm*0.34)           // 〜白色寄り
+          );
           applyWindowUV(mesh,buildingHeight,x,z);
         }else{
           mat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);

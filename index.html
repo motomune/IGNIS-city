@@ -2146,7 +2146,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v224';
+    const IGNIS_BUILD='2026-07-23-v225';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5131,7 +5131,41 @@
     const ground=BABYLON.MeshBuilder.CreateGround('ground',{width:200,height:200,subdivisions:20},scene);
     const groundMat=new BABYLON.StandardMaterial('groundMat',scene);
     groundMat.diffuseColor=new BABYLON.Color3(0.06,0.06,0.1);groundMat.specularColor=new BABYLON.Color3(0,0,0);
-    ground.material=groundMat;
+    ground.material=groundMat;  // 既定（テクスチャ生成に失敗した場合はこのまま）
+    // 地面の質感：256pxのタイル1枚を繰り返すだけ（ドローコール増ゼロ・約0.26MB）。
+    // 単色のっぺりだった路面に、目地とざらつきが出て解像感が上がる。
+    (function addGroundDetail(){
+      if(!window.BABYLON)return;
+      try{
+        const S=256;
+        const gt=new BABYLON.DynamicTexture('groundTex',{width:S,height:S},scene,true);
+        const g=gt.getContext();
+        g.fillStyle='#12121c';g.fillRect(0,0,S,S);
+        let sd=99173;const rn=()=>{sd=(sd*1103515245+12345)%2147483648;return sd/2147483648;};
+        // ざらつき（アスファルトの粒）
+        for(let i=0;i<2600;i++){
+          const v=rn();
+          g.fillStyle=v<0.5?`rgba(255,255,255,${0.012+rn()*0.03})`
+                           :`rgba(0,0,0,${0.05+rn()*0.10})`;
+          g.fillRect(rn()*S,rn()*S,1+Math.round(rn()*1.6),1+Math.round(rn()*1.6));
+        }
+        // 舗装の目地（タイルの継ぎ目）
+        g.strokeStyle='rgba(0,0,0,0.34)';g.lineWidth=2;
+        g.beginPath();g.moveTo(0,0.5);g.lineTo(S,0.5);g.moveTo(0.5,0);g.lineTo(0.5,S);g.stroke();
+        g.strokeStyle='rgba(255,255,255,0.035)';g.lineWidth=1;
+        g.beginPath();g.moveTo(0,2.5);g.lineTo(S,2.5);g.moveTo(2.5,0);g.lineTo(2.5,S);g.stroke();
+        gt.update();
+        gt.uScale=gt.vScale=20;                 // 1タイル=10ワールド単位（1マスの1/1）
+        gt.anisotropicFilteringLevel=4;         // 斜めから見た時のボケ・チラつきを抑える
+        const gmat=new BABYLON.StandardMaterial('groundDetailMat',scene);
+        gmat.diffuseTexture=gt;
+        gmat.diffuseColor=new BABYLON.Color3(1,1,1);
+        gmat.specularColor=new BABYLON.Color3(0.05,0.05,0.07);
+        gmat.specularPower=96;
+        ground.material=gmat;                   // 遠景の farGround は従来の単色のまま（負荷を増やさない）
+        gmat.freeze();
+      }catch(e){console.warn('[IGNIS] ground detail',e.message);}
+    })();
     ground.freezeWorldMatrix();
     // 世界の「縁」が見えないように、プレイ範囲の外側にも同じ夜色の床を地平線まで敷く（1メッシュ＝ほぼ無コスト）
     const farGround=BABYLON.MeshBuilder.CreateGround('farGround',{width:1600,height:1600,subdivisions:1},scene);
@@ -8668,7 +8702,7 @@
     function getWindowTexture(){
       if(_winTex||!window.BABYLON||!scene)return _winTex;
       try{
-        const S=256,H=512;
+        const S=512,H=1024;   // 解像度2倍：近づいた時の窓の輪郭がくっきりする（約2MB・共有1枚）
         // ミップマップ有効：スマホで移動時のチラつきを抑え、遠景のサンプリングも軽くなる
         const tex=new BABYLON.DynamicTexture('winTex',{width:S,height:H},scene,true);
         const ctx=tex.getContext();
@@ -8692,13 +8726,20 @@
       return _winTex;
     }
     // 高さに応じて窓の段数を合わせる（共有テクスチャなのでUV側で調整する）
-    function applyWindowUV(mesh,height){
+    function applyWindowUV(mesh,height,x,z){
       if(!mesh)return;
       try{
         const uv=mesh.getVerticesData(BABYLON.VertexBuffer.UVKind);
         if(!uv)return;
         const vs=Math.max(1,Math.round((height||10)/6));
-        for(let i=1;i<uv.length;i+=2)uv[i]*=vs;
+        // ビルごとに窓の並びをずらす（全棟が同じ模様に見えるのを防ぐ）。座標から決まるので毎回同じ。
+        const frac=v=>{const s=Math.abs(Math.sin(v))*43758.5453;return s-Math.floor(s);};
+        const offV=frac((x||0)*12.9898+(z||0)*78.233);
+        const offU=frac((x||0)*39.3468+(z||0)*11.135);
+        for(let i=0;i<uv.length;i+=2){
+          uv[i]+=offU;              // 横方向
+          uv[i+1]=uv[i+1]*vs+offV;  // 縦方向（高さに応じた段数＋ずらし）
+        }
         mesh.setVerticesData(BABYLON.VertexBuffer.UVKind,uv);
       }catch(_){}
     }
@@ -8728,7 +8769,7 @@
         if(wt){
           mat.emissiveTexture=wt;
           mat.emissiveColor=new BABYLON.Color3(0.32,0.29,0.24); // 近づいた時に白っぽくならない量に調整
-          applyWindowUV(mesh,buildingHeight);
+          applyWindowUV(mesh,buildingHeight,x,z);
         }else{
           mat.emissiveColor=new BABYLON.Color3(0.02,0.02,0.03);
         }

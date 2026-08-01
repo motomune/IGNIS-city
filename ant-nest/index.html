@@ -2553,6 +2553,18 @@ requestAnimationFrame(loop);
   };
   addEventListener('visibilitychange', function(){ if(document.hidden) reportCoinsToIgnis(true); });
   addEventListener('pagehide', function(){ reportCoinsToIgnis(true); });
+  // 画面を閉じる/裏に回した時は音を止める（スマホで鳴りっぱなしになるのを防ぐ）
+  function silence(){
+    try{ if(typeof bgmEl!=='undefined' && bgmEl) bgmEl.pause(); }catch(e){}
+    try{ if(typeof AC!=='undefined' && AC && AC.suspend) AC.suspend(); }catch(e){}
+  }
+  function unsilence(){
+    try{ if(typeof AC!=='undefined' && AC && AC.resume) AC.resume(); }catch(e){}
+    try{ if(typeof bgmOn!=='undefined' && bgmOn && typeof bgmEl!=='undefined' && bgmEl){ var p=bgmEl.play(); if(p&&p.catch)p.catch(function(){}); } }catch(e){}
+  }
+  addEventListener('visibilitychange', function(){ document.hidden?silence():unsilence(); });
+  addEventListener('pagehide', silence);
+  addEventListener('blur', silence);
   updateCoinHud();
 })();
 </script>

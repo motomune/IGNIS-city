@@ -2146,7 +2146,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v226';
+    const IGNIS_BUILD='2026-07-23-v227';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3133,21 +3133,32 @@
     showBgmUnlockBtn();
     return false;
   }
-  function bootIgnisAudioOnce(){
-    tryUnlockBgm();
+  function _detachAudioBootListeners(){
+    document.removeEventListener('pointerdown',bootIgnisAudioOnce,true);
+    document.removeEventListener('keydown',bootIgnisAudioOnce,true);
+    document.removeEventListener('click',bootIgnisAudioOnce,true);
+  }
+  // 再生に成功するまで毎回のタップで再挑戦する。
+  // （以前は最初のタップで即リスナーを外していたため、その1回が自動再生制限で弾かれると
+  //   BGMが二度と始まらず、「サウンドをOFF→ONにすると鳴る」状態になっていた）
+  async function bootIgnisAudioOnce(){
     IgnisAudio.init();
     const retroTrack=IGNIS_BGM.retro;
     if(retroTrack&&!IgnisAudio.muted){
       const rel=IgnisAudio._ensureRetroBgmElement();
       if(!rel.src)IgnisAudio._loadAudioSources(rel,retroTrack.sources,'retro-preload').catch(()=>{});
     }
-    document.removeEventListener('pointerdown',bootIgnisAudioOnce,true);
-    document.removeEventListener('keydown',bootIgnisAudioOnce,true);
-    document.removeEventListener('click',bootIgnisAudioOnce,true);
+    if(IgnisAudio.muted){_detachAudioBootListeners();return;}
+    let ok=false;
+    try{ok=await tryUnlockBgm();}catch(_){}
+    if(ok||IgnisAudio.bgmStarted)_detachAudioBootListeners();
   }
   document.addEventListener('pointerdown',bootIgnisAudioOnce,true);
   document.addEventListener('keydown',bootIgnisAudioOnce,true);
   document.addEventListener('click',bootIgnisAudioOnce,true);
+  // 画面を開いた直後にも一度だけ試す（許可されている環境では即座に鳴り、
+  // ブロックされても上のタップ時リトライが拾うので実害はない）
+  setTimeout(()=>{try{if(!IgnisAudio.muted&&!IgnisAudio.bgmStarted)tryUnlockBgm();}catch(_){}} ,300);
   document.addEventListener('click',(e)=>{
     if(e.target.closest('#sound-toggle'))return;
     const el=e.target.closest('button, .shape-btn, .ch-tab, .ranking-tab, .zukan-tab, #coin-count');

@@ -1278,6 +1278,18 @@ function toggleSound(){
   if(soundOn){ Sfx.play('click'); Bgm.play(); } else { Bgm.pause(); }
 }
 function audioKick(){ Sfx.resume(); if(soundOn) Bgm.play(); }  // call on a user gesture
+// 画面を閉じる/裏に回した時は音を止める（スマホで鳴りっぱなしになるのを防ぐ）
+(function(){
+  function silence(){ try{ Bgm.pause(); }catch(e){} try{ Sfx.setMuted(true); }catch(e){} }
+  function unsilence(){
+    if(!soundOn) return;
+    try{ Sfx.setMuted(false); Sfx.resume(); }catch(e){}
+    try{ Bgm.play(); }catch(e){}
+  }
+  document.addEventListener('visibilitychange', function(){ document.hidden?silence():unsilence(); });
+  window.addEventListener('pagehide', silence);
+  window.addEventListener('blur', silence);
+})();
 
 /* ---- 3D dice cube ---- */
 const PIPS = {1:['p-mc'],2:['p-tl','p-br'],3:['p-tl','p-mc','p-br'],4:['p-tl','p-tr','p-bl','p-br'],

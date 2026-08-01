@@ -2044,7 +2044,7 @@
     <iframe id="lifegame-frame" title="人生の灯" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#07070d;"></iframe>
   </div>
   <div id="antgame-overlay" style="position:fixed;inset:0;z-index:9999;background:rgba(7,7,13,0.8);backdrop-filter:blur(3px);display:none;">
-    <button type="button" onclick="closeAntGame()" title="閉じる" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 20px;border-radius:20px;font-weight:800;font-size:13px;cursor:pointer;">✕ ゲームを閉じる</button>
+    <button type="button" onclick="closeAntGame()" title="閉じる" style="position:absolute;top:10px;right:12px;z-index:3;background:rgba(0,0,0,0.72);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:7px 14px;border-radius:20px;font-weight:800;font-size:13px;cursor:pointer;">✕ 閉じる</button>
     <iframe id="antgame-frame" title="小さな仲間で、大きな巣を｜Little Diggers, Great Nest" allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#07070d;"></iframe>
   </div>
   <div id="gamepick-overlay" style="position:fixed;inset:0;z-index:9998;background:rgba(7,7,13,0.86);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;">
@@ -2146,7 +2146,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v227';
+    const IGNIS_BUILD='2026-07-23-v228';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

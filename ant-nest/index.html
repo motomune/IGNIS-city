@@ -39,6 +39,13 @@
              border-radius:50%; background:rgba(200,150,70,.85); border:2px solid rgba(255,255,255,.45);
              box-shadow:0 3px 10px rgba(0,0,0,.4); transition:transform .04s linear; pointer-events:none; }
   #acts { right:14px; bottom:16px; display:grid; grid-template-columns:repeat(3,76px); grid-auto-rows:48px; gap:7px; }
+  /* 縦画面：操作ボタンを右端に縦1列で並べる（画面下の閉じるボタン等と重ならないように） */
+  @media (orientation: portrait){
+    #acts { right:8px; bottom:14px; grid-template-columns:repeat(1,74px); grid-auto-rows:44px; gap:6px; }
+    #acts .btn { font-size:11px; border-radius:12px; }
+    #help { right:92px; bottom:150px; text-align:right; }
+    #hud { max-width:min(240px,52vw); }
+  }
   #shareBox { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:11; display:none;
     background:rgba(15,12,8,.9); border:2px solid #ffd86a; border-radius:12px; padding:10px 12px; color:#fff;
     font-size:13px; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(0,0,0,.5); }

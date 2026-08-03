@@ -2097,7 +2097,7 @@
       <div id="auth-subtitle">街づくりに参加しよう</div>
       <div id="founder-message">
         <span class="fm-head" id="fm-head">— IGNIS CITY について —</span>
-        <span class="fm-body" id="fm-body">IGNIS CITY（イグニス・シティ）は無料のブラウザゲーム。つらい時期を乗り越えてきた人たちの、実際の物語からできた静かな3Dの街です。ひとつひとつのビルは、困難をくぐり抜けた実在の誰か。「何が起きて、どう向き合い、いまのあなたに何を伝えたいか」——その物語が残されています。あなたと似た痛みを抱えた人を見つけ、その人がどう乗り越えたかを知り、ろうそくを灯して「君は一人じゃない」と伝えてください。物語が心に届いたら、その人をフォローして、次の一歩を応援できます。ひとりの人間が、日本語と英語でつくりました。</span>
+        <span class="fm-body" id="fm-body">IGNIS CITY（イグニス・シティ）は無料のブラウザゲーム。つらい時期を乗り越えてきた人たちの、実際の物語からできた静かな3Dの街です。ひとつひとつのビルは、困難をくぐり抜けた実在の誰か。「何が起きて、どう向き合い、いまのあなたに何を伝えたいか」——その物語が残されています。あなたと似た痛みを抱えた人を見つけ、その人がどう乗り越えたかを知り、ろうそくを灯して「君は一人じゃない」と伝えてください。お互いに利害関係がないからこそ、ここで交わされる言葉は本音です。物語が心に届いたら、その人をフォローして、次の一歩を応援できます。ひとりの人間が、日本語と英語でつくりました。</span>
         <span class="fm-last" id="fm-last">🔥 君は、一人じゃない。</span>
       </div>
       <div class="auth-tab-wrap">
@@ -2146,7 +2146,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v228';
+    const IGNIS_BUILD='2026-07-23-v229';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -4082,8 +4082,8 @@
       // 創設者の想い（タイトル画面）
       const fmHead=document.getElementById('fm-head');if(fmHead)fmHead.textContent=isJa?'— IGNIS CITY について —':'— About IGNIS CITY —';
       const fmBody=document.getElementById('fm-body');if(fmBody)fmBody.textContent=isJa
-        ?'IGNIS CITY（イグニス・シティ）は無料のブラウザゲーム。つらい時期を乗り越えてきた人たちの、実際の物語からできた静かな3Dの街です。ひとつひとつのビルは、困難をくぐり抜けた実在の誰か。「何が起きて、どう向き合い、いまのあなたに何を伝えたいか」——その物語が残されています。あなたと似た痛みを抱えた人を見つけ、その人がどう乗り越えたかを知り、ろうそくを灯して「君は一人じゃない」と伝えてください。物語が心に届いたら、その人をフォローして、次の一歩を応援できます。ひとりの人間が、日本語と英語でつくりました。'
-        :'IGNIS CITY is a free browser game — a quiet 3D city built from real people\'s stories of surviving hard times. Every building is a real person who lived through something hard and left their story: what happened, how they faced it, and what they\'d tell you now. Find the one whose struggle mirrors yours, see how they got through, and light a candle to say "you\'re not alone." If their story reaches you, follow them and support their next chapter. Made by one person, in English and Japanese.';
+        ?'IGNIS CITY（イグニス・シティ）は無料のブラウザゲーム。つらい時期を乗り越えてきた人たちの、実際の物語からできた静かな3Dの街です。ひとつひとつのビルは、困難をくぐり抜けた実在の誰か。「何が起きて、どう向き合い、いまのあなたに何を伝えたいか」——その物語が残されています。あなたと似た痛みを抱えた人を見つけ、その人がどう乗り越えたかを知り、ろうそくを灯して「君は一人じゃない」と伝えてください。お互いに利害関係がないからこそ、ここで交わされる言葉は本音です。物語が心に届いたら、その人をフォローして、次の一歩を応援できます。ひとりの人間が、日本語と英語でつくりました。'
+        :'IGNIS CITY is a free browser game — a quiet 3D city built from real people\'s stories of surviving hard times. Every building is a real person who lived through something hard and left their story: what happened, how they faced it, and what they\'d tell you now. Find the one whose struggle mirrors yours, see how they got through, and light a candle to say "you\'re not alone." Nobody here has anything to gain from anyone else. That is why the words exchanged in this city are honest. If their story reaches you, follow them and support their next chapter. Made by one person, in English and Japanese.';
       const fmLast=document.getElementById('fm-last');if(fmLast)fmLast.textContent=isJa?'🔥 君は、一人じゃない。':'🔥 You are not alone.';
       {const sc=document.getElementById('auth-scroll-cue-text');if(sc)sc.textContent=isJa?'下へスクロール':'Scroll down';}
       try{if(window.__ignisUpdateScrollCueText)window.__ignisUpdateScrollCueText();}catch(_){}
@@ -5759,8 +5759,10 @@
       buyBtn.disabled=true;buyBtn.textContent='処理中...';
       try{
         // 土地は1人1マスまで（DB側のトリガーでも強制。ここは分かりやすい案内用）
+        // 創設者は運営用に複数区画を持てるため対象外。
         try{
-          const{count:owned}=await db.from('lands').select('grid_x',{count:'exact',head:true}).eq('owner_id',currentUser.id);
+          const isFounder=(currentUser.id===RANK_OWNER_ID);
+          const{count:owned}=isFounder?{count:0}:await db.from('lands').select('grid_x',{count:'exact',head:true}).eq('owner_id',currentUser.id);
           if((owned||0)>=1){
             showToast(currentLang==='ja'
               ?'🔒 土地は1人1マスまでです（今の土地を売却すると新しく取得できます）'

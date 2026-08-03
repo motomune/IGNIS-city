@@ -227,7 +227,7 @@
       background: linear-gradient(135deg, #ff6a00, #ee0979);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px;
     }
-    #loading-founder { max-width:340px;margin:0 20px 22px;padding:12px 14px;border:1px solid rgba(255,106,0,0.28);border-radius:12px;background:linear-gradient(180deg,rgba(255,80,0,0.07),rgba(255,30,0,0.02));font-size:11px;line-height:1.95;color:rgba(255,255,255,0.82);text-align:left; }
+    #loading-founder { max-width:340px;margin:0 20px 22px;padding:12px 14px;border:1px solid rgba(255,106,0,0.28);border-radius:12px;background:linear-gradient(180deg,rgba(255,80,0,0.07),rgba(255,30,0,0.02));font-size:11px;line-height:1.8;color:rgba(255,255,255,0.82);text-align:left;white-space:pre-line;max-height:52vh;overflow-y:auto; }
     #loading-bar-wrap { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
     #loading-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #ff6a00, #ee0979); border-radius: 2px; transition: width 0.3s; }
     #loading-status { margin-top:14px;font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.06em;max-width:280px;text-align:center;line-height:1.5; }
@@ -1493,7 +1493,19 @@
   </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
-    <div id="loading-founder">3歳のとき、何者かに自宅を放火された。やがて消防士になったが、壮絶なハラスメントに耐えた末、公務中に起きた出来事が報道され、その道を去った。新たにチャレンジした世界では、親友だと信じていた相手が詐欺師で、多額の資金と大勢の信用を失った。それでも、離れずにいてくれた仲間と、妻の支えがあったから、僕は今ここにいる。「君は一人じゃない」、かつて誰かがそう信じさせてくれた。だから今度は、僕があなたの背中を押したい。その想いで、このゲームをつくった。</div>
+    <div id="loading-founder">三歳のとき、何者かに自宅を放火された。
+
+消防士になった。数年後、消せないものを抱えたまま、その道を離れた。
+
+次に築いたものでは、ほとんどすべてを失った。蓄えも、支えてくれた人たちの信用も。
+
+それでも僕が今ここにいるのは、離れずにいてくれた数人がいたから。そして、妻が支え続けてくれたから。
+
+「君は一人じゃない」。かつて誰かが、そう信じさせてくれた。
+
+今度は、僕の番だ。
+
+だから、この街をつくった。</div>
     <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
     <div id="loading-status">② ライブラリ読込中...</div>
     <div id="loading-tap-hint">画面をタップして開始</div>
@@ -1509,7 +1521,7 @@
           :(q==='en'||(q!=='ja'&&!/^ja/i.test(navigator.language||navigator.userLanguage||'')));
         if(!en)return;
         var f=document.getElementById('loading-founder');
-        if(f)f.textContent='When I was three, someone set fire to our home. I became a firefighter, and after enduring relentless harassment, an incident during my duty was reported in the news, and I left that path. In the business I turned to next, a man I trusted as a best friend turned out to be a con artist; I lost a great deal of money and the trust of many people. And yet — because a few who never left my side, and my wife, held me up, I am still here. "You are not alone." Someone once made me believe that. Now it is my turn to help carry you forward. That is why I built this game.';
+        if(f)f.textContent='When I was three, someone set fire to our home.\n\nI became a firefighter. Years later I left that path, carrying things I could not undo.\n\nIn what I built next, I lost almost everything — my savings, and the trust of people who had backed me.\n\nI am still here because a few people never left, and because my wife held me up.\n\n"You are not alone." Someone made me believe that once.\n\nNow it is my turn.\n\nThat is why I built this city.';
         var h=document.getElementById('loading-tap-hint');
         if(h)h.textContent='Tap the screen to start';
         // 回転プロンプト（縦向きスマホで最初に出る画面）も英語に。
@@ -2146,7 +2158,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v229';
+    const IGNIS_BUILD='2026-07-23-v230';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

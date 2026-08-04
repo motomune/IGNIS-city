@@ -2167,7 +2167,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v231';
+    const IGNIS_BUILD='2026-07-23-v232';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3269,6 +3269,7 @@
     const HIRE_COST=25;
     const HIRE_BULK_COUNT=10; // 「まとめて採用」ボタンの人数
     const STAFF_EXTEND_COST_PER=5;
+    const STAFF_EXTEND_WINDOW_DAYS=14; // 満期2週間前から延長できる（サーバー側は満期が近い順にp_count人ぶん延長する）
     const SCRATCH_REVEAL_BASE=0.38;
     // さらに短め（累積で約0.56倍）
     const SCRATCH_DURATION_FACTOR=1.3*1.5*1.5*0.75*0.75;
@@ -3963,8 +3964,8 @@
       }
     }
     // 任期のお知らせは2段階で出す。
-    //   ・残り2週間 … 「そろそろ満期」の予告（延長はまだ押せないので、その旨も書く）
-    //   ・残り1週間 … 延長ボタンが有効になるタイミングの本通知
+    //   ・残り2週間 … ここから「任期を3か月延長」が押せるようになる（第1報）
+    //   ・残り1週間 … 満期直前のリマインド（第2報）
     // soon14 は「残り8〜14日」の人数（1週間以内の人は下の通知で拾うので二重に数えない）。
     function maybeNotifyStaffNotice(soon,soon14,total){
       if(!currentUser)return;
@@ -3977,13 +3978,13 @@
       };
       if(soon14>0){
         push(`staff_notice14_${currentUser.id}_${today}_${soon14}`,
-          `⏳ 従業員${soon14}人が満期まで残り2週間です（全${total}人）。残り1週間になると「任期を3か月延長」が押せます`,
-          `⏳ ${soon14} staff have 2 weeks left on their term (total ${total}). "Extend term" unlocks at 1 week.`);
+          `⏳ 従業員${soon14}人が満期まで残り2週間です（全${total}人）。従業員獲得画面から「任期を3か月延長」が押せます`,
+          `⏳ ${soon14} staff have 2 weeks left on their term (total ${total}). You can now use "Extend term +3mo" on the staff screen.`);
       }
       if(soon>0){
         push(`staff_notice_${currentUser.id}_${today}_${soon}`,
-          `従業員${soon}人が満期まで1週間以内です（全${total}人）`,
-          `${soon} staff expire within 1 week (total ${total})`);
+          `⚠️ 従業員${soon}人が満期まで1週間以内です（全${total}人）。延長しないと満期で解雇されます`,
+          `⚠️ ${soon} staff expire within 1 week (total ${total}). They are dismissed at term end unless extended.`);
       }
     }
     document.addEventListener('pointerdown',(e)=>{
@@ -7221,19 +7222,19 @@
           const t=new Date(r.term_end).getTime();
           return t>now&&t-now<days*24*60*60*1000;
         }).length;
-        const soon=within(7);
-        const soon14=within(14)-soon; // 残り8〜14日（1週間以内の人は含めない）
+        const soon=within(STAFF_EXTEND_WINDOW_DAYS); // 延長対象＝満期2週間前から
+        const soon7=within(7);                       // うち1週間を切った人（通知の第2段用）
         const cost=soon*STAFF_EXTEND_COST_PER;
         if(info){
           info.innerHTML=isJa
-            ?`任期管理中の会社員：<b>${total}</b>人<br>7日以内に満了：<b>${soon}</b>人 · 延長コスト：<b>${cost}</b>コイン<br>2週間以内に満了：<b>${soon+soon14}</b>人`
-            :`Staff on term: <b>${total}</b> · expiring within 7d: <b>${soon}</b> · cost: <b>${cost}</b> coins<br>expiring within 14d: <b>${soon+soon14}</b>`;
+            ?`任期管理中の会社員：<b>${total}</b>人<br>2週間以内に満了：<b>${soon}</b>人 · 延長コスト：<b>${cost}</b>コイン<br><span style="opacity:0.65;">（うち1週間以内：${soon7}人）</span>`
+            :`Staff on term: <b>${total}</b><br>expiring within 2 weeks: <b>${soon}</b> · cost: <b>${cost}</b> coins<br><span style="opacity:0.65;">(within 1 week: ${soon7})</span>`;
         }
         if(btn){
           btn.textContent=isJa?`任期を3か月延長（${STAFF_EXTEND_COST_PER}コイン/人）`:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
           btn.disabled=soon===0;
         }
-        maybeNotifyStaffNotice(soon,soon14,total);
+        maybeNotifyStaffNotice(soon7,soon-soon7,total);
       }catch(e){
         console.warn('refreshStaffTermPanel:',e.message);
         if(info)info.textContent=isJa?'任期情報を読み込めませんでした':'Could not load term info';
@@ -7253,18 +7254,18 @@
         const soonList=list.filter(r=>{
           if(!r.term_end)return false;
           const t=new Date(r.term_end).getTime();
-          return t>now&&t-now<7*24*60*60*1000;
+          return t>now&&t-now<STAFF_EXTEND_WINDOW_DAYS*24*60*60*1000;
         });
         const count=soonList.length;
         if(count===0){
-          showToast(isJa?'延長対象（満期7日以内）の会社員がいません':'No staff expiring within 7 days');
+          showToast(isJa?'延長対象（満期2週間以内）の会社員がいません':'No staff expiring within 2 weeks');
           await refreshStaffTermPanel();
           return;
         }
         const cost=count*STAFF_EXTEND_COST_PER;
         const ok=confirm(isJa
-          ?`満期7日以内の会社員（${count}人）の任期を3か月延長しますか？\n（${cost}コイン）`
-          :`Extend staff expiring within 7 days (${count}) by 3 months?\n(${cost} coins)`);
+          ?`満期2週間以内の会社員（${count}人）の任期を3か月延長しますか？\n（${cost}コイン）`
+          :`Extend staff expiring within 2 weeks (${count}) by 3 months?\n(${cost} coins)`);
         if(!ok)return;
         if(btn){btn.disabled=true;btn.textContent=isJa?'延長中...':'Extending...';}
         const{data,error}=await db.rpc('extend_staff_terms',{p_count:count});
@@ -7364,7 +7365,23 @@
       const el=document.getElementById(containerId);
       if(!el)return;
       if(!arr||!arr.length){el.innerHTML='<span style="font-size:11px;color:rgba(255,255,255,0.3);">—</span>';return;}
-      el.innerHTML=arr.map(v=>`<span class="bm-past-chip">${escapeAttr(formatChipDisplayLabel(v))}</span>`).join('');
+      el.innerHTML=arr.map((v,i)=>`<span class="bm-past-chip" data-chip-i="${i}">${escapeAttr(formatChipDisplayLabel(v))}</span>`).join('');
+      // 定型の選択肢は辞書で英訳できるが、「その他」の自由記述は日本語のまま残ってしまう。
+      // 格言・過去詳細と同じ live 翻訳に乗せて、取れ次第その場で差し替える（取れなければ原文のまま）。
+      if(currentLang!=='ja'){
+        arr.forEach((v,i)=>{
+          const s=String(v);
+          if(!s.startsWith('other:'))return;
+          const ja=s.slice(6).trim();
+          if(!ja||!/[ぁ-んァ-ヶ一-龥]/.test(ja))return; // 元から英語ならそのまま
+          const before='Other: '+ja;
+          liveTranslate(ja).then(en=>{
+            if(!en||currentLang==='ja')return;
+            const t=el.querySelector(`[data-chip-i="${i}"]`);
+            if(t&&t.textContent===before)t.textContent='Other: '+en;
+          }).catch(()=>{});
+        });
+      }
     }
     function clearBuildingPastModal(){
       const pastEl=document.getElementById('building-modal-past');
@@ -8259,27 +8276,71 @@
       const old=document.getElementById('ad-slot-wrap');
       if(old)old.style.display='none';
     }
-    // ===== 再生の殿堂：当月最多蝋燭のビルを中央上空の金の星として掲げる =====
-    let hallData=null,hallMesh=null,_hallSpinObs=null;
+    // ===== 再生の殿堂：当月最多蝋燭のビルを、周囲を回る小さなダイヤの輝きで称える =====
+    // 以前は中央上空(0,42)に大きな金の星を1つ置いていたが、中央ビルが伸びると星がビルに
+    // 埋まってしまっていた。今はそのビルの周りを小粒のダイヤが公転し、キラキラと明滅する。
+    const HALL_GEM_COUNT=12;
+    let hallData=null,hallMesh=null,hallGems=[],hallPivot=null,_hallSpinObs=null;
+    function disposeHallGems(){
+      if(_hallSpinObs){scene.onBeforeRenderObservable.remove(_hallSpinObs);_hallSpinObs=null;}
+      hallGems.forEach(g=>{try{if(g&&!g.isDisposed())g.dispose();}catch(_){}});
+      hallGems=[];
+      if(hallMesh){try{hallMesh.dispose();}catch(_){}hallMesh=null;}
+      if(hallPivot){try{hallPivot.dispose();}catch(_){}hallPivot=null;}
+      animatedBuildingMats.delete('hall_star');
+    }
     async function loadMonthlyHall(){
       if(!db||!currentUser||!window.BABYLON)return;
       try{
         const{data,error}=await db.rpc('get_monthly_hall');
         if(error)throw error;
         hallData=data||null;
-        if(hallMesh){hallMesh.dispose();hallMesh=null;}
+        disposeHallGems();
         if(!hallData||(!hallData.motto&&!hallData.reborn))return;
+        // 称えるビルの位置と高さを取る（まだ描画されていなければ控えめな既定値）
+        const bx=Number(hallData.x)||0,bz=Number(hallData.z)||0;
+        const target=buildingMap[landKey(bx,bz)];
+        const bh=target?Math.max(4,(target.totalFloors||target.baseFloors||1)*0.5):20;
+        const ringR=6.4;          // ビルの幅(約5.5)より外側。壁に刺さらない距離
+        const ringY=bh*0.62;      // 上のほう。低層ビルでも見上げれば視界に入る高さ
+        const spread=Math.min(10,bh*0.3); // 上下のばらつき
         const mat=new BABYLON.StandardMaterial('hallMat',scene);
-        mat.diffuseColor=new BABYLON.Color3(0.95,0.8,0.1);
-        mat.emissiveColor=new BABYLON.Color3(0.6,0.45,0.05);
-        mat.specularColor=new BABYLON.Color3(0,0,0);
-        hallMesh=BABYLON.MeshBuilder.CreatePolyhedron('hall_star',{type:1,size:2.6},scene);
-        hallMesh.position=new BABYLON.Vector3(0,42,0);
+        mat.diffuseColor=new BABYLON.Color3(0.95,0.85,0.35);
+        mat.emissiveColor=new BABYLON.Color3(0.75,0.6,0.12);
+        mat.specularColor=new BABYLON.Color3(1,0.95,0.7);
+        mat.specularPower=64;
+        // 回転の中心。ここだけ回せば全ダイヤが公転する（行列更新は毎フレーム1つ分）
+        hallPivot=new BABYLON.TransformNode('hall_pivot',scene);
+        hallPivot.position=new BABYLON.Vector3(bx,ringY,bz);
+        // 1つだけ実体を作り、残りはインスタンス（描画コールはまとまるのでスマホでもほぼ無料）
+        hallMesh=BABYLON.MeshBuilder.CreatePolyhedron('hall_star',{type:1,size:0.62},scene);
         hallMesh.material=mat;
-        hallMesh.isPickable=true;
+        hallMesh.applyFog=false;
         animatedBuildingMats.set('hall_star',{mat,type:'gold'});
         if(typeof ensureBuildingAnimation==='function')ensureBuildingAnimation();
-        if(!_hallSpinObs)_hallSpinObs=scene.onBeforeRenderObservable.add(()=>{if(hallMesh&&!hallMesh.isDisposed())hallMesh.rotation.y+=0.004;});
+        for(let i=0;i<HALL_GEM_COUNT;i++){
+          const g=i===0?hallMesh:hallMesh.createInstance('hall_star_'+i);
+          const a=(i/HALL_GEM_COUNT)*Math.PI*2;
+          g.parent=hallPivot;
+          g.position=new BABYLON.Vector3(Math.cos(a)*ringR,Math.sin(a*2)*spread,Math.sin(a)*ringR);
+          g.isPickable=true; // タップで殿堂モーダルを開く
+          g.metadata={hallGem:true};
+          g._phase=a*1.7;    // 明滅・自転の位相をずらして「キラキラ」に見せる
+          hallGems.push(g);
+        }
+        let t=0;
+        _hallSpinObs=scene.onBeforeRenderObservable.add(()=>{
+          if(!hallPivot||hallPivot.isDisposed())return;
+          t+=0.016;
+          hallPivot.rotation.y+=0.0035; // ゆっくり公転
+          for(let i=0;i<hallGems.length;i++){
+            const g=hallGems[i];
+            if(!g||g.isDisposed())continue;
+            g.rotation.y+=0.05;                                   // 自転（面が光を拾う）
+            const k=0.55+0.75*Math.pow(Math.abs(Math.sin(t*1.5+g._phase)),3); // 鋭く瞬く
+            g.scaling.setAll(k);
+          }
+        });
       }catch(e){/* RPC未適用なら表示なし */}
     }
     // ===== サブスク課金（Stripe）=====
@@ -9186,7 +9247,7 @@
       // 飛行モードでもビル/塔/投影をタッチして詳細を開ける（地面=土地操作のみ後段でブロック）
       const pick=scene.pick(scene.pointerX,scene.pointerY);
       if(!pick.hit||!pick.pickedMesh)return;
-      if(pick.pickedMesh.name==='hall_star'){openHallModal();return;} // 再生の殿堂の星
+      if(pick.pickedMesh.metadata&&pick.pickedMesh.metadata.hallGem){openHallModal();return;} // 再生の殿堂のダイヤ（本体・インスタンスとも）
       if(pick.pickedMesh.name==='premium_holo'){ // プレミアム会員のビル投影 → 本物のビル詳細を開く
         const key=pick.pickedMesh.metadata&&pick.pickedMesh.metadata.holoOf;
         const orig=key&&buildingMap[key];

@@ -753,6 +753,14 @@
     .bm-stat-value.emp-rainbow { background:linear-gradient(135deg,#ff6a00,#a855f7,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
     .bm-stat-value.emp-gold { color: #f59e0b; }
     .bm-stat-value.emp-red { color: #ef4444; }
+    /* 従業員セル内の「採用」ショートカット（従業員獲得画面へ直行） */
+    #bm-hire-btn {
+      display:none; width:100%; margin-top:7px; padding:6px 6px;
+      background:linear-gradient(135deg,#06b6d4,#3b82f6); border:none; color:#fff;
+      border-radius:8px; font-size:11px; font-weight:800; cursor:pointer;
+      letter-spacing:0.02em; transition:opacity 0.2s;
+    }
+    #bm-hire-btn:hover { opacity:0.85; }
     #building-modal-owner { font-size:13px;color:rgba(255,255,255,0.5);text-align:center;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px; }
     #building-candle { display:none;align-items:center;justify-content:center;gap:12px;margin:10px 0 4px; }
     #candle-btn { background:linear-gradient(135deg,rgba(255,170,40,0.85),rgba(255,106,0,0.85));border:none;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px; }
@@ -1233,7 +1241,7 @@
       #auth-close { top: 22px; right: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
       #auth-lang-btn { top: 22px; left: 12px; min-height: 44px; min-width: 44px; padding: 10px 14px; font-size: 12px; }
       #gacha-title { font-size: 17px; }
-      #gacha-spin-btn, #gacha-hire-btn { font-size: 14px; padding: 12px; }
+      #gacha-spin-btn, #gacha-hire-btn, #gacha-hire10-btn { font-size: 14px; padding: 12px; }
       #gacha-prism-note { font-size: 10px !important; }
       #gacha-book { height: min(54vh, 320px); }
       #gacha-book-phase { width: 100%; }
@@ -1420,7 +1428,7 @@
       .gacha-rates { font-size:9px; }
       .rate-row { padding:2px 0 !important; }
       #gacha-cost-info, #gacha-prism-note { font-size:9px !important; margin-bottom:5px !important; }
-      #gacha-spin-btn, #gacha-hire-btn { font-size:12px; padding:9px; }
+      #gacha-spin-btn, #gacha-hire-btn, #gacha-hire10-btn { font-size:12px; padding:9px; }
       #hire-info, #staff-term-info { font-size:9px !important; }
       #gacha-modal-close { font-size:24px; width:34px; height:34px; }
       /* スクラッチ結果：3つのボタンが画面に収まるよう横並び＋小さく */
@@ -1655,7 +1663,7 @@
       <div id="building-modal-floors"></div>
       <div class="bm-stat-grid">
         <div class="bm-stat"><div class="bm-stat-label" id="bml-floors">総階数</div><div class="bm-stat-value" id="bm-floors-val">-</div></div>
-        <div class="bm-stat"><div class="bm-stat-label" id="bml-emp">従業員</div><div class="bm-stat-value" id="bm-emp-val">-</div></div>
+        <div class="bm-stat"><div class="bm-stat-label" id="bml-emp">従業員</div><div class="bm-stat-value" id="bm-emp-val">-</div><button id="bm-hire-btn" type="button" onclick="openHireFromBuildingModal()">👨‍💼 採用する</button></div>
         <div class="bm-stat"><div class="bm-stat-label" id="bml-views">閲覧回数</div><div class="bm-stat-value" id="bm-views-val">-</div></div>
         <div class="bm-stat"><div class="bm-stat-label" id="bml-coord">座標</div><div class="bm-stat-value" id="bm-coord-val">-</div></div>
       </div>
@@ -1740,7 +1748,8 @@
         <div style="flex:1;height:1px;background:rgba(255,255,255,0.1);"></div>
       </div>
       <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;" id="hire-info">会社員を採用：<span>25</span>コイン → 休職中プールに +1人</div>
-      <button id="gacha-hire-btn" onclick="handleHireEmployee()" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👨‍💼 会社員を採用（25コイン）</button>
+      <button id="gacha-hire-btn" onclick="handleHireEmployee(1)" style="width:100%;background:linear-gradient(135deg,#06b6d4,#3b82f6);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👨‍💼 会社員を採用（25コイン）</button>
+      <button id="gacha-hire10-btn" onclick="handleHireEmployee(10)" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#0ea5e9,#6366f1);border:none;color:#fff;padding:13px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity 0.2s;">👥 まとめて10人採用（250コイン）</button>
       <div id="staff-term-panel" style="display:none;">
         <div id="staff-term-info">—</div>
         <button id="staff-extend-btn" type="button" onclick="handleExtendStaffTerms()">任期を3か月延長（5コイン/人）</button>
@@ -2158,7 +2167,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v230';
+    const IGNIS_BUILD='2026-07-23-v231';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3258,6 +3267,7 @@
       if(hireInfo)hireInfo.innerHTML=(isJa?`採用 <span>${HIRE_COST}</span>コイン → 休職中プールに +1人`:`Hire <span>${HIRE_COST}</span> → +1 to bench`)+' · '+balHtml(HIRE_COST);
     }
     const HIRE_COST=25;
+    const HIRE_BULK_COUNT=10; // 「まとめて採用」ボタンの人数
     const STAFF_EXTEND_COST_PER=5;
     const SCRATCH_REVEAL_BASE=0.38;
     // さらに短め（累積で約0.56倍）
@@ -3952,18 +3962,29 @@
         renderNoticeList();
       }
     }
-    function maybeNotifyStaffNotice(soon,total){
-      if(!currentUser||soon<=0)return;
+    // 任期のお知らせは2段階で出す。
+    //   ・残り2週間 … 「そろそろ満期」の予告（延長はまだ押せないので、その旨も書く）
+    //   ・残り1週間 … 延長ボタンが有効になるタイミングの本通知
+    // soon14 は「残り8〜14日」の人数（1週間以内の人は下の通知で拾うので二重に数えない）。
+    function maybeNotifyStaffNotice(soon,soon14,total){
+      if(!currentUser)return;
       const today=new Date().toISOString().slice(0,10);
-      const key=`staff_notice_${currentUser.id}_${today}_${soon}`;
-      if(localStorage.getItem(key)==='1')return;
       const isJa=currentLang==='ja';
-      addNotice('staff',
-        `従業員${soon}人が満期まで1週間以内です（全${total}人）`,
-        `${soon} staff expire within 1 week (total ${total})`,
-        null,
-        key);
-      localStorage.setItem(key,'1');
+      const push=(key,ja,en)=>{
+        if(localStorage.getItem(key)==='1')return;
+        addNotice('staff',ja,en,null,key);
+        localStorage.setItem(key,'1');
+      };
+      if(soon14>0){
+        push(`staff_notice14_${currentUser.id}_${today}_${soon14}`,
+          `⏳ 従業員${soon14}人が満期まで残り2週間です（全${total}人）。残り1週間になると「任期を3か月延長」が押せます`,
+          `⏳ ${soon14} staff have 2 weeks left on their term (total ${total}). "Extend term" unlocks at 1 week.`);
+      }
+      if(soon>0){
+        push(`staff_notice_${currentUser.id}_${today}_${soon}`,
+          `従業員${soon}人が満期まで1週間以内です（全${total}人）`,
+          `${soon} staff expire within 1 week (total ${total})`);
+      }
     }
     document.addEventListener('pointerdown',(e)=>{
       const panel=document.getElementById('notice-panel');
@@ -4076,6 +4097,8 @@
       document.querySelectorAll('[data-i18n="emp-unit"],[data-i18n="emp-unit2"]').forEach(el=>el.textContent=isJa?'人':'');
       const orLabel=document.getElementById('gacha-or-label');if(orLabel)orLabel.textContent=isJa?'または':'OR';
       const hireBtn=document.getElementById('gacha-hire-btn');if(hireBtn)hireBtn.textContent=isJa?`👨‍💼 会社員を採用（${HIRE_COST}コイン）`:`👨‍💼 Hire Office Worker (${HIRE_COST} coins)`;
+      const hire10Btn=document.getElementById('gacha-hire10-btn');if(hire10Btn)hire10Btn.textContent=isJa?`👥 まとめて${HIRE_BULK_COUNT}人採用（${HIRE_COST*HIRE_BULK_COUNT}コイン）`:`👥 Hire ${HIRE_BULK_COUNT} at once (${HIRE_COST*HIRE_BULK_COUNT} coins)`;
+      const bmHireBtn=document.getElementById('bm-hire-btn');if(bmHireBtn)bmHireBtn.textContent=isJa?'👨‍💼 採用する':'👨‍💼 Hire';
       refreshGachaCostInfo();
       document.querySelectorAll('[data-placeholder-ja]').forEach(el=>{el.placeholder=isJa?el.dataset.placeholderJa:el.dataset.placeholderEn;});
       document.getElementById('auth-subtitle').textContent=isJa?'街づくりに参加しよう':'Join the city building';
@@ -4181,6 +4204,7 @@
       set('gacha-or-label','または','OR');
       refreshGachaCostInfo(); // 消費コイン＋所持コインの併記（スクラッチ・採用の両方）
       set('gacha-hire-btn',`👨‍💼 会社員を採用（${HIRE_COST}コイン）`,`👨‍💼 Hire Office Worker (${HIRE_COST} coins)`);
+      set('gacha-hire10-btn',`👥 まとめて${HIRE_BULK_COUNT}人採用（${HIRE_COST*HIRE_BULK_COUNT}コイン）`,`👥 Hire ${HIRE_BULK_COUNT} at once (${HIRE_COST*HIRE_BULK_COUNT} coins)`);
       const bookRatesTitle=document.getElementById('book-rates-title');
       if(document.getElementById('gacha-overlay')?.classList.contains('show'))renderBookRates(isJa);
       if(bookRatesTitle)bookRatesTitle.textContent=isJa?'出現率':'Drop Rates';
@@ -7015,7 +7039,8 @@
     // ========================================
     // 従業員採用（印鑑演出）
     // ========================================
-    function playHireContractAnimation(){
+    function playHireContractAnimation(count){
+      const n=Math.max(1,Math.floor(Number(count)||1));
       return new Promise(resolve=>{
         const isJa=currentLang==='ja';
         const overlay=document.getElementById('hire-stamp-overlay');
@@ -7029,8 +7054,8 @@
         if(header)header.textContent=isJa?'IGNIS CITY · 人事':'IGNIS CITY · HR';
         if(title)title.textContent=isJa?'採用通知書':'Employment Notice';
         if(body)body.innerHTML=isJa
-          ?'下記の者を IGNIS CITY に採用します。<br><br>職種：会社員<br>任期：3か月<br>配属：休職中プール（未配属）<br><br>本書による採用をもって正式に雇い入れとします。'
-          :'The following person is hereby hired into IGNIS CITY.<br><br>Role: Office Worker<br>Term: 3 months<br>Assignment: Bench pool (unassigned)<br><br>This document confirms official hiring.';
+          ?`下記の者を IGNIS CITY に採用します。<br><br>職種：会社員<br>人数：${n}名<br>任期：3か月<br>配属：休職中プール（未配属）<br><br>本書による採用をもって正式に雇い入れとします。`
+          :`The following ${n===1?'person is':'persons are'} hereby hired into IGNIS CITY.<br><br>Role: Office Worker<br>Headcount: ${n}<br>Term: 3 months<br>Assignment: Bench pool (unassigned)<br><br>This document confirms official hiring.`;
         if(sign)sign.textContent=isJa?'画面をタップして押印':'Tap to stamp';
         if(seal){seal.textContent=isJa?'採用':'HIRED';seal.classList.remove('stamped');}
         if(signature){
@@ -7084,48 +7109,74 @@
         overlay.addEventListener('pointerdown',commit,{once:true});
       });
     }
-    async function handleHireEmployee(){
-      const btn=document.getElementById('gacha-hire-btn');
-      if(btn.disabled)return;
+    // 採用（count人）。まとめ採用でも hire_employee RPC を1人ずつ呼ぶ＝1件ずつ原子的に確定するので、
+    // 途中でコインが尽きても「引かれたのに増えない」状態にならない（成立した分だけ確定して終わる）。
+    async function handleHireEmployee(count){
+      const want=Math.max(1,Math.floor(Number(count)||1));
+      const bulk=want>1;
+      const btn=document.getElementById(bulk?'gacha-hire10-btn':'gacha-hire-btn');
+      const otherBtn=document.getElementById(bulk?'gacha-hire-btn':'gacha-hire10-btn');
+      if(!btn||btn.disabled)return;
       const isJa=currentLang==='ja';
-      const notEnough=()=>showToast(isJa?`⚠️ コインが不足しています（必要：${HIRE_COST}）`:`⚠️ Not enough coins (need ${HIRE_COST})`);
+      const need=HIRE_COST*want;
+      const notEnough=()=>showToast(isJa?`⚠️ コインが不足しています（必要：${need}）`:`⚠️ Not enough coins (need ${need})`);
       // ① まず残高を確認。不足なら押した瞬間にメッセージ（アカウント作成の待ちを挟まない）
       let balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
-      if(balance<HIRE_COST){notEnough();return;}
+      if(balance<need){notEnough();return;}
       // ② 押した瞬間のフィードバック
       const originalText=btn.textContent;
-      btn.disabled=true;btn.textContent=isJa?'準備中...':'Preparing...';
+      const lock=(on)=>{btn.disabled=on;if(otherBtn)otherBtn.disabled=on;};
+      lock(true);btn.textContent=isJa?'準備中...':'Preparing...';
+      const unlock=()=>{lock(false);btn.textContent=originalText;};
       // ③ 保存が要るのでアカウントを用意（失敗したらボタンを戻す）
-      if(!await ensureAccountForAction()){btn.disabled=false;btn.textContent=originalText;return;}
+      if(!await ensureAccountForAction()){unlock();return;}
       // ④ アカウント作成で残高が変わっている場合があるので再確認
       balance=parseInt(document.getElementById('coin-count')?.textContent||'0',10)||0;
-      if(balance<HIRE_COST){notEnough();btn.disabled=false;btn.textContent=originalText;return;}
+      if(balance<need){notEnough();unlock();return;}
+      let hired=0,coinsLogged=false;
       try{
-        await playHireContractAnimation();
-        btn.textContent=isJa?'採用中...':'Hiring...';
-        const{data,error}=await db.rpc('hire_employee');
-        if(error)throw error;
-        if(!data||!data.ok){
-          if(data&&data.reason==='insufficient_coins'){
-            showToast(isJa?`⚠️ コインが不足しています（${data.coins}/${HIRE_COST}）`:`⚠️ Not enough coins (${data.coins}/${HIRE_COST})`);
-          } else {
-            showToast(isJa?'採用に失敗しました':'Hire failed');
+        await playHireContractAnimation(want); // 契約書の演出は10人でも1回（押印は一括）
+        let short=false;
+        for(let i=0;i<want;i++){
+          btn.textContent=bulk?(isJa?`採用中... ${i+1}/${want}`:`Hiring... ${i+1}/${want}`):(isJa?'採用中...':'Hiring...');
+          const{data,error}=await db.rpc('hire_employee');
+          if(error)throw error;
+          if(!data||!data.ok){
+            if(data&&data.reason==='insufficient_coins'){short=true;break;}
+            if(hired===0){showToast(isJa?'採用に失敗しました':'Hire failed');return;}
+            break;
           }
-          return;
+          hired++;
+          document.getElementById('coin-count').textContent=data.coins_remaining;
         }
-        document.getElementById('coin-count').textContent=data.coins_remaining;
+        if(hired===0){notEnough();return;}
         try{refreshGachaCostInfo();}catch(_){} // 採用後、開いたままの画面の所持コイン表示を更新
-        await recordCoin(-HIRE_COST,'hire_employee');
+        await recordCoin(-HIRE_COST*hired,'hire_employee');coinsLogged=true;
         await completeTask('hire');
         // 採用したら自動でビルに反映（ビルが無い間は休職として保持され、建てた時に入る）
         const assigned=await autoAssignBenchToLatestBuilding(true);
         await refreshEmployeeHeader();
         await refreshStaffTermPanel();
+        const shortNote=short?(isJa?`（コイン不足のため${hired}人で終了）`:` (stopped at ${hired} — out of coins)`):'';
         showToast(assigned>0
-          ?(isJa?`👨‍💼 会社員を1人採用！ビルに反映されました`:`👨‍💼 Hired 1 worker! Now working in your building`)
-          :(isJa?`👨‍💼 会社員を1人採用！（ビルを建てると自動で反映されます）`:`👨‍💼 Hired 1 worker! (auto-assigned once you place a building)`));
-      }catch(e){console.warn('hire error:',e.message);showToast(isJa?'採用に失敗: '+e.message:'Hire failed: '+e.message);}
-      finally{btn.disabled=false;btn.textContent=originalText;}
+          ?(isJa?`👨‍💼 会社員を${hired}人採用！ビルに反映されました${shortNote}`:`👨‍💼 Hired ${hired} worker(s)! Now working in your building${shortNote}`)
+          :(isJa?`👨‍💼 会社員を${hired}人採用！（ビルを建てると自動で反映されます）${shortNote}`:`👨‍💼 Hired ${hired} worker(s)! (auto-assigned once you place a building)${shortNote}`));
+      }catch(e){
+        console.warn('hire error:',e.message);
+        // 途中で落ちても、成立済みの人数は休職プールに入っているので表示を合わせておく
+        if(hired>0&&!coinsLogged){try{await recordCoin(-HIRE_COST*hired,'hire_employee');await refreshEmployeeHeader();}catch(_){}}
+        showToast(isJa?'採用に失敗: '+e.message:'Hire failed: '+e.message);
+      }
+      finally{unlock();}
+    }
+    // ビル詳細の「従業員」枠 →（詳細を閉じて）従業員獲得画面の採用ボタンまで送る
+    function openHireFromBuildingModal(){
+      closeBuildingModal();
+      openGachaModal(false);
+      setTimeout(()=>{
+        const target=document.getElementById('gacha-hire-btn');
+        if(target&&target.scrollIntoView)target.scrollIntoView({block:'center',behavior:'smooth'});
+      },160);
     }
     // ========================================
     // 従業員任期（解雇・延長）
@@ -7165,22 +7216,24 @@
         const list=rows||[];
         const total=list.length;
         const now=Date.now();
-        const soon=list.filter(r=>{
+        const within=days=>list.filter(r=>{
           if(!r.term_end)return false;
           const t=new Date(r.term_end).getTime();
-          return t>now&&t-now<7*24*60*60*1000;
+          return t>now&&t-now<days*24*60*60*1000;
         }).length;
+        const soon=within(7);
+        const soon14=within(14)-soon; // 残り8〜14日（1週間以内の人は含めない）
         const cost=soon*STAFF_EXTEND_COST_PER;
         if(info){
           info.innerHTML=isJa
-            ?`任期管理中の会社員：<b>${total}</b>人<br>7日以内に満了：<b>${soon}</b>人 · 延長コスト：<b>${cost}</b>コイン`
-            :`Staff on term: <b>${total}</b> · expiring within 7d: <b>${soon}</b> · cost: <b>${cost}</b> coins`;
+            ?`任期管理中の会社員：<b>${total}</b>人<br>7日以内に満了：<b>${soon}</b>人 · 延長コスト：<b>${cost}</b>コイン<br>2週間以内に満了：<b>${soon+soon14}</b>人`
+            :`Staff on term: <b>${total}</b> · expiring within 7d: <b>${soon}</b> · cost: <b>${cost}</b> coins<br>expiring within 14d: <b>${soon+soon14}</b>`;
         }
         if(btn){
           btn.textContent=isJa?`任期を3か月延長（${STAFF_EXTEND_COST_PER}コイン/人）`:`Extend term +3mo (${STAFF_EXTEND_COST_PER} coins each)`;
           btn.disabled=soon===0;
         }
-        maybeNotifyStaffNotice(soon,total);
+        maybeNotifyStaffNotice(soon,soon14,total);
       }catch(e){
         console.warn('refreshStaffTermPanel:',e.message);
         if(info)info.textContent=isJa?'任期情報を読み込めませんでした':'Could not load term info';
@@ -7470,6 +7523,15 @@
       empVal.textContent=isJa?`${buildingData.employees||0}人`:`${buildingData.employees||0}`;
       empVal.className='bm-stat-value';
       if(ci.name==='rainbow')empVal.classList.add('emp-rainbow');else if(ci.name==='gold')empVal.classList.add('emp-gold');else if(ci.name==='red')empVal.classList.add('emp-red');
+      // 自分のビルなら従業員枠から直接「従業員獲得」画面へ行けるようにする
+      {
+        const bmHire=document.getElementById('bm-hire-btn');
+        if(bmHire){
+          const canHire=isOwnLandBuilding(buildingData);
+          bmHire.style.display=canHire?'block':'none';
+          bmHire.textContent=isJa?'👨‍💼 採用する':'👨‍💼 Hire';
+        }
+      }
       document.getElementById('bm-views-val').textContent=(buildingData.viewCount||0).toLocaleString();
       document.getElementById('bml-views').textContent=isJa?'閲覧回数':'Views';
       document.getElementById('bm-coord-val').textContent=`${buildingData.x},${buildingData.z}`;

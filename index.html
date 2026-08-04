@@ -1138,6 +1138,7 @@
     .bm-past-chips { display:flex;flex-wrap:wrap;gap:5px; }
     .bm-past-chip { font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.75); }
     .bm-past-text { font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;white-space:pre-wrap;margin-top:4px; }
+    #bm-lastseen { margin-top:6px;font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.02em; }
     .bm-past-locked { margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(96,165,250,0.08);border:1px dashed rgba(96,165,250,0.35);font-size:11px;color:rgba(147,197,253,0.85);line-height:1.5; }
     /* スクショ禁止の文言枠：点滅して目立たせる */
     .bm-past-notice { margin:2px 0 10px;padding:9px 12px;border-radius:8px;background:rgba(239,68,68,0.16);border:1px solid rgba(239,68,68,0.7);font-size:11px;font-weight:800;color:#fecaca;line-height:1.55;animation:pastNoticeGlow 1.4s ease-in-out infinite; }
@@ -1706,6 +1707,7 @@
       </div>
       <div id="building-modal-notes" style="display:none;"><div id="building-modal-notes-label">📝 備考</div><div id="building-modal-notes-text"></div></div>
       <div id="building-modal-owner"></div>
+      <div id="bm-lastseen" style="display:none;"></div>
       <div class="modal-scroll-cue" aria-hidden="true"><span class="cue-arrow">⌄</span><span class="cue-text scroll-cue-text">下へスクロール</span></div>
       </div>
     </div>
@@ -2167,7 +2169,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v232';
+    const IGNIS_BUILD='2026-07-23-v233';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -4876,6 +4878,7 @@
       }
       Promise.resolve().then(async()=>{
         try{
+          touchLastSeen(); // 最終ログイン（ビル詳細に表示する）
           await withTimeout(processExpiredStaff(),8000,'processExpiredStaff');
           await withTimeout(refreshEmployeeHeader(),8000,'refreshEmp');
           await refreshStaffTermPanel();
@@ -7295,6 +7298,44 @@
       }
     }
     // ========================================
+    // 最終ログイン
+    // ========================================
+    // ログイン時に users.last_seen_at を更新し、ビル詳細でオーナーの最終ログインとして表示する。
+    // 列が未作成でも失敗を握りつぶすだけで、他の処理は止めない。
+    async function touchLastSeen(){
+      if(!db||!currentUser)return;
+      try{await db.from('users').update({last_seen_at:new Date().toISOString()}).eq('id',currentUser.id);}
+      catch(_){/* v124 未適用 */}
+    }
+    // 「3日前」のようなざっくり表記にする（分単位の生時刻までは晒さない）
+    function formatLastSeen(iso,isJa){
+      if(!iso)return isJa?'不明':'Unknown';
+      const ms=Date.now()-new Date(iso).getTime();
+      if(!Number.isFinite(ms))return isJa?'不明':'Unknown';
+      const min=Math.floor(ms/60000),hr=Math.floor(min/60),day=Math.floor(hr/24);
+      if(min<5)return isJa?'たった今':'just now';
+      if(hr<1)return isJa?`${min}分前`:`${min} min ago`;
+      if(day<1)return isJa?`${hr}時間前`:`${hr} h ago`;
+      if(day<30)return isJa?`${day}日前`:`${day} d ago`;
+      const mo=Math.floor(day/30);
+      if(mo<12)return isJa?`${mo}か月前`:`${mo} mo ago`;
+      return isJa?`${Math.floor(mo/12)}年以上前`:`over ${Math.floor(mo/12)} y ago`;
+    }
+    async function showOwnerLastSeen(ownerId){
+      const el=document.getElementById('bm-lastseen');
+      if(!el)return;
+      const isJa=currentLang==='ja';
+      if(!db||!ownerId){el.style.display='none';return;}
+      const label=isJa?'🕒 最終ログイン：':'🕒 Last seen: ';
+      el.style.display='block';
+      el.textContent=label+(isJa?'確認中…':'checking…');
+      try{
+        const{data,error}=await db.from('users').select('last_seen_at').eq('id',ownerId).maybeSingle();
+        if(error)throw error;
+        el.textContent=label+formatLastSeen(data&&data.last_seen_at,isJa);
+      }catch(_){el.style.display='none';} // 列が無い環境では出さない
+    }
+    // ========================================
     // 従業員ヘッダー
     // ========================================
     async function refreshEmployeeHeader(){
@@ -7629,7 +7670,8 @@
           }
         }
         else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
-      } else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';}
+        showOwnerLastSeen(land.owner_id); // 🕒 最終ログイン（名前が伏せられていても出す）
+      } else{ownerEl.textContent=isJa?'オーナー不明':'Unknown owner';const ls=document.getElementById('bm-lastseen');if(ls)ls.style.display='none';}
       const mottoEl=document.getElementById('building-modal-motto');
       const notesEl=document.getElementById('building-modal-notes');
       const notesTextEl=document.getElementById('building-modal-notes-text');
@@ -7714,6 +7756,7 @@
           candleState.count=data.count;candleState.lit=true;
           candleState.relightAt=new Date(Date.now()+7*24*60*60*1000);
           renderCandleUI();
+          addCandleSparkle(candleState.x,candleState.z,Date.now()); // 灯した瞬間から24時間キラキラ
           loadCityDawn().catch(()=>{});    // 夜明けカウントダウンを更新
           claimWeeklyQuest().catch(()=>{}); // 週間クエスト達成チェック
           if(data.reward){
@@ -7872,10 +7915,10 @@
       mat.specularColor=new BABYLON.Color3(1,1,0.7);
       let mesh;
       if(t.kind==='rainbow'){
-        mesh=BABYLON.MeshBuilder.CreateSphere('daily_treasure',{diameter:3.6,segments:14},scene);
+        mesh=BABYLON.MeshBuilder.CreateSphere('daily_treasure',{diameter:2.6,segments:14},scene); // 胴体
         mat.diffuseColor=new BABYLON.Color3(1,1,1);mat.emissiveColor=new BABYLON.Color3(0.9,0.2,0.9); // 虹（観測ループで色を巡回）
       }else if(t.kind==='gold'){
-        mesh=BABYLON.MeshBuilder.CreateSphere('daily_treasure',{diameter:3.4,segments:12},scene);
+        mesh=BABYLON.MeshBuilder.CreateSphere('daily_treasure',{diameter:2.5,segments:12},scene); // 胴体
         mat.diffuseColor=new BABYLON.Color3(1,0.82,0.2);mat.emissiveColor=new BABYLON.Color3(0.95,0.68,0.06);
       }else{
         mesh=BABYLON.MeshBuilder.CreateCylinder('daily_treasure',{height:0.5,diameter:2.8,tessellation:24},scene);
@@ -7885,13 +7928,21 @@
       mesh.material=mat;
       mesh.position=new BABYLON.Vector3(t.x,t.y,t.z);
       mesh.isPickable=false;
-      // 熊のぬいぐるみ：耳を2つ付けて熊らしく（コインは耳なし）
+      // 熊のぬいぐるみ：胴体を軸に、頭・耳・鼻先・手足を付けて人形らしい形にする（コインは球のまま）。
+      // 素材は胴体と共有しているので、虹の色変化も全パーツに同時に効く。
       if(t.kind!=='coins'){
-        [-1,1].forEach(side=>{
-          const ear=BABYLON.MeshBuilder.CreateSphere('treasure_ear',{diameter:1.3,segments:8},scene);
-          ear.material=mat;ear.parent=mesh;ear.isPickable=false;
-          ear.position=new BABYLON.Vector3(side*1.05,1.25,0);
-        });
+        const part=(dia,x,y,z,sx,sy,sz)=>{
+          const p=BABYLON.MeshBuilder.CreateSphere('treasure_part',{diameter:dia,segments:8},scene);
+          p.material=mat;p.parent=mesh;p.isPickable=false;
+          p.position=new BABYLON.Vector3(x,y,z);
+          if(sx)p.scaling=new BABYLON.Vector3(sx,sy,sz);
+          return p;
+        };
+        part(1.70,0,1.55,0);                            // 頭
+        [-1,1].forEach(s=>part(0.70,s*0.62,2.22,0));    // 耳
+        part(0.75,0,1.32,0.68,1,0.8,0.9);               // 鼻先
+        [-1,1].forEach(s=>part(0.82,s*1.12,0.30,0.10)); // 腕
+        [-1,1].forEach(s=>part(0.90,s*0.60,-1.02,0.20));// 足
       }
       t.mesh=mesh;t.mat=mat;
     }
@@ -8276,17 +8327,115 @@
       const old=document.getElementById('ad-slot-wrap');
       if(old)old.style.display='none';
     }
-    // ===== 再生の殿堂：当月最多蝋燭のビルを、周囲を回る小さなダイヤの輝きで称える =====
-    // 以前は中央上空(0,42)に大きな金の星を1つ置いていたが、中央ビルが伸びると星がビルに
-    // 埋まってしまっていた。今はそのビルの周りを小粒のダイヤが公転し、キラキラと明滅する。
-    const HALL_GEM_COUNT=12;
-    let hallData=null,hallMesh=null,hallGems=[],hallPivot=null,_hallSpinObs=null;
+    // ===== 蝋燭のキラキラ：灯された瞬間から24時間、そのビルをオレンジの粒が包む =====
+    // 金にするとデイリー宝物のコインと紛らわしいのでオレンジ（蝋燭の炎の色）。
+    // 粒はビルの足元から屋上まで螺旋状に配置し、ゆっくり回りながら瞬く。
+    // タップの邪魔にならないよう isPickable=false（タップはビル本体に通る）。
+    const CANDLE_GLOW_MS=24*60*60*1000;
+    const CANDLE_SPARK_PER_BUILDING=10;
+    const CANDLE_SPARK_MAX_BUILDINGS=24; // スマホ保護：同時に光らせるビル数の上限
+    const CANDLE_SPARK_MAX=CANDLE_SPARK_PER_BUILDING*CANDLE_SPARK_MAX_BUILDINGS;
+    // 粒は thin instance（1メッシュ＋行列バッファ）で描く。何棟光っても描画は1回で済む。
+    let _sparkMesh=null,_sparkBuf=null,_sparkMat=null,_sparkRigs=new Map(),_sparkObs=null,_sparkTimer=null;
+    function ensureSparkMesh(){
+      if(_sparkMesh&&!_sparkMesh.isDisposed())return _sparkMesh;
+      _sparkMat=new BABYLON.StandardMaterial('candleSparkMat',scene);
+      _sparkMat.diffuseColor=new BABYLON.Color3(0,0,0);
+      _sparkMat.emissiveColor=new BABYLON.Color3(1.0,0.45,0.05); // 炎のオレンジ
+      _sparkMat.specularColor=new BABYLON.Color3(0,0,0);
+      _sparkMat.disableLighting=true; // 夜でも粒がはっきり光る
+      _sparkMesh=BABYLON.MeshBuilder.CreatePolyhedron('candle_spark',{type:1,size:0.42},scene);
+      _sparkMesh.material=_sparkMat;
+      _sparkMesh.applyFog=false;
+      _sparkMesh.isPickable=false;          // タップはビル本体に通す
+      _sparkMesh.alwaysSelectAsActiveMesh=true; // 粒は街中に散るので原点基準のカリングで消さない
+      _sparkBuf=new Float32Array(CANDLE_SPARK_MAX*16);
+      _sparkMesh.thinInstanceSetBuffer('matrix',_sparkBuf,16,false);
+      _sparkMesh.thinInstanceCount=0;
+      return _sparkMesh;
+    }
+    function removeCandleSparkle(key){
+      if(!_sparkRigs.delete(key))return;
+      if(!_sparkRigs.size){
+        if(_sparkObs){scene.onBeforeRenderObservable.remove(_sparkObs);_sparkObs=null;}
+        if(_sparkMesh&&!_sparkMesh.isDisposed())_sparkMesh.thinInstanceCount=0;
+      }
+    }
+    function addCandleSparkle(bx,bz,litAtMs){
+      if(!window.BABYLON||!scene)return;
+      const key=landKey(bx,bz);
+      const until=(litAtMs||Date.now())+CANDLE_GLOW_MS;
+      if(until<=Date.now())return;
+      const existing=_sparkRigs.get(key);
+      if(existing){existing.until=Math.max(existing.until,until);return;} // 灯し直しは期限だけ延ばす
+      if(_sparkRigs.size>=CANDLE_SPARK_MAX_BUILDINGS)return;
+      const b=buildingMap[key];
+      if(!b)return; // ビルがまだ描画されていない（後続の loadCandleSparkles で拾う）
+      const h=Math.max(3,(b.totalFloors||b.baseFloors||1)*0.5);
+      const w=(PRISMS[normalizePrism(b.shape)]||{}).w||5.5;
+      const r=w*0.5+1.1; // 壁のすぐ外側
+      ensureSparkMesh();
+      const gems=[];
+      for(let i=0;i<CANDLE_SPARK_PER_BUILDING;i++){
+        const f=(i+0.5)/CANDLE_SPARK_PER_BUILDING; // 0→1 で足元から屋上まで
+        gems.push({a:f*Math.PI*4,y:h*f,r,ph:i*1.9}); // 2周ぶんの螺旋
+      }
+      _sparkRigs.set(key,{cx:bx,cz:bz,gems,until});
+      if(!_sparkObs){
+        let t=0;
+        const m=BABYLON.Matrix.Identity();
+        _sparkObs=scene.onBeforeRenderObservable.add(()=>{
+          if(!_sparkMesh||_sparkMesh.isDisposed())return;
+          t+=0.016;
+          let n=0;
+          _sparkRigs.forEach(rig=>{
+            for(let i=0;i<rig.gems.length&&n<CANDLE_SPARK_MAX;i++){
+              const g=rig.gems[i];
+              const ang=g.a+t*0.28; // ビルの周りをゆっくり回る
+              // 鋭く瞬かせる（0.25〜1.15）。3乗で「消えている時間」を長くしてチカチカ感を出す
+              const k=0.25+0.9*Math.pow(Math.abs(Math.sin(t*1.9+g.ph)),3);
+              BABYLON.Matrix.ScalingToRef(k,k,k,m);
+              m.setTranslationFromFloats(rig.cx+Math.cos(ang)*g.r,g.y,rig.cz+Math.sin(ang)*g.r);
+              m.copyToArray(_sparkBuf,n*16);
+              n++;
+            }
+          });
+          _sparkMesh.thinInstanceCount=n;
+          if(n)_sparkMesh.thinInstanceBufferUpdated('matrix');
+        });
+      }
+    }
+    // 24時間経った分を消す（1分ごと）
+    function sweepCandleSparkles(){
+      const now=Date.now();
+      [..._sparkRigs.entries()].forEach(([k,rig])=>{if(rig.until<=now)removeCandleSparkle(k);});
+    }
+    async function loadCandleSparkles(){
+      if(!db||!window.BABYLON||!scene)return;
+      try{
+        const since=new Date(Date.now()-CANDLE_GLOW_MS).toISOString();
+        const{data,error}=await db.from('building_candles')
+          .select('building_x,building_z,created_at').gte('created_at',since);
+        if(error)throw error;
+        // 同じビルに複数灯っていたら「最後に灯された時刻」を採用する
+        const latest=new Map();
+        (data||[]).forEach(r=>{
+          const k=landKey(r.building_x,r.building_z);
+          const ms=new Date(r.created_at).getTime();
+          if(!latest.has(k)||latest.get(k).ms<ms)latest.set(k,{x:r.building_x,z:r.building_z,ms});
+        });
+        // 消えたぶんを片付けてから、新しいぶんを足す
+        [..._sparkRigs.keys()].forEach(k=>{if(!latest.has(k))removeCandleSparkle(k);});
+        latest.forEach(v=>addCandleSparkle(v.x,v.z,v.ms));
+        if(!_sparkTimer)_sparkTimer=setInterval(sweepCandleSparkles,60000);
+      }catch(e){/* テーブル未作成などは無表示 */}
+    }
+    // ===== 再生の殿堂：当月最多蝋燭のビルの、屋上のさらに上に金のダイヤを1つ掲げる =====
+    // 高さはそのビルの実寸から決めるので、ビルが伸びても中に埋まらない。
+    let hallData=null,hallMesh=null,_hallSpinObs=null;
     function disposeHallGems(){
       if(_hallSpinObs){scene.onBeforeRenderObservable.remove(_hallSpinObs);_hallSpinObs=null;}
-      hallGems.forEach(g=>{try{if(g&&!g.isDisposed())g.dispose();}catch(_){}});
-      hallGems=[];
       if(hallMesh){try{hallMesh.dispose();}catch(_){}hallMesh=null;}
-      if(hallPivot){try{hallPivot.dispose();}catch(_){}hallPivot=null;}
       animatedBuildingMats.delete('hall_star');
     }
     async function loadMonthlyHall(){
@@ -8297,49 +8446,28 @@
         hallData=data||null;
         disposeHallGems();
         if(!hallData||(!hallData.motto&&!hallData.reborn))return;
-        // 称えるビルの位置と高さを取る（まだ描画されていなければ控えめな既定値）
         const bx=Number(hallData.x)||0,bz=Number(hallData.z)||0;
         const target=buildingMap[landKey(bx,bz)];
         const bh=target?Math.max(4,(target.totalFloors||target.baseFloors||1)*0.5):20;
-        const ringR=6.4;          // ビルの幅(約5.5)より外側。壁に刺さらない距離
-        const ringY=bh*0.62;      // 上のほう。低層ビルでも見上げれば視界に入る高さ
-        const spread=Math.min(10,bh*0.3); // 上下のばらつき
         const mat=new BABYLON.StandardMaterial('hallMat',scene);
         mat.diffuseColor=new BABYLON.Color3(0.95,0.85,0.35);
         mat.emissiveColor=new BABYLON.Color3(0.75,0.6,0.12);
         mat.specularColor=new BABYLON.Color3(1,0.95,0.7);
         mat.specularPower=64;
-        // 回転の中心。ここだけ回せば全ダイヤが公転する（行列更新は毎フレーム1つ分）
-        hallPivot=new BABYLON.TransformNode('hall_pivot',scene);
-        hallPivot.position=new BABYLON.Vector3(bx,ringY,bz);
-        // 1つだけ実体を作り、残りはインスタンス（描画コールはまとまるのでスマホでもほぼ無料）
-        hallMesh=BABYLON.MeshBuilder.CreatePolyhedron('hall_star',{type:1,size:0.62},scene);
+        hallMesh=BABYLON.MeshBuilder.CreatePolyhedron('hall_star',{type:1,size:2.2},scene);
+        hallMesh.position=new BABYLON.Vector3(bx,bh+5.5,bz); // 屋上の上に浮かべる
         hallMesh.material=mat;
         hallMesh.applyFog=false;
+        hallMesh.isPickable=true;
+        hallMesh.metadata={hallGem:true}; // タップで殿堂モーダル
         animatedBuildingMats.set('hall_star',{mat,type:'gold'});
         if(typeof ensureBuildingAnimation==='function')ensureBuildingAnimation();
-        for(let i=0;i<HALL_GEM_COUNT;i++){
-          const g=i===0?hallMesh:hallMesh.createInstance('hall_star_'+i);
-          const a=(i/HALL_GEM_COUNT)*Math.PI*2;
-          g.parent=hallPivot;
-          g.position=new BABYLON.Vector3(Math.cos(a)*ringR,Math.sin(a*2)*spread,Math.sin(a)*ringR);
-          g.isPickable=true; // タップで殿堂モーダルを開く
-          g.metadata={hallGem:true};
-          g._phase=a*1.7;    // 明滅・自転の位相をずらして「キラキラ」に見せる
-          hallGems.push(g);
-        }
         let t=0;
         _hallSpinObs=scene.onBeforeRenderObservable.add(()=>{
-          if(!hallPivot||hallPivot.isDisposed())return;
+          if(!hallMesh||hallMesh.isDisposed())return;
           t+=0.016;
-          hallPivot.rotation.y+=0.0035; // ゆっくり公転
-          for(let i=0;i<hallGems.length;i++){
-            const g=hallGems[i];
-            if(!g||g.isDisposed())continue;
-            g.rotation.y+=0.05;                                   // 自転（面が光を拾う）
-            const k=0.55+0.75*Math.pow(Math.abs(Math.sin(t*1.5+g._phase)),3); // 鋭く瞬く
-            g.scaling.setAll(k);
-          }
+          hallMesh.rotation.y+=0.006;
+          hallMesh.position.y=bh+5.5+Math.sin(t*0.9)*0.8; // ふわりと上下
         });
       }catch(e){/* RPC未適用なら表示なし */}
     }
@@ -8699,7 +8827,7 @@
           addLocalView(buildingData.x,buildingData.z);
           buildingData.viewCount=data.view_count;
           if(buildingData.mesh&&buildingData.mesh.material){
-            applyBuildingRankColor(buildingData.mesh.material,data.view_count,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5);
+            applyBuildingRankColor(buildingData.mesh.material,buildingData.employees||0,buildingData.mesh,buildingData.x,buildingData.z,buildingData.totalFloors*0.5);
           }
           await checkViewTaskProgress();
           if(data.employees_added>0){
@@ -8952,13 +9080,17 @@
         mesh.setVerticesData(BABYLON.VertexBuffer.UVKind,uv);
       }catch(_){}
     }
-    function applyBuildingRankColor(mat,viewCount,mesh,x,z,buildingHeight){
+    // ビルの色は「配属した従業員数」で決まる（ルール表記どおり 300人=金 / 1000人=虹）。
+    // 以前ここに渡していたのは閲覧回数で、ルールとも図鑑・ビル詳細の表示とも食い違っていた。
+    function applyBuildingRankColor(mat,employees,mesh,x,z,buildingHeight){
       mat.specularColor=new BABYLON.Color3(0.6,0.6,0.75);
       const key=mat.uniqueId;
       animatedBuildingMats.delete(key);
+      const ci=getColorByEmployees(Math.max(0,Number(employees)||0));
       let tier='default';
-      if(isShowcaseBuilding(x,z))tier='rainbow';
-      else if(viewCount>=300)tier='gold';
+      if(isShowcaseBuilding(x,z))tier='rainbow'; // プレミアムのホログラム枠は従業員数によらず虹
+      else if(ci.name==='rainbow')tier='rainbow';
+      else if(ci.name==='gold')tier='gold';
       if(tier==='rainbow'){
         mat.diffuseColor=new BABYLON.Color3(1,0.2,0.5);
         mat.emissiveColor=new BABYLON.Color3(0.3,0.0,0.3);
@@ -9006,7 +9138,7 @@
       else mesh=BABYLON.MeshBuilder.CreateBox('b_'+Date.now(),{width:w,height,depth:w},scene);
       mesh.position=new BABYLON.Vector3(x,height/2,z);
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
-      applyBuildingRankColor(mat,viewCount,mesh,x,z,height);
+      applyBuildingRankColor(mat,employees,mesh,x,z,height);
       mesh.material=mat;
       const key=lKey||landKey(x,z);
       const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,viewTotal,ownerId};
@@ -9138,7 +9270,12 @@
       try{
         const mine=()=>new Set(buildings.filter(b=>b.ownerId===currentUser.id).map(b=>`${b.x}_${b.z}`));
         _candleRealtimeCh=db.channel('candles-hud-'+currentUser.id)
-          .on('postgres_changes',{event:'INSERT',schema:'public',table:'building_candles'},(p)=>{const r=p.new;if(r&&mine().has(`${r.building_x}_${r.building_z}`)){bumpCandleStat(1);revealCandleGiverMoment(r.user_id);}})
+          .on('postgres_changes',{event:'INSERT',schema:'public',table:'building_candles'},(p)=>{
+            const r=p.new;if(!r)return;
+            // 誰のビルであれ、灯った瞬間からキラキラを点ける（24時間）
+            try{addCandleSparkle(r.building_x,r.building_z,r.created_at?new Date(r.created_at).getTime():Date.now());}catch(_){}
+            if(mine().has(`${r.building_x}_${r.building_z}`)){bumpCandleStat(1);revealCandleGiverMoment(r.user_id);}
+          })
           .on('postgres_changes',{event:'DELETE',schema:'public',table:'building_candles'},(p)=>{const r=p.old;if(r&&mine().has(`${r.building_x}_${r.building_z}`))bumpCandleStat(-1);})
           .subscribe();
       }catch(e){console.warn('candle realtime',e.message);}
@@ -9230,7 +9367,8 @@
           loadResonanceMap().catch(()=>{});   // 共鳴マップ（同じ痛みのビルをミニマップで同色に）
           buildDawnMonument();                // 夜明けの記念碑（SQL未適用でも0回で建てる）
           loadCityDawn().catch(()=>{});       // 夜明けイベント状態＋HUD＋記念碑更新
-          loadMonthlyHall().catch(()=>{});    // 再生の殿堂（中央上空の金の星）
+          loadMonthlyHall().catch(()=>{});    // 再生の殿堂（対象ビルの屋上に浮かぶ金のダイヤ）
+          loadCandleSparkles().catch(()=>{}); // 24時間以内に蝋燭が灯ったビルのオレンジのキラキラ
           notifyMyCandleReplies().catch(()=>{}); // 蝋燭への返事の未読通知
           claimWeeklyQuest().catch(()=>{});   // 週間共同クエストの達成受け取り
           loadPremiumBar().catch(()=>{});     // プレミアム会員の紹介バー
@@ -9520,7 +9658,7 @@
       // 中央ビルは showcase なので色だけ虹に。高さ（color/motto）は実メッシュ totalFloors に一致させ、
       // 「色が途中で消える／格言だけ高すぎる」不一致を防ぐ。
       if(b.mesh&&b.mesh.material){
-        applyBuildingRankColor(b.mesh.material,b.viewCount||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
+        applyBuildingRankColor(b.mesh.material,b.employees||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }
     }
     async function openRanking(){document.getElementById('ranking-overlay').classList.add('open');await loadRanking();}

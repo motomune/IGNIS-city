@@ -2169,7 +2169,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v234';
+    const IGNIS_BUILD='2026-07-23-v235';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -3287,8 +3287,8 @@
     ];
     const CELL=10, GRID_HALF=100;
     const EMP_COLORS=[
-      {min:1000,name:'rainbow',r:1.0,g:0.0,b:1.0,label:'🌈 虹',labelEn:'🌈 Rainbow'},
-      {min:300, name:'gold',   r:0.98,g:0.75,b:0.1,label:'🥇 金',labelEn:'🥇 Gold'},
+      {min:300, name:'rainbow',r:1.0,g:0.0,b:1.0,label:'🌈 虹',labelEn:'🌈 Rainbow'},
+      {min:100, name:'gold',   r:0.98,g:0.75,b:0.1,label:'🥇 金',labelEn:'🥇 Gold'},
       {min:0,   name:'default',r:0.2,g:0.25,b:0.65,label:'🔵 標準',labelEn:'🔵 Default'},
     ];
     function getColorByEmployees(emp){for(const c of EMP_COLORS){if(emp>=c.min)return c;}return EMP_COLORS[EMP_COLORS.length-1];}
@@ -9080,7 +9080,7 @@
         mesh.setVerticesData(BABYLON.VertexBuffer.UVKind,uv);
       }catch(_){}
     }
-    // ビルの色は「配属した従業員数」で決まる（ルール表記どおり 300人=金 / 1000人=虹）。
+    // ビルの色は「配属した従業員数」で決まる（ルール表記どおり 100人=金 / 300人=虹）。
     // 以前ここに渡していたのは閲覧回数で、ルールとも図鑑・ビル詳細の表示とも食い違っていた。
     function applyBuildingRankColor(mat,employees,mesh,x,z,buildingHeight){
       mat.specularColor=new BABYLON.Color3(0.6,0.6,0.75);

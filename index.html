@@ -2169,7 +2169,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v233';
+    const IGNIS_BUILD='2026-07-23-v234';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -9098,13 +9098,13 @@
         animatedBuildingMats.set(key,{mat,type:'rainbow',mesh,baseY,height:buildingHeight||10});
         ensureBuildingAnimation();
       } else if(tier==='gold'){
+        // 金は演出なし＝明滅させない。色は固定で、金属らしさはスペキュラだけで出す。
         mat.diffuseColor=new BABYLON.Color3(1.0,0.84,0.0);
         mat.emissiveColor=new BABYLON.Color3(0.4,0.28,0.0);
         mat.specularColor=new BABYLON.Color3(1,0.9,0.4);
-        animatedBuildingMats.set(key,{mat,type:'gold',mesh});
-        ensureBuildingAnimation();
+        mat.specularPower=48;
       } else {
-        // 通常ビル：暗い壁に窓の灯りを乗せる（金・虹は発光アニメがあるので対象外）
+        // 通常ビル：暗い壁に窓の灯りを乗せる（虹は発光アニメがあるので対象外）
         mat.diffuseColor=new BABYLON.Color3(0.125,0.14,0.185); // 夜らしく暗い壁（窓の灯りが映える）
         // 既定の強いスペキュラ(0.6,0.6,0.75)だと壁全体が白っぽく光ってしまうので、夜のコンクリート相当に落とす
         mat.specularColor=new BABYLON.Color3(0.10,0.11,0.14);

@@ -2169,7 +2169,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v235';
+    const IGNIS_BUILD='2026-07-23-v236';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -7357,10 +7357,12 @@
         document.getElementById('emp-stats-block').style.display='flex';
       }catch(e){console.warn('refresh emp header:',e.message);}
     }
+    // 売却倍率の段階はビルの色（EMP_COLORS）と同じ基準にする。ここに人数を直書きすると、
+    // 色の条件を変えたときに「金なのに倍率は標準」というズレが出る。
     function getSellCoinMultiplier(employees){
-      const emp=Math.max(0,employees||0);
-      if(emp>=1000)return 8.0;
-      if(emp>=300)return 6.6;
+      const name=getColorByEmployees(Math.max(0,employees||0)).name;
+      if(name==='rainbow')return 8.0;
+      if(name==='gold')return 6.6;
       return 6.0;
     }
     function calcSellCoinReward(floors,employees){

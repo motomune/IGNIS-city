@@ -17,7 +17,7 @@
   #xpPct { color:#9fdcff; font-weight:800; }
   #stage { font-size: 13.5px; font-weight: 700; }
   #colony { margin-top: 3px; color: #ffd9a0; white-space: pre-line; }
-  #quest { margin-top: 5px; color: #9fe8ff; font-weight: 700; }
+  #quest { margin-top: 5px; color: #9fe8ff; font-weight: 700; white-space: pre-line; }
   #help {
     position: fixed; bottom: 96px; left: 10px; right: 10px; color: #e3d5bb; font-size: 11px;
     text-shadow: 0 1px 2px #000; pointer-events: none; text-align: center; opacity:.85;
@@ -639,7 +639,7 @@ function updateDigger(w, dt){
   if (w.load>0){ updateDig(w, dt); return; }             // 積載中(白アリ)→さらに掘る
   if (w.haul){ updateHaul(w, dt); return; }              // 物資の運搬を継続
   if (assignHaul(w)){ updateHaul(w, dt); return; }       // 卵/死骸/ゴミの運搬を優先
-  if (w.forage && gatherT<=0 && !isNight){ updateForage(w, dt); return; }   // 探索（夜は地表に出ず巣の中限定）
+  if (w.forage && gatherT<=0){ updateForage(w, dt); return; }   // 探索（夜も昼と同じように地表へ出る）
   updateDig(w, dt);                                      // 採掘アリ：設計図を掘る
 }
 // 探索アリ：地表を歩き、餌道フェロモンの強い方へ向かう（餌を見つけたらassignHaulが拾う）
@@ -671,8 +671,7 @@ function updateSandCarry(w, dt){
     if (!w.path){ w.path=bfsPath(wcx,wcy,(x,y)=>Math.abs(x-t.cx)<=1&&Math.abs(y-t.cy)<=1); w.pi=0; }
     if (w.path){ if (followPath(w,dt,WSPD)==="blocked") w.path=null; return; }
   }
-  // 夜は地表に出ない：埋め戻し先が無ければ砂を抱えたまま巣の中で待機
-  if (isNight){ w.wait=0.6+Math.random()*0.6; return; }
+  // 夜も昼と同じように地表へ運び出す（夜間の作業停止はなし）
   // ② 地上へ運んで薄く広く撒く（入口から離れ・低い列へ・左右交互に）
   if (followPath(w, dt, WSPD)==="moving") return;
   const cx=(w.x/CELL)|0, cy=(w.y/CELL)|0;
@@ -983,7 +982,7 @@ function updateFoods(dt){
 const carcasses = [];   // {x,y,kind,shape,col,r,value,carrier,vy,facing}
 const garbage   = [];   // {x,y,carrier,inMidden,t,vy}
 const coins     = [];   // ゴミが最終的にコインになる {x,y,t,vy}
-let coinCount   = 0, coinsToday = 0;   // 1日の獲得上限30枚
+let coinCount   = 0, coinsToday = 0;   // IGNISへの1日の反映上限は会員ティア別（無課金50/サブスク60/プレミア80）
 function spawnCarcass(x,y,kind,value){
   const d=ENEMY[kind]||{shape:"bug",col:"#7a7a5a",r:11};
   carcasses.push({x,y,kind,shape:d.shape,col:d.col,r:d.r,value:value||1,carrier:null,vy:0,facing:1});
@@ -1358,7 +1357,30 @@ function currentQuest(){
   if (questIdx<questDefs.length) return questDefs[questIdx];
   return {t:`夜を通算${nextSurvN}回生き延びる`, tEn:`Survive ${nextSurvN} nights total`, c:()=>survivedNights>=nextSurvN, p:()=>[Math.min(survivedNights,nextSurvN),nextSurvN], surv:true};
 }
-function questText(){ const q=currentQuest(), [c,t]=q.p(); const rw=(!q.surv && questIdx<3)?L('🐜働きアリ','🐜Worker Ant'):L('🐞アブラムシ','🐞Aphid'); return `🎯 ${L(q.t,q.tEn||q.t)}  ${c}/${t}　${L('報酬','reward')}→${rw}`; }
+// ---- 死骸ミッション（メインのクエストとは別に、ずっと並行して進む）----
+// 敵を倒すたびに死骸が出る＝killCount。5体刻みで100体まで、節目ごとに働きアリが1匹増える。
+const CORPSE_GOALS=[];
+for (let n=5;n<=100;n+=5) CORPSE_GOALS.push(n);
+let corpseIdx=0;
+function corpseGoal(){ return corpseIdx<CORPSE_GOALS.length ? CORPSE_GOALS[corpseIdx] : null; }
+function updateCorpseQuests(){
+  while (corpseIdx<CORPSE_GOALS.length && killCount>=CORPSE_GOALS[corpseIdx]){
+    const n=CORPSE_GOALS[corpseIdx]; corpseIdx++;
+    gainWorkerReward();
+    banner(L(`🎉 敵の死骸 ${n}体 達成！ 🐜働きアリ1匹を獲得！`,`🎉 ${n} enemy carcasses! Gained 1 🐜worker ant!`), "#ffe", 2.2);
+    sfx("quest");
+  }
+}
+function questText(){
+  const q=currentQuest(), [c,t]=q.p();
+  const rw=(!q.surv && questIdx<3)?L('🐜働きアリ','🐜Worker Ant'):L('🐞アブラムシ','🐞Aphid');
+  let s=`🎯 ${L(q.t,q.tEn||q.t)}  ${c}/${t}　${L('報酬','reward')}→${rw}`;
+  const g=corpseGoal();
+  s += g!=null
+    ? `\n💀 ${L(`敵の死骸を${g}体`,`Leave ${g} enemy carcasses`)}  ${Math.min(killCount,g)}/${g}　${L('報酬','reward')}→${L('🐜働きアリ','🐜Worker Ant')}`
+    : `\n💀 ${L(`敵の死骸 ${killCount}体（ミッション完了）`,`${killCount} carcasses — all missions cleared`)}`;
+  return s;
+}
 function gainAphidReward(){      // クエスト報酬：飼育済みアブラムシ1匹（甘露で食料）
   const cx=Math.max(3,Math.min(COLS-4, colonyCx+((Math.random()*8-4)|0))), cy=groundY(cx);
   aphids.push({x:cx*CELL+13, y:(cy-1)*CELL+12, state:"ranched", prod:8, vx:10, t:0});
@@ -1709,7 +1731,7 @@ function update(dt){
   const pop=workers.length+1;
   colonyFood = Math.max(0, colonyFood - dt*(0.01 + pop*0.0025));
   starving = colonyFood < 0.02;
-  if (starving){ for (const w of workers) w.hp -= dt*0.4/1.5; ant.hp -= dt*0.7/1.5; }  // 飢餓は緩やかに衰弱（体力の減りを1.5倍ゆっくり）
+  // 飢餓でも体力は減らさない（ダメージは攻撃を受けたときだけ）。食料は産卵・卵の育ちに効く。
   // --- 女王は女王の間にいる間、自動で産卵（食料に余裕がある時だけ＝産み過ぎで餓死させない）---
   if (stage().key==="queen" && roomTypeAt(ant.x,ant.y)==="queen" && colonyFood>=4){
     ant.autoLayT=(ant.autoLayT||0)-dt; if (ant.autoLayT<=0){ ant.autoLayT=7; layEgg(true); }
@@ -1726,7 +1748,7 @@ function update(dt){
     }
   } else {
     moveAnt(dt);
-    ant.hp -= (st.key==="queen"?0.7:1.0)*dt/1.5;   // 体力の減りを1.5倍ゆっくり
+    // 生きているだけでは体力は減らない（ダメージは攻撃を受けたときだけ）
   }
   // 咥えた死骸は追従＋食料庫で自動納品
   if (ant.cargo){
@@ -1772,6 +1794,7 @@ function update(dt){
   updateParts(dt);
   updateDmgs(dt);
   updateQuests();
+  updateCorpseQuests();
 
   if (ant.hp<=0){
     if (workers.length>0 || eggsArr.length>0){
@@ -2466,7 +2489,7 @@ function saveGame(){
       carcasses:carcasses.filter(c=>!c.carrier).map(c=>({x:c.x,y:c.y,kind:c.kind,value:c.value,stored:!!c.stored})),
       garbage:garbage.filter(g=>!g.carrier).map(g=>({x:g.x,y:g.y,inMidden:g.inMidden,t:g.t,coinVal:g.coinVal||1})),
       aphids:aphids.map(a=>({x:a.x,y:a.y,state:a.state,prod:a.prod,vx:a.vx})),
-      colonyFood,droppedCount,killCount,laidCount,maxColony,dayNum,survivedNights,dayT,isNight,questIdx,nextSurvN,
+      colonyFood,droppedCount,killCount,laidCount,maxColony,dayNum,survivedNights,dayT,isNight,questIdx,nextSurvN,corpseIdx,
       weather,weatherT,
       coins:coins.map(c=>({x:c.x,y:c.y,val:c.val||1})), coinCount, coinsToday, matured, roomsCompleted
     };
@@ -2510,6 +2533,8 @@ function loadGame(){
     colonyFood=s.colonyFood; droppedCount=s.droppedCount; killCount=s.killCount; laidCount=s.laidCount;
     maxColony=s.maxColony; dayNum=s.dayNum; survivedNights=s.survivedNights; dayT=s.dayT;
     isNight=s.isNight; questIdx=s.questIdx; nextSurvN=s.nextSurvN;
+    // 旧セーブには corpseIdx が無い。その場合は今の撃退数から達成済みの節目を数え直す
+    corpseIdx=(s.corpseIdx!=null)?s.corpseIdx:CORPSE_GOALS.filter(n=>n<=(killCount||0)).length;
     weather=s.weather||"clear"; weatherT=s.weatherT||14;
     coins.length=0; if(s.coins) for(const c of s.coins) coins.push({x:c.x,y:c.y,t:0,vy:0,val:c.val||1});
     coinCount=s.coinCount||0; coinsToday=s.coinsToday||0; matured=!!s.matured;
@@ -2544,7 +2569,7 @@ requestAnimationFrame(loop);
     +'background:rgba(10,8,4,0.82);border:1px solid rgba(255,210,90,0.5);color:#ffe27a;'
     +'font:700 12px/1.3 system-ui,sans-serif;padding:6px 13px;border-radius:999px;pointer-events:none;white-space:nowrap;';
   document.body.appendChild(hud);
-  var DCAP=Math.max(1,parseInt(new URLSearchParams(location.search).get('cap'),10)||30);  // 会員ティアの1日反映上限（親から）
+  var DCAP=Math.max(1,parseInt(new URLSearchParams(location.search).get('cap'),10)||50);  // 会員ティアの1日反映上限（親から）
   window.updateCoinHud=function(){
     try{ var refl=Math.min(coinsToday,DCAP);
       hud.textContent = JA ? ('🪙 '+coinCount+'枚　(IGNIS反映 '+refl+'/'+DCAP+')')

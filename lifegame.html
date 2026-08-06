@@ -316,7 +316,7 @@
 /* ---------- language ---------- */
 const params = new URLSearchParams(location.search);
 let lang = (params.get('lang') === 'en') ? 'en' : 'ja';
-const DCAP = Math.max(1, parseInt(params.get('cap'),10) || 30);   // 会員ティアの1日反映上限（親IGNISから）
+const DCAP = Math.max(1, parseInt(params.get('cap'),10) || 50);   // 会員ティアの1日反映上限（親IGNISから）
 const T = (o) => (o && o[lang] != null) ? o[lang] : (o ? o.ja : '');
 
 /* ---------- UI strings ---------- */
@@ -479,6 +479,49 @@ const ACT1 = [
    {label:{ja:'忙しいからと、早めに切り上げる',en:'Say you’re busy, cut it short'},
     eff:{money:+3,bond:-6,mind:-3},
     result:{ja:'仕事は進んだ。でも「今度ちゃんと話そう」の今度は、いつだろう。',en:'Work moved along. But “let’s really talk next time” — when is next time?'}},
+  ]
+ },
+ // ---- ここから「いいこと」側の章。第一章が試練だけにならないよう均衡をとる ----
+ {
+  tag:{ja:'第一章 ・ 追い風',en:'Chapter I · A Tailwind'},
+  title:{ja:'はじめて認められた日',en:'The day someone saw you'},
+  body:{ja:'誰も見ていないと思っていた地道な作業を、上の人がちゃんと見ていた。\n「君のそういうところ、いいと思う」。',
+    en:'The plain, unglamorous work you thought no one noticed — someone above you had seen it.\n“That thing you do — I like it.”'},
+  choices:[
+   {label:{ja:'素直に受け取って、礼を言う',en:'Take it in, and say thank you'},
+    eff:{trust:+10,mind:+8}, good:2,
+    result:{ja:'ほめられ慣れていない。でも、その言葉は長く残った。',en:'You’re not used to praise. But those words stayed a long time.'}},
+   {label:{ja:'手伝ってくれた人の名前を出す',en:'Name the people who helped you'},
+    eff:{trust:+6,bond:+12}, good:3,
+    result:{ja:'一人の手柄にしなかった。その姿も、誰かが見ている。',en:'You didn’t claim it alone. Someone saw that, too.'}},
+  ]
+ },
+ {
+  tag:{ja:'第一章 ・ 支え',en:'Chapter I · Support'},
+  title:{ja:'すぐ来てくれた人',en:'The one who came right away'},
+  body:{ja:'ひどく落ち込んだ夜、たいした説明もしていないのに、その人は来てくれた。\n何も聞かずに、ただ隣に座っていた。',
+    en:'On a night you were badly down, they came — though you’d barely explained.\nThey asked nothing, and simply sat beside you.'},
+  choices:[
+   {label:{ja:'情けないところも、正直に話す',en:'Be honest, even the ugly parts'},
+    eff:{bond:+12,mind:+9,trust:+4}, good:3,
+    result:{ja:'弱さを見せても、その人は帰らなかった。それが答えだった。',en:'You showed weakness and they didn’t leave. That was the answer.'}},
+   {label:{ja:'話さず、いてくれることに甘える',en:'Say nothing; just let them stay'},
+    eff:{bond:+8,mind:+7,health:+3}, good:2,
+    result:{ja:'言葉がなくても伝わる関係が、この世にはある。',en:'Some bonds carry meaning with no words at all.'}},
+  ]
+ },
+ {
+  tag:{ja:'第一章 ・ 好きなこと',en:'Chapter I · What You Love'},
+  title:{ja:'夢中になれるもの',en:'Something that pulls you in'},
+  body:{ja:'誰に頼まれたわけでもないのに、気づけば夜中まで続けていた。\nお金にはならない。でも、やめられない。',
+    en:'Nobody asked you to, yet there you were, still at it past midnight.\nIt earns nothing. And you can’t stop.'},
+  choices:[
+   {label:{ja:'採算を考えず、続けてみる',en:'Keep at it, profit aside'},
+    eff:{money:-4,mind:+13,health:-2}, good:2,
+    result:{ja:'心の芯が太くなった。これが後で効いてくる。',en:'Your core got sturdier. This pays off later.'}},
+   {label:{ja:'同じものが好きな人を探す',en:'Look for others who love it too'},
+    eff:{bond:+11,mind:+6}, good:2,
+    result:{ja:'好きなものが同じ、というだけで人は近づける。',en:'Loving the same thing is enough to bring people close.'}},
   ]
  },
 ];
@@ -792,6 +835,49 @@ const ACT3 = [ // rebirth / resolution
     result:{ja:'同じ痛みを抜けた人が、たしかにいる。それを知るだけで、少し息ができた。',en:'People really did pass through the same pain. Just knowing that, you could breathe a little.'}},
   ]
  },
+ // ---- ここから「報われる」側の章。第三章が再起の苦さだけにならないよう均衡をとる ----
+ {
+  tag:{ja:'第三章 ・ 実り',en:'Chapter III · The Harvest'},
+  title:{ja:'続けた人にだけ来る日',en:'The day that comes only to those who kept going'},
+  body:{ja:'派手なことは何もしていない。ただ、やめなかった。\nある朝、その積み重ねが、はっきりと形になって返ってきた。',
+    en:'You did nothing spectacular. You simply didn’t quit.\nOne morning, all of it came back in a shape you could hold.'},
+  choices:[
+   {label:{ja:'ここで一度、しっかり休む',en:'Stop here and rest properly'},
+    eff:{money:+16,health:+12,mind:+8}, good:2,
+    result:{ja:'走り続けた自分に、はじめて休みを許した。',en:'For the first time, you allowed yourself to stop running.'}},
+   {label:{ja:'支えてくれた人たちに分ける',en:'Share it with the people who held you up'},
+    eff:{money:+8,bond:+14,trust:+8}, good:3,
+    result:{ja:'一人で立ったのではない。それを、態度で示せた。',en:'You didn’t stand up alone — and you showed it, not just said it.'}},
+  ]
+ },
+ {
+  tag:{ja:'第三章 ・ 家族',en:'Chapter III · Family'},
+  title:{ja:'言えなかった一言',en:'The words you never said'},
+  body:{ja:'ずっと言えずにいた「ありがとう」を、今日なら言える気がした。\n受話器の向こうで、相手が少し黙った。',
+    en:'The “thank you” you could never say — today, you felt you could.\nOn the other end of the line, they went quiet for a moment.'},
+  choices:[
+   {label:{ja:'照れずに、最後まで言う',en:'Say it all, without flinching'},
+    eff:{bond:+15,mind:+10}, good:3,
+    result:{ja:'言えた。間に合ってよかった、と心から思った。',en:'You said it. And you were, truly, glad you were in time.'}},
+   {label:{ja:'会いに行く約束をする',en:'Promise to come and see them'},
+    eff:{money:-6,bond:+12,health:+4}, good:2,
+    result:{ja:'「今度」を、はじめて日付にした。',en:'For once, “sometime” became an actual date.'}},
+  ]
+ },
+ {
+  tag:{ja:'第三章 ・ 手渡す',en:'Chapter III · Handing It On'},
+  title:{ja:'かつての自分に似た人',en:'Someone like you used to be'},
+  body:{ja:'目の前の人が、昔の自分と同じ顔をしている。\nあの時、誰かがしてくれたことを、今度は自分ができる。',
+    en:'The person in front of you wears the face you used to wear.\nWhat someone once did for you, you can do now.'},
+  choices:[
+   {label:{ja:'具体的に手を貸す',en:'Help in a concrete way'},
+    eff:{money:-8,trust:+12,bond:+12}, good:3,
+    result:{ja:'励ましより、実際の一手のほうが効くことがある。',en:'Sometimes one real action beats any amount of encouragement.'}},
+   {label:{ja:'自分の失敗を、正直に話す',en:'Tell them honestly how you failed'},
+    eff:{mind:+10,bond:+10,trust:+6}, good:3,
+    result:{ja:'隠していた過去が、はじめて誰かの役に立った。',en:'The past you hid finally became useful to someone.'}},
+  ]
+ },
 ];
 
 /* =========================================================================
@@ -834,7 +920,7 @@ function decideEnding(){
   return 'survivor';
 }
 
-/* coin formula — driven by how you lived, not luck. cap 30. */
+/* coin formula — driven by how you lived, not luck. capped by DCAP. */
 function calcCoins(endingId){
   let c = 5;
   c += Math.floor((S.mind + S.bond) / 16);          // heart + bonds (≈ up to 12)
@@ -2230,6 +2316,112 @@ const EXTRA_EVENTS5 = [
   ]},
 ];
 BOARD_EVENTS.push(...EXTRA_EVENTS5);
+
+/* ---- HAPPY_EVENTS ----
+   盤面が損失・裏切り・病に寄りすぎていたので、「いいことも起きる」側を足す。
+   どちらを選んでも損はしない設計（悪い方の選択肢を置かない）。
+   ただの幸運ではなく、これまで積んできたものが返ってくる形にしている。 */
+const HAPPY_EVENTS = [
+ {icon:'🌱', theme:'work', title:{ja:'芽が出た',en:'It Took Root'}, body:{ja:'ずっと地味に続けてきたことが、思わぬところで実を結んだ。',en:'Something you kept doing quietly bore fruit where you least expected.'},
+  choices:[
+   {label:{ja:'素直に喜び、報告する',en:'Simply be glad, and tell someone'}, eff:{cash:10,mind:6,bond:4}, good:2,
+     result:{ja:'続けていた自分を、はじめて自分で認められた。',en:'For the first time, you gave yourself credit for keeping on.'}},
+   {label:{ja:'次の一手にすぐ回す',en:'Roll it straight into the next move'}, eff:{cash:14,mind:4}, good:1,
+     result:{ja:'火が消えないうちに、次へ。手応えは確かにあった。',en:'Onward while the fire still burns. The traction was real.'}},
+  ]},
+ {icon:'🎁', theme:'bond', title:{ja:'届いた小包',en:'A Package Arrives'}, body:{ja:'差出人を見て、思わず声が出た。何年も会っていない人の名前だった。',en:'You gasp at the sender’s name — someone you haven’t seen in years.'},
+  choices:[
+   {label:{ja:'すぐに電話をかける',en:'Call them right away'}, eff:{bond:10,mind:6}, good:2, addCompanion:true,
+     result:{ja:'「元気そうでよかった」。それだけで、十分だった。',en:'“Glad you sound well.” That alone was enough.'}},
+   {label:{ja:'丁寧に手紙で返す',en:'Write a careful letter back'}, eff:{bond:7,mind:5,trust:3}, good:2,
+     result:{ja:'言葉を選ぶ時間そのものが、あたたかかった。',en:'The very act of choosing the words was warm.'}},
+  ]},
+ {icon:'☕', theme:'rest', title:{ja:'なんでもない朝',en:'An Ordinary Morning'}, body:{ja:'目が覚めて、痛むところがない。窓の外が、やけに明るい。',en:'You wake, and nothing hurts. Outside the window, it’s unusually bright.'},
+  choices:[
+   {label:{ja:'ゆっくり朝食をとる',en:'Take a slow breakfast'}, eff:{health:8,mind:7}, good:2,
+     result:{ja:'何も起きない日が、こんなに贅沢だと知った。',en:'You learned how luxurious a day with nothing in it can be.'}},
+   {label:{ja:'散歩に出る',en:'Go out for a walk'}, eff:{health:9,mind:5,bond:2}, good:1,
+     result:{ja:'挨拶を交わした。名前も知らない人と、それでも。',en:'You exchanged a greeting — with someone whose name you don’t know.'}},
+  ]},
+ {icon:'🏅', theme:'work', title:{ja:'見ていた人',en:'Someone Was Watching'}, body:{ja:'誰も気づいていないと思っていた仕事を、ちゃんと見ていた人がいた。',en:'Work you thought no one noticed — someone had been watching all along.'},
+  choices:[
+   {label:{ja:'ありがたく受け取る',en:'Accept it gratefully'}, eff:{cash:8,trust:8,mind:5}, good:2,
+     result:{ja:'手を抜かなかった日々に、遅れて意味がついた。',en:'The days you didn’t cut corners found their meaning, late.'}},
+   {label:{ja:'一緒にやった人の名前を出す',en:'Name the people who helped'}, eff:{trust:6,bond:9}, good:3,
+     result:{ja:'一人の手柄にしなかった。その姿を、また誰かが見ている。',en:'You didn’t claim it alone. And again, someone was watching.'}},
+  ]},
+ {icon:'🍲', theme:'family', title:{ja:'食卓',en:'The Dinner Table'}, body:{ja:'たいした料理じゃない。でも、向かいに座っている人がいる。',en:'Nothing fancy on the plate. But someone is sitting across from you.'},
+  choices:[
+   {label:{ja:'今日あったことを話す',en:'Talk about your day'}, eff:{bond:9,mind:6}, good:2,
+     result:{ja:'聞いてくれる人がいるだけで、一日の重さが変わる。',en:'Just having someone listen changes the weight of a day.'}},
+   {label:{ja:'相手の話をとことん聞く',en:'Listen to theirs, all of it'}, eff:{bond:11,trust:4}, good:3,
+     result:{ja:'聞くことは、渡すことだ。灯はそうやって移っていく。',en:'Listening is a kind of giving. That’s how the light passes on.'}},
+  ]},
+ {icon:'💰', theme:'money', title:{ja:'思わぬ戻り',en:'An Unexpected Refund'}, body:{ja:'忘れていたお金が、忘れた頃に戻ってきた。',en:'Money you’d forgotten comes back, long after you stopped expecting it.'},
+  choices:[
+   {label:{ja:'貯えに回す',en:'Put it into savings'}, eff:{cash:14,mind:4}, good:1,
+     result:{ja:'守りを固める。それは臆病じゃなく、経験だ。',en:'Shoring up your defenses. Not cowardice — experience.'}},
+   {label:{ja:'世話になった人に何か贈る',en:'Send a gift to someone who helped you'}, eff:{cash:6,bond:10,trust:5}, good:3,
+     result:{ja:'返せる側に回れた日。それが、いちばん嬉しかった。',en:'The day you got to be the one giving back. That was the best part.'}},
+  ]},
+ {icon:'🎶', theme:'rest', title:{ja:'ふいに鳴った曲',en:'A Song, Suddenly'}, body:{ja:'店先で流れた曲が、あの頃の自分をまるごと連れてきた。',en:'A song in a shop brings back the whole of who you were.'},
+  choices:[
+   {label:{ja:'立ち止まって、最後まで聴く',en:'Stop and listen to the end'}, eff:{mind:9,health:3}, good:2,
+     result:{ja:'つらかった時期も、ちゃんと自分の一部だった。',en:'Even the hard years were, properly, a part of you.'}},
+   {label:{ja:'誰かに「これ聴いて」と送る',en:'Send it to someone: “listen to this”'}, eff:{mind:5,bond:8}, good:2,
+     result:{ja:'返信は短かった。でも、それで通じた。',en:'The reply was short. But it landed.'}},
+  ]},
+ {icon:'🐈', theme:'city', title:{ja:'ついてきた猫',en:'The Cat That Followed'}, body:{ja:'帰り道、細い影がずっと後をついてくる。',en:'On the way home, a thin shadow keeps following you.'},
+  choices:[
+   {label:{ja:'水と餌を分けてやる',en:'Share some water and food'}, eff:{cash:-2,mind:7,bond:5}, good:2,
+     result:{ja:'誰かの世話を焼けるくらいには、回復していた。',en:'You’d recovered enough to look after something. That’s something.'}},
+   {label:{ja:'しばらく一緒に歩く',en:'Walk together a while'}, eff:{mind:6,health:3}, good:1,
+     result:{ja:'言葉のいらない時間も、ちゃんと救いになる。',en:'Time without words can save you too.'}},
+  ]},
+ {icon:'📚', theme:'comeback', title:{ja:'借りた本',en:'A Borrowed Book'}, body:{ja:'誰かが貸してくれた本の余白に、書き込みが残っていた。',en:'In the margins of a book someone lent you, there are notes.'},
+  choices:[
+   {label:{ja:'その一行を、書き写す',en:'Copy out that one line'}, eff:{mind:10}, good:2,
+     result:{ja:'助けは、人の形をしていないこともある。',en:'Help doesn’t always come in the shape of a person.'}},
+   {label:{ja:'感想を伝えに行く',en:'Go tell them what you thought'}, eff:{mind:5,bond:8}, good:2, addCompanion:true,
+     result:{ja:'本の話から、その人自身の話になった。',en:'The talk about the book became a talk about them.'}},
+  ]},
+ {icon:'🛠️', theme:'work', title:{ja:'直った',en:'It Works Again'}, body:{ja:'壊れたまま置いてあったものを、時間をかけて直した。',en:'Something long broken — you took the time and fixed it.'},
+  choices:[
+   {label:{ja:'自分で使い続ける',en:'Keep using it yourself'}, eff:{cash:6,mind:7}, good:2,
+     result:{ja:'捨てずに直せるものは、思っているより多い。',en:'More things can be mended than thrown away than you think.'}},
+   {label:{ja:'必要そうな人に譲る',en:'Pass it to someone who needs it'}, eff:{bond:8,trust:6}, good:3,
+     result:{ja:'直したのは物だけじゃなかった気がした。',en:'It felt like more than the object had been repaired.'}},
+  ]},
+ {icon:'🌤️', theme:'illness', title:{ja:'検査の結果',en:'The Test Results'}, body:{ja:'覚悟して封を開けた。書いてあったのは、「異常なし」。',en:'You brace yourself and open the envelope. It reads: all clear.'},
+  choices:[
+   {label:{ja:'ちゃんと休みをとる',en:'Actually take a rest'}, eff:{health:12,mind:8}, good:2,
+     result:{ja:'助かった命を、雑に使わないと決めた。',en:'You decided not to spend this reprieve carelessly.'}},
+   {label:{ja:'心配してくれた人に伝える',en:'Tell the people who worried'}, eff:{health:7,bond:9}, good:3,
+     result:{ja:'安堵の声を聞いて、はじめて自分も安心した。',en:'Hearing their relief, you finally felt your own.'}},
+  ]},
+ {icon:'🤝', theme:'comeback', title:{ja:'戻ってきた信用',en:'Trust, Returned'}, body:{ja:'一度離れていった人が、また仕事を頼んできた。',en:'Someone who once walked away asks you for work again.'},
+  choices:[
+   {label:{ja:'過去には触れず、引き受ける',en:'Take it, without raising the past'}, eff:{cash:12,trust:9}, good:2,
+     result:{ja:'時間は、こちらが誠実でいれば味方になる。',en:'Time takes your side, if you stay honest through it.'}},
+   {label:{ja:'一度きちんと話してから受ける',en:'Talk it through first, then accept'}, eff:{cash:8,trust:6,bond:7}, good:3,
+     result:{ja:'言いにくいことを言えた。今度は続きそうだ。',en:'You said the hard thing. This time it may last.'}},
+  ]},
+ {icon:'🎂', theme:'bond', title:{ja:'覚えていてくれた',en:'They Remembered'}, body:{ja:'自分でも忘れかけていた日に、短いメッセージが届いた。',en:'On a day you’d half forgotten, a short message arrives.'},
+  choices:[
+   {label:{ja:'ありがとう、と返す',en:'Reply: thank you'}, eff:{bond:9,mind:6}, good:2,
+     result:{ja:'覚えられている。それだけで、この街にいていい気がした。',en:'Someone remembers you. That alone made the city feel like yours.'}},
+   {label:{ja:'来年は自分が覚えておこうと決める',en:'Resolve to remember theirs next year'}, eff:{bond:6,trust:5,mind:4}, good:2,
+     result:{ja:'もらったものは、次の誰かに回せばいい。',en:'What you’re given, you can pass along.'}},
+  ]},
+ {icon:'🔥', theme:'city', title:{ja:'灯が返ってきた',en:'The Light Came Back'}, body:{ja:'かつて手を貸した相手が、立ち直った姿で現れた。',en:'Someone you once helped appears — standing on their own again.'},
+  choices:[
+   {label:{ja:'よかった、とだけ言う',en:'Just say: I’m glad'}, eff:{mind:10,bond:8}, good:3,
+     result:{ja:'見返りを求めなかったものが、いちばん大きく返ってきた。',en:'What you gave without expecting returned the largest.'}},
+   {label:{ja:'一緒に、次の誰かを探す',en:'Go find the next person, together'}, eff:{trust:7,bond:10}, good:3, addCompanion:true,
+     result:{ja:'灯は、渡すたびに数を増やしていく。',en:'The light multiplies each time it’s handed on.'}},
+  ]},
+];
+BOARD_EVENTS.push(...HAPPY_EVENTS);
 
 /* ---- mapping: story result → board start ---- */
 function chooseOccupation(){

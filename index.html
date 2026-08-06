@@ -1652,6 +1652,17 @@
     <div id="minimap-label">MINIMAP</div>
   </div>
   <div id="motto-wall-labels" aria-hidden="true"></div>
+  <!-- パスワード再設定：メールのリンクから戻ってきたときだけ開く -->
+  <div id="pwreset-modal" style="display:none;position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:18px;">
+    <div style="width:100%;max-width:360px;background:linear-gradient(160deg,#1a1524,#120f1c);border:1px solid rgba(255,138,61,0.35);border-radius:16px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,0.6);">
+      <div id="pwreset-title" style="font-size:16px;font-weight:800;color:#ffb066;margin-bottom:8px;">🔐 新しいパスワードを設定</div>
+      <div id="pwreset-desc" style="font-size:11px;line-height:1.7;color:rgba(255,255,255,0.6);margin-bottom:14px;"></div>
+      <input id="pwreset-input" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:12px;margin-bottom:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:#fff;font-size:16px;">
+      <input id="pwreset-input2" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:12px;margin-bottom:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:#fff;font-size:16px;">
+      <button id="pwreset-submit" type="button" onclick="submitPwReset()" style="width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,#ff6a00,#ee0979);color:#fff;font-size:14px;font-weight:800;cursor:pointer;">このパスワードに変更する</button>
+      <div id="pwreset-error" style="margin-top:10px;font-size:11px;line-height:1.6;color:#ff4444;min-height:16px;"></div>
+    </div>
+  </div>
   <div id="building-modal" onclick="if(event.target===this)closeBuildingModal()">
     <div id="building-box">
       <div class="building-modal-toolbar">
@@ -2169,7 +2180,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v236';
+    const IGNIS_BUILD='2026-07-23-v237';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -2674,6 +2685,8 @@
       if(!db||authListenerAttached)return;
       authListenerAttached=true;
       db.auth.onAuthStateChange((event,session)=>{
+        // 再設定メールのリンクから戻ってきた：新しいパスワードの入力画面を出す
+        if(event==='PASSWORD_RECOVERY'){try{openPwResetModal();}catch(_){}}
         if((event==='INITIAL_SESSION'||event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session?.user){
           onLoginSuccess(session.user,null,null,{restoring:true}).catch(e=>console.warn('[IGNIS] auth state login',e));
         }
@@ -4070,7 +4083,7 @@
       const taskBtn=document.getElementById('task-toggle-btn');if(taskBtn)taskBtn.innerHTML=(isJa?'📋 タスク':'📋 Tasks')+`<span class="task-pct">（${lastTaskPct}%）</span>`+'<span id="task-notice-badge">'+(noticeUnread>99?'99+':noticeUnread)+'</span>';
       const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'🔔 お知らせ / 通知':'🔔 Notices';
       const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'通知はまだありません':'No notices yet';
-      const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた':'🔐 Forgot Password';
+      const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた（メールで再設定）':'🔐 Forgot password (reset by email)';
       document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
       const taskClose=document.getElementById('task-panel-close');if(taskClose){taskClose.textContent='×';taskClose.title=isJa?'閉じる':'Close';}
@@ -4346,19 +4359,21 @@
         }
       }catch(e){latestCreatorPost=null;activeCreatorPostIds=[];/* テーブル未作成時は従来動作 */}
     }
-    // 会員ティアごとの1日のコイン反映上限（無課金30 / サブスク40 / プレミア60）
+    // 会員ティアごとの1日のコイン反映上限（無課金50 / サブスク60 / プレミア80）
+    // ※サーバー側（claim_lifegame_reward / claim_antgame_reward）と必ず同じ値にすること。
+    //   ここだけ上げても、実際に付与されるのはサーバーの上限まで。
     function gameDailyCap(){
-      if(currentUser&&currentUser.isPremium)return 60;
-      if(currentUser&&currentUser.isSubscribed)return 40;
-      return 30;
+      if(currentUser&&currentUser.isPremium)return 80;
+      if(currentUser&&currentUser.isSubscribed)return 60;
+      return 50;
     }
     // ゲーム選択オーバーレイの文言を言語・ティアに合わせて更新
     function updateGamepickLabels(){
       const isJa=currentLang==='ja';const cap=gameDailyCap();
       const t=document.getElementById('gamepick-title');if(t)t.textContent=isJa?'💰 コインを稼ぐ':'💰 Earn Coins';
       const s=document.getElementById('gamepick-sub');if(s)s.innerHTML=isJa
-        ?`各ゲーム1日の反映上限：無課金30 ／ サブスク40 ／ プレミア60 コイン<br><span style="color:#ffd54f;">あなたの上限：1日${cap}コイン（人生・アリ それぞれ）</span>`
-        :`Daily cap per game: Free 30 / Sub 40 / Premium 60 coins<br><span style="color:#ffd54f;">Your cap: ${cap} coins/day (Life & Ant each)</span>`;
+        ?`各ゲーム1日の反映上限：無課金50 ／ サブスク60 ／ プレミア80 コイン<br><span style="color:#ffd54f;">あなたの上限：1日${cap}コイン（人生・アリ それぞれ）</span>`
+        :`Daily cap per game: Free 50 / Sub 60 / Premium 80 coins<br><span style="color:#ffd54f;">Your cap: ${cap} coins/day (Life & Ant each)</span>`;
       const l=document.getElementById('gamepick-life');if(l)l.textContent=isJa?'🕯️ 人生ゲーム':'🕯️ Life Game';
       const a=document.getElementById('gamepick-ant');if(a)a.textContent=isJa?'🐜 小さな仲間で、大きな巣を':'🐜 Little Diggers, Great Nest';
       const c=document.getElementById('gamepick-close');if(c)c.textContent=isJa?'閉じる':'Close';
@@ -4716,30 +4731,97 @@
     document.getElementById('input-password').addEventListener('input',function(){const results=checkPassword(this.value);['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>document.getElementById(id).classList.toggle('ok',results[i]));updateInputStates();});
     ['input-email','input-username','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateInputStates);});
     ['input-username','input-email','input-password','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}});
+    // ===== パスワード再設定 =====
+    // メールのリンクから戻ってくると Supabase が復旧セッションを張り、PASSWORD_RECOVERY が飛ぶ。
+    // そこで「新しいパスワードを入力する画面」を出す。以前はこの画面が無く、戻り先も
+    // ?open=signup（新規登録フォーム）だったので、メールが届いても再設定できなかった。
+    function openPwResetModal(){
+      const m=document.getElementById('pwreset-modal');
+      if(!m)return;
+      const isJa=currentLang==='ja';
+      document.getElementById('pwreset-title').textContent=isJa?'🔐 新しいパスワードを設定':'🔐 Set a new password';
+      document.getElementById('pwreset-desc').textContent=isJa
+        ?'8文字以上で、大文字・小文字・数字をそれぞれ1つ以上含めてください。'
+        :'At least 8 characters, including an uppercase letter, a lowercase letter and a number.';
+      const inp=document.getElementById('pwreset-input');
+      inp.placeholder=isJa?'新しいパスワード':'New password';
+      inp.value='';
+      document.getElementById('pwreset-input2').placeholder=isJa?'もう一度入力':'Confirm password';
+      document.getElementById('pwreset-input2').value='';
+      document.getElementById('pwreset-submit').textContent=isJa?'このパスワードに変更する':'Change password';
+      document.getElementById('pwreset-error').textContent='';
+      m.style.display='flex';
+      setTimeout(()=>{try{inp.focus();}catch(_){}}, 120);
+    }
+    function closePwResetModal(){
+      const m=document.getElementById('pwreset-modal');
+      if(m)m.style.display='none';
+      // ハッシュに残った復旧トークンを消す（リロードで再び画面が出るのを防ぐ）
+      try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}
+    }
+    async function submitPwReset(){
+      const isJa=currentLang==='ja';
+      const errEl=document.getElementById('pwreset-error');
+      const btn=document.getElementById('pwreset-submit');
+      const pw=document.getElementById('pwreset-input').value;
+      const pw2=document.getElementById('pwreset-input2').value;
+      errEl.style.color='#ff4444';
+      if(!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw)){
+        errEl.textContent=isJa?'8文字以上で、大文字・小文字・数字を含めてください':'Use 8+ characters with upper, lower and a number';
+        return;
+      }
+      if(pw!==pw2){errEl.textContent=isJa?'パスワードが一致しません':'Passwords do not match';return;}
+      const original=btn.textContent;
+      btn.disabled=true;btn.textContent=isJa?'変更中...':'Updating...';
+      try{
+        const{error}=await db.auth.updateUser({password:pw});
+        if(error)throw error;
+        errEl.style.color='#4caf50';
+        errEl.textContent=isJa?'変更しました。このままご利用いただけます。':'Password updated. You can keep playing.';
+        setTimeout(()=>{closePwResetModal();showToast(isJa?'🔐 パスワードを変更しました':'🔐 Password changed');},1400);
+      }catch(e){
+        errEl.textContent=(isJa?'変更に失敗: ':'Update failed: ')+(e.message||'');
+      }finally{btn.disabled=false;btn.textContent=original;}
+    }
+    // メールのリンクから開かれたか（PASSWORD_RECOVERY が飛ばない環境向けの保険）
+    function checkRecoveryInUrl(){
+      try{
+        const h=location.hash||'',q=location.search||'';
+        if(/type=recovery/.test(h)||/[?&]reset=1/.test(q))openPwResetModal();
+      }catch(_){}
+    }
     async function handlePasswordReset(){
       const isJa=currentLang==='ja';
       const email=(document.getElementById('input-email').value||'').trim();
-      const xUsername=(document.getElementById('input-x-username').value||'').trim().replace(/^@/,'');
       const errEl=document.getElementById('auth-error');
-      if(!email||!xUsername){
-        errEl.textContent=isJa?'メールアドレスとXユーザー名を入力してください':'Enter both email and X username';
+      // Xユーザー名は登録時から任意なので、ここで必須にすると「Xを設定していない人は
+      // 一生パスワードを再設定できない」ことになる。メールアドレスだけで送る。
+      if(!email){
+        errEl.textContent=isJa?'メールアドレスを入力してください':'Enter your email address';
         return;
       }
+      const btn=document.getElementById('auth-reset-btn');
+      const original=btn?btn.textContent:'';
+      if(btn){btn.disabled=true;btn.textContent=isJa?'送信中...':'Sending...';}
       try{
         if(!db)throw new Error('DB未接続');
-        const {data:rows,error:selErr}=await db.from('users').select('id,x_username').eq('x_username',xUsername).limit(1);
-        if(selErr||!rows||rows.length===0){
-          errEl.textContent=isJa?'一致するXユーザー名が見つかりません':'X username was not found';
-          return;
-        }
-        const redirectTo=`${window.location.origin}${window.location.pathname}?open=signup`;
+        const redirectTo=`${window.location.origin}${window.location.pathname}?reset=1`;
         const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
         if(error)throw error;
         errEl.style.color='#4caf50';
-        errEl.textContent=isJa?'再設定メールを送信しました（メールをご確認ください）':'Password reset email sent. Check your inbox.';
+        // 登録の有無は答えない（メールアドレスの存在確認に使われないようにする）
+        errEl.textContent=isJa
+          ?'このアドレスが登録済みなら再設定メールを送りました。迷惑メールもご確認ください。'
+          :'If that address is registered, a reset email has been sent. Check your spam folder too.';
       }catch(e){
         errEl.style.color='#ff4444';
-        errEl.textContent=isJa?('再設定に失敗: '+(e.message||'')):('Reset failed: '+(e.message||''));
+        // 送信上限（既定は1時間に2通）に当たったときは、原因がわかる文言にする
+        const msg=String(e.message||'');
+        errEl.textContent=/rate|limit|too many/i.test(msg)
+          ?(isJa?'送信が混み合っています。しばらく待ってからお試しください。':'Too many requests right now. Please try again later.')
+          :(isJa?('再設定に失敗: '+msg):('Reset failed: '+msg));
+      }finally{
+        if(btn){btn.disabled=false;btn.textContent=original;}
       }
     }
     async function handleAuth(){
@@ -9773,6 +9855,7 @@
       }catch(_){}
     })();
     applyGameI18n();
+    checkRecoveryInUrl(); // 再設定メールのリンクから開かれていたら、パスワード入力画面を出す
     // 認証ボックスのスクロール量に応じて下矢印を出し入れ
     (function bindAuthScrollCue(){
       const box=document.getElementById('auth-box');

@@ -97,6 +97,7 @@
   <div class="btn" data-act="digrole">⛏任命</div>
   <div class="btn" data-act="soldier">⚔兵隊任命</div>
   <div class="btn" data-act="bgm">🎵BGM</div>
+  <div class="btn" data-act="reset">🔄作り直す</div>
 </div>
 <!-- レアアリ誕生時のXシェア -->
 <div id="shareBox"><div id="shareMsg"></div><button id="shareBtn">𝕏 にシェア</button><button id="shareClose">×</button></div>
@@ -195,7 +196,18 @@ function addRoom(type, ccx, ccy, rw, rh){
       if (planRoom.has(k) && planRoom.get(k)>=0 && planRoom.get(k)!==id) continue; // 他の部屋を侵食しない
       planAdd(cx,cy); planRoom.set(k,id); cells.push({cx,cy,k});
     }
-  rooms.push({type, cells, cx:ccx, cy:ccy, built:false});
+  rooms.push({type, cells, cx:ccx, cy:ccy, rw, rh, built:false});
+}
+// 新しい部屋を置ける場所か：既存のどの部屋との間にも土の壁が最低 ROOM_WALL マス残ること。
+// これが無いと、巣が広がるほど部屋どうしが接して壁が消え、ひと続きの空洞になってしまう。
+const ROOM_WALL = 2;
+function roomSpotFree(ccx, ccy, rw, rh){
+  for (const r of rooms){
+    const needX = rw + (r.rw!=null?r.rw:3) + ROOM_WALL;
+    const needY = rh + (r.rh!=null?r.rh:2) + ROOM_WALL;
+    if (Math.abs(r.cx-ccx) < needX && Math.abs(r.cy-ccy) < needY) return false;
+  }
+  return true;
 }
 function builtRoom(type){ for (const r of rooms) if (r.built && r.type===type) return r; return null; }
 function roomTypeAt(x,y){ return roomCellType.get(((y/CELL)|0)*COLS + ((x/CELL)|0)) || null; }
@@ -243,14 +255,30 @@ function maybeExpand(){
   if (rooms.some(r=>!r.built)) return;          // まだ掘っている部屋がある→待つ
   const ex=colonyCx, top=surfaceH[ex];
   const idx=rooms.length;                       // 作成順（=サイクル位置）
-  const ry=Math.min(ROWS-4, top + 8 + idx*2);   // 緩やかに深く
   const side=(idx%2===0)?-1:1;                  // 左右交互
-  const reach=8 + (idx%6)*3;                    // 8,11,14,17,20,23…と横に広げる
-  const rcx=Math.max(3, Math.min(COLS-4, ex + side*reach));
+  const RW=3, RH=2;
+  // 既存の部屋と壁を挟める場所が見つかるまで、深さと横の距離をずらして探す。
+  // 昔は位置を式で決め打ちしていたので、拡張が進むと部屋どうしが接して壁が消えていた。
+  // 深さも横位置も「循環」させて空きを探す。以前は深さが idx に比例して深くなるだけだったので、
+  // 20数部屋で地図の底に達し、横がまだ空いているのに拡張が止まっていた。
+  let rcx=null, ry=null;
+  outer:
+  for (let rstep=0; rstep<12; rstep++){
+    const reach=8 + ((idx+rstep)%12)*6;          // 横は 8〜74 マス
+    for (let dstep=0; dstep<14; dstep++){
+      const y=top + 8 + ((idx+dstep)%14)*4;      // 深さは 8〜60 マスを循環
+      if (y>=ROWS-4) continue;
+      for (const s of [side,-side]){
+        const cx=Math.max(3+RW, Math.min(COLS-4-RW, ex + s*reach));
+        if (roomSpotFree(cx,y,RW,RH)){ rcx=cx; ry=y; break outer; }
+      }
+    }
+  }
+  if (rcx===null) return;                       // 置ける場所が無ければ今回は拡張しない
   for (let y=top; y<=ry; y++) planAdd(ex,y);    // 主縦坑を伸ばす
   planTunnel(ex, ry, rcx);
   const type=ROOM_CYCLE[idx%4];
-  addRoom(type, rcx, ry, 3, 2);
+  addRoom(type, rcx, ry, RW, RH);
   toast(`🏗 ${L("巣を拡張：新しい","Expanding: new ")}${ROOM_META[type].label}`, "#fea", 1.6); sfx("quest");
 }
 // 部屋を周囲に掘り広げて拡張
@@ -1488,7 +1516,17 @@ let mmShrunk=false;
 const mmBtn={x:0,y:0,w:0,h:0};   // ミニマップ縮小ボタンの画面座標（描画時に更新）
 function toggleMinimapSize(){ mmShrunk=!mmShrunk; toast(mmShrunk?L("🗺 地図を縮小","🗺 Map shrunk"):L("🗺 地図を拡大","🗺 Map enlarged"),"#cdf",0.8); }
 const ACT={ grabdig:()=>grabOrDig(), dig:()=>doDigOrDrop(), grab:()=>playerGrabDrop(), lay:()=>layEgg(), gather:()=>gatherCmd(),
-            digrole:()=>reassignJob("dig"), soldier:()=>reassignJob("soldier"), map:()=>toggleMinimapSize(), bgm:()=>toggleBGM() };
+            digrole:()=>reassignJob("dig"), soldier:()=>reassignJob("soldier"), map:()=>toggleMinimapSize(), bgm:()=>toggleBGM(),
+            reset:()=>resetColony() };
+// 巣を最初から作り直す（誤爆しないよう確認を挟む。コインの当日獲得分は保持しない＝完全なやり直し）
+function resetColony(){
+  const ok=confirm(L(
+    "巣を最初から作り直しますか？\n\n今のコロニー・巣の形・進行状況はすべて消えます。\n（この操作は取り消せません）",
+    "Rebuild the nest from scratch?\n\nYour colony, the shape of the nest and all progress will be erased.\n(This cannot be undone.)"));
+  if (!ok) return;
+  clearSave();
+  location.reload();
+}
 document.querySelectorAll("#acts .btn").forEach(b=>{
   b.addEventListener("pointerdown",e=>{ e.preventDefault(); bgmInit(); sfx("tap");
     // BGMボタン以外は押した瞬間だけフラッシュ（BGMは ON/OFF の持続表示なので除外）
@@ -2480,7 +2518,7 @@ function saveGame(){
     const s={
       grid:Array.from(grid), surfaceH:Array.from(surfaceH),
       planKeys:nestPlan.map(p=>p.k),
-      rooms:rooms.map(r=>({type:r.type,cx:r.cx,cy:r.cy,built:r.built,cells:r.cells.map(c=>c.k)})),
+      rooms:rooms.map(r=>({type:r.type,cx:r.cx,cy:r.cy,rw:r.rw,rh:r.rh,built:r.built,cells:r.cells.map(c=>c.k)})),
       fillKeys:[...fillSet], expandTier,
       ant:{x:ant.x,y:ant.y,stage:ant.stage,hp:ant.hp,xp:ant.xp,carrying:ant.carrying,facing:ant.facing,hatchT:ant.hatchT,
            cargo: ant.cargo?{x:ant.cargo.x,y:ant.cargo.y,kind:ant.cargo.kind,value:ant.cargo.value}:null},
@@ -2506,7 +2544,7 @@ function loadGame(){
     rooms.length=0; roomCellType.clear(); planRoom.clear();
     for(const k of s.planKeys) planRoom.set(k,-1);                      // 通路は-1
     for(const r of s.rooms){ const cells=r.cells.map(k=>({cx:k%COLS,cy:(k/COLS)|0,k}));
-      const id=rooms.length; rooms.push({type:r.type,cx:r.cx,cy:r.cy,built:r.built,cells});
+      const id=rooms.length; rooms.push({type:r.type,cx:r.cx,cy:r.cy,rw:(r.rw!=null?r.rw:3),rh:(r.rh!=null?r.rh:2),built:r.built,cells});
       for(const c of cells) planRoom.set(c.k,id);                       // 部屋タグを復元
       if(r.built) for(const c of cells) roomCellType.set(c.k,r.type); }
     fillSet.clear(); fillTargets.length=0;

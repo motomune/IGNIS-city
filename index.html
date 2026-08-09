@@ -2203,7 +2203,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v240';
+    const IGNIS_BUILD='2026-07-23-v241';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5166,9 +5166,12 @@
       if(!el)return;
       const onDown=(e)=>{
         if(!isFlying||!isTouchFly)return;
-        if(touchFlyState[side].active)return;
-        touchFlyState[side].active=true;
-        touchFlyState[side].pid=e.pointerId;
+        const s=touchFlyState[side];
+        // active のまま残っていても無視しない。前の指の離しを取りこぼしただけのことがあり、
+        // 無視すると「倒れたまま二度と操作できない」状態から抜け出せなくなる。握り直させる。
+        if(s.active&&s.pid!==e.pointerId)resetStick(side);
+        s.active=true;
+        s.pid=e.pointerId;
         el.setPointerCapture?.(e.pointerId);
         if(e.cancelable)e.preventDefault();
       };
@@ -5176,6 +5179,7 @@
         const s=touchFlyState[side];
         if(!s.active||s.pid!==e.pointerId)return;
         const r=el.getBoundingClientRect();
+        if(!r.width||!r.height)return; // 非表示などで幅0のとき、0除算でNaNがカメラ座標まで流れるのを防ぐ
         const cx=r.left+r.width/2;
         const cy=r.top+r.height/2;
         let dx=(e.clientX-cx)/(r.width*0.5);
@@ -5196,9 +5200,19 @@
       el.addEventListener('pointermove',onMove,{passive:false});
       el.addEventListener('pointerup',onUp,{passive:false});
       el.addEventListener('pointercancel',onUp,{passive:false});
+      // 端まで倒して指が画面の外へ出ると、OS側のジェスチャに取られて pointerup が
+      // このスティックに届かないことがある。届かないと active のままになり、
+      // 倒したままの入力が残り続ける（＝戻らなくなる）。取りこぼしを全部拾う。
+      el.addEventListener('lostpointercapture',(e)=>{const s=touchFlyState[side];if(s.pid===e.pointerId)resetStick(side);});
+      window.addEventListener('pointerup',onUp,true);
+      window.addEventListener('pointercancel',onUp,true);
     }
     bindTouchStick('fly-stick-left','left');
     bindTouchStick('fly-stick-right','right');
+    // 画面を離れた／タブが隠れた／飛行をやめた時は、握りっぱなしの入力を必ず解除する
+    function resetAllSticks(){resetStick('left');resetStick('right');touchFlyState.rise=false;touchFlyState.fall=false;}
+    window.addEventListener('blur',resetAllSticks);
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)resetAllSticks();});
     ['fly-up-btn','fly-down-btn'].forEach(id=>{
       const el=document.getElementById(id);
       if(!el)return;

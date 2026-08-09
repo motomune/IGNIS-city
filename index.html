@@ -94,7 +94,7 @@
     #header-util-primary { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; }
     #header-util-primary #x-rewards-btn, #header-util-primary #lang-btn { flex-shrink: 0; }
     #logged-in-area { display: flex; flex-direction: column; gap: 6px; align-items: stretch; width: 100%; }
-    #logged-in-area > button, #login-btn-header { width: 100%; min-width: 112px; box-sizing: border-box; }
+    #logged-in-area > button { width: 100%; min-width: 112px; box-sizing: border-box; }
     .header-action-btn {
       border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
       padding: 8px 14px; line-height: 1.25; text-align: center; white-space: nowrap;
@@ -127,9 +127,34 @@
       color: rgba(255,255,255,0.7); padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer;
     }
     #logout-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    /* ログイン/登録：未登録の人にいちばん押してほしいので、脈打つ光で目立たせる。
+       置き場所は「コインを稼ぐ」の真上（#minimap-wrap の先頭）。 */
     #login-btn-header {
+      position: relative; overflow: hidden; width: 100%;
       background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
-      padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; pointer-events: all;
+      padding: 11px 6px; border-radius: 12px;
+      font-size: clamp(10px, 2.5vw, 13px); font-weight: 900; letter-spacing: 0.02em;
+      /* 幅の狭い列に置くので、折り返しを許す。nowrap だと overflow:hidden で文字が切れる */
+      white-space: normal; line-height: 1.25; text-align: center;
+      cursor: pointer; pointer-events: all;
+      box-shadow: 0 4px 18px rgba(238,9,121,0.45);
+      animation: loginPulse 2.2s ease-in-out infinite;
+    }
+    /* 光が左から右へ流れる（気づいてもらうため。控えめな幅・頻度） */
+    #login-btn-header::after {
+      content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%;
+      background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+      transform: skewX(-18deg); animation: loginShine 2.8s ease-in-out infinite;
+    }
+    @keyframes loginPulse {
+      0%,100% { box-shadow: 0 4px 18px rgba(238,9,121,0.45); transform: scale(1); }
+      50%     { box-shadow: 0 6px 26px rgba(255,106,0,0.85); transform: scale(1.035); }
+    }
+    @keyframes loginShine { 0% { left:-60%; } 55%,100% { left:130%; } }
+    /* 動きを減らす設定の端末では光らせない（酔い・消費電力への配慮） */
+    @media (prefers-reduced-motion: reduce) {
+      #login-btn-header { animation: none; }
+      #login-btn-header::after { animation: none; display: none; }
     }
     /* 図鑑ボタン（下部に統合） */
     #zukan-float-btn {
@@ -1198,7 +1223,7 @@
       #minimap-expand { width: 26px; height: 26px; font-size: 12px; top: 3px; left: 3px; }
       #header-util-primary { gap: 5px; }
       #lang-btn, #sound-toggle, #x-rewards-btn { padding: 6px 10px; font-size: 11px; min-height: 36px; }
-      #login-btn-header, .header-action-btn, #logged-in-area > button {
+      .header-action-btn, #logged-in-area > button {
         padding: 9px 11px; font-size: 12px; min-height: 40px; min-width: 0;
       }
       #task-toggle-btn {
@@ -1277,7 +1302,7 @@
     @media (max-width: 380px) {
       #stats { font-size: 10px; }
       #header-right { min-width: 104px; max-width: none; }
-      #login-btn-header, .header-action-btn, #logged-in-area > button { font-size: 11px; padding: 8px 9px; min-height: 40px; }
+      .header-action-btn, #logged-in-area > button { font-size: 11px; padding: 8px 9px; min-height: 40px; }
       #task-toggle-btn { font-size: 12px !important; min-height: 42px !important; }
       #build-btn .acq-icons { font-size: 18px; }
       #build-btn #build-btn-text { font-size: 13px; }
@@ -1288,7 +1313,7 @@
       #minimap-canvas { width: 76px; height: 76px; }
       #stats { font-size: 10px; gap: 2px; }
       #header-right { min-width: 96px; }
-      #login-btn-header, .header-action-btn, #logged-in-area > button { font-size: 11px; padding: 6px 9px; min-height: 34px; }
+      .header-action-btn, #logged-in-area > button { font-size: 11px; padding: 6px 9px; min-height: 34px; }
       /* 広告は左下へ */
       #ad-slot { width: 112px; height: 90px; }
       #ad-slot-wrap { bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
@@ -1605,7 +1630,6 @@
     </div>
     <!-- 右側の縦並びボタン列 -->
     <div id="right-rail">
-      <button id="login-btn-header" class="rail-btn rail-login" onclick="openAuthModal()">ログイン / 登録</button>
       <button id="coin-history-btn" class="rail-btn li-only" type="button" onclick="openCoinHistory()">💰 履歴</button>
       <div style="display:flex;gap:6px;">
         <button id="lang-btn" class="rail-btn" type="button" onclick="toggleLang()" title="言語切替" style="flex:1;">🌐 <span id="lang-label">EN</span></button>
@@ -1665,6 +1689,8 @@
     <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
+    <!-- 未登録の人にいちばん押してほしいボタン。「コインを稼ぐ」の真上に置いて目立たせる -->
+    <button id="login-btn-header" type="button" onclick="openAuthModal()">🔥 <span id="login-btn-label">ログイン / 登録</span></button>
     <button id="coingame-btn" type="button" onclick="openCoinGame()" title="コインを稼ぐ">💰 <span id="coingame-label">コインを稼ぐ</span></button>
     <button id="minimap-show-btn" type="button" onclick="toggleMinimap()" title="地図を表示"><span aria-hidden="true">🗺</span> <span id="minimap-show-label">地図</span></button>
     <div id="minimap-inner">
@@ -2203,7 +2229,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v241';
+    const IGNIS_BUILD='2026-07-23-v242';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -4107,7 +4133,7 @@
       const noticeTitle=document.getElementById('notice-title');if(noticeTitle)noticeTitle.textContent=isJa?'🔔 お知らせ / 通知':'🔔 Notices';
       const noticeEmpty=document.getElementById('notice-empty');if(noticeEmpty)noticeEmpty.textContent=isJa?'通知はまだありません':'No notices yet';
       const resetBtn=document.getElementById('auth-reset-btn');if(resetBtn)resetBtn.textContent=isJa?'🔐 パスワードを忘れた（メールで再設定）':'🔐 Forgot password (reset by email)';
-      document.getElementById('login-btn-header').textContent=isJa?'ログイン / 登録':'Login / Register';
+      {const lb=document.getElementById('login-btn-label');if(lb)lb.textContent=isJa?'ログイン / 登録':'Login / Register';}
       document.getElementById('task-panel-title').textContent=isJa?'📋 デイリータスク':'📋 Daily Tasks';
       const taskClose=document.getElementById('task-panel-close');if(taskClose){taskClose.textContent='×';taskClose.title=isJa?'閉じる':'Close';}
       const miniClose=document.getElementById('minimap-toggle');if(miniClose)miniClose.title=isJa?'地図を閉じる':'Close minimap';

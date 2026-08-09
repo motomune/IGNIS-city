@@ -1149,6 +1149,13 @@
     .bm-past-chips { display:flex;flex-wrap:wrap;gap:5px; }
     .bm-past-chip { font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);color:rgba(255,255,255,0.75); }
     .bm-past-text { font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;white-space:pre-wrap;margin-top:4px; }
+    /* 英訳待ちの本文：原文を薄く出しつつ「英訳中」と明示する（バグに見せない） */
+    .bm-past-text.bm-translating { opacity:0.5; }
+    .bm-past-text.bm-translating::before {
+      content:attr(data-translating);
+      display:block;font-size:10px;font-weight:800;letter-spacing:0.06em;
+      color:#7fd7ff;opacity:0.9;margin-bottom:4px;
+    }
     #bm-lastseen { margin-top:6px;font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.02em; }
     .bm-past-locked { margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(96,165,250,0.08);border:1px dashed rgba(96,165,250,0.35);font-size:11px;color:rgba(147,197,253,0.85);line-height:1.5; }
     /* スクショ禁止の文言枠：点滅して目立たせる */
@@ -2196,7 +2203,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v239';
+    const IGNIS_BUILD='2026-07-23-v240';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -6706,7 +6713,27 @@
     // 第一候補は DeepL（承認時＋毎日のCronでDBの motto_text_en に保存済み）。
     // DBに英訳がまだ無い場合は、その場で無料API（MyMemory）で翻訳して表示する（フォールバック）。
     // 翻訳が取れるまでの間だけ原文（日本語）を出す。
-    const _liveEnCache=new Map();
+    // 訳した結果は端末に残す。DBに英訳が入るまでの間、同じ文を開くたびに翻訳待ちが
+    // 発生していたので、2回目以降は待ち時間ゼロで英語が出るようにする。
+    const LIVE_EN_STORE='ignis_live_en_v1', LIVE_EN_MAX=120;
+    const _liveEnCache=(function(){
+      try{
+        const raw=JSON.parse(localStorage.getItem(LIVE_EN_STORE)||'[]');
+        if(Array.isArray(raw))return new Map(raw);
+      }catch(_){}
+      return new Map();
+    })();
+    let _liveEnSaveT=null;
+    function persistLiveEn(){
+      clearTimeout(_liveEnSaveT);
+      _liveEnSaveT=setTimeout(()=>{
+        try{
+          // 古いものから捨てて上限を守る（localStorageを圧迫しないように）
+          const entries=[..._liveEnCache.entries()].slice(-LIVE_EN_MAX);
+          localStorage.setItem(LIVE_EN_STORE,JSON.stringify(entries));
+        }catch(_){/* 容量超過などは黙って諦める */}
+      },400);
+    }
     async function liveTranslate(text){
       if(!text)return '';
       if(_liveEnCache.has(text))return _liveEnCache.get(text);
@@ -6723,14 +6750,18 @@
         }catch(_){return '';}
       }
       const full=outs.join(' ').trim();
-      if(full)_liveEnCache.set(text,full);
+      if(full){_liveEnCache.set(text,full);persistLiveEn();}
       return full;
     }
+    // キャッシュ済みなら即座に英語を返す（翻訳待ちの表示を出さずに済む）
+    function cachedEn(text){ return text&&_liveEnCache.get(text)||''; }
     function mottoDisplayText(p){
       if(!p||!p.motto_text)return '';
       if(currentLang==='en'){
         if(p.motto_text_en)return p.motto_text_en;
         if(p._en_live)return p._en_live;
+        const c=cachedEn(p.motto_text);
+        if(c){p._en_live=c;return c;}   // 端末に残っていれば待たずに英語で出す
         requestLiveMottoEn(p); // 裏で翻訳→取れたら壁とモーダルを描き直す
       }
       return p.motto_text;
@@ -6757,13 +6788,20 @@
         ['journey_to_now','journey_to_now_en','bm-past-reborn']
       ];
       map.forEach(([jaK,enK,elId])=>{
-        if(src[jaK]&&!src[enK]){
-          liveTranslate(src[jaK]).then(en=>{
-            if(!en||currentLang!=='en')return;
-            const t=document.getElementById(elId);
-            if(t&&t.textContent===src[jaK])t.textContent=en;
-          });
+        if(!src[jaK]||src[enK])return;
+        if(cachedEn(src[jaK]))return;          // 端末に残っていれば pick が既に英語を入れている
+        const t=document.getElementById(elId);
+        // 翻訳中は「原文のまま固まっている」ように見えないよう、薄く見出しを添える
+        if(t&&t.textContent===src[jaK]){
+          t.classList.add('bm-translating');
+          t.setAttribute('data-translating',currentLang==='ja'?'英訳中…':'Translating…');
         }
+        liveTranslate(src[jaK]).then(en=>{
+          const el=document.getElementById(elId);
+          if(el){el.classList.remove('bm-translating');el.removeAttribute('data-translating');}
+          if(!en||currentLang!=='en')return;
+          if(el&&el.textContent===src[jaK])el.textContent=en;
+        });
       });
     }
     async function loadApprovedProfiles(){
@@ -7558,7 +7596,11 @@
       try{
         let lost=[],gained=[],detail='',message='',after='',reborn='',status='';
         let showDetail=false,showLock=false;
-        const pick=(row,ja,en)=>(!isJa&&row[en])?row[en]:(row[ja]||'');
+        // 英語表示の優先順：DBの英訳 → 端末に残した翻訳 → 原文（この場合だけ翻訳待ちになる）
+        const pick=(row,ja,en)=>{
+          if(isJa)return row[ja]||'';
+          return row[en]||cachedEn(row[ja])||row[ja]||'';
+        };
         if(isOwn){
           const colsEn='lost_items,gained_items,background_detail,how_handled,what_happened_after,journey_to_now,background_detail_en,how_handled_en,what_happened_after_en,journey_to_now_en,status';
           const colsBase='lost_items,gained_items,background_detail,how_handled,what_happened_after,journey_to_now,status';

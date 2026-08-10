@@ -1438,6 +1438,14 @@
       bottom:max(18px,env(safe-area-inset-bottom,0px)); display:flex !important; flex-direction:row !important; gap:10px;
       width:auto !important; max-width:none !important; align-items:stretch; z-index:11; }
     #bottom-btns > button { width:auto !important; white-space:nowrap !important; flex:0 0 auto; }
+    /* ログイン/登録は「獲得〜図鑑」の1行と“ぴったり同じ幅”で、その真上に置く。
+       flexの行に混ぜるとこのボタン自身の文字幅で列全体が広がってしまうので、
+       絶対配置で流れから外し、left:0/right:0 で親（＝3ボタンの幅）に合わせる。 */
+    #bottom-btns #login-btn-header {
+      position:absolute !important; left:0 !important; right:0 !important;
+      bottom:100% !important; margin-bottom:10px !important;
+      width:auto !important; white-space:normal !important;
+    }
     #bottom-btns #build-btn { padding:12px 20px !important; font-size:14px !important; }
     #bottom-btns #mode-btn, #bottom-btns #zukan-float-btn { padding:12px 18px !important; font-size:13px !important; border-radius:24px !important; }
     /* 飛行モード＝音ボタンと同じ緑 */
@@ -1668,6 +1676,8 @@
   </div>
   <div id="fly-hint">🕊 矢印で移動・Shift上昇・Ctrl下降</div>
   <div id="bottom-btns">
+    <!-- 未登録の人にいちばん押してほしいボタン。獲得〜図鑑の列いっぱいに広げて、その上に置く -->
+    <button id="login-btn-header" type="button" onclick="openAuthModal()">🔥 <span id="login-btn-label">ログイン / 登録</span></button>
     <button id="build-btn" onclick="openGachaModal(false)"><span class="acq-icons" aria-hidden="true"><span class="acq-icon-building">🏢</span><span class="acq-sep">／</span><span class="acq-icon-worker">👨‍💼</span></span><span id="build-btn-text">獲得</span></button>
     <button id="mode-btn" onclick="toggleFlyMode()">🕊 飛行モード</button>
     <button id="zukan-float-btn" onclick="openZukan()">📖 図鑑</button>
@@ -1697,8 +1707,6 @@
     <div id="notice-empty">通知はまだありません</div>
   </div>
   <div id="minimap-wrap">
-    <!-- 未登録の人にいちばん押してほしいボタン。「コインを稼ぐ」の真上に置いて目立たせる -->
-    <button id="login-btn-header" type="button" onclick="openAuthModal()">🔥 <span id="login-btn-label">ログイン / 登録</span></button>
     <button id="coingame-btn" type="button" onclick="openCoinGame()" title="コインを稼ぐ">💰 <span id="coingame-label">コインを稼ぐ</span></button>
     <button id="minimap-show-btn" type="button" onclick="toggleMinimap()" title="地図を表示"><span aria-hidden="true">🗺</span> <span id="minimap-show-label">地図</span></button>
     <div id="minimap-inner">
@@ -2237,7 +2245,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v242';
+    const IGNIS_BUILD='2026-07-23-v243';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

@@ -173,6 +173,7 @@
       <button class="tab" data-tab="approved" onclick="switchTab('approved')">✅ 承認済み <span class="badge" id="badge-approved">0</span></button>
       <button class="tab" data-tab="rejected" onclick="switchTab('rejected')">❌ 却下 <span class="badge" id="badge-rejected">0</span></button>
       <button class="tab" data-tab="idle" onclick="switchTab('idle')" title="90日ログインが無く、過去詳細が入っていないビル">🏚 放置ビル <span class="badge" id="badge-idle">0</span></button>
+      <button class="tab" data-tab="memo" onclick="switchTab('memo')" title="毎月・随時・年1回やること／サービス終了時の手順">📋 運営メモ</button>
       <button class="tab" id="translate-all-btn" onclick="backfillMottoEn()" title="承認済みで未翻訳の格言をDeepLで英訳してDBに保存">🌐 未翻訳を一括英訳</button>
     </div>
     <div id="list-container">
@@ -477,7 +478,98 @@
         await loadIdleBuildings();
       }catch(e){showToast('削除に失敗：'+e.message);}
     }
+    // ===== 運営メモ =====
+    // 定期的にやること／サービス終了時の手順の控え。チェックの状態は端末に残す。
+    // 毎月やることは「リセット」で月初にまとめて外せる。
+    const MEMO_STORE='ignis_admin_memo_v1';
+    function memoState(){ try{return JSON.parse(localStorage.getItem(MEMO_STORE)||'{}');}catch(_){return {};} }
+    function memoToggle(id,on){ const s=memoState(); if(on)s[id]=new Date().toISOString(); else delete s[id]; localStorage.setItem(MEMO_STORE,JSON.stringify(s)); renderMemo(); }
+    function memoResetMonthly(){
+      if(!confirm('毎月やることのチェックを外しますか？（月初にリセットして使います）'))return;
+      const s=memoState();
+      Object.keys(s).forEach(k=>{ if(k.startsWith('m'))delete s[k]; });
+      localStorage.setItem(MEMO_STORE,JSON.stringify(s)); renderMemo();
+      showToast('✅ 毎月分のチェックをリセットしました');
+    }
+    const MEMO=[
+      {key:'m', title:'毎月やること', note:'月初にリセットして使います', items:[
+        ['m1','入金確認','Stripeダッシュボードで売上・入金を確認する。'],
+        ['m2','売上の記録（帳簿づけ）','確定申告用に、月の売上とStripe手数料を記録しておく。'],
+        ['m3','脆弱性のセルフチェック','申告で「定期実施」と回答したため、月1回コードを点検する。Claudeに依頼すれば代行できる。'],
+        ['m4','未承認の申請が溜まっていないか','「📨 申請中」タブを確認する。<b>放置すると、書いた人のビルがいつまでも公開されない。</b>'],
+        ['m5','無料枠の残り','DeepL（月50万字）・Brevo（1日300通）・Supabase（DB容量と転送量）を確認する。'],
+      ]},
+      {key:'a', title:'随時やること（発生ベース）', note:'起きたときに対応', items:[
+        ['a1','問い合わせ対応','moto_u1@yahoo.co.jp に届く、解約方法・返金・操作の質問に返信する。<br><b>特商法に基づく「販売者名／住所／電話」の開示請求があれば、遅滞なくメールで開示する（法律上の義務）。</b>'],
+        ['a2','不正利用・チャージバック対応','カードの不正利用や返金要求があればStripe上で対応する。'],
+        ['a3','個人情報の開示・訂正・削除請求への対応','請求に対応する。アカウント削除でデータは消える。'],
+        ['a4','法定書類の更新','価格変更・運営方針の変更があれば、利用規約／プライバシーポリシー／特商法表記を更新する。'],
+        ['a5','放置ビルの確認','「🏚 放置ビル」タブに🆕が出ていたら、街で確認して「残す」か「削除」を選ぶ。'],
+      ]},
+      {key:'y', title:'年1回やること', note:'', items:[
+        ['y1','確定申告','サブスク売上は事業所得として申告が必要。年間の売上・経費・Stripe手数料をまとめる。'],
+      ]},
+      {key:'k', title:'⚠️ 忘れると壊れるもの', note:'期限がある作業', items:[
+        ['k1','90日以内にメールを1通飛ばす','<b>90日間まったく認証メールが送られないと、BrevoのSMTPキーが失効してメールが全部止まる。</b><br>新規登録があれば自動でリセットされる。無ければ、自分で「🔐 パスワードを忘れた」を1回押せばよい。'],
+      ]},
+    ];
+    function renderMemo(){
+      const s=memoState();
+      const sec=(g)=>`
+        <div style="margin-bottom:26px;">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+            <div style="font-size:15px;font-weight:900;color:#ffb066;">■ ${g.title}</div>
+            ${g.note?`<div style="font-size:11px;color:rgba(255,255,255,0.4);">${g.note}</div>`:''}
+            ${g.key==='m'?`<button class="action-btn btn-revert" style="margin-left:auto;" onclick="memoResetMonthly()">↺ 今月分をリセット</button>`:''}
+          </div>
+          ${g.items.map(([id,t,d])=>{
+            const on=!!s[id];
+            const done=on?`<span style="font-size:10px;color:#4ade80;margin-left:8px;">✓ ${fmtTime(s[id])}</span>`:'';
+            return `<label style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:8px;border-radius:10px;cursor:pointer;
+                       background:${on?'rgba(34,197,94,0.07)':'rgba(255,255,255,0.03)'};
+                       border:1px solid ${on?'rgba(34,197,94,0.3)':'rgba(255,255,255,0.08)'};">
+              <input type="checkbox" ${on?'checked':''} onchange="memoToggle('${id}',this.checked)"
+                     style="width:18px;height:18px;margin-top:2px;flex-shrink:0;accent-color:#22c55e;">
+              <div style="min-width:0;">
+                <div style="font-weight:800;font-size:13px;${on?'opacity:0.6;':''}">${t}${done}</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.8;margin-top:3px;">${d}</div>
+              </div>
+            </label>`;
+          }).join('')}
+        </div>`;
+      document.getElementById('list-container').innerHTML=`
+        <div style="max-width:820px;">
+          ${MEMO.map(sec).join('')}
+          <div style="margin-bottom:26px;">
+            <div style="font-size:15px;font-weight:900;color:#fca5a5;margin-bottom:6px;">■ サービスを終了するときの手順</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.9;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px 16px;">
+              利用規約 第7条に書いた内容そのものです。<b>この順番どおりに実行してください。</b><br><br>
+              <b>1.</b> 終了日の<b>30日以上前</b>に、ゲーム内で告知する。<br>
+              <b>2.</b> 告知と<b>同時に</b>、Stripeで新規申込みと自動更新を停止する。<br>
+              <b>3.</b> 課金済みの人は、<b>その期間が終わるまでサービスを継続する</b>。<br>
+              <b>4.</b> 終了日から<b>90日後</b>にデータを削除する。<br><br>
+              ⚠️ <b>3番を飛ばして先に止めると規約違反になり、返金義務が発生します。</b>
+              この手順を守れば、返金する対象がそもそも生まれません。
+            </div>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:900;color:rgba(255,255,255,0.5);margin-bottom:6px;">■ 技術面（対応不要）</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:2;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 16px;">
+              すべて実装済みで、運営者の追加作業はありません。<br>
+              ・決済処理（Stripe Checkout／Webhookで会員状態を自動更新）<br>
+              ・解約導線（カスタマーポータル）<br>
+              ・管理画面の2段階認証＋ログインロック<br>
+              ・SQLインジェクション／XSS対策、RLS<br>
+              ・利用規約・プライバシーポリシー・特商法表記ページ<br>
+              ・自動アップデート（古い版が表示され続ける問題の防止）<br>
+              ・アカウント削除（申請から30日後に毎日自動で実行）<br>
+              ・英訳の自動保存（DeepL・毎日）
+            </div>
+          </div>
+        </div>`;
+    }
     function renderList(){
+      if(currentTab==='memo'){renderMemo();return;}
       if(currentTab==='idle'){renderIdleList();return;}
       const counts={pending:0,approved:0,rejected:0};
       profiles.forEach(p=>{if(counts[p._reviewState]!==undefined)counts[p._reviewState]++;});

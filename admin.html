@@ -74,6 +74,21 @@
     .btn-approve{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;}
     .btn-reject{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;}
     .btn-revert{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.12);}
+    /* 放置ビル：未判断のカードだけ目立たせる（再確認は落ち着いた見た目） */
+    .idle-tag{display:inline-block;font-size:10px;font-weight:800;padding:3px 10px;border-radius:6px;letter-spacing:0.06em;}
+    .idle-new{background:rgba(255,106,0,0.2);color:#ffb066;border:1px solid rgba(255,106,0,0.55);}
+    .idle-recheck{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);}
+    .idle-card.idle-card-new{
+      border-color:rgba(255,106,0,0.6);
+      box-shadow:0 0 0 1px rgba(255,106,0,0.25),0 6px 26px rgba(255,106,0,0.16);
+      animation:idlePulse 2.4s ease-in-out infinite;
+    }
+    @keyframes idlePulse{
+      0%,100%{box-shadow:0 0 0 1px rgba(255,106,0,0.25),0 6px 26px rgba(255,106,0,0.16);}
+      50%    {box-shadow:0 0 0 1px rgba(255,106,0,0.5), 0 8px 34px rgba(255,106,0,0.34);}
+    }
+    .idle-card:not(.idle-card-new){opacity:0.72;}
+    @media (prefers-reduced-motion: reduce){ .idle-card.idle-card-new{animation:none;} }
     .empty{text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);font-size:14px;}
     .loading{text-align:center;padding:40px;color:rgba(255,255,255,0.4);font-size:13px;}
     #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a14;border:1px solid rgba(255,106,0,0.5);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200;}
@@ -398,14 +413,26 @@
         container.innerHTML=`<div class="empty">${IDLE_DAYS}日以上ログインが無く、過去詳細も入っていないビルはありません</div>`;
         return;
       }
-      container.innerHTML=idleBuildings.map(it=>{
+      const newCount=idleBuildings.filter(it=>it.review_state!=='recheck').length;
+      const head=newCount
+        ? `<div style="margin-bottom:12px;font-size:12px;color:rgba(255,255,255,0.55);">
+             未判断 <b style="color:#ffd54f;">${newCount}件</b> ／ 再確認 ${idleBuildings.length-newCount}件</div>`
+        : '';
+      container.innerHTML=head+idleBuildings.map(it=>{
         const last=it.last_seen_at?fmtTime(it.last_seen_at):'不明';
         const days=it.last_seen_at?Math.floor((Date.now()-new Date(it.last_seen_at).getTime())/86400000):'-';
         // ゲーム側の該当ビルへ飛ぶ（?goto=x,z）。実物を見てから判断できるように。
         const gotoUrl=`index.html?goto=${it.x},${it.z}`;
-        return `<div class="card">
-          <div style="font-size:30px;">🏚</div>
+        // 未判断のビルは目立たせる。「残す」を経て180日後に戻ってきたものは落ち着いた見た目にして、
+        // 毎回同じカードを読み直さずに済むようにする。
+        const isNew=it.review_state!=='recheck';
+        const tag=isNew
+          ? `<span class="idle-tag idle-new">🆕 未判断</span>`
+          : `<span class="idle-tag idle-recheck">🔁 再確認（前回 ${it.last_kept_at?fmtTime(it.last_kept_at):'-'} に残す）</span>`;
+        return `<div class="card idle-card ${isNew?'idle-card-new':''}">
+          <div style="font-size:30px;">${isNew?'🆕':'🏚'}</div>
           <div class="card-body">
+            <div style="margin-bottom:6px;">${tag}</div>
             <div style="font-weight:800;margin-bottom:4px;">
               <a href="${gotoUrl}" target="_blank" rel="noopener"
                  style="color:#ffb066;text-decoration:none;border-bottom:1px dashed rgba(255,176,102,0.5);">

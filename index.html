@@ -1665,6 +1665,7 @@
     <!-- 左側 -->
     <div id="left-rail">
       <button id="logout-btn" class="rail-btn li-only" type="button" onclick="handleLogout()">↩ ログアウト</button>
+      <button id="delete-account-btn" class="rail-btn li-only" type="button" onclick="openDeleteAccountModal()">🗑 アカウント削除</button>
       <div id="city-goals" style="display:none;">
         <div id="dawn-goal-line"></div>
         <div id="weekly-goal-line"></div>
@@ -1717,6 +1718,17 @@
     <div id="minimap-label">MINIMAP</div>
   </div>
   <div id="motto-wall-labels" aria-hidden="true"></div>
+  <!-- アカウント削除：押した時点では消さず、30日の猶予をおいてから削除する -->
+  <div id="delacct-modal" style="display:none;position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:18px;">
+    <div style="width:100%;max-width:380px;max-height:90svh;overflow-y:auto;background:linear-gradient(160deg,#1a1524,#120f1c);border:1px solid rgba(239,68,68,0.45);border-radius:16px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,0.6);">
+      <div id="delacct-title" style="font-size:16px;font-weight:800;color:#fca5a5;margin-bottom:10px;">🗑 アカウントを削除</div>
+      <div id="delacct-body" style="font-size:12px;line-height:1.9;color:rgba(255,255,255,0.75);margin-bottom:14px;"></div>
+      <button id="delacct-confirm" type="button" onclick="confirmDeleteAccount()" style="width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;font-size:14px;font-weight:800;cursor:pointer;">削除を予約する</button>
+      <button id="delacct-cancel" type="button" onclick="cancelDeleteAccount()" style="width:100%;margin-top:8px;padding:12px;border:1px solid rgba(255,255,255,0.2);border-radius:11px;background:rgba(255,255,255,0.06);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:none;">削除の予約を取り消す</button>
+      <button id="delacct-close" type="button" onclick="closeDeleteAccountModal()" style="width:100%;margin-top:8px;padding:12px;border:1px solid rgba(255,255,255,0.2);border-radius:11px;background:transparent;color:rgba(255,255,255,0.7);font-size:13px;font-weight:700;cursor:pointer;">閉じる</button>
+      <div id="delacct-msg" style="margin-top:10px;font-size:11px;line-height:1.7;color:#fca5a5;min-height:14px;"></div>
+    </div>
+  </div>
   <!-- パスワード再設定：メールのリンクから戻ってきたときだけ開く -->
   <div id="pwreset-modal" style="display:none;position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:18px;">
     <div style="width:100%;max-width:360px;background:linear-gradient(160deg,#1a1524,#120f1c);border:1px solid rgba(255,138,61,0.35);border-radius:16px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,0.6);">
@@ -2245,7 +2257,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v245';
+    const IGNIS_BUILD='2026-07-23-v246';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -4139,6 +4151,7 @@
       if(xRewardsClose)xRewardsClose.textContent=isJa?'✕ 閉じる':'✕ Close';
       if(document.getElementById('coin-history-overlay').classList.contains('open'))renderCoinHistory();
       document.getElementById('logout-btn').textContent=isJa?'↩ ログアウト':'↩ Logout';
+      {const da=document.getElementById('delete-account-btn');if(da)da.textContent=isJa?'🗑 アカウント削除':'🗑 Delete account';}
       {const cg=document.getElementById('coingame-label');if(cg)cg.textContent=isJa?'コインを稼ぐ':'Earn coins';}
       updateGamepickLabels();
       updateXNameToggleBtn();
@@ -4796,6 +4809,88 @@
     document.getElementById('input-password').addEventListener('input',function(){const results=checkPassword(this.value);['check-length','check-upper','check-lower','check-number'].forEach((id,i)=>document.getElementById(id).classList.toggle('ok',results[i]));updateInputStates();});
     ['input-email','input-username','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',updateInputStates);});
     ['input-username','input-email','input-password','input-x-username','input-password-confirm'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('focus',updateInputStates);el.addEventListener('blur',updateInputStates);}});
+    // ===== アカウント削除（本人のみ・30日の猶予つき）=====
+    // 押した瞬間には消さない。30日以内に再ログインすれば自動で取り消される。
+    // 期限を過ぎるとメールアドレス・パスワード・投稿・所有地まですべて削除される。
+    async function openDeleteAccountModal(){
+      if(!currentUser){openAuthModal();return;}
+      const m=document.getElementById('delacct-modal');
+      if(!m)return;
+      m.style.display='flex';
+      document.getElementById('delacct-msg').textContent='';
+      await renderDeleteAccountState();
+    }
+    function closeDeleteAccountModal(){
+      const m=document.getElementById('delacct-modal');if(m)m.style.display='none';
+    }
+    async function renderDeleteAccountState(){
+      const isJa=currentLang==='ja';
+      const body=document.getElementById('delacct-body');
+      const btnDo=document.getElementById('delacct-confirm');
+      const btnUndo=document.getElementById('delacct-cancel');
+      document.getElementById('delacct-title').textContent=isJa?'🗑 アカウントを削除':'🗑 Delete account';
+      document.getElementById('delacct-close').textContent=isJa?'閉じる':'Close';
+      let st=null;
+      try{const{data}=await db.rpc('get_account_deletion_state');st=data;}catch(_){}
+      if(st&&st.ok&&st.scheduled){
+        const d=st.days_left;
+        body.innerHTML=isJa
+          ?`<b style="color:#fca5a5;">削除を予約しています。</b><br>あと <b>${d}日</b> で、このアカウントとメールアドレス・パスワード・投稿・所有地がすべて削除されます。<br><br>やめたい場合は下のボタンで取り消せます。<b>この期間内にログインした場合も自動で取り消されます。</b>`
+          :`<b style="color:#fca5a5;">Deletion is scheduled.</b><br>In <b>${d} day(s)</b> this account — email, password, posts and land — will be permanently deleted.<br><br>You can cancel below. <b>Simply logging in during this period also cancels it.</b>`;
+        btnDo.style.display='none';
+        btnUndo.style.display='block';
+        btnUndo.textContent=isJa?'削除の予約を取り消す':'Cancel the deletion';
+      }else{
+        body.innerHTML=isJa
+          ?`削除すると、次のものが<b>すべて元に戻せない形で</b>消えます。<br>・メールアドレスとパスワード<br>・書いた格言と過去の記録<br>・所有している土地とビル<br>・コインと従業員<br><br><b style="color:#93c5fd;">すぐには消えません。</b>30日間の猶予があり、その間に<b>ログインすれば自動で取り消されます</b>。`
+          :`Deleting removes the following <b>permanently</b>:<br>・your email and password<br>・the mottos and past records you wrote<br>・your land and buildings<br>・coins and staff<br><br><b style="color:#93c5fd;">Nothing is deleted right away.</b> There is a 30-day grace period, and <b>logging in during it cancels the deletion</b>.`;
+        btnDo.style.display='block';
+        btnDo.textContent=isJa?'削除を予約する':'Schedule deletion';
+        btnUndo.style.display='none';
+      }
+    }
+    async function confirmDeleteAccount(){
+      const isJa=currentLang==='ja';
+      if(!confirm(isJa
+        ?'本当にアカウントの削除を予約しますか？\n\n30日後に、メールアドレス・投稿・所有地を含むすべてが削除されます。\n（30日以内にログインすれば取り消されます）'
+        :'Schedule this account for deletion?\n\nAfter 30 days everything — email, posts, land — is deleted.\n(Logging in within 30 days cancels it.)'))return;
+      const btn=document.getElementById('delacct-confirm');
+      btn.disabled=true;
+      try{
+        const{data,error}=await db.rpc('request_account_deletion');
+        if(error)throw error;
+        if(!data||!data.ok)throw new Error((data&&data.reason)||'failed');
+        showToast(isJa?'🗑 削除を予約しました（30日以内のログインで取り消せます）':'🗑 Deletion scheduled (log in within 30 days to cancel)');
+        await renderDeleteAccountState();
+      }catch(e){
+        document.getElementById('delacct-msg').textContent=(isJa?'失敗：':'Failed: ')+(e.message||'');
+      }finally{btn.disabled=false;}
+    }
+    async function cancelDeleteAccount(){
+      const isJa=currentLang==='ja';
+      const btn=document.getElementById('delacct-cancel');
+      btn.disabled=true;
+      try{
+        const{data,error}=await db.rpc('cancel_account_deletion');
+        if(error)throw error;
+        if(!data||!data.ok)throw new Error((data&&data.reason)||'failed');
+        showToast(isJa?'✅ 削除の予約を取り消しました':'✅ Deletion cancelled');
+        await renderDeleteAccountState();
+      }catch(e){
+        document.getElementById('delacct-msg').textContent=(isJa?'失敗：':'Failed: ')+(e.message||'');
+      }finally{btn.disabled=false;}
+    }
+    // ログインしたら削除予約を自動で取り消す（「戻ってきた＝やめた」とみなす）
+    async function autoCancelDeletionOnLogin(){
+      if(!db||!currentUser)return;
+      try{
+        const{data}=await db.rpc('get_account_deletion_state');
+        if(!data||!data.ok||!data.scheduled)return;
+        await db.rpc('cancel_account_deletion');
+        const isJa=currentLang==='ja';
+        showToast(isJa?'✅ アカウント削除の予約を取り消しました（おかえりなさい）':'✅ Your scheduled account deletion was cancelled — welcome back');
+      }catch(_){}
+    }
     // ===== パスワード再設定 =====
     // メールのリンクから戻ってくると Supabase が復旧セッションを張り、PASSWORD_RECOVERY が飛ぶ。
     // そこで「新しいパスワードを入力する画面」を出す。以前はこの画面が無く、戻り先も
@@ -5026,6 +5121,7 @@
       Promise.resolve().then(async()=>{
         try{
           touchLastSeen(); // 最終ログイン（ビル詳細に表示する）
+          autoCancelDeletionOnLogin(); // 削除予約中に戻ってきたら自動で取り消す
           await withTimeout(processExpiredStaff(),8000,'processExpiredStaff');
           await withTimeout(refreshEmployeeHeader(),8000,'refreshEmp');
           await refreshStaffTermPanel();

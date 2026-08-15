@@ -418,12 +418,24 @@
               削除するとオーナーへ <b>${it.refund_coins}コイン</b> 返金・従業員 ${it.employees}人 を休職へ
             </div>
           </div>
-          <div>
-            <button class="primary-btn" style="background:#b91c1c;white-space:nowrap;"
+          <div class="actions">
+            <button class="action-btn btn-revert" style="white-space:nowrap;"
+              onclick="keepIdleBuilding(${it.x},${it.z})" title="一覧から外します（180日後に再確認）">✋ 残す</button>
+            <button class="action-btn btn-reject" style="white-space:nowrap;"
               onclick="deleteIdleBuilding(${it.x},${it.z},${it.has_motto?1:0})">🗑 削除</button>
           </div>
         </div>`;
       }).join('');
+    }
+    // 「消さない」と判断したビルを一覧から外す。永久ではなく180日後にまた出る。
+    async function keepIdleBuilding(x,z){
+      try{
+        const{data,error}=await db.rpc('admin_keep_building',{bx:x,bz:z});
+        if(error)throw error;
+        if(!data||!data.ok){showToast('登録できませんでした：'+((data&&data.reason)||'不明'));return;}
+        showToast(`✋ X:${x} / Z:${z} を一覧から外しました（180日後に再確認）`);
+        await loadIdleBuildings();
+      }catch(e){showToast('失敗：'+e.message);}
     }
     async function deleteIdleBuilding(x,z,hasMotto){
       const warn=hasMotto

@@ -2245,7 +2245,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v243';
+    const IGNIS_BUILD='2026-07-23-v244';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5446,6 +5446,16 @@
     scene.fogMode=BABYLON.Scene.FOGMODE_LINEAR;
     scene.fogColor=new BABYLON.Color3(0.04,0.04,0.06);
     scene.fogStart=230;scene.fogEnd=950;
+    // ===== 距離カリング =====
+    // ビル1棟ごとに専用マテリアルを持つ作りなので、1棟＝1描画命令になる。
+    // 街が埋まると描画命令が数千に達してスマホが持たないが、fogEnd(950)より遠くは
+    // 霧で完全に見えていない。そこを描画対象から外す＝見た目は変えずに負荷だけ落とす。
+    // これで「街をどれだけ広げても、常に手前のぶんしか描かれない」状態になる。
+    const BUILDING_CULL_DIST=1000; // fogEnd より少し外側
+    function applyBuildingCull(mesh){
+      if(!mesh||typeof mesh.addLODLevel!=='function')return;
+      try{mesh.addLODLevel(BUILDING_CULL_DIST,null);}catch(_){}
+    }
     // 遠景スカイライン：街の外周にシルエットのビル群を配置し、大都市の中にいる奥行きを出す。
     // 固定シードの疑似乱数なので全員同じ景色。全棟を1メッシュに結合して描画コストはビル1棟分。
     (function buildFarSkyline(){
@@ -6940,6 +6950,10 @@
         const chars=splitMottoChars(p.motto_text);
         const {localPos}=getMottoWallPlacementLocal(b,chars.length);
         const world=BABYLON.Vector3.TransformCoordinates(localPos,b.mesh.getWorldMatrix());
+        // ビル本体を距離で描画対象から外しているので、格言ラベルも同じ距離で隠す。
+        // 揃えないと、消えたビルの位置に文字だけが浮いて残る。
+        // （街が埋まったときに遠くのラベルぶんのDOM更新を省ける効果もある）
+        if(cam.position&&BABYLON.Vector3.Distance(cam.position,world)>BUILDING_CULL_DIST)return;
         const coord=projectWorldToScreen(world);
         if(!coord||!coord.visible)return;
         active.add(key);
@@ -9367,6 +9381,7 @@
       const mat=new BABYLON.StandardMaterial('bm_'+Date.now(),scene);
       applyBuildingRankColor(mat,employees,mesh,x,z,height);
       mesh.material=mat;
+      applyBuildingCull(mesh);
       const key=lKey||landKey(x,z);
       const buildingData={x,z,baseFloors,totalFloors,shape:prism,employees,mesh,landKey:key,viewCount,viewTotal,ownerId};
       if(mesh){mesh.metadata={landKey:key,bx:x,bz:z};}

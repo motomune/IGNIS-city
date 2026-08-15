@@ -135,12 +135,14 @@
       color: rgba(255,255,255,0.7); padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer;
     }
     #logout-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
-    /* ログイン/登録：未登録の人にいちばん押してほしいので、脈打つ光で目立たせる。
-       置き場所は「コインを稼ぐ」の真上（#minimap-wrap の先頭）。 */
+    /* ログイン/登録：未登録の人にいちばん押してほしいので、オレンジの枠と脈打つ光で目立たせる。
+       置き場所は「獲得〜図鑑」の列のすぐ上。 */
     #login-btn-header {
       position: relative; overflow: hidden; width: 100%;
-      background: linear-gradient(135deg, #ff6a00, #ee0979); border: none; color: #fff;
-      padding: 11px 6px; border-radius: 12px;
+      background: linear-gradient(135deg, #ff6a00, #ee0979); color: #fff;
+      /* 背景が濃いのでボタンの輪郭が街に溶けやすい。明るいオレンジの枠で囲って形をはっきりさせる */
+      border: 2px solid #ff9a3c;
+      padding: 10px 6px; border-radius: 12px;
       font-size: clamp(10px, 2.5vw, 13px); font-weight: 900; letter-spacing: 0.02em;
       /* 幅の狭い列に置くので、折り返しを許す。nowrap だと overflow:hidden で文字が切れる */
       white-space: normal; line-height: 1.25; text-align: center;
@@ -155,8 +157,8 @@
       transform: skewX(-18deg); animation: loginShine 2.8s ease-in-out infinite;
     }
     @keyframes loginPulse {
-      0%,100% { box-shadow: 0 4px 18px rgba(238,9,121,0.45); transform: scale(1); }
-      50%     { box-shadow: 0 6px 26px rgba(255,106,0,0.85); transform: scale(1.035); }
+      0%,100% { box-shadow: 0 4px 18px rgba(238,9,121,0.45), 0 0 0 0 rgba(255,154,60,0.55); transform: scale(1); }
+      50%     { box-shadow: 0 6px 26px rgba(255,106,0,0.85), 0 0 0 4px rgba(255,154,60,0.22); transform: scale(1.03); }
     }
     @keyframes loginShine { 0% { left:-60%; } 55%,100% { left:130%; } }
     /* 動きを減らす設定の端末では光らせない（酔い・消費電力への配慮） */
@@ -2257,7 +2259,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v246';
+    const IGNIS_BUILD='2026-07-23-v247';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

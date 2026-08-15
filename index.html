@@ -2245,7 +2245,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v244';
+    const IGNIS_BUILD='2026-07-23-v245';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -8794,6 +8794,36 @@
         }
       }catch(_){}
     })();
+    // ===== ?goto=x,z で特定のビルへ飛ぶ =====
+    // 管理画面の「削除候補ビル一覧」から、実物を確認するために開くための入口。
+    // ビルが読み込まれるまで少し待ってから寄せ、あればビル詳細も開く。
+    function gotoBuildingFromUrl(){
+      let gx,gz;
+      try{
+        const raw=new URLSearchParams(location.search).get('goto');
+        if(!raw)return;
+        const m=String(raw).split(',');
+        gx=parseInt(m[0],10); gz=parseInt(m[1],10);
+        if(!Number.isFinite(gx)||!Number.isFinite(gz))return;
+      }catch(_){return;}
+      let tries=0;
+      const tryFocus=()=>{
+        tries++;
+        if(!window.BABYLON||!scene||!arcCamera){ if(tries<30)setTimeout(tryFocus,400); return; }
+        try{
+          if(isFlying)setFlyMode(false);          // 俯瞰に戻してから寄せる
+          arcCamera.target=new BABYLON.Vector3(gx,0,gz);
+          arcCamera.radius=34;
+          const b=buildingMap[landKey(gx,gz)];
+          if(b){ openBuildingModal(b); }
+          else if(tries<30){ setTimeout(tryFocus,400); return; }  // まだ読み込み中
+          showToast(currentLang==='ja'?`📍 X:${gx} / Z:${gz} に移動しました`:`📍 Moved to X:${gx} / Z:${gz}`);
+          history.replaceState(null,'',location.pathname); // 再読込で毎回飛ばないように消す
+        }catch(e){console.warn('goto',e.message);}
+      };
+      setTimeout(tryFocus,1200);
+    }
+    gotoBuildingFromUrl();
     // ===== プレミアム特典：ビルのホログラム投影（中央特別区域に日替わりで1棟展示）=====
     // プレミアム会員のビルから固定シードの日替わり乱数で1棟選び、特別区域の空きマスに
     // 半透明の「投影」として表示する。タップすると本物のビル詳細が開く。

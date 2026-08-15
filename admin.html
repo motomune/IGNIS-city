@@ -157,6 +157,7 @@
       <button class="tab active" data-tab="pending" onclick="switchTab('pending')">📨 申請中 <span class="badge" id="badge-pending">0</span></button>
       <button class="tab" data-tab="approved" onclick="switchTab('approved')">✅ 承認済み <span class="badge" id="badge-approved">0</span></button>
       <button class="tab" data-tab="rejected" onclick="switchTab('rejected')">❌ 却下 <span class="badge" id="badge-rejected">0</span></button>
+      <button class="tab" data-tab="idle" onclick="switchTab('idle')" title="90日ログインが無く、過去詳細が入っていないビル">🏚 放置ビル <span class="badge" id="badge-idle">0</span></button>
       <button class="tab" id="translate-all-btn" onclick="backfillMottoEn()" title="承認済みで未翻訳の格言をDeepLで英訳してDBに保存">🌐 未翻訳を一括英訳</button>
     </div>
     <div id="list-container">
@@ -261,6 +262,7 @@
       document.getElementById('admin-uname').textContent=display;
       showScreen('admin');
       loadAdminStats();
+      loadIdleBuildings();   // 放置ビルの候補数をタブのバッジに出す
       await loadProfiles();
     }
     // ===== MFA（TOTP二段階認証）=====
@@ -376,7 +378,68 @@
 
     function fmtTime(iso){if(!iso)return '';const d=new Date(iso);return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
+    // ===== 放置ビル（90日ログイン無し・過去詳細なし）=====
+    // 自動では消さない。ここに並べて1件ずつ判断する。
+    // 過去詳細が入っているビルはサーバー側の一覧に載らない（消せないようにもなっている）。
+    let idleBuildings=[];
+    const IDLE_DAYS=90;
+    async function loadIdleBuildings(){
+      try{
+        const{data,error}=await db.rpc('admin_list_idle_buildings',{p_days:IDLE_DAYS});
+        if(error)throw error;
+        idleBuildings=(data&&data.ok&&Array.isArray(data.items))?data.items:[];
+      }catch(e){console.warn('idle list',e.message);idleBuildings=[];}
+      const b=document.getElementById('badge-idle');if(b)b.textContent=idleBuildings.length;
+      if(currentTab==='idle')renderList();
+    }
+    function renderIdleList(){
+      const container=document.getElementById('list-container');
+      if(!idleBuildings.length){
+        container.innerHTML=`<div class="empty">${IDLE_DAYS}日以上ログインが無く、過去詳細も入っていないビルはありません</div>`;
+        return;
+      }
+      container.innerHTML=idleBuildings.map(it=>{
+        const last=it.last_seen_at?fmtTime(it.last_seen_at):'不明';
+        const days=it.last_seen_at?Math.floor((Date.now()-new Date(it.last_seen_at).getTime())/86400000):'-';
+        // ゲーム側の該当ビルへ飛ぶ（?goto=x,z）。実物を見てから判断できるように。
+        const gotoUrl=`index.html?goto=${it.x},${it.z}`;
+        return `<div class="card">
+          <div style="font-size:30px;">🏚</div>
+          <div class="card-body">
+            <div style="font-weight:800;margin-bottom:4px;">
+              <a href="${gotoUrl}" target="_blank" rel="noopener"
+                 style="color:#ffb066;text-decoration:none;border-bottom:1px dashed rgba(255,176,102,0.5);">
+                 📍 X:${it.x} / Z:${it.z} — 街で確認する</a>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.9;">
+              最終ログイン：${last}（${days}日前）<br>
+              ${it.floors}階 ／ 従業員 ${it.employees}人<br>
+              ${it.has_motto?'💬 <b style="color:#ffd54f;">格言あり</b>（消すと言葉も消えます）':'格言なし'}<br>
+              削除するとオーナーへ <b>${it.refund_coins}コイン</b> 返金・従業員 ${it.employees}人 を休職へ
+            </div>
+          </div>
+          <div>
+            <button class="primary-btn" style="background:#b91c1c;white-space:nowrap;"
+              onclick="deleteIdleBuilding(${it.x},${it.z},${it.has_motto?1:0})">🗑 削除</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    async function deleteIdleBuilding(x,z,hasMotto){
+      const warn=hasMotto
+        ? `\n\n⚠️ このビルには格言が書かれています。削除するとその言葉も消えます。`
+        : '';
+      if(!confirm(`X:${x} / Z:${z} のビルを削除しますか？${warn}\n\nオーナーにはコインを返金し、従業員は休職プールへ戻ります。アカウントは残ります。\n（元に戻せません）`))return;
+      try{
+        const{data,error}=await db.rpc('admin_delete_building',{bx:x,bz:z});
+        if(error)throw error;
+        if(!data||!data.ok){showToast('削除できませんでした：'+((data&&data.reason)||'不明'));return;}
+        showToast(`🗑 削除しました（返金 ${data.refund_coins}コイン ／ 従業員 ${data.staff_returned}人を休職へ）`);
+        await loadIdleBuildings();
+      }catch(e){showToast('削除に失敗：'+e.message);}
+    }
     function renderList(){
+      if(currentTab==='idle'){renderIdleList();return;}
       const counts={pending:0,approved:0,rejected:0};
       profiles.forEach(p=>{if(counts[p._reviewState]!==undefined)counts[p._reviewState]++;});
       document.getElementById('badge-pending').textContent=counts.pending;

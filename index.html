@@ -1581,6 +1581,146 @@
       // キャンバスを今の（縦の）サイズに合わせ直す
       try{if(window.__ignisResizeCanvas)window.__ignisResizeCanvas();}catch(_){}
     };
+
+    /* アプリ内ブラウザの案内
+     *
+     * X・LINE・Instagram などのリンクをタップすると、Safari/Chrome ではなく
+     * アプリに内蔵された簡易ブラウザで開く。ここは WebGL が遅い、音が鳴らない、
+     * そして localStorage がアプリ終了時に消えることがあり、ログイン状態を失う。
+     * 「重い」「音が出ない」「ログインできない」の問い合わせの多くはこれが原因。
+     *
+     * 遊べなくはないので遮断はしない。上部に閉じられる帯を出し、外部ブラウザへの
+     * 逃げ道を用意する：
+     *   ・LINE  … ?openExternalBrowser=1 を付けて開き直すと LINE 側が既定ブラウザに渡す
+     *   ・Android … intent:// で Chrome を直接開く
+     *   ・iOS  … 手段がないので URL コピー＋メニューの場所を案内する
+     */
+    (function(){
+      var KEY='ignis_inapp_notice_v1';
+      try{ if(localStorage.getItem(KEY)==='1')return; }catch(_){}
+
+      var ua=navigator.userAgent||'';
+      var ios=/iPhone|iPad|iPod/i.test(ua), android=/Android/i.test(ua);
+      var app=null;
+      if(/\bLine\//i.test(ua))app='LINE';
+      else if(/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua))app='Facebook';
+      else if(/Instagram/i.test(ua))app='Instagram';
+      else if(/Twitter/i.test(ua))app='X';
+      else if(/MicroMessenger/i.test(ua))app='WeChat';
+      else if(/TikTok|BytedanceWebview|musical_ly/i.test(ua))app='TikTok';
+      else if(/KAKAOTALK/i.test(ua))app='KakaoTalk';
+      else if(android&&/;\s*wv\)/.test(ua))app='app';       // Android WebView 全般
+      if(!app)return;
+      // LINE から既に外部ブラウザへ渡された後なら出さない
+      try{ if(new URLSearchParams(location.search).get('openExternalBrowser'))return; }catch(_){}
+
+      var en=(function(){
+        try{
+          var saved=localStorage.getItem('ignis_game_lang');
+          if(saved==='en')return true; if(saved==='ja')return false;
+          var q=new URLSearchParams(location.search).get('lang');
+          if(q==='en')return true; if(q==='ja')return false;
+        }catch(_){}
+        return !/^ja/i.test(navigator.language||navigator.userLanguage||'');
+      })();
+
+      var name=(app==='app')?(en?'this app':'アプリ'):app;
+      var how = ios
+        ? (en?'Tap the menu at the bottom right and choose “Open in Safari”.'
+             :'右下のメニューから「Safariで開く」を選んでください。')
+        : (en?'Tap ⋮ at the top right and choose “Open in browser”.'
+             :'右上の ⋮ から「ブラウザで開く」を選んでください。');
+
+      var T=en?{
+        title:'You are inside '+name+'’s built-in browser',
+        body:'It can run slowly, mute the music, and <b>sign you out when the app closes</b>. Opening it in Safari or Chrome fixes all of it.',
+        how:how, open:'Open in browser', copy:'Copy link', copied:'Copied', close:'Continue anyway'
+      }:{
+        title:name+'の簡易ブラウザで開いています',
+        body:'動作が重くなる・音が鳴らない、そして<b>アプリを閉じるとログインが切れる</b>ことがあります。SafariやChromeで開き直すと解消します。',
+        how:how, open:'ブラウザで開く', copy:'リンクをコピー', copied:'コピーしました', close:'このまま続ける'
+      };
+
+      function bar(){
+        if(document.getElementById('ignis-inapp-bar'))return;
+        var b=document.createElement('div');
+        b.id='ignis-inapp-bar';
+        b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:2147482000;'+
+          'padding:calc(10px + env(safe-area-inset-top,0px)) 14px 12px;'+
+          'background:rgba(10,6,4,0.97);border-bottom:2px solid #ff8a3d;'+
+          '-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);'+
+          "font-family:'Hiragino Sans','Yu Gothic','Noto Sans JP',system-ui,sans-serif;color:#fff;";
+
+        var t=document.createElement('div');
+        t.style.cssText='font-size:13px;font-weight:900;color:#ffb066;margin-bottom:4px;';
+        t.textContent='⚠️ '+T.title;
+
+        var d=document.createElement('div');
+        d.style.cssText='font-size:12px;line-height:1.7;color:rgba(255,255,255,0.82);margin-bottom:8px;';
+        d.innerHTML=T.body;
+
+        var row=document.createElement('div');
+        row.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center;';
+        function mk(label,primary,fn){
+          var x=document.createElement('button');
+          x.type='button'; x.textContent=label;
+          x.style.cssText='padding:9px 16px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;'+
+            (primary?'border:none;background:linear-gradient(135deg,#ff6a00,#ee0979);color:#fff;'
+                    :'border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);');
+          x.addEventListener('click',fn);
+          return x;
+        }
+
+        // LINE と Android は一発で外に出せる。iOS の他アプリは手順の案内だけ。
+        var goOut=null;
+        if(app==='LINE'){
+          goOut=function(){
+            var u=location.href+(location.search?'&':'?')+'openExternalBrowser=1';
+            location.href=u;
+          };
+        }else if(android){
+          goOut=function(){
+            var u=location.href.replace(/^https?:\/\//,'');
+            location.href='intent://'+u+'#Intent;scheme=https;package=com.android.chrome;end';
+          };
+        }
+        if(goOut)row.appendChild(mk(T.open,true,goOut));
+
+        var cp=mk(T.copy,false,function(){
+          var u=location.href;
+          function done(){ cp.textContent='✓ '+T.copied; }
+          try{
+            if(navigator.clipboard&&navigator.clipboard.writeText){
+              navigator.clipboard.writeText(u).then(done,fallback);
+              return;
+            }
+          }catch(_){}
+          fallback();
+          function fallback(){
+            try{
+              var ta=document.createElement('textarea');
+              ta.value=u; ta.style.cssText='position:fixed;opacity:0;';
+              document.body.appendChild(ta); ta.select();
+              document.execCommand('copy'); ta.remove(); done();
+            }catch(_){}
+          }
+        });
+        row.appendChild(cp);
+        row.appendChild(mk('✕ '+T.close,false,function(){
+          try{localStorage.setItem(KEY,'1');}catch(_){}
+          b.remove();
+        }));
+
+        var h=document.createElement('div');
+        h.style.cssText='font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;line-height:1.6;';
+        h.textContent=T.how;
+
+        b.appendChild(t); b.appendChild(d); b.appendChild(row); b.appendChild(h);
+        document.body.appendChild(b);
+      }
+      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bar);
+      else bar();
+    })();
   </script>
   <div id="loading">
     <div id="loading-logo">IGNIS CITY</div>
@@ -2280,7 +2420,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v251';
+    const IGNIS_BUILD='2026-07-23-v252';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

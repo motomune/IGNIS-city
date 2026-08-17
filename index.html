@@ -1,13 +1,21 @@
 ﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FKVQPWT1CY"></script>
+<!-- Google アナリティクス：同意があるまで読み込まない（GDPR/ePrivacy 対応）。
+     同意バナーで「同意する」が押された時点で初めてスクリプトを差し込む。 -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-FKVQPWT1CY');
+  window.IGNIS_GA_ID='G-FKVQPWT1CY';
+  window.ignisLoadAnalytics=function(){
+    if(window.__ignisGaLoaded)return; window.__ignisGaLoaded=true;
+    var s=document.createElement('script');
+    s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+window.IGNIS_GA_ID;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', window.IGNIS_GA_ID);
+  };
+  try{ if(localStorage.getItem('ignis_cookie_consent')==='yes') window.ignisLoadAnalytics(); }catch(e){}
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -1169,6 +1177,13 @@
     .sub-plan-btn-gold { background:linear-gradient(135deg,#b8860b,#ffd54f);color:#3a2a00; }
     .sub-plan-btn:disabled { opacity:0.6;cursor:wait; }
     #sub-portal-btn { width:100%;margin-top:2px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer; }
+    /* 申込み前の確認事項（特商法の定期購入表示）。読み飛ばされない濃さで出す */
+    #sub-terms { margin-top:14px;padding:12px 14px;border-radius:10px;text-align:left;
+      background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14); }
+    #sub-terms-title { font-size:11px;font-weight:800;color:#ffb066;margin-bottom:6px;letter-spacing:0.04em; }
+    #sub-terms-list { margin:0;padding-left:18px; }
+    #sub-terms-list li { font-size:10.5px;line-height:1.75;color:rgba(255,255,255,0.72);margin:3px 0; }
+    #sub-terms-list b { color:rgba(255,255,255,0.95); }
     #sub-note { margin-top:10px;font-size:10px;color:rgba(255,255,255,0.4);text-align:center;line-height:1.6; }
     /* 再生の殿堂モーダル */
     #hall-modal { position:fixed;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;z-index:60; }
@@ -1883,6 +1898,11 @@
       </div>
       </div>
       <button id="sub-portal-btn" type="button" onclick="openBillingPortal()" style="display:none;">⚙️ プラン変更・解約はこちら</button>
+      <!-- 特商法（2022年改正）：申込みの最終確認にあたるので、金額・支払時期・自動更新・解約方法を明示する -->
+      <div id="sub-terms">
+        <div id="sub-terms-title">📄 お申し込み内容の確認</div>
+        <ul id="sub-terms-list"></ul>
+      </div>
       <div id="sub-note">決済はStripeの安全なページで行われます。いつでも解約できます。</div>
       <div id="sub-legal" style="margin-top:8px;text-align:center;font-size:10px;line-height:1.8;">
         <a href="legal.html#terms" target="_blank" rel="noopener" style="color:#ffd54f;text-decoration:none;"><span data-i18n-legal="terms">利用規約</span></a>
@@ -2259,7 +2279,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v247';
+    const IGNIS_BUILD='2026-07-23-v248';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -8832,6 +8852,23 @@
         ?'<li>✨ サブスク会員の特典すべて</li><li>🕯️ 蝋燭を1日5本まで灯せる</li><li>💎 あなたのXリンクがゲーム内に常時掲載（宣伝枠）</li><li>🏙 あなたのビルが街の中央特別区域に「日替わりホログラム投影」で展示される（タップであなたのビル詳細へ誘導）</li>'
         :'<li>✨ Everything in Subscriber</li><li>🕯️ Light up to 5 candles per day</li><li>💎 Your X link featured in the in-game ticker</li><li>🏙 Your building projected as a daily hologram in the central special zone (tap leads to your building)</li>';
       set('sub-note',isJa?'決済はStripeの安全なページで行われます。いつでも解約できます。':'Payments are handled securely by Stripe. Cancel anytime.');
+      set('sub-terms-title',isJa?'📄 お申し込み内容の確認':'📄 Before you subscribe');
+      {
+        const ul=document.getElementById('sub-terms-list');
+        if(ul)ul.innerHTML=isJa
+          ?'<li><b>料金</b>：サブスク会員 月額980円／プレミアム会員 月額1,980円（いずれも税込）</li>'
+          +'<li><b>支払時期</b>：お申し込み時に初回を即時決済。以後は毎月同日に自動で決済されます</li>'
+          +'<li><b>自動更新</b>：<b>解約するまで毎月自動で更新され、課金が続きます</b></li>'
+          +'<li><b>解約方法</b>：本画面の「⚙️ プラン変更・解約はこちら」から、次回更新日の前までにお手続きください。当該期間の満了をもって停止します</li>'
+          +'<li><b>返金</b>：サービスの性質上、決済済みの料金の返金および期間途中解約の日割り返金は行いません</li>'
+          +'<li><b>18歳未満の方</b>は、法定代理人の同意を得たうえでお申し込みください</li>'
+          :'<li><b>Price</b>: Subscriber ¥980/month, Premium ¥1,980/month (tax included)</li>'
+          +'<li><b>Billing</b>: charged immediately on signup, then on the same day each month</li>'
+          +'<li><b>Auto-renewal</b>: <b>it renews and charges every month until you cancel</b></li>'
+          +'<li><b>Cancelling</b>: use "⚙️ Change plan / cancel" on this screen before the next renewal; it stops at the end of the current period</li>'
+          +'<li><b>Refunds</b>: none, including pro-rata for mid-period cancellation</li>'
+          +'<li><b>Under 18?</b> Subscribe only with the consent of your legal guardian</li>';
+      }
       const portal=document.getElementById('sub-portal-btn');
       if(portal){
         portal.textContent=isJa?'⚙️ プラン変更・解約はこちら':'⚙️ Change plan / cancel';
@@ -10230,5 +10267,6 @@
     window.openXRewardsRules=openXRewardsRules;
     window.closeXRewardsRules=closeXRewardsRules;
   </script>
+<script src="cookie-consent.js"></script>
 </body>
 </html>

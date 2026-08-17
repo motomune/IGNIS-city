@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FKVQPWT1CY"></script>
+<!-- Google アナリティクス：同意があるまで読み込まない（GDPR/ePrivacy 対応）。
+     同意バナーで「同意する」が押された時点で初めてスクリプトを差し込む。 -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-FKVQPWT1CY');
+  window.IGNIS_GA_ID='G-FKVQPWT1CY';
+  window.ignisLoadAnalytics=function(){
+    if(window.__ignisGaLoaded)return; window.__ignisGaLoaded=true;
+    var s=document.createElement('script');
+    s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+window.IGNIS_GA_ID;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', window.IGNIS_GA_ID);
+  };
+  try{ if(localStorage.getItem('ignis_cookie_consent')==='yes') window.ignisLoadAnalytics(); }catch(e){}
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,6 +82,7 @@
       <li>利用者は、当方の定める方法によりアカウント登録を行うものとします。</li>
       <li>登録情報に虚偽があった場合、または過去に本規約違反等があった場合、当方は登録を承認しないことがあります。</li>
       <li>13歳未満の方は保護者の同意を得たうえでご利用ください。</li>
+      <li><b>18歳未満の方（未成年者）が有料サービスを申し込む場合は、あらかじめ法定代理人（親権者等）の同意を得るものとします。</b>有料サービスの申込みをもって、当該同意を得ているものとみなします。</li>
     </ol>
 
     <h2>第3条（アカウントの管理）</h2>
@@ -116,6 +125,7 @@
       <li>サブスクリプションは、解約手続きが行われない限り、各更新日に自動更新され、当該期間分の料金が課金されます。</li>
       <li>解約は、次回更新日の前までに本サービス内の手続き（カスタマーポータル）により行うことができ、当該期間の満了をもって停止します。</li>
       <li>サービスの性質上、決済済みの料金および利用期間途中の解約による日割り返金は行いません。</li>
+      <li><b>18歳未満の方は、法定代理人の同意を得たうえでお申し込みください。</b>同意なく申し込まれた場合、契約が取り消されることがあります。</li>
     </ol>
 
     <h2>第7条（サービスの変更・中断・終了）</h2>
@@ -149,7 +159,13 @@
     <p>本サービスに関する著作権・商標権その他の知的財産権は、当方または正当な権利者に帰属します。</p>
 
     <h2>第11条（本規約の変更）</h2>
-    <p>当方は、必要と判断した場合、利用者に通知することなく本規約を変更できます。変更後に本サービスを利用した場合、変更後の規約に同意したものとみなします。</p>
+    <ol>
+      <li>当方は、民法第548条の4の定めに従い、本規約を変更することがあります。</li>
+      <li>本規約を変更する場合、<b>変更後の内容および効力発生時期を、あらかじめ本サービス内その他の適切な方法により周知します</b>。</li>
+      <li>利用者に不利益となる変更を行う場合は、<b>効力発生日の30日前までに周知します</b>。</li>
+      <li>周知した効力発生時期の到来後に本サービスを利用した場合、変更後の規約に同意したものとみなします。</li>
+    </ol>
+    <p class="note">※ 本条は「規約の条文を変更する場合」の手続きを定めるものであり、本サービスの機能追加・仕様変更・演出の変更など日常の運営行為について、その都度の事前通知を要するものではありません。</p>
 
     <h2>第12条（準拠法・裁判管轄）</h2>
     <p>本規約は日本法を準拠法とし、本サービスに関して紛争が生じた場合、当方の所在地を管轄する裁判所を専属的合意管轄裁判所とします。</p>
@@ -160,7 +176,7 @@
     <h2>1. Application</h2>
     <p>These Terms apply to all matters relating to use of the Service. Any individual rules or notices we post form part of these Terms.</p>
     <h2>2. Registration</h2>
-    <p>You must register an account as we prescribe. We may refuse registration if information is false or there has been a past breach. Users under 13 must have a guardian's consent.</p>
+    <p>You must register an account as we prescribe. We may refuse registration if information is false or there has been a past breach. Users under 13 must have a guardian's consent. <b>Users under 18 must obtain the consent of a legal guardian before subscribing to a paid plan</b>; subscribing is taken as confirming that consent has been given.</p>
     <h2>3. Account Management</h2>
     <p>You are responsible for managing your credentials. Accounts may not be transferred or shared. We are not liable for damage arising from unauthorized account use.</p>
     <h2>4. Prohibited Conduct</h2>
@@ -168,7 +184,7 @@
     <h2>5. User Content</h2>
     <p>Rights to content you post (mottos, past records, etc.) remain yours. You grant us a free, non-exclusive license to use (including reproduce, display and translate) such content as needed to provide, improve and promote the Service. Content is published after our approval; we may review, hide or delete it. Content is posted as your own experience, with your consent to publication and viewing by other users; past-record sections ③–⑥ (background, response, outcome, lessons) are viewable by paid members (Subscriber and above) with the author's consent. You may delete your posted mottos and past records at any time using the in-app delete feature. English translations may be machine-generated and are not guaranteed to be accurate.</p>
     <h2>6. Paid Services</h2>
-    <p>The Service includes paid subscriptions (Subscriber: ¥980/month; Premium: ¥1,980/month, tax included). Payments are processed by Stripe; we do not retain your card details. Subscriptions renew automatically each period unless cancelled. You may cancel before the next renewal via the in-app customer portal; it stops at the end of the current period. Due to the nature of the Service, no refunds (including pro-rata) are provided.</p>
+    <p>The Service includes paid subscriptions (Subscriber: ¥980/month; Premium: ¥1,980/month, tax included). Payments are processed by Stripe; we do not retain your card details. Subscriptions renew automatically each period unless cancelled. You may cancel before the next renewal via the in-app customer portal; it stops at the end of the current period. Due to the nature of the Service, no refunds (including pro-rata) are provided. <b>If you are under 18, subscribe only with the consent of your legal guardian</b> — without it the contract may be voidable.</p>
     <h2>7. Changes / Suspension / Termination</h2>
     <p>We may change or temporarily suspend the Service. <b>If we terminate the Service we will give at least 30 days' notice</b> in the Service or by other means, and will stop new paid signups and automatic renewals at the same time. Where a period has already been paid for, the Service will continue until that period ends. On termination, user data including posted content <b>will be deleted 90 days after the closing date</b>. Except as set out above, we are not liable for damage arising from changes, suspension or termination, save in cases of our intent or gross negligence.</p>
     <h2>7-2. Data Retention / Inactive Accounts</h2>
@@ -180,6 +196,7 @@
     <h2>10. Intellectual Property</h2>
     <p>All IP rights in the Service belong to us or rightful holders.</p>
     <h2>11. Changes to Terms</h2>
+    <p>We may amend these Terms in accordance with Article 548-4 of the Civil Code. <b>We will announce the amended content and its effective date in advance</b> within the Service or by other appropriate means, and <b>at least 30 days in advance where the change is disadvantageous to users</b>. Using the Service after the announced effective date is taken as acceptance. This clause governs amendments to the text of these Terms; it does not require individual advance notice for ordinary operation such as adding features or changing behaviour.</p>
     <p>We may amend these Terms without notice. Continued use after changes constitutes acceptance.</p>
     <h2>12. Governing Law / Jurisdiction</h2>
     <p>These Terms are governed by Japanese law, with the court having jurisdiction over our location as the exclusive court of first instance.</p>
@@ -195,6 +212,7 @@
       <li>メールアドレス、パスワード（暗号化して保管）</li>
       <li>X（旧Twitter）のユーザー名（任意・公開設定により表示）</li>
       <li>ゲーム内データ（所有ビル、コイン、投稿した格言・過去詳細、行動履歴等）</li>
+      <li><b>要配慮個人情報</b>：投稿いただく「過去の記録」には、その性質上、<b>病歴・心身の状態、犯罪被害の事実、その他の要配慮個人情報が含まれる場合があります</b>。当方は、これらを<b>投稿時の同意に基づいてのみ取得</b>します（投稿画面で、公開および有料会員による閲覧への同意をいただいています）。書きたくないことを書く必要は一切ありません。</li>
       <li>サブスクリプションの契約状態（決済情報そのものは保持しません）</li>
       <li>アクセスログ、利用環境に関する技術情報</li>
     </ul>
@@ -205,6 +223,7 @@
       <li>サービスの改善、不正利用の防止、お問い合わせ対応のため</li>
       <li>利用者が投稿した格言・過去の記録を、共感や学びの共有を目的として、有料会員を含む他の利用者に表示するため</li>
     </ul>
+    <p><b>当方は、上記の目的の範囲を超えて個人情報を利用しません。</b>とくに、投稿された過去の記録を、<b>第三者への販売、広告目的の分析、AIの学習データとしての提供・利用に用いることはありません</b>。将来これらを行う必要が生じた場合は、あらためて本人の同意を取得します。</p>
     <h2>3. 第三者への提供・委託</h2>
     <p>当方は、法令に基づく場合を除き、利用者の同意なく個人情報を第三者に提供しません。ただし、サービス提供に必要な範囲で以下の事業者に取扱いを委託します。</p>
     <ul>
@@ -241,6 +260,7 @@
       <li>Subscription status (we do not store payment details themselves)</li>
       <li>Access logs and technical/environment information</li>
     </ul>
+    <p><b>Special-category data:</b> by their nature, past records may contain <b>medical or mental-health information, experience of crime, and other special-category personal data</b>. We collect these <b>only on the basis of your consent at the time of posting</b>. You never have to write anything you do not want to.</p>
     <h2>2. Purposes</h2>
     <p>To provide the Service, verify identity, manage accounts and billing, improve the Service, prevent abuse, and respond to inquiries; and to display mottos and past records you post to other users (including paid members) for the purpose of shared empathy and learning.</p>
     <h2>3. Disclosure / Processors</h2>
@@ -308,5 +328,6 @@
   // ゲーム側の言語設定があれば合わせる
   try{ var url=new URL(location.href); if(url.searchParams.get('lang')==='en'){document.body.classList.remove('ja');document.body.classList.add('en');} }catch(_){}
 </script>
+<script src="cookie-consent.js"></script>
 </body>
 </html>

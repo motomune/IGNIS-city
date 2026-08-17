@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FKVQPWT1CY"></script>
+<!-- Google アナリティクス：同意があるまで読み込まない（GDPR/ePrivacy 対応）。
+     同意バナーで「同意する」が押された時点で初めてスクリプトを差し込む。 -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-FKVQPWT1CY');
+  window.IGNIS_GA_ID='G-FKVQPWT1CY';
+  window.ignisLoadAnalytics=function(){
+    if(window.__ignisGaLoaded)return; window.__ignisGaLoaded=true;
+    var s=document.createElement('script');
+    s.async=true; s.src='https://www.googletagmanager.com/gtag/js?id='+window.IGNIS_GA_ID;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', window.IGNIS_GA_ID);
+  };
+  try{ if(localStorage.getItem('ignis_cookie_consent')==='yes') window.ignisLoadAnalytics(); }catch(e){}
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -284,5 +292,6 @@
     function tick(){ctx.clearRect(0,0,W,H);for(const p of parts){p.life++;p.y-=p.vy;p.x+=p.vx+Math.sin(p.life*0.05)*0.25;const t=p.life/p.max,a=Math.max(0,(1-t))*0.75;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},100%,60%,${a})`;ctx.shadowColor=`hsla(${p.hue},100%,55%,${a})`;ctx.shadowBlur=7;ctx.fill();if(p.life>=p.max||p.y<-10)Object.assign(p,spawn());}ctx.shadowBlur=0;requestAnimationFrame(tick);} tick();
   })();
 </script>
+<script src="cookie-consent.js"></script>
 </body>
 </html>

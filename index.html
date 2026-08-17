@@ -1645,26 +1645,31 @@
         if(document.getElementById('ignis-inapp-bar'))return;
         var b=document.createElement('div');
         b.id='ignis-inapp-bar';
+        // 横画面のスマホだと高さ375pxしかない。文章とボタンを横に並べ、帯を薄く保つ。
         b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:2147482000;'+
-          'padding:calc(10px + env(safe-area-inset-top,0px)) 14px 12px;'+
+          'padding:calc(8px + env(safe-area-inset-top,0px)) 12px 9px;'+
           'background:rgba(10,6,4,0.97);border-bottom:2px solid #ff8a3d;'+
           '-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);'+
+          'display:flex;gap:10px;align-items:center;flex-wrap:wrap;'+
           "font-family:'Hiragino Sans','Yu Gothic','Noto Sans JP',system-ui,sans-serif;color:#fff;";
 
+        var col=document.createElement('div');
+        col.style.cssText='flex:1 1 300px;min-width:0;';
+
         var t=document.createElement('div');
-        t.style.cssText='font-size:13px;font-weight:900;color:#ffb066;margin-bottom:4px;';
+        t.style.cssText='font-size:12px;font-weight:900;color:#ffb066;margin-bottom:2px;';
         t.textContent='⚠️ '+T.title;
 
         var d=document.createElement('div');
-        d.style.cssText='font-size:12px;line-height:1.7;color:rgba(255,255,255,0.82);margin-bottom:8px;';
+        d.style.cssText='font-size:11px;line-height:1.6;color:rgba(255,255,255,0.8);';
         d.innerHTML=T.body;
 
         var row=document.createElement('div');
-        row.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center;';
+        row.style.cssText='display:flex;gap:7px;flex-wrap:wrap;align-items:center;flex:0 0 auto;';
         function mk(label,primary,fn){
           var x=document.createElement('button');
           x.type='button'; x.textContent=label;
-          x.style.cssText='padding:9px 16px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;'+
+          x.style.cssText='padding:8px 13px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;'+
             (primary?'border:none;background:linear-gradient(135deg,#ff6a00,#ee0979);color:#fff;'
                     :'border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);');
           x.addEventListener('click',fn);
@@ -1712,10 +1717,11 @@
         }));
 
         var h=document.createElement('div');
-        h.style.cssText='font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;line-height:1.6;';
+        h.style.cssText='font-size:10px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.5;';
         h.textContent=T.how;
 
-        b.appendChild(t); b.appendChild(d); b.appendChild(row); b.appendChild(h);
+        col.appendChild(t); col.appendChild(d); col.appendChild(h);
+        b.appendChild(col); b.appendChild(row);
         document.body.appendChild(b);
       }
       if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bar);
@@ -2420,7 +2426,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v252';
+    const IGNIS_BUILD='2026-07-23-v253';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。

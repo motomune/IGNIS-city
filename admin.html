@@ -499,11 +499,25 @@
         ['m2','売上の記録（帳簿づけ）','確定申告用に、月の売上とStripe手数料を記録しておく。'],
         ['m3','脆弱性のセルフチェック','申告で「定期実施」と回答したため、月1回コードを点検する。Claudeに依頼すれば代行できる。'],
         ['m4','未承認の申請が溜まっていないか','「📨 申請中」タブを確認する。<b>放置すると、書いた人のビルがいつまでも公開されない。</b>'],
-        ['m5','無料枠の残り','DeepL（月50万字）・Brevo（1日300通）・Supabase（DB容量と転送量）を確認する。'],
+        ['m5','無料枠の残り','どれも管理画面にログインして見る。下のリンクからそのページに直接飛べる。<br>'
+          +'・<a href="https://www.deepl.com/ja/your-account/usage" target="_blank" rel="noopener">DeepL 利用状況</a>'
+          +'（月50万字。過去詳細の翻訳で消費。<b>1度訳した文は保存されるので再表示では減らない</b>）<br>'
+          +'・<a href="https://app.brevo.com/statistics/email" target="_blank" rel="noopener">Brevo 統計</a>'
+          +'（1日300通。左メニュー「統計 → メール」で当日の送信数。認証メール・パスワード再設定で消費）<br>'
+          +'・<a href="https://supabase.com/dashboard/project/'+SUPABASE_URL.replace(/^https:\/\//,'').split('.')[0]+'/settings/billing/usage" target="_blank" rel="noopener">Supabase 使用量</a>'
+          +'（DB 500MB・転送 5GB/月。Settings → Billing → Usage）'],
       ]},
       {key:'a', title:'随時やること（発生ベース）', note:'起きたときに対応', items:[
         ['a1','問い合わせ対応','moto_u1@yahoo.co.jp に届く、解約方法・返金・操作の質問に返信する。<br><b>特商法に基づく「販売者名／住所／電話」の開示請求があれば、遅滞なくメールで開示する（法律上の義務）。</b>'],
-        ['a2','不正利用・チャージバック対応','カードの不正利用や返金要求があればStripe上で対応する。'],
+        ['a2','不正利用・チャージバック対応','<b>自分で探しに行かなくてよい。起きるとStripeから登録メールに通知が届く。</b>'
+          +'届いたら下のページを開いて対応する。<b>反論には期限（通常7〜21日）があり、放置すると自動的に負けて返金＋手数料1,500円が確定する。</b><br>'
+          +'・<a href="https://dashboard.stripe.com/payments?status%5B0%5D=disputed" target="_blank" rel="noopener">Stripe 支払い（異議あり）</a>'
+          +'…チャージバックの一覧。件数が0なら何も起きていない<br>'
+          +'・<a href="https://dashboard.stripe.com/radar/reviews" target="_blank" rel="noopener">Stripe Radar レビュー待ち</a>'
+          +'…不正の疑いで保留された決済<br>'
+          +'・<a href="https://dashboard.stripe.com/settings/user" target="_blank" rel="noopener">通知メールの設定</a>'
+          +'…通知が届く宛先はここで確認・変更できる<br>'
+          +'反論するときは「本人がゲームにログインして利用した記録」（登録メール・ログイン日時・利用状況）を証拠として添える。'],
         ['a3','個人情報の開示・訂正・削除請求への対応','請求に対応する。アカウント削除でデータは消える。'],
         ['a4','法定書類の更新','価格変更・運営方針の変更があれば、利用規約／プライバシーポリシー／特商法表記を更新する。'],
         ['a5','放置ビルの確認','「🏚 放置ビル」タブに🆕が出ていたら、街で確認して「残す」か「削除」を選ぶ。'],
@@ -512,9 +526,28 @@
         ['y1','確定申告','サブスク売上は事業所得として申告が必要。年間の売上・経費・Stripe手数料をまとめる。'],
       ]},
       {key:'k', title:'⚠️ 忘れると壊れるもの', note:'期限がある作業', items:[
-        ['k1','90日以内にメールを1通飛ばす','<b>90日間まったく認証メールが送られないと、BrevoのSMTPキーが失効してメールが全部止まる。</b><br>新規登録があれば自動でリセットされる。無ければ、自分で「🔐 パスワードを忘れた」を1回押せばよい。'],
+        ['k1','90日以内にメールを1通飛ばす','<b>90日間まったく認証メールが送られないと、BrevoのSMTPキーが失効してメールが全部止まる。</b><br>'
+          +'新規登録があれば自動でリセットされる。無ければ、自分で「🔐 パスワードを忘れた」を1回押せばよい。<br>'
+          +'送ったらここにチェックを入れる。<b>次の期限が下に出る。</b>'
+          +'（<a href="https://app.brevo.com/statistics/email" target="_blank" rel="noopener">Brevoの送信履歴</a>で最後にいつ飛んだか確認できる）',90],
       ]},
     ];
+    // 期限つきの項目（例：90日以内にメールを1通）の次回期限。
+    // チェックした日から days 日後が次の期限。残り2週間を切ったら黄色、過ぎたら赤。
+    function dueInfo(iso,days){
+      if(!iso)return {over:false,html:`<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:6px;">
+        チェックを入れると、次の期限（${days}日後）を表示します。</div>`};
+      const due=new Date(new Date(iso).getTime()+days*86400000);
+      const left=Math.ceil((due-Date.now())/86400000);
+      const over=left<0, soon=!over&&left<=14;
+      const col=over?'#fca5a5':soon?'#fcd34d':'#4ade80';
+      const bg=over?'rgba(239,68,68,0.12)':soon?'rgba(250,204,21,0.10)':'rgba(34,197,94,0.10)';
+      const label=over?`⚠️ ${-left}日 超過`:soon?`残り ${left}日`:`残り ${left}日`;
+      return {over,html:`<div style="margin-top:8px;padding:8px 12px;border-radius:8px;background:${bg};
+        border:1px solid ${col}55;font-size:12px;font-weight:800;color:${col};">
+        次の期限：${fmtTime(due.toISOString()).split(' ')[0]}（${label}）
+        ${over?'<br><span style="font-weight:600;">期限を過ぎています。今すぐメールを1通送ってから、チェックを入れ直してください。</span>':''}</div>`};
+    }
     function renderMemo(){
       const s=memoState();
       const sec=(g)=>`
@@ -524,17 +557,21 @@
             ${g.note?`<div style="font-size:11px;color:rgba(255,255,255,0.4);">${g.note}</div>`:''}
             ${g.key==='m'?`<button class="action-btn btn-revert" style="margin-left:auto;" onclick="memoResetMonthly()">↺ 今月分をリセット</button>`:''}
           </div>
-          ${g.items.map(([id,t,d])=>{
+          ${g.items.map(([id,t,d,days])=>{
             const on=!!s[id];
             const done=on?`<span style="font-size:10px;color:#4ade80;margin-left:8px;">✓ ${fmtTime(s[id])}</span>`:'';
+            const due=days?dueInfo(s[id],days):null;
+            // 期限つきの項目は、期限を過ぎたら「済み」扱いを解いて赤く出す
+            const ok=on&&!(due&&due.over);
             return `<label style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:8px;border-radius:10px;cursor:pointer;
-                       background:${on?'rgba(34,197,94,0.07)':'rgba(255,255,255,0.03)'};
-                       border:1px solid ${on?'rgba(34,197,94,0.3)':'rgba(255,255,255,0.08)'};">
-              <input type="checkbox" ${on?'checked':''} onchange="memoToggle('${id}',this.checked)"
+                       background:${due&&due.over?'rgba(239,68,68,0.08)':ok?'rgba(34,197,94,0.07)':'rgba(255,255,255,0.03)'};
+                       border:1px solid ${due&&due.over?'rgba(239,68,68,0.45)':ok?'rgba(34,197,94,0.3)':'rgba(255,255,255,0.08)'};">
+              <input type="checkbox" ${ok?'checked':''} onchange="memoToggle('${id}',this.checked)"
                      style="width:18px;height:18px;margin-top:2px;flex-shrink:0;accent-color:#22c55e;">
               <div style="min-width:0;">
-                <div style="font-weight:800;font-size:13px;${on?'opacity:0.6;':''}">${t}${done}</div>
+                <div style="font-weight:800;font-size:13px;${ok?'opacity:0.6;':''}">${t}${done}</div>
                 <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.8;margin-top:3px;">${d}</div>
+                ${due?due.html:''}
               </div>
             </label>`;
           }).join('')}

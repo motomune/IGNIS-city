@@ -1179,7 +1179,7 @@
     .sub-plan-btn:disabled { opacity:0.6;cursor:wait; }
     #sub-portal-btn { width:100%;margin-top:2px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer; }
     /* 申込み前の確認事項（特商法の定期購入表示）。読み飛ばされない濃さで出す */
-    #sub-terms { margin-top:14px;padding:12px 14px;border-radius:10px;text-align:left;
+    #sub-terms { margin:12px 0 16px;padding:12px 14px;border-radius:10px;text-align:left;
       background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14); }
     #sub-terms-title { font-size:11px;font-weight:800;color:#ffb066;margin-bottom:6px;letter-spacing:0.04em; }
     #sub-terms-list { margin:0;padding-left:18px; }
@@ -1875,6 +1875,11 @@
       <button id="sub-close" type="button" onclick="closeSubModal()">×</button>
       <div id="sub-title">💎 サブスクリプション</div>
       <div id="sub-sub">あなたの応援が、誰かの再生を支えます</div>
+      <!-- 特商法（2022年改正）：申込みの最終確認にあたるので、金額・支払時期・自動更新・解約方法を明示する -->
+      <div id="sub-terms">
+        <div id="sub-terms-title">📄 お申し込み内容の確認</div>
+        <ul id="sub-terms-list"></ul>
+      </div>
       <div id="sub-plans-row">
       <div class="sub-plan" id="sub-plan-980">
         <div class="sub-plan-name" id="sub-plan-980-name">サブスク会員</div>
@@ -1899,11 +1904,6 @@
       </div>
       </div>
       <button id="sub-portal-btn" type="button" onclick="openBillingPortal()" style="display:none;">⚙️ プラン変更・解約はこちら</button>
-      <!-- 特商法（2022年改正）：申込みの最終確認にあたるので、金額・支払時期・自動更新・解約方法を明示する -->
-      <div id="sub-terms">
-        <div id="sub-terms-title">📄 お申し込み内容の確認</div>
-        <ul id="sub-terms-list"></ul>
-      </div>
       <div id="sub-note">決済はStripeの安全なページで行われます。いつでも解約できます。</div>
       <div id="sub-legal" style="margin-top:8px;text-align:center;font-size:10px;line-height:1.8;">
         <a href="legal.html#terms" target="_blank" rel="noopener" style="color:#ffd54f;text-decoration:none;"><span data-i18n-legal="terms">利用規約</span></a>
@@ -2280,7 +2280,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v249';
+    const IGNIS_BUILD='2026-07-23-v250';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -8938,6 +8938,14 @@
       try{
         const r=await callStripeBilling({action:'portal'});
         if(r&&r.url){location.href=r.url;return;}
+        // no_customer＝Stripeでの支払い履歴が無い（管理画面から手動で会員にした場合など）。
+        // 利用者から見ると原因が分からないので、何が起きているかを言葉で返す。
+        if(r&&r.error==='no_customer'){
+          showToast(isJa
+            ?'このアカウントにはStripeでのお支払い履歴がないため、管理する内容がありません'
+            :'This account has no Stripe payment history, so there is nothing to manage');
+          return;
+        }
         showToast((isJa?'ポータルを開けませんでした：':'Could not open portal: ')+((r&&r.error)||''));
       }catch(e){console.warn('portal',e);showToast(isJa?'エラーが発生しました':'Error');}
     }

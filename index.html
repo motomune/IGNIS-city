@@ -747,7 +747,8 @@
     .notice-item-head { display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px; }
     .notice-item-type { font-size:10px;font-weight:800;color:#86efac; }
     .notice-item-time { font-size:10px;color:rgba(255,255,255,0.45); }
-    .notice-item-text { font-size:12px;line-height:1.45;color:rgba(255,255,255,0.9); }
+    /* お知らせ本文は改行を含む（規約変更の適用開始日など）ので、そのまま折り返して表示する */
+    .notice-item-text { font-size:12px;line-height:1.45;color:rgba(255,255,255,0.9);white-space:pre-line; }
     #notice-empty { font-size:12px;color:rgba(255,255,255,0.55);padding:10px 4px; }
     #building-modal {
       display:none;position:fixed;inset:0;z-index:150;
@@ -2279,7 +2280,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v248';
+    const IGNIS_BUILD='2026-07-23-v249';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -4068,6 +4069,30 @@
         if(taskBadge)taskBadge.style.display='none';
       }
     }
+    // ===== 運営からのお知らせを取り込む =====
+    // 規約を変更するときは、変更後の内容と効力発生時期を「あらかじめ周知」する必要がある
+    // （民法548条の4）。announcements に入れたものを、全員の🔔通知パネルへ流し込む。
+    // ログイン前でも読めるようにしてある（規約変更は全員に届くべきなので）。
+    async function loadAnnouncements(){
+      if(!db)return;
+      try{
+        const{data,error}=await db.from('announcements')
+          .select('id,kind,title_ja,title_en,body_ja,body_en,effective_at,published_at')
+          .order('published_at',{ascending:false}).limit(30);
+        if(error)throw error;
+        (data||[]).slice().reverse().forEach(a=>{
+          const eff=a.effective_at?new Date(a.effective_at):null;
+          const effJa=eff?`\n（適用開始：${eff.toLocaleDateString('ja-JP')}）`:'';
+          const effEn=eff?`\n(Effective: ${eff.toLocaleDateString('en-US')})`:'';
+          // 通知は innerHTML で描かれるので、DBから来た文字列はここでエスケープしておく
+          const esc=(t)=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+          const ja=esc(a.title_ja)+(a.body_ja?'\n'+esc(a.body_ja):'')+effJa;
+          const en=esc(a.title_en||a.title_ja)+((a.body_en||a.body_ja)?'\n'+esc(a.body_en||a.body_ja):'')+effEn;
+          // kind をそのまま通知の種別に使う（未知の値は「運営」扱いになる）
+          addNotice(a.kind==='terms'?'maintenance':(a.kind||'info'),ja,en,a.published_at,'ann_'+a.id);
+        });
+      }catch(e){/* テーブル未作成でも従来どおり動く */}
+    }
     function toggleNoticePanel(){
       const panel=document.getElementById('notice-panel');
       if(!panel)return;
@@ -4116,6 +4141,7 @@
     loadNoticeReadKeys();
     addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。','Event: New fly mode controls are available.','2026-05-01T00:00:00.000Z','notice_boot_event');
     addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。','Notice: Maintenance updates will appear here when needed.','2026-05-01T00:00:00.000Z','notice_boot_maintenance');
+    loadAnnouncements().catch(()=>{}); // 運営のお知らせ（規約変更の周知など）を取り込む
     function toggleLang(){
       currentLang=currentLang==='ja'?'en':'ja';
       try{localStorage.setItem('ignis_game_lang',currentLang);}catch(_){} // 手動切替を記憶

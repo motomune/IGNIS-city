@@ -495,29 +495,70 @@
     }
     const MEMO=[
       {key:'m', title:'毎月やること', note:'月初にリセットして使います', items:[
-        ['m1','入金確認','Stripeダッシュボードで売上・入金を確認する。'],
+        ['m1','入金確認','<a href="https://dashboard.stripe.com/payouts" target="_blank" rel="noopener">Stripe 入金（Payouts）を開く</a><br>'
+          +'<span style="color:rgba(255,255,255,0.5)">注目：</span>直近の入金ステータス<br>'
+          +'<span style="color:#4ade80">セーフ：「送金済み（Paid）」</span>／'
+          +'<span style="color:#fca5a5">危険：「失敗（Failed）」または入金が止まっている</span><br>'
+          +'入金が止まる原因はたいてい<b>本人確認書類の未提出</b>。'
+          +'その場合は<a href="https://dashboard.stripe.com/settings/update" target="_blank" rel="noopener">アカウント情報</a>に赤い警告が出ているので、提出すれば再開する。'],
         ['m2','売上の記録（帳簿づけ）','確定申告用に、月の売上とStripe手数料を記録しておく。'],
         ['m3','脆弱性のセルフチェック','申告で「定期実施」と回答したため、月1回コードを点検する。Claudeに依頼すれば代行できる。'],
         ['m4','未承認の申請が溜まっていないか','「📨 申請中」タブを確認する。<b>放置すると、書いた人のビルがいつまでも公開されない。</b>'],
-        ['m5','無料枠の残り','どれも管理画面にログインして見る。下のリンクからそのページに直接飛べる。<br>'
-          +'・<a href="https://www.deepl.com/ja/your-account/usage" target="_blank" rel="noopener">DeepL 利用状況</a>'
-          +'（月50万字。過去詳細の翻訳で消費。<b>1度訳した文は保存されるので再表示では減らない</b>）<br>'
-          +'・<a href="https://app.brevo.com/statistics/email" target="_blank" rel="noopener">Brevo 統計</a>'
-          +'（1日300通。左メニュー「統計 → メール」で当日の送信数。認証メール・パスワード再設定で消費）<br>'
-          +'・<a href="https://supabase.com/dashboard/project/'+SUPABASE_URL.replace(/^https:\/\//,'').split('.')[0]+'/settings/billing/usage" target="_blank" rel="noopener">Supabase 使用量</a>'
-          +'（DB 500MB・転送 5GB/月。Settings → Billing → Usage）'],
+        ['m5','無料枠の残り','3か所を見る。リンクから直接そのページに飛べる。<b>「注目する数字」だけ見れば足りる。</b>'
+          +'<div style="margin-top:8px;border-left:2px solid rgba(255,138,61,0.5);padding-left:12px;">'
+          +'<b>① DeepL（翻訳）</b> → <a href="https://www.deepl.com/ja/your-account/usage" target="_blank" rel="noopener">利用状況を開く</a><br>'
+          +'<span style="color:rgba(255,255,255,0.5)">注目：</span>使用文字数 ／ <span style="color:rgba(255,255,255,0.5)">上限：</span>月50万字<br>'
+          +'<span style="color:#4ade80">セーフ：40万字未満</span>／<span style="color:#fca5a5">危険：45万字超</span><br>'
+          +'超えると過去詳細の英訳が止まる（ゲームは動く）。<b>1度訳した文は保存されるので、同じ文を何人が見ても減らない。</b>'
+          +'</div>'
+          +'<div style="margin-top:8px;border-left:2px solid rgba(255,138,61,0.5);padding-left:12px;">'
+          +'<b>② Brevo（メール送信）</b> → <a href="https://app.brevo.com/transactional/email/statistics" target="_blank" rel="noopener">Transactional → Email → Statistics を開く</a><br>'
+          +'左メニューは <b>Transactional → Email</b> の下に <b>Real time / Statistics / Logs</b> が並ぶ。'
+          +'<b>Real time は直近30分だけ</b>なので、ふだんは 0 で正常。日ごとの数は <b>Statistics</b>、1通ずつの成否は <b>Logs</b> を見る。<br>'
+          +'残り枠そのものは右上の <b>「Usage and plan」</b>（<a href="https://app.brevo.com/billing/account/usage" target="_blank" rel="noopener">開く</a>）。<br>'
+          +'<span style="color:rgba(255,255,255,0.5)">注目：</span>1日の送信数と Bounced ／ <span style="color:rgba(255,255,255,0.5)">上限：</span>1日300通<br>'
+          +'<span style="color:#4ade80">セーフ：1日100通未満／Bounced 0〜数件</span>／<span style="color:#fca5a5">危険：1日250通超、または Bounced が送信数の5%超</span><br>'
+          +'超えると<b>その日は新規登録もパスワード再設定もできなくなる</b>。Bouncedが多いと送信元の評価が下がり、迷惑メール行きが増える。'
+          +'</div>'
+          +'<div style="margin-top:8px;border-left:2px solid rgba(255,138,61,0.5);padding-left:12px;">'
+          +'<b>③ Supabase（データベース）</b> → <a href="https://supabase.com/dashboard/org/zmycvqypmbkwtklfwjel/usage?projectRef='
+          +SUPABASE_URL.replace(/^https:\/\//,'').split('.')[0]+'" target="_blank" rel="noopener">Usage を開く</a>'
+          +'（左メニュー下の方の 📊 Usage。Current billing cycle のまま見る）<br>'
+          +'<b>Usage Summary の5つだけ</b>見ればよい。<br>'
+          +'・<b>Database Size</b> … 上限0.5GB／<span style="color:#4ade80">セーフ 0.35GB未満</span>／<span style="color:#fca5a5">危険 0.45GB超</span><br>'
+          +'・<b>Egress</b>（転送量）… 上限5GB／<span style="color:#4ade80">セーフ 3GB未満</span>／<span style="color:#fca5a5">危険 4.5GB超</span><br>'
+          +'・<b>Storage Size</b> … 上限1GB<br>'
+          +'・<b>Monthly Active Users</b> … 上限5万人。<b>ここが増えるのは良いこと</b>（プレイヤーが増えた印）<br>'
+          +'・<b>Edge Function Invocations</b> … 上限50万回。翻訳とお知らせで消費<br>'
+          +'<b>いちばん危ないのは Egress。</b>プレイヤーが増えると最初にここが伸びる。'
+          +'超えると読み込みが制限され、<b>ゲームが開けなくなる</b>。'
+          +'どれか1つでも「危険」に入ったら、有料プラン（月25ドル）への切替を検討する。'
+          +'</div>'],
       ]},
       {key:'a', title:'随時やること（発生ベース）', note:'起きたときに対応', items:[
         ['a1','問い合わせ対応','moto_u1@yahoo.co.jp に届く、解約方法・返金・操作の質問に返信する。<br><b>特商法に基づく「販売者名／住所／電話」の開示請求があれば、遅滞なくメールで開示する（法律上の義務）。</b>'],
-        ['a2','不正利用・チャージバック対応','<b>自分で探しに行かなくてよい。起きるとStripeから登録メールに通知が届く。</b>'
-          +'届いたら下のページを開いて対応する。<b>反論には期限（通常7〜21日）があり、放置すると自動的に負けて返金＋手数料1,500円が確定する。</b><br>'
-          +'・<a href="https://dashboard.stripe.com/payments?status%5B0%5D=disputed" target="_blank" rel="noopener">Stripe 支払い（異議あり）</a>'
-          +'…チャージバックの一覧。件数が0なら何も起きていない<br>'
-          +'・<a href="https://dashboard.stripe.com/radar/reviews" target="_blank" rel="noopener">Stripe Radar レビュー待ち</a>'
-          +'…不正の疑いで保留された決済<br>'
-          +'・<a href="https://dashboard.stripe.com/settings/user" target="_blank" rel="noopener">通知メールの設定</a>'
-          +'…通知が届く宛先はここで確認・変更できる<br>'
-          +'反論するときは「本人がゲームにログインして利用した記録」（登録メール・ログイン日時・利用状況）を証拠として添える。'],
+        ['a2','不正利用・チャージバック対応','<b>自分で探しに行かなくてよい。起きるとStripeから登録メールに通知が届く。'
+          +'メールが来ていなければ何も起きていないので、チェックしてよい。</b>'
+          +'<div style="margin-top:8px;border-left:2px solid rgba(255,138,61,0.5);padding-left:12px;">'
+          +'<b>チャージバックとは：</b>利用者が「この請求に覚えがない」とカード会社に申し立てること。'
+          +'カード会社は<b>まず一旦こちらからお金を引き戻し</b>、そのうえで「本当に不正か」を問い合わせてくる。'
+          +'<b style="color:#fca5a5">反論しない＝自動的に負け。</b>返金に加えて手数料1,500円も取られる。'
+          +'<br><br>'
+          +'<b>① <a href="https://dashboard.stripe.com/disputes" target="_blank" rel="noopener">異議申立て（Disputes）を開く</a></b><br>'
+          +'<span style="color:rgba(255,255,255,0.5)">注目：</span>「対応が必要（Needs response）」の件数と<b>期限日</b><br>'
+          +'<span style="color:#4ade80">セーフ：0件</span>／<span style="color:#fca5a5">危険：1件でもあり、期限まで3日を切っている</span><br>'
+          +'<b>期限は通常7〜21日。</b>1日でも過ぎたら反論できない。'
+          +'<br><br>'
+          +'<b>② <a href="https://dashboard.stripe.com/radar/reviews" target="_blank" rel="noopener">Radar レビュー待ちを開く</a></b><br>'
+          +'<span style="color:rgba(255,255,255,0.5)">注目：</span>保留中の決済<br>'
+          +'不正の疑いでStripeが止めた決済。放置すると<b>正規の利用者が課金できないまま</b>になる。'
+          +'<br><br>'
+          +'<b>③ <a href="https://dashboard.stripe.com/settings/user" target="_blank" rel="noopener">通知メールの宛先を確認</a></b><br>'
+          +'<b>ここが正しくないと、①の通知に永久に気づけない。</b>年1回は見ておく。'
+          +'<br><br>'
+          +'<b>反論に出す証拠：</b>本人がゲームにログインして遊んだ記録（登録メールアドレス／最終ログイン日時／所有ビルと従業員数）。'
+          +'「デジタルサービスを実際に利用していた」ことが示せれば通りやすい。'
+          +'</div>'],
         ['a3','個人情報の開示・訂正・削除請求への対応','請求に対応する。アカウント削除でデータは消える。'],
         ['a4','法定書類の更新','価格変更・運営方針の変更があれば、利用規約／プライバシーポリシー／特商法表記を更新する。'],
         ['a5','放置ビルの確認','「🏚 放置ビル」タブに🆕が出ていたら、街で確認して「残す」か「削除」を選ぶ。'],
@@ -528,8 +569,9 @@
       {key:'k', title:'⚠️ 忘れると壊れるもの', note:'期限がある作業', items:[
         ['k1','90日以内にメールを1通飛ばす','<b>90日間まったく認証メールが送られないと、BrevoのSMTPキーが失効してメールが全部止まる。</b><br>'
           +'新規登録があれば自動でリセットされる。無ければ、自分で「🔐 パスワードを忘れた」を1回押せばよい。<br>'
-          +'送ったらここにチェックを入れる。<b>次の期限が下に出る。</b>'
-          +'（<a href="https://app.brevo.com/statistics/email" target="_blank" rel="noopener">Brevoの送信履歴</a>で最後にいつ飛んだか確認できる）',90],
+          +'送ったらここにチェックを入れる。<b>次の期限が下に出る。</b><br>'
+          +'最後にいつ飛んだかは <a href="https://app.brevo.com/transactional/email/logs" target="_blank" rel="noopener">Transactional → Email → Logs</a> で確認できる'
+          +'（<b>Real time は直近30分だけ</b>なので、ここでは使えない）。',90],
       ]},
     ];
     // 期限つきの項目（例：90日以内にメールを1通）の次回期限。

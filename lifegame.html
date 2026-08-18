@@ -1034,23 +1034,35 @@ function showChapter(){
           ${c.hint?`<span class="hint">${T(c.hint)}</span>`:''}
         </button>`).join('')}
     </div>`;
+  storyBusy=false;
 }
 
+// 返す changed は「実際に動いた分」。上限下限で頭打ちになったら、その分だけを返す。
+// 未知のキーは黙って捨てる（表示側で落ちて画面が進まなくなるのを防ぐため）。
 function applyEff(eff){
   const changed={};
+  if(!eff) return changed;
   for(const k in eff){
     if(k==='moneyPct'){ // 所持金を割合で増減（例 -0.3 = 3割減）
       const before=S.money; S.money=clamp(Math.round(S.money*(1+eff.moneyPct)));
       if(S.money!==before) changed.money=(S.money-before); continue;
     }
-    const before=S[k]; S[k]=clamp(S[k]+eff[k]); if(S[k]!==before) changed[k]=eff[k];
+    if(!STAT_META[k]) continue;
+    const before=S[k]; S[k]=clamp(S[k]+eff[k]); if(S[k]!==before) changed[k]=S[k]-before;
   }
   return changed;
 }
 
+// 二重タップで同じ選択肢が2回入るのを防ぐ。次の画面が出たら解除する。
+let storyBusy=false;
+
 function choose(i){
+  if(storyBusy) return;
+  const evNow = picks[chapterIndex];
+  if(!evNow || !evNow.choices[i]) return;
+  storyBusy=true;
   Sfx.play('choice');
-  const ev = picks[chapterIndex];
+  const ev = evNow;
   const c = ev.choices[i];
   let eff = c.eff, resultText = c.result, ok = true;
 
@@ -1067,13 +1079,20 @@ function choose(i){
 
   // cinematic themed scene, then reveal the result + per-stat jingles + pops
   const th = storyTheme(ev);
-  showSceneFx(th, T(ev.title), ()=>{ renderStats(changed); playStatFx(changed); showResult(ev, resultText, eff); }, SCENE_THEMES[th].icon);
+  showSceneFx(th, T(ev.title), ()=>{
+    // 演出やステータス表示でつまずいても、「次へ」だけは必ず出す。
+    // ここで例外が出ると選択画面のまま残り、同じ章を何度も選べてしまう。
+    try{ renderStats(changed); playStatFx(changed); }
+    catch(err){ console.error('[lifegame] stat render failed', err); }
+    try{ showResult(ev, resultText, changed); }
+    catch(err){ console.error('[lifegame] result render failed', err); showResult(ev, resultText, {}); }
+  }, SCENE_THEMES[th].icon);
 }
 
-function showResult(ev, resultText, eff){
-  const deltas = Object.keys(eff).map(k=>{
-    const v = eff[k]; if(!v) return '';
-    const m = STAT_META[k];
+function showResult(ev, resultText, changed){
+  const deltas = Object.keys(changed||{}).map(k=>{
+    const v = changed[k]; const m = STAT_META[k];
+    if(!v || !m) return '';
     return `<span class="delta ${v>0?'up':'down'}">${m.ico} ${v>0?'+':''}${v}</span>`;
   }).join('');
   scene().className='fade';
@@ -1085,9 +1104,12 @@ function showResult(ev, resultText, eff){
     <div class="choices">
       <button class="btn-primary" onclick="advance()">${T(UI.next)} ▶</button>
     </div>`;
+  storyBusy=false;
 }
 
 function advance(){
+  if(storyBusy) return;        // 「次へ」の二度押しで章を飛ばさないように
+  storyBusy=true;
   Sfx.play('click');
   chapterIndex++;
   if(chapterIndex >= totalChapters) showStoryEnding();
@@ -1098,6 +1120,7 @@ function advance(){
 let lastResult=null;
 function showStoryEnding(){
   phase='storyend';
+  storyBusy=false;
   renderProgress();
   storyEndingId = decideEnding();
   saveStoryResult();   // enables "skip story" on later plays
@@ -2628,6 +2651,7 @@ function panelHTML(title, body, eff, contLabel){
     <div class="choices"><button class="btn-primary" onclick="boardContinue()">${contLabel||T(UI.cont)} ▶</button></div>`;
 }
 function showPanel(title, body, eff, contFn, contLabel){
+  board.choosing = false;
   board.cont = contFn || afterResolve;
   board.statFx = eff || null;   // drives the floating +/- pops on the stat bars & cash
   renderBoardFrame(panelHTML(title, body, eff||{}, contLabel));
@@ -2713,7 +2737,7 @@ function doInlineTile(t){
 }
 
 function openBoardEvent(ev){
-  board.curEvent = ev; board.cont = null;
+  board.curEvent = ev; board.cont = null; board.choosing = false;
   const html = `<div class="board-msg fade"><p class="mh">${T(ev.title)}</p><p>${T(ev.body)}</p></div>
     <div class="choices">${ev.choices.map((c,i)=>`
       <button class="choice" onclick="boardChoose(${i})"><b class="ch-letter">${'ABC'[i]||''}</b>${T(c.label)}${c.hint?`<span class="hint">${T(c.hint)}</span>`:''}</button>`).join('')}</div>`;
@@ -2721,7 +2745,10 @@ function openBoardEvent(ev){
 }
 
 function boardChoose(i){
-  const c = board.curEvent.choices[i];
+  if(!board || board.choosing) return;                       // 二重タップ防止
+  const c = board.curEvent && board.curEvent.choices[i];
+  if(!c) return;
+  board.choosing = true;
   let eff = c.eff, body = c.result, ok = true;
   if(c.check){
     const roll = S[c.check.stat] + rnd(21);

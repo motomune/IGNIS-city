@@ -500,9 +500,26 @@ function reassignJob(to){
 const bfsParent = new Int32Array(COLS*ROWS);
 const bfsVisited = new Uint8Array(COLS*ROWS);
 const NB = [[0,1],[0,-1],[-1,0],[1,0]];
+// 各列で「立てる一番上の行」（＝地面や砂山のすぐ上のAIR）。毎フレーム更新する。
+// これが無いと地上の空マスがどこでも通行可になり、アリが空を歩いてしまう。
+const walkTopRow = new Int16Array(COLS);
+function refreshWalkTop(){
+  for (let cx=0; cx<COLS; cx++){
+    let cy=surfaceH[cx]-1;
+    while (cy>=0 && cellAt(cx,cy)===SAND) cy--;
+    walkTopRow[cx]=cy;
+  }
+}
+refreshWalkTop();
 function walkable(cx, cy){
-  return inBounds(cx,cy) && cellAt(cx,cy)===AIR &&
-         cy >= surfaceH[cx]-4 && Math.abs(cx-colonyCx) <= 42;
+  if (!inBounds(cx,cy) || cellAt(cx,cy)!==AIR) return false;
+  if (Math.abs(cx-colonyCx) > 42) return false;
+  if (cy >= surfaceH[cx]) return true;                  // 地中の空洞は自由に通れる
+  // 地上：足場のすぐ上までしか歩けない。隣の列が高ければ、その段差ぶんだけ登れる。
+  let top=walkTopRow[cx];
+  if (cx>0 && walkTopRow[cx-1]<top) top=walkTopRow[cx-1];
+  if (cx<COLS-1 && walkTopRow[cx+1]<top) top=walkTopRow[cx+1];
+  return cy >= top;
 }
 function rebuildPath(endIdx){
   const path=[]; let c=endIdx;
@@ -603,7 +620,10 @@ function dropSandNear(e){
   const cx=(e.x/CELL)|0, cy=(e.y/CELL)|0;
   const tries=[[cx+e.facing,cy],[cx-e.facing,cy],[cx+e.facing,cy-1],[cx,cy-1]];  // 自分の真上には置かない
   for (const [tx,ty] of tries){
-    if (inBounds(tx,ty) && cellAt(tx,ty)===AIR && ty < surfaceH[tx]){ setCell(tx,ty,SAND); return true; }
+    if (!inBounds(tx,ty) || cellAt(tx,ty)!==AIR || ty>=surfaceH[tx]) continue;
+    const below=cellAt(tx,ty+1);
+    if (below!==DIRT && below!==ROCK && below!==SAND) continue;   // 宙に浮く砂は置かない
+    setCell(tx,ty,SAND); return true;
   }
   return false;
 }
@@ -1649,16 +1669,22 @@ function moveAnt(dt){
     ant.vy = ay*st.speed;                       // 巣の中（地中の空洞）は自由に移動できる
   } else {
     const grounded = solidPt(ant.x, ant.y+ant.r+3);
-    const nearWall = solidPt(ant.x-ant.r-3, ant.y) || solidPt(ant.x+ant.r+3, ant.y);
-    if (grounded || nearWall){
-      ant.vy = ay*st.speed;                     // 地面・壁ぎわは自由
+    // 壁つかみは体の中心だけでなく足元・頭でも見る。縦坑（幅1マス）の中で
+    // 中心が壁に届かず、登れずに落ちてしまうのを防ぐ。
+    const gx=ant.r+5;
+    const nearWall = solidPt(ant.x-gx, ant.y)        || solidPt(ant.x+gx, ant.y)
+                  || solidPt(ant.x-gx, ant.y+ant.r)  || solidPt(ant.x+gx, ant.y+ant.r)
+                  || solidPt(ant.x-gx, ant.y-ant.r)  || solidPt(ant.x+gx, ant.y-ant.r);
+    // 足元の地面（砂山を含む）から2マスまでは自力で登れる。それより上は落ちる＝飛べない。
+    // 以前はここで「真下の最初の地面」を探していたため、巣の縦坑の中では
+    // はるか下の床を見てしまい、上入力がまったく効かず外へ出られなかった。
+    const topY = (surfaceH[cxi] - sandPile(cxi))*CELL;
+    const canClimb = ant.y > topY - CELL*2;
+    if (grounded || nearWall || (ay<0 && canClimb)){
+      ant.vy = ay*st.speed;                     // 地面・壁ぎわ・巣から出るときは自由
     } else {
       ant.vy += 1300*dt;                        // 空中：重力で落下（飛べない）
       if (ant.vy>460) ant.vy=460;
-      if (ay<0){                                // 上昇入力は地表から2マスまで
-        let fr=(ant.y/CELL)|0; while (fr<ROWS && cellAt(cxi,fr)===AIR) fr++;
-        if (ant.y > fr*CELL - 2*CELL) ant.vy = ay*st.speed;
-      }
     }
   }
   const stuck = circleHitsSolid(ant.x,ant.y,ant.r);
@@ -1734,6 +1760,7 @@ function loop(now){
 
 function update(dt){
   if (gameOver) return;
+  refreshWalkTop();          // 掘る・砂を撒く・雨で崩れる、で地形が変わるので毎フレーム取り直す
   const st=stage();
   ant.r=st.r;
   ant.digCD=Math.max(0,ant.digCD-dt);

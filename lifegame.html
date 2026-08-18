@@ -326,6 +326,9 @@ const params = new URLSearchParams(location.search);
 let lang = (params.get('lang') === 'en') ? 'en' : 'ja';
 const DCAP = Math.max(1, parseInt(params.get('cap'),10) || 50);   // 会員ティアの1日反映上限（親IGNISから）
 const T = (o) => (o && o[lang] != null) ? o[lang] : (o ? o.ja : '');
+// すでに文字列なら素通し、{ja,en} なら訳す。イベントの result を直接埋めても
+// "[object Object]" にならないようにするための受け皿。
+const TX = (v) => (typeof v === 'string') ? v : T(v);
 
 /* ---------- UI strings ---------- */
 const UI = {
@@ -1099,7 +1102,7 @@ function showResult(ev, resultText, changed){
   scene().innerHTML = `
     <div class="chapter-tag">${T(ev.tag)}</div>
     <h2 class="scene-title">${T(ev.title)}</h2>
-    <p class="scene-body result">${resultText}</p>
+    <p class="scene-body result">${TX(resultText)}</p>
     <div class="deltas">${deltas}</div>
     <div class="choices">
       <button class="btn-primary" onclick="advance()">${T(UI.next)} ▶</button>
@@ -2646,7 +2649,7 @@ function deltaChips(eff){
   return chips;
 }
 function panelHTML(title, body, eff, contLabel){
-  return `<div class="board-msg fade"><p class="mh">${title}</p><p>${body}</p>
+  return `<div class="board-msg fade"><p class="mh">${TX(title)}</p><p>${TX(body)}</p>
       <div class="deltas">${deltaChips(eff||{})}</div></div>
     <div class="choices"><button class="btn-primary" onclick="boardContinue()">${contLabel||T(UI.cont)} ▶</button></div>`;
 }

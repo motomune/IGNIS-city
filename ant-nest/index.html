@@ -1544,8 +1544,15 @@ function resetColony(){
     "巣を最初から作り直しますか？\n\n今のコロニー・巣の形・進行状況はすべて消えます。\n（この操作は取り消せません）",
     "Rebuild the nest from scratch?\n\nYour colony, the shape of the nest and all progress will be erased.\n(This cannot be undone.)"));
   if (!ok) return;
+  resetting=true;               // これ以降どの経路でも保存しない
   clearSave();
-  location.reload();
+  // 消えたことを確かめてから読み直す。消えていなければ握りつぶさず知らせる。
+  if (localStorage.getItem(SAVE_KEY)){
+    alert(L("セーブデータを消せませんでした。ブラウザの設定をご確認ください。",
+            "Could not clear the save. Please check your browser settings."));
+    resetting=false; return;
+  }
+  location.replace(location.pathname + location.search);
 }
 document.querySelectorAll("#acts .btn").forEach(b=>{
   b.addEventListener("pointerdown",e=>{ e.preventDefault(); bgmInit(); sfx("tap");
@@ -2540,7 +2547,12 @@ function drawPlayer(){
 
 // ---- セーブ / 再開（localStorage）----
 const SAVE_KEY="antNest_save_v6";
+// 「作り直す」を押したあとは保存しない。
+// location.reload() が beforeunload を呼ぶため、消した直後に今の状態が書き戻され、
+// リロードすると「続きから」になってしまっていた。
+let resetting=false;
 function saveGame(){
+  if (resetting) return;
   try{
     const s={
       grid:Array.from(grid), surfaceH:Array.from(surfaceH),

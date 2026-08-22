@@ -2428,7 +2428,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v259';
+    const IGNIS_BUILD='2026-07-23-v260';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -2454,7 +2454,11 @@
     function isShowcaseBuilding(x,z){return Number(x)===SHOWCASE_BUILDING_X&&Number(z)===SHOWCASE_BUILDING_Z;}
     const IGNIS_AD_LINK='https://motomune.github.io/IGNIS-city/links.html';
     const IGNIS_AD_RAW='https://raw.githubusercontent.com/motomune/IGNIS-city/main/';
-    const IGNIS_AD_VIDEO_FILE='IGNIS-city.mov';
+    // 元の .mov は 1180x866/60fps/16Mbps で 15.6MB あり、起動時にこれを丸ごと落としていた。
+    // 見せ先はカルーセルの小窓と1024pxのテクスチャなので、896px/30fps に落とした .mp4 を主に使う。
+    // 0.71MB（95%減）。.mov は再生できない環境のための保険として残す。
+    const IGNIS_AD_VIDEO_FILE='IGNIS-city.mp4';
+    const IGNIS_AD_VIDEO_FALLBACK='IGNIS-city.mov';
     function getIgnisAdAssetBase(){
       try{
         const path=window.location.pathname||'/';
@@ -2465,16 +2469,17 @@
       }
     }
     function buildAdVideoSources(assetV){
-      const file=IGNIS_AD_VIDEO_FILE;
       const bases=[getIgnisAdAssetBase(),IGNIS_AD_RAW];
       const out=[];
       const seen=new Set();
-      bases.forEach(base=>{
-        const url=base+encodeURIComponent(file)+'?v='+assetV;
-        if(seen.has(url))return;
-        seen.add(url);
-        out.push({url,type:'video/mp4'});
-        out.push({url,type:'video/quicktime'});
+      // 軽い mp4 を先に全部並べ、それが全滅したときだけ重い .mov を試す
+      [[IGNIS_AD_VIDEO_FILE,'video/mp4'],[IGNIS_AD_VIDEO_FALLBACK,'video/quicktime']].forEach(([file,mime])=>{
+        bases.forEach(base=>{
+          const url=base+encodeURIComponent(file)+'?v='+assetV;
+          if(seen.has(url))return;
+          seen.add(url);
+          out.push({url,type:mime});
+        });
       });
       return out;
     }
@@ -2524,7 +2529,10 @@
         video.playsInline=true;
         video.setAttribute('playsinline','');
         video.setAttribute('webkit-playsinline','');
-        video.preload='metadata';   // 16MBある。起動時に全部落とさず、再生時に読む
+        video.preload='metadata';   // 起動時に丸ごと落とさず、再生時に読む
+        // 3Dの広告塔側と同じ取得条件にする。片方だけ crossOrigin を付けていたため
+        // ブラウザが別物として扱い、同じ動画を2回ダウンロードしていた。
+        video.crossOrigin='anonymous';
         video.disablePictureInPicture=true;
         const sources=s.videoSources||[];
         let sourceIdx=0;
@@ -8816,7 +8824,7 @@
         video.muted=true;video.loop=true;video.playsInline=true;
         video.setAttribute('playsinline','');video.setAttribute('muted','');
         video.setAttribute('autoplay','');
-        video.preload='auto';
+        video.preload='metadata';
         video.crossOrigin='anonymous';
         adTowerState.videoEl=video;
         t.board.metadata.adSlide=slide;

@@ -716,6 +716,15 @@
       position:absolute;right:-6px;top:-6px;min-width:16px;height:16px;padding:0 5px;border-radius:999px;
       background:#ef4444;color:#fff;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center;
     }
+    /* 週間ランキングが更新されたときだけ出る「！」。開けば消える／日曜には自動で消える */
+    #ranking-new-badge {
+      position:absolute;right:-5px;top:-5px;width:18px;height:18px;border-radius:999px;
+      background:#ef4444;color:#fff;font-size:12px;font-weight:900;line-height:18px;text-align:center;
+      display:none;box-shadow:0 0 0 2px rgba(10,8,16,0.9);animation:rankBadgePulse 1.6s ease-in-out infinite;
+    }
+    #ranking-btn.has-new #ranking-new-badge { display:block; }
+    @keyframes rankBadgePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.18);}}
+    @media (prefers-reduced-motion: reduce){ #ranking-new-badge{animation:none;} }
     #task-progress-wrap { margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08); }
     #task-progress-header { display:flex;justify-content:space-between;align-items:center;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px; }
     #task-progress-label { font-weight: 700; }
@@ -1819,7 +1828,7 @@
       </div>
       <button id="task-toggle-btn" class="rail-btn li-only" type="button" onclick="toggleTaskPanel()">📋 タスク<span id="task-notice-badge">0</span></button>
       <div style="display:flex;gap:6px;">
-        <button id="ranking-btn" class="rail-btn li-only" type="button" onclick="openRanking()" title="ランキング" style="flex:1;">🏆</button>
+        <button id="ranking-btn" class="rail-btn li-only" type="button" onclick="openRanking()" title="ランキング" style="flex:1;position:relative;">🏆<span id="ranking-new-badge">!</span></button>
         <button id="sound-toggle" class="rail-btn" type="button" onclick="IgnisAudio.toggleMute()" title="BGM・効果音のオン/オフ" style="flex:1;">🔊</button>
       </div>
       <button id="x-rewards-btn" class="rail-btn" type="button" onclick="openXShare()" title="Xでシェア">📤 Xでシェア</button>
@@ -2428,7 +2437,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v260';
+    const IGNIS_BUILD='2026-07-23-v261';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -4296,6 +4305,7 @@
     addNotice('event','イベント情報: 新しい飛行モード操作を追加しました。','Event: New fly mode controls are available.','2026-05-01T00:00:00.000Z','notice_boot_event');
     addNotice('maintenance','お知らせ: 不具合修正に伴うメンテナンス時はここに案内を表示します。','Notice: Maintenance updates will appear here when needed.','2026-05-01T00:00:00.000Z','notice_boot_maintenance');
     loadAnnouncements().catch(()=>{}); // 運営のお知らせ（規約変更の周知など）を取り込む
+    checkRankingWeek().catch(()=>{});  // 週間ランキングが更新されていれば🏆に「！」を出す
     function toggleLang(){
       currentLang=currentLang==='ja'?'en':'ja';
       try{localStorage.setItem('ignis_game_lang',currentLang);}catch(_){} // 手動切替を記憶
@@ -10208,7 +10218,7 @@
       const users=list.map(e=>rankUserMap&&rankUserMap[e.uid]).filter(Boolean);
       // 区別なしタブは全員を対象、それ以外は会員グループで絞り込む
       const filtered=RANK_NO_GROUP.includes(type)?users:users.filter(u=>group==='sub'?isSubForRanking(u):!isSubForRanking(u));
-      return filtered.slice(0,100);
+      return filtered.slice(0,50);
     }
     function renderCurrentRanking(){
       RANK_TABS.forEach(t=>{
@@ -10264,7 +10274,49 @@
         applyBuildingRankColor(b.mesh.material,b.employees||0,b.mesh,SHOWCASE_BUILDING_X,SHOWCASE_BUILDING_Z,b.totalFloors*0.5);
       }
     }
-    async function openRanking(){document.getElementById('ranking-overlay').classList.add('open');await loadRanking();}
+    /* 週間ランキングの「！」バッジ
+     *
+     * 毎週月曜0時（日本時間）に新しい週の集計が入る。開いていない人には「！」を出す。
+     * ・ランキングを開いたら消える（見た週を端末に記録する）
+     * ・開かないままでも日曜になったら消える。翌0時にまた新しい週が入り、また点く。
+     * 端末ごとの記録なので、サーバーに何も足さずに済む。
+     */
+    const RANK_SEEN_KEY='ignis_rank_seen_week';
+    let latestRankWeek=null;
+    function jstDayOfWeek(){ // 0=日曜
+      const n=new Date();
+      return new Date(n.getTime()+n.getTimezoneOffset()*60000+9*3600000).getDay();
+    }
+    function rankSeenWeek(){ try{return localStorage.getItem(RANK_SEEN_KEY);}catch(_){return null;} }
+    function updateRankingBadge(){
+      const btn=document.getElementById('ranking-btn');
+      if(!btn)return;
+      const show=!!latestRankWeek && jstDayOfWeek()!==0 && rankSeenWeek()!==latestRankWeek;
+      btn.classList.toggle('has-new',show);
+      btn.title=show?(currentLang==='ja'?'ランキング（今週の結果が出ました）':'Ranking (this week’s results are in)')
+                    :(currentLang==='ja'?'ランキング':'Ranking');
+    }
+    function markRankingSeen(){
+      if(latestRankWeek){ try{localStorage.setItem(RANK_SEEN_KEY,latestRankWeek);}catch(_){} }
+      updateRankingBadge();
+    }
+    // 最新週がいつのものかだけを軽く取りに行く（1行）。バッジの判定に使う。
+    async function checkRankingWeek(){
+      try{
+        const{data,error}=await db.from('weekly_ranking_latest').select('week_start').limit(1);
+        if(error||!data||!data.length)return;
+        latestRankWeek=data[0].week_start;
+        updateRankingBadge();
+      }catch(_){}
+    }
+    // 日付が変わっても点きっぱなし／消えっぱなしにならないよう、10分ごとに見直す
+    setInterval(updateRankingBadge,10*60*1000);
+    async function openRanking(){
+      markRankingSeen();
+      document.getElementById('ranking-overlay').classList.add('open');
+      await loadRanking();
+      markRankingSeen(); // 読み込みで最新週が分かった場合にも確実に消す
+    }
     function closeRanking(){document.getElementById('ranking-overlay').classList.remove('open');}
     function switchRankingTab(tab){
       rankingTab=tab;
@@ -10305,6 +10357,7 @@
           if(rankingByCat[r.category])rankingByCat[r.category].push({uid:r.user_id,rank:r.rank});
         });
         RANK_TABS.forEach(t=>rankingByCat[t].sort((a,b)=>a.rank-b.rank));
+        if(rankWeekStart)latestRankWeek=rankWeekStart;
         rankUserMap=userMap;
         rankingList=Object.values(userMap);
         computeRevealSets(); // 名前公開対象（無課金1位）＋表示ON/OFFを更新

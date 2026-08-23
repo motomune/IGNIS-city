@@ -2437,7 +2437,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
   <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
-    const IGNIS_BUILD='2026-07-23-v261';
+    const IGNIS_BUILD='2026-07-23-v262';
     // ===== 自動アップデート（起動直後・最優先で実行） =====
     // GitHub PagesのCDN/端末キャッシュで、初回に古い版（過去のゲーム画面）が表示される問題への対策。
     // version.txt を no-store で取得し、ビルドが違えば重い3D初期化より前に即座に最新へ再読込する。
@@ -5206,6 +5206,14 @@
       const isJa=currentLang==='ja';
       errEl.textContent='';errEl.style.color='#ff4444';
       if(!email||!password){errEl.textContent=isJa?'メールアドレスとパスワードを入力してください':'Enter email and password';return;}
+      // 表示名にメールアドレスを入れさせない。ここを通すと、順位や課金の条件次第で街に公開される。
+      if(authMode==='signup'&&(looksLikeEmail(username)||looksLikeEmail(xUsername))){
+        errEl.textContent=isJa
+          ?'表示名にメールアドレスは使えません。ランキングやビルで他の人に見えてしまうため、ニックネームを入れてください。'
+          :'Please don’t use an email address as your display name — it can be shown publicly on the ranking and on buildings. Use a nickname instead.';
+        try{document.getElementById(looksLikeEmail(username)?'input-username':'input-x-username').focus();}catch(_){}
+        return;
+      }
       // Xアカウント名は任意（必須にすると、Xを使っていない海外の訪問者がここで離脱する）。
       // 未入力でも登録でき、あとから「X未登録」タップやビル設置後の案内で設定できる。
       // 新規登録は利用規約等への同意チェックが必須
@@ -6022,8 +6030,9 @@
         }else if(ownerName){
           const xHandle=ownerName.replace(/^@/,'');
           const hasX=ownerName.startsWith('@');
-          // 公開条件: (サブスク/創設者/無課金1位) かつ 本人が表示ON（ビル詳細と同じルール）
-          const reveal=hasX&&isNameRevealable(land.owner_id)&&(userShowName.get(land.owner_id)!==false);
+          // 公開条件: (サブスク/創設者/無課金1位) かつ 本人が表示ON（ビル詳細と同じルール）。
+          // メールアドレスが入っている名前は、条件を満たしていても公開しない。
+          const reveal=hasX&&isNameRevealable(land.owner_id)&&(userShowName.get(land.owner_id)!==false)&&!looksLikeEmail(ownerName);
           if(reveal){
             ownerEl.innerHTML=`${isJa?'Xユーザー':'X User'}：<span class="owner-name">@${escapeAttr(xHandle)}</span>`;
           }else{
@@ -8194,8 +8203,9 @@
         else if(ownerName){
           const xHandle=ownerName.replace(/^@/,'');
           const hasX=ownerName.startsWith('@');
-          // 公開条件: (サブスク/創設者/無課金1位) かつ 本人が表示ON
-          const reveal=hasX&&isNameRevealable(land.owner_id)&&(userShowName.get(land.owner_id)!==false);
+          // 公開条件: (サブスク/創設者/無課金1位) かつ 本人が表示ON。
+          // メールアドレスが入っている名前は、条件を満たしていても公開しない。
+          const reveal=hasX&&isNameRevealable(land.owner_id)&&(userShowName.get(land.owner_id)!==false)&&!looksLikeEmail(ownerName);
           if(reveal){
             ownerEl.innerHTML=`👤 <a class="owner-x-link" href="https://x.com/${encodeURIComponent(xHandle)}" target="_blank" rel="noopener">@${escapeAttr(xHandle)}</a>`;
           }else{
@@ -8341,7 +8351,7 @@
         const isJa=currentLang==='ja';
         wrap.innerHTML=data.map(g=>{
           const handle=g.x_username||'';
-          const reveal=handle&&g.is_subscribed&&g.show_x_username!==false;
+          const reveal=handle&&g.is_subscribed&&g.show_x_username!==false&&!looksLikeEmail(handle);
           const name=reveal?'@'+escapeAttr(handle):(handle?maskName(handle):(isJa?'匿名':'Anonymous'));
           const when=g.lit_at?new Date(g.lit_at).toLocaleDateString():'';
           if(g.replied){
@@ -8355,6 +8365,19 @@
       }catch(e){console.warn('candle givers',e.message);}
     }
     function escapeAttr(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+    /* 名前にメールアドレスが混ざっていないか
+     *
+     * 登録時にユーザー名やXユーザー名の欄へメールアドレスを入れてしまう人がいる。
+     * そのまま1位になったり課金したりすると、公開条件を満たして街に表示されてしまう。
+     * 入口（登録フォーム）で止めるのが基本だが、すでに登録済みの人・すり抜けた場合に備え、
+     * 表示する直前でもこの判定を通し、条件を満たしていても絶対に公開しない。
+     * 全角＠・空白・大文字小文字の違いで抜けないよう、正規化してから見る。
+     */
+    function looksLikeEmail(s){
+      if(!s)return false;
+      const t=String(s).replace(/[＠﹫]/g,'@').replace(/[．。]/g,'.').replace(/\s+/g,'');
+      return /[^@\s]+@[^@\s]+\.[A-Za-z]{2,}/.test(t);
+    }
     async function replyCandle(giverId,phrase){
       if(!currentUser||candleState.x===null)return;
       const isJa=currentLang==='ja';
@@ -10244,7 +10267,9 @@
       const raw=u.x_username?`@${escapeAttr(u.x_username)}`:escapeAttr(u.username||'?');
       // 公開ルール：課金者は上位3位まで／無課金は上位1位まで（本人が表示ONのとき）
       const thresh=isSubForRanking(u)?3:1;
-      const canShow=(rank<=thresh)&&(u.show!==false);
+      // 名前がメールアドレスなら、順位や課金状態にかかわらず伏せる
+      const emailish=looksLikeEmail(u.x_username)||looksLikeEmail(u.username);
+      const canShow=(rank<=thresh)&&(u.show!==false)&&!emailish;
       if(canShow&&u.x_username){
         const handle=encodeURIComponent(u.x_username.replace(/^@/,''));
         return `<a class="rank-x-link" href="https://x.com/${handle}" target="_blank" rel="noopener">@${escapeAttr(u.x_username.replace(/^@/,''))}</a>`;

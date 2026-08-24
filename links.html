@@ -220,6 +220,27 @@
   #cine.fr .taphint,#cine.fb .taphint{opacity:0;}
   @keyframes tapBob{0%,100%{transform:translateY(0);box-shadow:0 0 12px rgba(255,130,30,0.35);}
     50%{transform:translateY(-5px);box-shadow:0 0 22px rgba(255,160,50,0.65);}}
+  /* ===== 赤編/黒編 セグメント切替スイッチ ===== */
+  #booktoggle{position:relative;display:flex;width:230px;max-width:82%;margin:13px auto 0;
+    padding:4px;border-radius:999px;cursor:pointer;user-select:none;-webkit-user-select:none;
+    background:rgba(10,10,18,0.6);border:1px solid rgba(255,150,60,0.32);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:inset 0 1px 6px rgba(0,0,0,0.55);}
+  #booktoggle .thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);z-index:0;
+    border-radius:999px;background:linear-gradient(135deg,rgba(255,160,70,0.92),rgba(255,105,32,0.88));
+    box-shadow:0 2px 12px rgba(255,110,30,0.55);opacity:.4;
+    transition:transform .38s cubic-bezier(.3,.7,.3,1),background .3s,opacity .3s;}
+  #cine.fr ~ #booktoggle .thumb{opacity:1;}
+  #cine.fb ~ #booktoggle .thumb{opacity:1;transform:translateX(100%);
+    background:linear-gradient(135deg,rgba(150,150,160,0.92),rgba(35,35,42,0.95));box-shadow:0 2px 12px rgba(0,0,0,0.6);}
+  #booktoggle .seg{position:relative;z-index:1;flex:1;text-align:center;padding:7px 0;
+    font-size:12.5px;font-weight:800;letter-spacing:.04em;color:rgba(255,255,255,0.62);
+    transition:color .25s,text-shadow .25s;text-shadow:0 1px 4px rgba(0,0,0,0.5);}
+  #cine.fr ~ #booktoggle .seg.r{color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.7);}
+  #cine.fb ~ #booktoggle .seg.b{color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.7);}
+  #booktoggle .swap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;
+    font-size:12px;font-weight:900;color:rgba(255,255,255,0.55);pointer-events:none;
+    text-shadow:0 1px 4px rgba(0,0,0,0.8);transition:opacity .3s;}
+  #cine.fr ~ #booktoggle .swap,#cine.fb ~ #booktoggle .swap{opacity:0;}
   /* アフィリエイト表記 */
   #affil{margin-top:10px;font-size:9.5px;line-height:1.7;color:rgba(255,255,255,0.42);text-align:center;letter-spacing:0.02em;}
 
@@ -346,7 +367,13 @@
         <span class="taphint l" data-ja="👆 赤編" data-en="👆 Red">👆 赤編</span>
         <span class="taphint r" data-ja="👆 黒編" data-en="👆 Black">👆 黒編</span>
       </div>
-      <div id="hint" data-ja="✋ 赤本・黒本、それぞれ触れてみて" data-en="✋ Tap each book — red and black">✋ 赤本・黒本、それぞれ触れてみて</div>
+      <div id="booktoggle" role="tablist">
+        <span class="seg r" data-ja="赤編" data-en="Red">赤編</span>
+        <span class="seg b" data-ja="黒編" data-en="Black">黒編</span>
+        <span class="thumb" aria-hidden="true"></span>
+        <span class="swap" aria-hidden="true">⇄</span>
+      </div>
+      <div id="hint" data-ja="✋ タップで赤編・黒編を切り替え" data-en="✋ Tap to switch — Red / Black">✋ タップで赤編・黒編を切り替え</div>
       <div id="authorwrap">
         <a id="authorlink" href="https://www.amazon.co.jp/stores/author/B0HBXGG4KV?tag=motomune-22" target="_blank" rel="noopener"
            data-href-ja="https://www.amazon.co.jp/stores/author/B0HBXGG4KV?tag=motomune-22"
@@ -461,6 +488,7 @@
   (function(){
     var cine=document.getElementById('cine');
     var hsl=cine.querySelector('.hs.l'), hsr=cine.querySelector('.hs.r');
+    var tog=document.getElementById('booktoggle');
     function setF(m){ cine.classList.toggle('fr',m==='r'); cine.classList.toggle('fb',m==='b'); }
     // PC: ホバーで浮かぶ
     hsl.addEventListener('pointerenter',function(e){ if(e.pointerType==='mouse')setF('r'); });
@@ -469,8 +497,13 @@
     // スマホ: タップで開く（同じ側の再タップでは閉じない＝誤閉じ防止。閉じるのは枠の外タップ）
     hsl.addEventListener('click',function(){ setF('r'); });
     hsr.addEventListener('click',function(){ setF('b'); });
-    // 枠の外をタップしたら閉じる
-    document.addEventListener('click',function(e){ if(!cine.contains(e.target))setF(null); });
+    // セグメント切替スイッチ：赤編／黒編をタップで切り替え
+    if(tog){
+      tog.querySelector('.seg.r').addEventListener('click',function(e){ e.stopPropagation(); setF('r'); });
+      tog.querySelector('.seg.b').addEventListener('click',function(e){ e.stopPropagation(); setF('b'); });
+    }
+    // 枠・スイッチの外をタップしたら閉じる
+    document.addEventListener('click',function(e){ if(!cine.contains(e.target)&&!(tog&&tog.contains(e.target)))setF(null); });
   })();
   // 自動再生がブロックされたら初回タップで再生
   (function(){

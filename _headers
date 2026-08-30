@@ -1,0 +1,44 @@
+# Cloudflare Pages 用のキャッシュ設定
+#
+# GitHub Pages は全ファイル一律 Cache-Control: max-age=600 で、変更する手段が無い。
+# そのため 16MB の動画まで 10 分ごとに全員が再ダウンロードしていた。
+# ここで「変わらない素材」と「毎回確認したいファイル」を分ける。
+#
+# このファイルは GitHub Pages では単に無視されるので、置いたままでも今の配信に影響しない。
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# HTML は毎回サーバーに確認する（中身が同じなら 304 が返るだけで速い）。
+# これで「デプロイしたのに古い画面が出る」が起きなくなる。
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+# 自動アップデートの判定に使うので、絶対にキャッシュさせない
+/version.txt
+  Cache-Control: no-cache
+
+# 音楽・動画・画像は中身が変わらない。1年キャッシュして再ダウンロードを止める。
+# 差し替えるときはファイル名を変えるか ?v= を付けること。
+/*.mp3
+  Cache-Control: public, max-age=31536000, immutable
+/*.mov
+  Cache-Control: public, max-age=31536000, immutable
+/*.mp4
+  Cache-Control: public, max-age=31536000, immutable
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# JS はファイル名を変えずに差し替えることがあるため、短めにする
+/*.js
+  Cache-Control: public, max-age=3600

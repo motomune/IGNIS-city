@@ -517,7 +517,21 @@
           +'<span style="color:#fca5a5">危険：「失敗（Failed）」または入金が止まっている</span><br>'
           +'入金が止まる原因はたいてい<b>本人確認書類の未提出</b>。'
           +'その場合は<a href="https://dashboard.stripe.com/settings/update" target="_blank" rel="noopener">アカウント情報</a>に赤い警告が出ているので、提出すれば再開する。'],
-        ['m2','売上の記録（帳簿づけ）','確定申告用に、月の売上とStripe手数料を記録しておく。'],
+        ['m2','売上の記録（帳簿づけ）','<a href="https://docs.google.com/spreadsheets/d/1LLpT2FtYUYBSBVozS7YvkEETxurFoPtcTB4ILpiNrHk/edit" target="_blank" rel="noopener">帳簿を開く</a><br>'
+          +'<span style="color:rgba(255,255,255,0.5)">入力するのは「入力」シートだけ。</span>'
+          +'日付・区分・項目・金額を1行ずつ足す。年と月は日付から自動で入る。<br>'
+          +'<b style="color:#fca5a5">Stripe手数料は「支出」として別の行に書く。</b>'
+          +'入金額だけ書くと売上が実際より小さくなり、申告額がずれる。<br>'
+          +'<div style="margin-top:8px;border-left:2px solid rgba(255,138,61,0.5);padding-left:12px;">'
+          +'「年間サマリー」シートで年を選ぶと、その年の12か月分・折れ線グラフ・'
+          +'<b>いま時点で用意しておく税金の額</b>が出る。<br>'
+          +'<span style="color:rgba(255,255,255,0.5)">注目：</span>赤い枠「用意しておく税金の合計」<br>'
+          +'<span style="color:#4ade80">セーフ：その額を別口座によけてある</span>／'
+          +'<span style="color:#fca5a5">危険：使ってしまっている</span><br>'
+          +'所得税・住民税・事業税は<b>翌年にまとめて請求が来る</b>。'
+          +'稼いだ年に使い切ると、払う段になって手元に無い。これがいちばん多い失敗。'
+          +'</div>'
+          +'<span style="color:rgba(255,255,255,0.5)">※ 概算です。社会保険料控除や他の所得で変わるので、最終確認はe-Taxか税理士で。</span>'],
         ['m3','脆弱性のセルフチェック','申告で「定期実施」と回答したため、月1回コードを点検する。Claudeに依頼すれば代行できる。'],
         ['m4','放置ビルの棚卸し','<a href="#" onclick="switchTab(\'idle\');return false;">「🏚 放置ビル」タブ</a>に🆕が出ていないか、月に一度まとめて見る。'
           +'（申請の確認は毎日やることに移動した）'],

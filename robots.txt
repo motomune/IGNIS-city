@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://motomune.github.io/IGNIS-city/sitemap.xml
+Sitemap: https://motomune.com/sitemap.xml

@@ -8,14 +8,23 @@
 //
 // 必要シークレット:
 //   STRIPE_SECRET_KEY   … sk_test_/sk_live_
-//   PRICE_SUB           … 980円プランの価格ID (price_...)
-//   PRICE_PREMIUM       … 1980円プランの価格ID (price_...)
 //   SITE_URL            … 例 https://motomune.github.io/IGNIS-city （省略時はこのURL）
+//
+// 価格IDはシークレットではなく下の定数に直書きしている。
+// 理由：価格IDは公開情報（決済画面のURLにも出る）で、隠す必要がない。
+// シークレットに入れると画面上でハッシュしか見えず、どの商品を指しているか
+// 二度と確認できなくなる。ここに書いてあれば見て分かる。
+// 商品を作り直したら、この2行を書きかえて再デプロイする。
 //
 // デプロイ: supabase functions deploy stripe-billing
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.25.0?target=denonext";
+
+// 月980円「サブスク会員」    商品 prod_Ui0ZBSRif40aDu
+const PRICE_SUB = "price_1TiaYKQxFv0hb0XVKTWuNfJi";
+// 月1980円「プレミアム会員」 商品 prod_Ui13kz4WfMtQTV
+const PRICE_PREMIUM = "price_1Tib1oQxFv0hb0XVENmkcCKT";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -33,8 +42,6 @@ Deno.serve(async (req) => {
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-    const PRICE_SUB = Deno.env.get("PRICE_SUB");
-    const PRICE_PREMIUM = Deno.env.get("PRICE_PREMIUM");
     const SITE_URL = (Deno.env.get("SITE_URL") || "https://motomune.github.io/IGNIS-city").replace(/\/$/, "");
     if (!STRIPE_KEY) return json({ error: "STRIPE_SECRET_KEY not set" }, 500);
 
@@ -71,7 +78,6 @@ Deno.serve(async (req) => {
     if (action === "checkout") {
       const plan = body?.plan === "premium" ? "premium" : "sub";
       const price = plan === "premium" ? PRICE_PREMIUM : PRICE_SUB;
-      if (!price) return json({ error: `price not set (${plan})` }, 500);
 
       // すでに有効なサブスクがある場合は二重課金を防ぎ、ポータル（プラン変更/解約）へ誘導
       if (customerId) {

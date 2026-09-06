@@ -8,13 +8,13 @@
 //
 // 必要シークレット:
 //   STRIPE_SECRET_KEY   … sk_test_/sk_live_
-//   SITE_URL            … 例 https://motomune.github.io/IGNIS-city （省略時はこのURL）
 //
-// 価格IDはシークレットではなく下の定数に直書きしている。
-// 理由：価格IDは公開情報（決済画面のURLにも出る）で、隠す必要がない。
-// シークレットに入れると画面上でハッシュしか見えず、どの商品を指しているか
-// 二度と確認できなくなる。ここに書いてあれば見て分かる。
-// 商品を作り直したら、この2行を書きかえて再デプロイする。
+// 価格IDと戻り先URLは、シークレットではなく下の定数に直書きしている。
+// 理由：どちらも公開情報（決済画面のURLにも出る）で、隠す必要がない。
+// シークレットに入れると画面上でハッシュしか見えず、どの商品・どのサイトを
+// 指しているか二度と確認できなくなる。ここに書いてあれば見て分かる。
+// 商品を作り直したりドメインを変えたら、この定数を書きかえて再デプロイする。
+// （SITE_URL シークレットがあればそちらが優先されるが、通常は設定しない）
 //
 // デプロイ: supabase functions deploy stripe-billing
 
@@ -25,6 +25,9 @@ import Stripe from "https://esm.sh/stripe@14.25.0?target=denonext";
 const PRICE_SUB = "price_1TiaYKQxFv0hb0XVKTWuNfJi";
 // 月1980円「プレミアム会員」 商品 prod_Ui13kz4WfMtQTV
 const PRICE_PREMIUM = "price_1Tib1oQxFv0hb0XVENmkcCKT";
+
+// 決済のあとに戻ってくるサイト。末尾に / を付けない。
+const DEFAULT_SITE_URL = "https://motomune.com";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -42,7 +45,7 @@ Deno.serve(async (req) => {
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-    const SITE_URL = (Deno.env.get("SITE_URL") || "https://motomune.github.io/IGNIS-city").replace(/\/$/, "");
+    const SITE_URL = (Deno.env.get("SITE_URL") || DEFAULT_SITE_URL).replace(/\/$/, "");
     if (!STRIPE_KEY) return json({ error: "STRIPE_SECRET_KEY not set" }, 500);
 
     // 呼び出したユーザーをJWTで特定

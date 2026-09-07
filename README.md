@@ -14,6 +14,6 @@ GitHub Pages の無料枠は公開リポジトリでしか使えないため、�
 `404.html` が受け皿になっていて、`/IGNIS-city/なにか` で来た人は
 `https://ignis-city.motomune.com/なにか` へ引きつがれる。本に書いたURLを思い出せなくても取りこぼさない。
 
-- 人の側に残るのは /links と /ant-nest。それ以外の行き先は https://ignis-city.motomune.com
+- 人の側に残るのは /links だけ。それ以外の行き先は https://ignis-city.motomune.com
 
 転送先を変えるときは `SITE` を書きかえた各ファイルを差しかえる。

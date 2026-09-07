@@ -43,8 +43,8 @@
   if (p === '' || p === '/index.html') p = '/';
   // .html は Cloudflare 側で拡張子なしに転送されるので、あらかじめ落としておく
   p = p.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
-  // 人の側に残っているものだけ motomune.com、それ以外はゲームの住所へ
-  var host = /^\/(links|ant-nest)(\/|$)/.test(p) ? SITE : GAME;
+  // 人の側に残っているのはリンク集だけ。それ以外はゲームの住所へ
+  var host = /^\/links(\/|$)/.test(p) ? SITE : GAME;
   var dest = host + p + (location.search || '') + (location.hash || '');
   var a = document.getElementById('go');
   if (a) a.href = dest;

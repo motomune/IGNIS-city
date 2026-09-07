@@ -8,13 +8,9 @@
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
-  <url>
-    <loc>https://motomune.com/ant-nest/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <!-- IGNIS CITY（ignis-city.motomune.com） -->
+  <!-- IGNIS CITY（ignis-city.motomune.com）
+       ant-nest/ は載せない。ゲームの中に iframe で埋め込んでいる部品であって、
+       単独で訪ねてもらうページではない。 -->
   <url>
     <loc>https://ignis-city.motomune.com/</loc>
     <lastmod>2026-09-07</lastmod>

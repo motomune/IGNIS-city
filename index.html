@@ -1,6 +1,19 @@
 ﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- ゲームの住所は ignis-city.motomune.com。
+     motomune.com（と www）の入口は将来べつのサービスに使うので、ゲームは出さない。
+     ここに来た人はリンク集へ送る。重いものを読み込む前に、head の先頭で判定する。
+     Cloudflare 側にリダイレクトルールを足せばこの数行は動かなくなるが、
+     置いておけば設定が消えても入口は守られる。 -->
+<script>
+  (function(){
+    var h = location.hostname;
+    if ((h === 'motomune.com' || h === 'www.motomune.com') && location.pathname === '/') {
+      location.replace('https://motomune.com/links' + location.search + location.hash);
+    }
+  })();
+</script>
 <!-- Google アナリティクス：同意があるまで読み込まない（GDPR/ePrivacy 対応）。
      同意バナーで「同意する」が押された時点で初めてスクリプトを差し込む。 -->
 <script>
@@ -23,21 +36,21 @@
   <link rel="icon" type="image/png" href="favicon.png?v=2">
   <link rel="apple-touch-icon" href="favicon.png?v=2">
   <title>IGNIS CITY — 誰かの実話でできた街 | A city built from real stories</title>
-  <link rel="canonical" href="https://motomune.com/">
+  <link rel="canonical" href="https://ignis-city.motomune.com/">
   <!-- SNS共有カード（X / Discord / LINE 等でリンクを貼ると表示される） -->
   <meta name="description" content="一棟ごとに、誰かが「乗り越えたこと」を書いた3Dの街。空を飛んで物語を読み、蝋燭を灯せます。ダウンロード不要・登録なしで見学できる無料ブラウザゲーム。A quiet 3D city where each building is a real person&#39;s story.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="IGNIS CITY">
   <meta property="og:title" content="IGNIS CITY — every building is a real person's story">
   <meta property="og:description" content="A quiet 3D city where each building was written by someone about what they survived. Fly around, read their stories, light a candle. Free, in your browser — no download, no signup to look around.">
-  <meta property="og:image" content="https://motomune.com/og.jpg?v=2">
+  <meta property="og:image" content="https://ignis-city.motomune.com/og.jpg?v=2">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://motomune.com/">
+  <meta property="og:url" content="https://ignis-city.motomune.com/">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="IGNIS CITY — every building is a real person's story">
   <meta name="twitter:description" content="A quiet 3D city where each building was written by someone about what they survived. Free browser game, no download.">
-  <meta name="twitter:image" content="https://motomune.com/og.jpg?v=2">
+  <meta name="twitter:image" content="https://ignis-city.motomune.com/og.jpg?v=2">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a0f; color: #fff; font-family: 'Helvetica Neue', sans-serif; overflow: hidden; }
@@ -1576,8 +1589,8 @@
     "@type": "VideoGame",
     "name": "IGNIS CITY",
     "alternateName": "イグニス シティ",
-    "url": "https://motomune.com/",
-    "image": "https://motomune.com/og.jpg",
+    "url": "https://ignis-city.motomune.com/",
+    "image": "https://ignis-city.motomune.com/og.jpg",
     "description": "一棟ごとに、誰かが乗り越えたことを書いた3Dの街。空を飛んで物語を読み、蝋燭を灯せる無料ブラウザゲーム。",
     "inLanguage": ["ja", "en"],
     "genre": ["City Builder", "Social"],
@@ -2504,8 +2517,8 @@
     const INVITE_COIN_SEND=20;
     const INVITE_COIN_REGISTER=50;
     function isShowcaseBuilding(x,z){return Number(x)===SHOWCASE_BUILDING_X&&Number(z)===SHOWCASE_BUILDING_Z;}
-    const IGNIS_AD_LINK='https://motomune.com/links.html';
-    const IGNIS_AD_RAW='https://motomune.com/';
+    const IGNIS_AD_LINK='https://motomune.com/links';
+    const IGNIS_AD_RAW='https://ignis-city.motomune.com/';
     // 元の .mov は 1180x866/60fps/16Mbps で 15.6MB あり、起動時にこれを丸ごと落としていた。
     // 見せ先はカルーセルの小窓と1024pxのテクスチャなので、896px/30fps に落とした .mp4 を主に使う。
     // 0.71MB（95%減）。.mov は再生できない環境のための保険として残す。
@@ -2517,7 +2530,7 @@
         const dir=path.endsWith('/')?path:path.replace(/\/[^/]*$/,'/');
         return window.location.origin+dir;
       }catch(e){
-        return 'https://motomune.com/';
+        return 'https://ignis-city.motomune.com/';
       }
     }
     function buildAdVideoSources(assetV){
@@ -2744,7 +2757,7 @@
         volume:0.38,
         sources:[
           'audio_ending-bgm.mp3',
-          'https://motomune.com/audio_ending-bgm.mp3',
+          'https://ignis-city.motomune.com/audio_ending-bgm.mp3',
           'https://motomune.github.io/IGNIS-game/audio:ending-bgm.mp3',
           'https://cdn.jsdelivr.net/gh/motomune/IGNIS-GAME@main/audio%3Aending-bgm.mp3',
           'https://raw.githubusercontent.com/motomune/IGNIS-GAME/main/audio%3Aending-bgm.mp3'
@@ -2758,7 +2771,7 @@
         // IGNIS-GAME を非公開にしても、この1件目で鳴る。
         sources:[
           'audio_opening-bgm.mp3',
-          'https://motomune.com/audio_opening-bgm.mp3',
+          'https://ignis-city.motomune.com/audio_opening-bgm.mp3',
           'https://motomune.github.io/IGNIS-game/audio:myworld-bgm.mp3',
           'https://cdn.jsdelivr.net/gh/motomune/IGNIS-GAME@main/audio%3Amyworld-bgm.mp3',
           'https://raw.githubusercontent.com/motomune/IGNIS-GAME/main/audio%3Amyworld-bgm.mp3'
@@ -2769,8 +2782,7 @@
         volume:0.32,
         sources:[
           'J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3',
-          'https://motomune.com/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3',
-          'https://motomune.com/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3'
+          'https://ignis-city.motomune.com/J.S.Bach-Herz-und-Mund-und-Tat-und-Leben205B20175D.mp3'
         ]
       },
       retro:{
@@ -2780,7 +2792,7 @@
           const enc=encodeURIComponent(IGNIS_RETRO_BGM_FILE);
           const bases=[
             IGNIS_AD_RAW,
-            'https://motomune.com/',
+            'https://ignis-city.motomune.com/',
             getIgnisAdAssetBase()
           ];
           const out=[],seen=new Set();
@@ -4105,7 +4117,7 @@
     // ========================================
     // Xシェア（ゲームURL → 新規は登録画面へ）
     // ========================================
-    const GAME_PUBLIC_URL='https://motomune.com/';
+    const GAME_PUBLIC_URL='https://ignis-city.motomune.com/';
     function getShareGameUrl(){
       try{
         const base=(window.location.origin&&window.location.pathname)
@@ -4822,7 +4834,7 @@
       const text=isJa
         ? 'IGNIS CITY で自分の街を育ててる🔥 苦難や想いをビルに刻んで、支え合う街づくり。'
         : 'Building my own city in IGNIS CITY 🔥 — a place where we carve our stories into towers and support each other.';
-      const url='https://motomune.com/welcome.html';
+      const url='https://ignis-city.motomune.com/welcome';
       const intent='https://x.com/intent/tweet?text='+encodeURIComponent(text)+'&url='+encodeURIComponent(url)+'&hashtags=IGNISCITY';
       window.open(intent,'_blank');
       showToast(isJa?'📤 Xの投稿画面を開きました（自由に編集して投稿できます）':'📤 Opened the X compose screen (edit freely and post)');

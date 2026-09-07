@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>IGNIS CITY — 移転しました</title>
-<link rel="canonical" href="https://motomune.com/">
+<link rel="canonical" href="https://ignis-city.motomune.com/">
 
 <meta name="robots" content="noindex">
 <style>
@@ -31,18 +31,21 @@
     <div class="flame">🕯️</div>
     <h1>サイトは新しい住所に移りました</h1>
     <p>自動で移動します。切りかわらないときは下を押してください。</p>
-    <a id="go" href="https://motomune.com/">motomune.com へ進む</a>
+    <a id="go" href="https://ignis-city.motomune.com/">新しいページへ進む</a>
   </main>
 <script>
 (function(){
+  var GAME = "https://ignis-city.motomune.com";
   var SITE = "https://motomune.com";
   var p = location.pathname || '/';
-  // GitHub Pages では先頭に /IGNIS-city が付く。それを外して新ドメインに繋ぐ。
+  // GitHub Pages では先頭に /IGNIS-city が付く。それを外して新しい住所に繋ぐ。
   p = p.replace(/^\/IGNIS-city/, '');
   if (p === '' || p === '/index.html') p = '/';
   // .html は Cloudflare 側で拡張子なしに転送されるので、あらかじめ落としておく
   p = p.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
-  var dest = SITE + p + (location.search || '') + (location.hash || '');
+  // 人の側に残っているものだけ motomune.com、それ以外はゲームの住所へ
+  var host = /^\/(links|ant-nest)(\/|$)/.test(p) ? SITE : GAME;
+  var dest = host + p + (location.search || '') + (location.hash || '');
   var a = document.getElementById('go');
   if (a) a.href = dest;
   location.replace(dest);

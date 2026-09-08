@@ -632,6 +632,23 @@
           +'送ったらここにチェックを入れる。<b>次の期限が下に出る。</b><br>'
           +'最後にいつ飛んだかは <a href="https://app.brevo.com/transactional/email/logs" target="_blank" rel="noopener">Transactional → Email → Logs</a> で確認できる'
           +'（<b>Real time は直近30分だけ</b>なので、ここでは使えない）。',90],
+        ['k2','ドメインの更新に使うカードを確認する','<b>motomune.com が切れると、サイトも決済も本のURLも全部いっぺんに死ぬ。</b><br>'
+          +'原因はほぼ「登録したカードの有効期限が切れていて、自動更新に失敗した」。<br>'
+          +'<a href="https://dash.cloudflare.com/?to=/:account/billing/payment-info" target="_blank" rel="noopener">Cloudflare の支払い方法を開く</a><br>'
+          +'<span style="color:rgba(255,255,255,0.5)">注目：</span>カードの<b>有効期限（MM/YY）</b>が、次の更新日より先か<br>'
+          +'<span style="color:#4ade80">セーフ：期限が1年以上先</span>／'
+          +'<span style="color:#fca5a5">危険：今年中に切れる／カードが未登録</span><br>'
+          +'ついでに<a href="https://dash.cloudflare.com/?to=/:account/domains" target="_blank" rel="noopener">ドメイン一覧</a>で'
+          +'<b>自動更新（Auto-renew）がオン</b>になっているかも見る。',365],
+        ['k3','GitHubの IGNIS-city を非公開にしない','<b>これは作業ではなく禁止事項。チェックは不要。</b><br>'
+          +'著書の奥付に <code>motomune.github.io/IGNIS-city/…</code> を印刷してしまっている。'
+          +'紙は刷り直せないので、このURLは永久に生かしておく必要がある。<br>'
+          +'GitHub Pages の無料枠は<b>公開リポジトリでしか使えない</b>。'
+          +'<b style="color:#fca5a5">非公開にした瞬間、本に載せたURLが全部死ぬ。</b><br>'
+          +'いま置いてあるのは転送ページだけ（<code>gh-pages</code> ブランチ）なので、公開でも中身は見られない。'
+          +'ソースを隠したくなったら、<b>非公開にするのではなく、中身を別の非公開リポジトリへ移す</b>。<br>'
+          +'<a href="https://github.com/motomune/IGNIS-city" target="_blank" rel="noopener">リポジトリを開く</a>'
+          +'（名前の右が <b>Public</b> なら正常。<b>Private</b> になっていたら今すぐ戻す）'],
       ]},
     ];
     function isSameDay(iso){

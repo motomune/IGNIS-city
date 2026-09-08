@@ -9,8 +9,10 @@
     <priority>1.0</priority>
   </url>
   <!-- IGNIS CITY（ignis-city.motomune.com）
-       ant-nest/ は載せない。ゲームの中に iframe で埋め込んでいる部品であって、
-       単独で訪ねてもらうページではない。 -->
+       ant-nest/ と lifegame は載せない。どちらもゲームの中に iframe で
+       埋め込んでいる部品であって、単独で訪ねてもらうページではない。
+       rules と legal は別ページとして開く作りなので載せる。
+       とくに legal は特定商取引法の表記なので、辿れる場所に無いといけない。 -->
   <url>
     <loc>https://ignis-city.motomune.com/</loc>
     <lastmod>2026-09-07</lastmod>
@@ -22,12 +24,6 @@
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://ignis-city.motomune.com/lifegame</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ignis-city.motomune.com/legal</loc>

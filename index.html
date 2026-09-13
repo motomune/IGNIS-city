@@ -10,7 +10,13 @@
   (function(){
     var h = location.hostname;
     if ((h === 'motomune.com' || h === 'www.motomune.com') && location.pathname === '/') {
-      location.replace('https://motomune.com/links' + location.search + location.hash);
+      var q = location.search || '', f = location.hash || '';
+      // ログイン系メール（再設定・確認）や決済から戻ってきた人は、ゲームに届けないといけない。
+      // Supabase は戻り先が許可リストに無いとき Site URL（ここ）へ落とすので、
+      // これを /links に送るとトークンがリンク集で迷子になり、再設定もログインもできなくなる。
+      var toGame = /access_token=|refresh_token=|type=(recovery|signup|invite|magiclink|email_change)|error_description=/.test(f)
+                || /[?&](code|token_hash|reset|sub|open|error)=/.test(q);
+      location.replace((toGame ? 'https://ignis-city.motomune.com/' : 'https://motomune.com/links') + q + f);
     }
   })();
 </script>

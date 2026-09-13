@@ -27,7 +27,7 @@ const PRICE_SUB = "price_1TiaYKQxFv0hb0XVKTWuNfJi";
 const PRICE_PREMIUM = "price_1Tib1oQxFv0hb0XVENmkcCKT";
 
 // 決済のあとに戻ってくるサイト。末尾に / を付けない。
-const DEFAULT_SITE_URL = "https://motomune.com";
+const DEFAULT_SITE_URL = "https://ignis-city.motomune.com";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",

@@ -5302,14 +5302,26 @@
           let curSess=null;try{curSess=(await db.auth.getSession()).data.session;}catch(_){}
           const isAnonNow=!!(curSess&&curSess.user&&curSess.user.is_anonymous);
           if(isAnonNow){
-            const{error:upErr}=await withTimeout(db.auth.updateUser({email,password}),15000,'convert');
+            const{data:upData,error:upErr}=await withTimeout(db.auth.updateUser({email,password}),15000,'convert');
             if(upErr)throw upErr;
             // 登録した瞬間に is_guest=false ＝ 3時間の自動削除対象から外れる（メール確認前でも消えない）
             await withTimeout(db.from('users').update({username:displayUsername,x_username:xUsername,is_guest:false}).eq('id',curSess.user.id),8000,'convertProfile');
             if(currentUser)currentUser.isGuest=false;
             hideGuestExpiryBanner();
+            // Supabase の「メール確認」がオンだと、アドレスは確認リンクを押すまで email_change に
+            // 仮置きされるだけで、アカウントは匿名のまま（＝メールでログインも再設定もできない）。
+            // 以前はそれでも「登録完了」と出していて、打ち間違えた人が確認できずに閉じ込められた。
+            // アドレスが本当に付いたときだけ完了と言い、付いていなければ正直に伝える。
+            const attached=(upData?.user?.email||'').toLowerCase()===email.toLowerCase();
+            if(!attached){
+              errEl.style.color='#fbbf24';
+              errEl.textContent=currentLang==='ja'
+                ?`まだ登録は完了していません。「${email}」に確認メールを送りました。メールのリンクを押すと完了します。アドレスが違う場合は、正しいアドレスでもう一度登録してください。`
+                :`Not finished yet. We sent a confirmation email to "${email}". Open the link in it to finish. If that address is wrong, register again with the correct one.`;
+              return;
+            }
             closeAuthModal();
-            await onLoginSuccess(curSess.user,displayUsername,xUsername,{force:true});
+            await onLoginSuccess(upData.user,displayUsername,xUsername,{force:true});
             showToast(currentLang==='ja'?'🎉 登録完了！ゲスト中のデータを全部引き継ぎました':'🎉 Registered! All your guest progress was kept');
           }else{
             const{data,error}=await withTimeout(db.auth.signUp({email,password}),15000,'signUp');

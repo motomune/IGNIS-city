@@ -6,7 +6,11 @@
 // 必要シークレット:
 //   STRIPE_SECRET_KEY      … sk_test_/sk_live_
 //   STRIPE_WEBHOOK_SECRET  … whsec_...（StripeのWebhook設定画面で発行）
-//   PRICE_SUB / PRICE_PREMIUM … 各プランの価格ID
+//
+// 価格IDはシークレットではなく下の定数に直書きしている（stripe-billing と同じ値・同じ理由）。
+// 以前は PRICE_SUB / PRICE_PREMIUM シークレットを読んでいたが、そのシークレットが無いと
+// どの価格IDも空文字と一致せず、支払った人の会員フラグが必ず OFF になっていた（2026-09-16に発見）。
+// 商品を作り直したら、stripe-billing とここの両方を書きかえて再デプロイする。
 //
 // デプロイ（Stripeが呼ぶのでJWT検証は無効に）:
 //   supabase functions deploy stripe-webhook --no-verify-jwt
@@ -18,6 +22,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.25.0?target=denonext";
 
+// 月980円「サブスク会員」    商品 prod_Ui0ZBSRif40aDu
+const PRICE_SUB = "price_1TiaYKQxFv0hb0XVKTWuNfJi";
+// 月1980円「プレミアム会員」 商品 prod_Ui13kz4WfMtQTV
+const PRICE_PREMIUM = "price_1Tib1oQxFv0hb0XVENmkcCKT";
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -28,8 +37,6 @@ Deno.serve(async (req) => {
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY");
     const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    const PRICE_SUB = Deno.env.get("PRICE_SUB") || "";
-    const PRICE_PREMIUM = Deno.env.get("PRICE_PREMIUM") || "";
     if (!STRIPE_KEY || !WEBHOOK_SECRET) return json({ error: "stripe secrets not set" }, 500);
 
     const stripe = new Stripe(STRIPE_KEY, {
@@ -55,6 +62,7 @@ Deno.serve(async (req) => {
     const applyPlan = async (userId: string, priceId: string | null, active: boolean, customerId?: string | null) => {
       const isPremium = active && priceId === PRICE_PREMIUM;
       const isSub = active && (priceId === PRICE_SUB || isPremium); // プレミアムはサブスク特典も含む
+      if (active && !isSub) console.warn("unknown price id — plan not granted", userId, priceId);
       const patch: Record<string, unknown> = { is_subscribed: isSub, is_premium: isPremium };
       if (customerId) patch.stripe_customer_id = customerId;
       const { error } = await admin.from("users").update(patch).eq("id", userId);

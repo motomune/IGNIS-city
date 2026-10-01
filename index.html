@@ -8923,6 +8923,23 @@
         };
       }).filter(Boolean);
       if(!adTowerState.slides.length)return;
+      // 広告だと目で見て分かるようにする。
+      // ステマ規制（景表法5条3号）で問われるのは「事業者の表示だと判別できるか」。
+      // 看板はキャンバスに描いているので、絵の上に小さなラベルを焼きこむ。
+      // 自分の本・自分のゲームの宣伝なので規制の対象ではないが、
+      // この2文字があるだけで議論の余地が消えるため入れている。
+      const drawAdBadge=(ctx)=>{
+        ctx.save();
+        const label='広告 / AD';
+        ctx.font='bold 46px system-ui,sans-serif';
+        ctx.textBaseline='middle';
+        const w=ctx.measureText(label).width+44;
+        ctx.fillStyle='rgba(0,0,0,0.62)';
+        ctx.fillRect(28,28,w,74);
+        ctx.fillStyle='rgba(255,255,255,0.95)';
+        ctx.fillText(label,50,28+37);
+        ctx.restore();
+      };
       const drawImage=(img,slide)=>{
         disposeAdTowerVideo(t);
         const ctx=t.tex.getContext();
@@ -8932,6 +8949,7 @@
         const w=img.width*r,h=img.height*r;
         ctx.drawImage(img,(TW-w)/2,(TH-h)/2,w,h);
         ctx.strokeStyle='#ffd54f';ctx.lineWidth=12;ctx.strokeRect(6,6,TW-12,TH-12);
+        drawAdBadge(ctx);
         t.tex.update();
         t.board.metadata.adSlide=slide;
       };
@@ -8959,6 +8977,7 @@
             const w=video.videoWidth*r,h=video.videoHeight*r;
             ctx.drawImage(video,(TW-w)/2,(TH-h)/2,w,h);
             ctx.strokeStyle='#ffd54f';ctx.lineWidth=12;ctx.strokeRect(6,6,TW-12,TH-12);
+            drawAdBadge(ctx);
             t.tex.update();
           }
           adTowerState.videoRaf=requestAnimationFrame(paintFrame);

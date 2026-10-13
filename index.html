@@ -2510,8 +2510,17 @@
       <div id="auth-scroll-cue" aria-hidden="true"><span class="cue-arrow">⌄</span><span class="cue-text" id="auth-scroll-cue-text">下へスクロール</span></div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="__ignisStatus('Supabase load failed (network)')"></script>
-  <script src="https://cdn.babylonjs.com/babylon.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
+  <!-- 外部CDNから「その時の最新版」を読むのをやめ、自分のサイトに置いた版を読む（2026-10-13）。
+       理由：cdn.jsdelivr.net/@supabase/supabase-js@2 と cdn.babylonjs.com/babylon.js は
+       どちらも版を固定していなかったため、①配信元か元のパッケージが乗っ取られた日に
+       このゲームの全員のブラウザで他人のコードが動き、②ライブラリ側の更新だけで
+       ある朝いきなり街が壊れる、という二つの入口になっていた。
+       中身は差しかえた日に動いていたものと1バイト同じ（supabase-js 2.117.3 / Babylon 9.30.0）。
+       更新するときは新しいファイル名で置き、ここの src を変えること（古い版は消さない）：
+         curl -o vendor-supabase-js-<版>.js https://cdn.jsdelivr.net/npm/@supabase/supabase-js@<版>
+         curl -o vendor-babylon-<版>.js      https://cdn.babylonjs.com/babylon.js -->
+  <script src="vendor-supabase-js-2.117.3.js" onerror="__ignisStatus('Supabase load failed (network)')"></script>
+  <script src="vendor-babylon-9.30.0.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
     const IGNIS_BUILD='2026-07-23-v265';
     // ===== 自動アップデート（起動直後・最優先で実行） =====

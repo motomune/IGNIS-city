@@ -32,7 +32,9 @@
     border-radius:9px;border:2px solid rgba(4,6,14,0.55);}
   ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#ffc76b,#ff7a1a);}
   /* ===== 背景動画（霧と炎） ===== */
-  #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:saturate(1.1);}
+  /* 背景の動画はクリックを受け取らない。受け取ると、自動再生が止められた端末で
+     ネイティブの再生ボタンや右クリックメニューが前に出てしまう（2026-10-13） */
+  #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:saturate(1.1);pointer-events:none;}
   #veil{position:fixed;inset:0;z-index:1;pointer-events:none;
     background:linear-gradient(180deg,rgba(4,6,14,0.55) 0%,rgba(4,6,14,0.35) 40%,rgba(4,6,14,0.82) 100%);}
   /* ===== 言語切替（左上固定） ===== */

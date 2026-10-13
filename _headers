@@ -9,13 +9,15 @@
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://xssjhgosxyhknonlrjrq.supabase.co wss://xssjhgosxyhknonlrjrq.supabase.co https://api.mymemory.translated.net https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net; frame-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://itch.io https://*.itch.io https://*.itch.zone
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://xssjhgosxyhknonlrjrq.supabase.co wss://xssjhgosxyhknonlrjrq.supabase.co https://api.mymemory.translated.net https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net; frame-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://itch.io https://*.itch.io https://*.itch.zone
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
   Cross-Origin-Opener-Policy: same-origin
 
 # Content-Security-Policy の読み方（2026-10-13 追加）
-#   script-src 'self' ... = スクリプトは自分のサイトとGoogleアナリティクスだけ。
+#   script-src 'self' ... = スクリプトは自分のサイト・jsDelivr・Googleアナリティクスだけ。
 #     これで「どこかに差し込まれた <script src="悪いサイト"> が動く」経路が閉じる。
+#     jsDelivr から読むのは Babylon だけで、そちらは integrity（指紋）付き＝
+#     中身が1バイト変わればブラウザが実行を拒否する。
 #     'unsafe-inline' と 'unsafe-eval' は、このゲームが1枚のHTMLに直書きのJSと
 #     onclick で出来ているため外せない（外すと全部止まる）。そこは割り切り。
 #   connect-src = データを送れる先の一覧。ここに無い宛先へは送れない＝持ち出しの口を狭める。
@@ -58,8 +60,5 @@
   Cache-Control: public, max-age=3600
 
 # 外部CDNから自分のサイトへ持ってきたライブラリ。ファイル名に版が入っていて中身は変わらない。
-# 1年キャッシュにしないと、8MBのBabylonを1時間ごとに配り直すことになる。
-/vendor-babylon-9.30.0.js
-  Cache-Control: public, max-age=31536000, immutable
 /vendor-supabase-js-2.117.3.js
   Cache-Control: public, max-age=31536000, immutable

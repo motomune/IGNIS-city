@@ -2515,12 +2515,21 @@
        どちらも版を固定していなかったため、①配信元か元のパッケージが乗っ取られた日に
        このゲームの全員のブラウザで他人のコードが動き、②ライブラリ側の更新だけで
        ある朝いきなり街が壊れる、という二つの入口になっていた。
-       中身は差しかえた日に動いていたものと1バイト同じ（supabase-js 2.117.3 / Babylon 9.30.0）。
-       更新するときは新しいファイル名で置き、ここの src を変えること（古い版は消さない）：
-         curl -o vendor-supabase-js-<版>.js https://cdn.jsdelivr.net/npm/@supabase/supabase-js@<版>
-         curl -o vendor-babylon-<版>.js      https://cdn.babylonjs.com/babylon.js -->
+       supabase-js は自分のサイトに置いた（2.117.3。差しかえ前と1バイト同じ）。
+       Babylon は 8.6MB あって毎回の配信に乗せると重いので、版を固定したうえで
+       integrity（中身の指紋）を付けてCDNから読む。指紋が1バイトでも違えば
+       ブラウザが実行を拒否するので、配信元が書きかえられても動かない。
+       更新するときの手順：
+         1) curl -s https://cdn.jsdelivr.net/npm/babylonjs@<新版>/babylon.js -o b.js
+         2) openssl dgst -sha384 -binary b.js | openssl base64 -A   ← この値を integrity に
+         3) src の版と integrity を両方書きかえる（片方だけだと読み込めない）
+       supabase-js を上げるときは：
+         curl -o vendor-supabase-js-<版>.js https://cdn.jsdelivr.net/npm/@supabase/supabase-js@<版> -->
   <script src="vendor-supabase-js-2.117.3.js" onerror="__ignisStatus('Supabase load failed (network)')"></script>
-  <script src="vendor-babylon-9.30.0.js" onerror="__ignisStatus('Babylon load failed (network)')"></script>
+  <script src="https://cdn.jsdelivr.net/npm/babylonjs@9.30.0/babylon.js"
+          integrity="sha384-fQ9Ur5/e91d8ynCyU8t8qO8QjSivzOvVKov4OEyZrlT//bdXgawnWDmBaDziWreK"
+          crossorigin="anonymous"
+          onerror="__ignisStatus('Babylon load failed (network)')"></script>
   <script>
     const IGNIS_BUILD='2026-07-23-v265';
     // ===== 自動アップデート（起動直後・最優先で実行） =====

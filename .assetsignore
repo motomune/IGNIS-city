@@ -17,6 +17,16 @@ supabase/
 README.md
 DEPLOY.md
 
+# Gitの履歴そのもの（2026-10-15 追加）
+#
+# ここを書いていなかったせいで、ビルドが7回連続で止まっていた。
+# wrangler は .git の中身まで「配るファイル」として数えており、
+# 履歴をまとめた1個のファイル（pack）が Cloudflare の上限 25MiB を超えた瞬間に
+# 「Asset too large」で配信ごと失敗するようになった。
+# 同時に、それまでは .git/config や .git/index が外から読める状態でもあった。
+.git/
+.git
+
 # この設定ファイル自身
 .assetsignore
 

@@ -19,3 +19,6 @@ DEPLOY.md
 
 # この設定ファイル自身
 .assetsignore
+
+# 配信設定そのもの
+wrangler.jsonc

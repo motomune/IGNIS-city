@@ -1,0 +1,25 @@
+{
+  // Cloudflare Workers の配信設定。
+  //
+  // 2026-10-14 に追加した理由：
+  //   ビルドの「Deploying」で `npx wrangler deploy` が7回連続で失敗していた。
+  //   このリポジトリには設定ファイルが一度も無く、wrangler は
+  //   「どのWorkerに、どのフォルダを配るのか」を自分で決められない。
+  //   いままで動いていたのは暗黙の推測に頼っていたためで、
+  //   推測の仕様が変わると、こちらが何も触っていなくても止まる。
+  //   ここに書いておけば、毎回まったく同じ形で配信される。
+  //
+  // 中身は「いま動いている状態」をそのまま書き写したもの（動作は変わらない）：
+  //   html_handling      /links.html を /links に転送する（実測で確認）
+  //   not_found_handling 無いパスは 404（実測で確認）
+  //   directory "./"     リポジトリの中身をそのまま配る
+  //   配信しないファイルは .assetsignore 側で指定している（*.sql など）
+  "name": "ignis-city",
+  "compatibility_date": "2026-10-14",
+  "workers_dev": false,
+  "assets": {
+    "directory": "./",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  }
+}

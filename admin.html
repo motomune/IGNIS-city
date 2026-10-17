@@ -393,6 +393,7 @@
       currentTab=tab;
       document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===tab));
       renderList();
+      if(tab==='memo')loadAutoChecks().then(()=>{if(currentTab==='memo')renderMemo();});
     }
 
     function fmtTime(iso){if(!iso)return '';const d=new Date(iso);return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
@@ -493,6 +494,38 @@
       Object.keys(s).forEach(k=>{ if(k.startsWith('m'))delete s[k]; });
       localStorage.setItem(MEMO_STORE,JSON.stringify(s)); renderMemo();
       showToast('✅ 毎月分のチェックをリセットしました');
+    }
+    // ===== Claude の自動点検（2026-10-17）=====
+    // スケジュールタスク（毎朝8時・毎月1日9時）が測った結果を admin_auto_checks に書く。
+    // 読めるのは運営者（2段階認証済み）だけ。ここでは項目ごとに最新の1件を使う。
+    //   auto    … Claude が測って、問題なければチェックまで自動で入る（青い枠）
+    //   partial … Claude が測れるのは一部だけ。結果は出すがチェックは自分で（紫の枠）
+    //   manual  … ログインが必要などで Claude からは見えない。自分で見る（オレンジの枠）
+    const AUTO_KIND={d1:'auto',d3:'auto',m3:'auto',k1:'auto',k3:'auto',m5:'partial',k2:'partial'};
+    const KIND_STYLE={
+      auto:   {col:'#38bdf8',label:'🤖 Claudeが自動で確認'},
+      partial:{col:'#a78bfa',label:'🤖 一部だけ自動・残りは自分で'},
+      manual: {col:'#ffb066',label:'👤 自分で確認'},
+    };
+    let autoChecks={};
+    async function loadAutoChecks(){
+      try{
+        const since=new Date(Date.now()-45*86400000).toISOString();
+        const{data,error}=await db.from('admin_auto_checks')
+          .select('item,verdict,detail,ref_at,ran_at').gte('ran_at',since)
+          .order('ran_at',{ascending:false}).limit(500);
+        if(error)throw error;
+        autoChecks={};
+        (data||[]).forEach(r=>{ if(!autoChecks[r.item])autoChecks[r.item]=r; });
+      }catch(e){ autoChecks={}; console.warn('auto checks',e); }
+    }
+    // 自動点検の結果が「今の期間ぶん」として有効か（毎日＝今日、毎月＝今月、それ以外＝40日以内）
+    function autoFresh(r,groupKey){
+      if(!r)return false;
+      const a=new Date(r.ran_at), b=new Date();
+      if(groupKey==='d')return isSameDay(r.ran_at);
+      if(groupKey==='m')return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth();
+      return (b-a)<40*86400000;
     }
     const MEMO=[
       {key:'d', title:'毎日やること', note:'日付が変わると自動でチェックが外れます（3分で終わります）', items:[
@@ -685,20 +718,44 @@
             ${g.key==='m'?`<button class="action-btn btn-revert" style="margin-left:auto;" onclick="memoResetMonthly()">↺ 今月分をリセット</button>`:''}
           </div>
           ${g.items.map(([id,t,d,days])=>{
+            const kind=AUTO_KIND[id]||'manual', ks=KIND_STYLE[kind];
+            const r=autoChecks[id], fresh=kind!=='manual'&&autoFresh(r,g.key);
             // 毎日やることは、日付が変わったら自動でチェックが外れる（手で戻す手間をなくす）
-            const on = g.key==='d' ? isSameDay(s[id]) : !!s[id];
-            const done=on?`<span style="font-size:10px;color:#4ade80;margin-left:8px;">✓ ${fmtTime(s[id])}</span>`:'';
-            const due=days?dueInfo(s[id],days):null;
-            // 期限つきの項目は、期限を過ぎたら「済み」扱いを解いて赤く出す
-            const ok=on&&!(due&&due.over);
+            const manualOn = g.key==='d' ? isSameDay(s[id]) : !!s[id];
+            // k1（90日メール）は、最後にメールが飛んだ日を Claude が測っているので、その日を「チェックした日」として使う
+            let tickIso=s[id];
+            if(id==='k1'&&r&&r.ref_at&&(!tickIso||r.ref_at>tickIso))tickIso=r.ref_at;
+            // 青い枠の項目は、Claude の点検が今日（今月）✅ならチェックが自動で入る
+            const autoOk = kind==='auto'&&fresh&&r.verdict==='ok';
+            const on = manualOn||autoOk||(id==='k1'&&!!tickIso);
+            const bad = fresh&&r.verdict!=='ok';
+            const due=days?dueInfo(tickIso,days):null;
+            // 期限つきの項目は、期限を過ぎたら「済み」扱いを解いて赤く出す。自動点検で🟡🔴が出たときも同じ
+            const ok=on&&!(due&&due.over)&&!bad;
+            const done = !ok ? ''
+              : manualOn ? `<span style="font-size:10px;color:#4ade80;margin-left:8px;">✓ ${fmtTime(s[id])}</span>`
+              : `<span style="font-size:10px;color:#38bdf8;margin-left:8px;">🤖✓ ${fmtTime(autoOk?r.ran_at:tickIso)}</span>`;
+            const warnCol = bad ? (r.verdict==='bad'?'239,68,68':'250,204,21') : null;
+            const autoBox = kind==='manual' ? '' : (fresh
+              ? `<div style="margin-top:8px;padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.7;
+                     background:${bad?`rgba(${warnCol},0.12)`:'rgba(56,189,248,0.08)'};border:1px solid ${bad?`rgba(${warnCol},0.45)`:'rgba(56,189,248,0.3)'};">
+                   <b>${r.verdict==='ok'?'✅':r.verdict==='warn'?'🟡':'🔴'} Claudeの自動確認</b>
+                   <span style="color:rgba(255,255,255,0.45);">（${fmtTime(r.ran_at)}）</span><br>${escapeHtml(r.detail)}
+                   ${kind==='partial'?'<br><span style="color:#c4b5fd;">※ ここに出ていない部分は、上の手順で自分で見てチェックを入れる。</span>':''}
+                 </div>`
+              : `<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.4);">
+                   🤖 ${g.key==='d'?'今日':g.key==='m'?'今月':'最近'}の自動確認はまだです（Claude のアプリが開いていれば、毎朝8時／毎月1日9時に入ります）</div>`);
             return `<label style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:8px;border-radius:10px;cursor:pointer;
-                       background:${due&&due.over?'rgba(239,68,68,0.08)':ok?'rgba(34,197,94,0.07)':'rgba(255,255,255,0.03)'};
-                       border:1px solid ${due&&due.over?'rgba(239,68,68,0.45)':ok?'rgba(34,197,94,0.3)':'rgba(255,255,255,0.08)'};">
+                       background:${(due&&due.over)||bad?`rgba(${warnCol||'239,68,68'},0.08)`:ok?'rgba(34,197,94,0.07)':'rgba(255,255,255,0.03)'};
+                       border:1px solid ${(due&&due.over)||bad?`rgba(${warnCol||'239,68,68'},0.45)`:ok?'rgba(34,197,94,0.3)':'rgba(255,255,255,0.08)'};
+                       border-left:4px solid ${ks.col};">
               <input type="checkbox" ${ok?'checked':''} onchange="memoToggle('${id}',this.checked)"
                      style="width:18px;height:18px;margin-top:2px;flex-shrink:0;accent-color:#22c55e;">
               <div style="min-width:0;">
                 <div style="font-weight:800;font-size:13px;${ok?'opacity:0.6;':''}">${t}${done}</div>
+                <div style="font-size:10px;font-weight:800;color:${ks.col};margin-top:2px;">${ks.label}</div>
                 <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.8;margin-top:3px;">${d}</div>
+                ${autoBox}
                 ${due?due.html:''}
               </div>
             </label>`;
@@ -706,6 +763,18 @@
         </div>`;
       document.getElementById('list-container').innerHTML=`
         <div style="max-width:820px;">
+          <div style="margin-bottom:22px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);font-size:12px;line-height:1.9;">
+            <div style="font-weight:900;font-size:13px;margin-bottom:6px;">左の線の色の意味</div>
+            <div><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${KIND_STYLE.auto.col};vertical-align:-2px;margin-right:6px;"></span>
+              <b style="color:${KIND_STYLE.auto.col};">青</b> … <b>Claude が自動で確認する。</b>問題がなければ<b>チェックも自動で入る</b>（🤖✓ と出る）。🟡🔴が出たときだけ動けばよい。</div>
+            <div><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${KIND_STYLE.partial.col};vertical-align:-2px;margin-right:6px;"></span>
+              <b style="color:${KIND_STYLE.partial.col};">紫</b> … <b>一部だけ自動。</b>Claude が測れた分の結果は出るが、ログインが必要な残りは自分で見て<b>チェックも自分で</b>入れる。</div>
+            <div><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${KIND_STYLE.manual.col};vertical-align:-2px;margin-right:6px;"></span>
+              <b style="color:${KIND_STYLE.manual.col};">オレンジ</b> … <b>自分で確認する。</b>メール・Stripe・DeepL・Brevo など、ログインしないと見えない場所なので Claude からは見えない。</div>
+            <div style="margin-top:6px;color:rgba(255,255,255,0.5);">
+              自分で入れたチェックは<b>このブラウザにだけ</b>保存される（PCとスマホは別々）。🤖✓ はサーバーに保存されるので、どの端末でも同じに出る。<br>
+              自動確認は Claude のアプリが開いているときに動く（毎朝8時・毎月1日9時。閉じていたら次に開いたとき）。</div>
+          </div>
           ${MEMO.map(sec).join('')}
           <div style="margin-bottom:26px;">
             <div style="font-size:15px;font-weight:900;color:#fca5a5;margin-bottom:6px;">■ サービスを終了するときの手順</div>

@@ -12,6 +12,8 @@
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https://cloudflareinsights.com https://xssjhgosxyhknonlrjrq.supabase.co wss://xssjhgosxyhknonlrjrq.supabase.co https://api.mymemory.translated.net https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net; frame-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self' https://itch.io https://*.itch.io https://*.itch.zone
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
   Cross-Origin-Opener-Policy: same-origin
+  # 2026-10-23：いつも https で開かせる（http のままだと通信を書きかえられる）
+  Strict-Transport-Security: max-age=31536000
 
 # Content-Security-Policy の読み方（2026-10-13 追加）
 #   script-src 'self' ... = スクリプトは自分のサイト・jsDelivr・Googleアナリティクスだけ。
@@ -27,6 +29,14 @@
 #   frame-src 'self' = 中に開く窓（ルール・人生の灯・アリの巣）は自分のサイトのものだけ。
 #   frame-ancestors = このページを窓に入れられるのは自分と itch.io だけ（なりすまし対策）。
 #   宛先を増やしたときは、ここに足さないと静かに失敗する。
+
+# 2026-10-23：運営の承認管理の画面は検索に載せない（中身はサーバー側の管理者確認で守られている）
+/admin
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+/admin.html
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
 
 # HTML は毎回サーバーに確認する（中身が同じなら 304 が返るだけで速い）。
 # これで「デプロイしたのに古い画面が出る」が起きなくなる。

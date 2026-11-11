@@ -1,10 +1,11 @@
 // Supabase Edge Function: stripe-webhook
 // Stripeからの通知を受けて users.is_subscribed / is_premium を自動で更新する。
 //   - 決済完了           → ON（980円=サブスク / 1980円=プレミアム＋サブスク扱い）
-//   - 解約・支払い失敗   → OFF
+//   - 解約・再請求がすべて失敗 → OFF（再請求中の past_due は ON のまま）
 //
 // 必要シークレット:
-//   STRIPE_SECRET_KEY      … sk_test_/sk_live_
+//   STRIPE_SECRET_KEY      … 本番は制限付きキー rk_live_（標準キー sk_live_ は使わない・2026-11-12）
+//                            ここで使う権限は Subscriptions の読み取りだけ
 //   STRIPE_WEBHOOK_SECRET  … whsec_...（StripeのWebhook設定画面で発行）
 //
 // 価格IDはシークレットではなく下の定数に直書きしている（stripe-billing と同じ値・同じ理由）。
@@ -93,8 +94,11 @@ Deno.serve(async (req) => {
       const userId = (sub.metadata as any)?.user_id || await findUserByCustomer(customerId);
       if (userId) {
         const priceId = sub.items.data[0]?.price?.id || null;
+        // past_due（カードの引き落としに失敗して Stripe が再請求している間）は特典を残す（2026-11-12）。
+        // 以前は1回失敗しただけで即 OFF になっていた。再請求がすべて失敗すれば Stripe が
+        // unpaid か canceled（＝deleted）に変えて、そのときここで OFF になる。
         const active = event.type !== "customer.subscription.deleted" &&
-          (sub.status === "active" || sub.status === "trialing");
+          (sub.status === "active" || sub.status === "trialing" || sub.status === "past_due");
         await applyPlan(userId, priceId, active, customerId);
       }
     }

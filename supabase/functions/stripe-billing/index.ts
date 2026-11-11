@@ -7,7 +7,9 @@
 //   {"action":"portal"}                     … 解約/プラン変更用ポータルURLを返す
 //
 // 必要シークレット:
-//   STRIPE_SECRET_KEY   … sk_test_/sk_live_
+//   STRIPE_SECRET_KEY   … 本番は制限付きキー rk_live_（標準キー sk_live_ は使わない・2026-11-12）
+//     権限：書き込み＝Checkout Sessions・Customer portal・Customers／読み取り＝Subscriptions・Products・Prices
+//   ゲスト（仮アカウント）は checkout できない（guest_not_allowed）
 //
 // 価格IDと戻り先URLは、シークレットではなく下の定数に直書きしている。
 // 理由：どちらも公開情報（決済画面のURLにも出る）で、隠す必要がない。
@@ -65,7 +67,7 @@ Deno.serve(async (req) => {
 
     // 既存のStripe顧客ID（あれば）
     const { data: urow } = await admin.from("users")
-      .select("stripe_customer_id, x_username, is_subscribed, is_premium")
+      .select("stripe_customer_id, x_username, is_subscribed, is_premium, is_guest")
       .eq("id", user.id).single();
     const customerId: string | null = (urow as any)?.stripe_customer_id || null;
 
@@ -82,10 +84,19 @@ Deno.serve(async (req) => {
       const plan = body?.plan === "premium" ? "premium" : "sub";
       const price = plan === "premium" ? PRICE_PREMIUM : PRICE_SUB;
 
-      // すでに有効なサブスクがある場合は二重課金を防ぎ、ポータル（プラン変更/解約）へ誘導
+      // 仮アカウント（ゲスト）は申し込めない（2026-11-12）。
+      // ゲストは別のブラウザ・別の端末から入れないので、払ったあとに会員の権利ごと失ってしまう。
+      // 先に本登録（メールアドレス）をしてもらう。本登録は同じIDのまま昇格するので土地やコインは引き継がれる。
+      if ((user as any).is_anonymous || (urow as any)?.is_guest === true) {
+        return json({ error: "guest_not_allowed" }, 403);
+      }
+
+      // すでに続いているサブスクがある場合は二重課金を防ぎ、ポータル（プラン変更/解約）へ誘導。
+      // 「支払いが遅れている（past_due/unpaid）」も続いている扱い（以前は active だけ見ていた＝2重に申し込めた）。
       if (customerId) {
-        const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-        if (subs.data.length > 0) {
+        const subs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 10 });
+        const live = subs.data.filter((s) => ["active", "trialing", "past_due", "unpaid"].includes(s.status));
+        if (live.length > 0) {
           const portal = await stripe.billingPortal.sessions.create({
             customer: customerId,
             return_url: `${SITE_URL}/index.html`,
